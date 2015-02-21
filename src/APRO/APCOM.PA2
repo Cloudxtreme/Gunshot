@@ -1,0 +1,458 @@
+  {---Line Status---}
+  function GetLineControl(P : PortRecPtr) : Byte;
+    {-Return the line control byte from the port record}
+  begin
+    GetLineControl := P^.LineControl;
+  end;
+
+  function GetLineStatus(P : PortRecPtr) : Byte;
+    {-Return the line status byte from the port record}
+  var
+    ClearMask : Byte;
+  begin
+    with P^ do begin
+
+      GetLineStatus := LineStatus;
+
+      {Clear the error and break bits}
+      ClearMask := OverrunErrorMask + ParityErrorMask +
+                   FramingErrorMask + BreakReceivedMask;
+      ClearMask := not ClearMask;
+      IntOff;
+      LineStatus := LineStatus and ClearMask;
+      IntOn;
+    end;
+  end;
+
+  function CheckDataReady(P : PortRecPtr) : Boolean;
+    {-Returns True if DR (Data Ready) is high}
+  begin
+    {Update line status field}
+    P^.LineStatus := UpdateLineStatus(P);
+
+    CheckDataReady := (P^.LineStatus and DataReadyMask) = DataReadyMask;
+  end;
+
+  function CheckLineError(P : PortRecPtr) : Boolean;
+    {-Returns True if any error bits are set in line status register}
+  var
+    B : Byte;
+  begin
+    with P^ do begin
+      {Update line status field}
+      P^.LineStatus := UpdateLineStatus(P);
+
+      B := OverrunErrorMask + ParityErrorMask + FramingErrorMask;
+      B := B and LineStatus;
+      if B = 0 then
+        CheckLineError := False
+      else
+        CheckLineError := True;
+    end;
+  end;
+
+  function GetLineError(P : PortRecPtr) : Word;
+    {-Returns line error type (here and in AsyncStatus; clears errors)}
+  begin
+    with P^ do begin
+      {Update line status field}
+      LineStatus := UpdateLineStatus(P);
+
+      {Set AsyncStatus accordingly}
+      if (LineStatus and OverrunErrorMask) = OverrunErrorMask then
+        AsyncStatus := ecOverrunError
+      else if (LineStatus and ParityErrorMask) = ParityErrorMask then
+        AsyncStatus := ecParityError
+      else if (LineStatus and FramingErrorMask) = FramingErrorMask then
+        AsyncStatus := ecFramingError
+      else
+        AsyncStatus := ecOk;
+
+      {Clear the errors from LineStatus}
+      LineStatus := LineStatus and
+                    not (OverrunErrorMask + ParityErrorMask + FramingErrorMask);
+
+      {Show the error to the error handler}
+      if AsyncStatus <> ecOk then
+        GotError(P, epNonFatal + (AsyncStatus mod 10000));
+    end;
+
+    {Set the function result same as AsyncStatus}
+    GetLineError := AsyncStatus;
+  end;
+
+  function CheckLineBreak(P : PortRecPtr) : Boolean;
+    {-Returns True if Break was received (and clears condition)}
+  begin
+    {Update line status field}
+    P^.LineStatus := UpdateLineStatus(P);
+
+    IntOff;                                                            {!!.02}
+    CheckLineBreak := P^.BreakReceived;
+    P^.BreakReceived := False;
+    IntOn;                                                             {!!.02}
+  end;
+
+  function CheckTHRE(P : PortRecPtr) : Boolean;
+    {-Returns True if transmitter holding register is empty}
+  begin
+    {Update line status field}
+    P^.LineStatus := UpdateLineStatus(P);
+
+    CheckTHRE := (P^.LineStatus and THREMask) = THREMask;
+  end;
+
+  function CheckTE(P : PortRecPtr) : Boolean;
+    {-Returns True if transmitter is empty}
+  begin
+    {Update line status field}
+    P^.LineStatus := UpdateLineStatus(P);
+
+    CheckTE := (P^.LineStatus and TEMask) = TEMask;
+  end;
+
+  function CheckFifoError(P : PortRecPtr) : Boolean;
+    {-Returns if Fifo error bit is set}
+  begin
+    {Update line status field}
+    P^.LineStatus := UpdateLineStatus(P);
+
+    CheckFifoError := (P^.LineStatus and FifoErrorMask) = FifoErrorMask;
+  end;
+
+  {----Miscellaneous----}
+  function GetComName(P : PortRecPtr) : ComNameType;
+    {-Returns the ComName of this port}
+  begin
+    GetComName := P^.PortName;
+  end;
+
+  function GetBaseAddr(P : PortRecPtr) : Word;
+    {-Returns the BaseAddr of this port (zero if NA)}
+  begin
+    GetBaseAddr := P^.BaseAddr;
+  end;
+
+  procedure SetErrorProc(P : PortRecPtr; EP : AsyncErrorProc);
+    {-Sets an error handler for ComPort P}
+  begin
+    with P^ do begin
+      ErrorProc := EP;
+      ErrorData := Pointer(P);
+    end;
+  end;
+
+  procedure WaitForChar(P : PortRecPtr; DelimSet : CharSet;
+                        var C : Char; Timeout : Word);
+    {-Waits for char in DelimSet or Timeout}
+  var
+    ET : EventTimer;
+    OK : Boolean;
+  begin
+    AsyncStatus := 0;
+
+    {If ignoring case, make sure DelimSet has both cases}
+    if FlagIsSet(P^.Flags, ptIgnoreDelimCase) then
+      AllcaseCharSet(DelimSet);
+
+    NewTimer(ET, Timeout);
+    repeat
+      if CharReady(P) then begin
+        GetChar(P, C);
+        WaitChar(P, C);
+        OK := C in DelimSet;
+      end else
+        OK := False;
+    until OK or WaitComplete(P, ET);
+
+    {Report timeouts and user aborts only}
+    if ((AsyncStatus mod 10000) = ecTimeout) or
+       ((AsyncStatus mod 10000) = ecUserAbort) then
+      GotError(P, epNonFatal + (AsyncStatus mod 10000));
+  end;
+
+  {!!.02 rewritten}
+  procedure WaitForString(P : PortRecPtr; S : String; Timeout : Word);
+    {-Waits for string S or Timeout}
+  var
+    ET : EventTimer;
+    C : Char;
+    IgnoreCase : Boolean;
+    I : Byte;
+  begin
+    AsyncStatus := ecOk;
+
+    {If ignoring case, upcase the target string}
+    IgnoreCase := FlagIsSet(P^.Flags, ptIgnoreDelimCase);
+    if IgnoreCase then
+      for I := 1 to Length(S) do
+        S[I] := Upcase(S[I]);
+
+    NewTimer(ET, Timeout);
+    I := 0;
+    repeat
+      {Look for match}
+      if CharReady(P) then begin
+        GetChar(P, C);
+        WaitChar(P, C);
+        Inc(I);
+        if IgnoreCase then
+          C := Upcase(C);
+        if S[I] = C then begin
+          if I = Length(S)  then
+            Exit;
+        end else begin
+          if S[1] = C then
+            I := 1
+          else
+            I := 0;
+        end;
+      end;
+    until WaitComplete(P, ET) or (AsyncStatus <> ecOk);
+
+    {Report timeouts and user aborts only}
+    if ((AsyncStatus mod 10000) = ecTimeout) or
+       ((AsyncStatus mod 10000) = ecUserAbort) then
+      GotError(P, epNonFatal + (AsyncStatus mod 10000));
+  end;
+
+  procedure WaitForMultiString(P : PortRecPtr;
+                               SL : String; SepChar : Char;
+                               var FoundS : String;
+                               var FoundI : Byte;
+                               Timeout : Word);
+    {-Waits for any substring in SL or Timeout}
+  const
+    MaxSubs = 128;
+  var
+    ET : EventTimer;
+    C : Char;
+    I : Byte;
+    SubCnt : Byte;
+    CurSub : Byte;
+    LastIndex : Byte;
+    Candidate : array[1..MaxSubs] of Boolean;
+    SubPos : array[1..MaxSubs] of Byte;
+    FirstChar : array[1..MaxSubs] of Char;
+
+    function MatchOneChar(MC : Char) : Boolean;
+      {-True if we have a full match of any substring}
+    var
+      I : Byte;
+      Index : Byte;
+      CurFound : Boolean;
+      SubIndex : Byte;
+    begin
+      Index := 1;
+      SubIndex := 1;
+      CurSub := 1;
+      CurFound := False;
+      MatchOneChar := False;
+      for I := 1 to Length(SL) do
+        if SL[I] = SepChar then begin
+          {End of substring}
+          if not CurFound then
+            {Last substring didn't match char, remove it as candidate}
+            Candidate[CurSub] := False
+          else if Candidate[CurSub] then begin
+            {Still a candidate -- prepare for next position}
+            if (SubPos[CurSub] = SubIndex-1) then begin
+              {Last substr was a "last char" match, set flag}
+              MatchOneChar := True;
+              LastIndex := CurSub;
+            end else
+              {Just bump position index}
+              Inc(SubPos[CurSub]);
+          end;
+
+          {Prepare for next substring}
+          Inc(CurSub);
+          SubIndex := 1;
+        end else begin
+          {In substring, wait for right Posn}
+          if SubIndex = SubPos[CurSub] then
+            {Found right position, compare chars}
+            if MC <> SL[I] then begin
+              {Failed match at SubPos for MC, remove this substr as candidate}
+              Candidate[CurSub] := False;
+              SubPos[CurSub] := 1;
+              {Now check it again for possible match at position 1}
+              if FirstChar[CurSub] = MC then begin
+                {It matches the first char -- say we're a candidate again}
+                Candidate[CurSub] := True;
+                CurFound := True;
+              end;
+            end else begin
+              {Match this pos and substr, still a candidate}
+              CurFound := True;
+              Candidate[CurSub] := True;
+              {Handle end-of-string condition}
+              if I = Length(SL) then begin
+                MatchOneChar := True;
+                LastIndex := CurSub;
+              end;
+            end;
+          Inc(SubIndex);
+        end;
+
+      {Handle candidate at end-of-string}
+      if not CurFound then
+        {Last substring didn't match char, remove it as candidate}
+        Candidate[CurSub] := False
+      else if Candidate[CurSub] then begin
+        {Still a candidate -- prepare for next position}
+        if (SubPos[CurSub] = SubIndex-1) then begin
+          {Last substr was a "last char" match, set flag}
+          MatchOneChar := True;
+          LastIndex := CurSub;
+        end else
+          {Just bump position index}
+          Inc(SubPos[CurSub]);
+      end;
+    end;
+
+    function ExtractString(Index : Byte) : String;
+      {-Return substring for Index}
+    var
+      I : Byte;
+      StartLoc : Byte;
+      S : String;
+      Len : Byte;
+      SCnt : Byte;
+    begin
+      StartLoc := 1;
+      SCnt := 0;
+      I := 1;
+
+      while (I <= Length(SL)) do
+        {Find the Index'th SepChar}
+        if (SL[I] = SepChar) or (I = Length(SL)) then begin
+          Inc(SCnt);
+          if SCnt = Index then begin
+            {Extract the string}
+            if (SL[I] <> SepChar) and (I = Length(SL)) then
+              Len := (I - StartLoc) + 1
+            else
+              Len := I - StartLoc;
+            Move(SL[StartLoc], S[1], Len);
+            S[0] := Char(Len);
+            ExtractString := S;
+            Exit;
+          end else begin
+            StartLoc := I+1;
+            Inc(I);
+          end;
+        end else
+          Inc(I);
+
+      {Bad SL if we get here}
+      ExtractString := '';
+    end;
+
+  begin
+    {Inits}
+    AsyncStatus := 0;
+    FoundS := '';
+    FoundI := 0;
+
+    {Check for empty string}
+    if SL = '' then
+      GotError(P, epNonFatal + ecInvalidArgument);
+
+    {If ignoring case, upcase the target string}
+    if FlagIsSet(P^.Flags, ptIgnoreDelimCase) then
+      for I := 1 to Length(SL) do
+        SL[I] := Upcase(SL[I]);
+
+    {Find number of substrings and save first char of each substring}
+    SubCnt := 1;
+    FirstChar[1] := SL[1];
+    for I := 1 to Length(SL) do
+      if SL[I] = SepChar then begin
+        Inc(SubCnt);
+        if I < 255 then
+          FirstChar[SubCnt] := SL[I+1];
+      end;
+
+    if (SubCnt > 255) or (SubCnt = 0) then
+      GotError(P, epNonFatal + ecInvalidArgument);
+
+    {Initial conditions}
+    FillChar(Candidate, MaxSubs, 0);
+    FillChar(SubPos, MaxSubs, 1);
+    NewTimer(ET, Timeout);
+
+    {Loop until timeout or we get a match}
+    repeat
+      {Get and process next char}
+      GetCharTimeout(P, C, Timeout);
+      if AsyncStatus <> ecOk then
+        Exit;
+      WaitChar(P, C);
+      if FlagIsSet(P^.Flags, ptIgnoreDelimCase) then
+        C := Upcase(C);
+
+      {Run C through matcher -- checks all substrings at their current positions}
+      if MatchOneChar(C) then begin
+        {Found a complete match, we're finished here}
+        FoundI := LastIndex;
+        FoundS := ExtractString(LastIndex);
+        Exit;
+      end else
+        {Keep checking more chars...}
+        Inc(I);
+    until (AsyncStatus <> ecOk);
+  end;
+
+  procedure SetAbortFunc(P : PortRecPtr; AFunc : AbortFunc);
+    {-Sets AFunc as the user abort function}
+  begin
+    P^.UserAbort := AFunc;
+  end;
+
+  procedure SetWaitCharProc(WCP : WaitCharProc);
+    {Sets global WaitChar procedure}
+  begin
+    WaitChar := WCP;
+  end;
+
+  procedure ptOptionsOn(P : PortRecPtr; OptionFlags : Word);
+    {-Activate multiple options}
+  begin
+    with P^ do
+      Flags := Flags or (OptionFlags and not BadPortOptions);
+  end;
+
+  procedure ptOptionsOff(P : PortRecPtr; OptionFlags : Word);
+    {-Deactivate multiple options}
+  begin
+    with P^ do
+      Flags := Flags and not (OptionFlags and not BadPortOptions);
+  end;
+
+  function ptOptionsAreOn(P : PortRecPtr; OptionFlags : Word) : Boolean;
+    {-Return True if all specified options are on}
+  begin
+    with P^ do
+      ptOptionsAreOn := (Flags and OptionFlags = OptionFlags);
+  end;
+
+  function ProtocolInProgress(P : PortRecPtr) : Boolean;
+    {-Returns True if this port is currently processing a protocol}
+  begin
+    ProtocolInProgress := P^.ProtocolActive;
+  end;
+
+  function FaxInProgress(P : PortRecPtr) : Boolean;
+    {-Returns True if this port is currently processing a fax}
+  begin
+    FaxInProgress := P^.FaxActive;
+  end;
+
+  {$F+}
+  procedure NoWaitChar(P : PortRecPtr; C : Char);
+    {-Empty WaitChar procedure}
+  begin
+  end;
+  {$F-}
+

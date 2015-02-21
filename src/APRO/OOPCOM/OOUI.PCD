@@ -1,0 +1,177 @@
+{*********************************************************}
+{*                    OOUI.PCD 2.03                      *}
+{*       Copyright (c) TurboPower Software 1991.         *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+const
+  {.F-}
+  {user-defined command codes}
+  MoveWindowCmd    = ccUser0;
+  ResizeWindowCmd  = ccUser1;
+  ZoomWindowCmd    = ccUser2;
+  ProcessWindowCmd = ccUser3;
+  ExitProgramCmd   = ccUser4;
+  UnloadTsrCmd     = ccUser5;
+  MainMenuCmd      = ccUser6;
+  LocalMenuCmd     = ccUser7;
+  NextWindowCmd    = ccUser8;
+  PrevWindowCmd    = ccUser9;
+  SelectWindowCmd  = ccUser10;
+  SelectWindow1    = ccUser11;
+  SelectWindow2    = ccUser12;
+  SelectWindow3    = ccUser13;
+  SelectWindow4    = ccUser14;
+  SelectWindow5    = ccUser15;
+  SelectWindow6    = ccUser16;
+  SelectWindow7    = ccUser17;
+  SelectWindow8    = ccUser18;
+  ShowMemoryCmd    = ccUser19;
+  ccInsertNumber   = ccUser20;
+  SelectSpecial    = ccUser21;
+
+  DialerCommand    = ccUser22;
+  CaptureCommand   = ccUser23;
+  HangupCommand    = ccUser24;
+
+  {Keystroke to command mapping}
+  TpUiKeyMax = 140;
+  TpUiKeyID  : string[9] = 'tpui keys';
+  TpUiKeySet : array[0..TpUiKeyMax] of Byte = (
+  {length keys         command type      key sequence}
+  3,      $00, $13,    ResizeWindowCmd,  {AltR}
+  3,      $00, $17,    ccInsertNumber,   {AltI} {for OPCALC}
+  3,      $00, $1F,    ShowMemoryCmd,    {AltS}
+  3,      $00, $23,    ccHexMode,        {AltH} {for OPBROWSE}
+  3,      $00, $2C,    ZoomWindowCmd,    {AltZ}
+  3,      $00, $2D,    ExitProgramCmd,   {AltX}
+  3,      $00, $32,    MoveWindowCmd,    {AltM}
+  3,      $00, $3F,    ZoomWindowCmd,    {F5}
+  3,      $00, $40,    NextWindowCmd,    {F6}
+  3,      $00, $43,    LocalMenuCmd,     {F9}
+  3,      $00, $44,    MainMenuCmd,      {F10}
+  3,      $00, $63,    PrevWindowCmd,    {^F6}
+  3,      $00, $78,    SelectWindow1,    {Alt1}
+  3,      $00, $79,    SelectWindow2,    {Alt2}
+  3,      $00, $7A,    SelectWindow3,    {Alt3}
+  3,      $00, $7B,    SelectWindow4,    {Alt4}
+  3,      $00, $7C,    SelectWindow5,    {Alt5}
+  3,      $00, $7D,    SelectWindow6,    {Alt6}
+  3,      $00, $7E,    SelectWindow7,    {Alt7}
+  3,      $00, $7F,    SelectWindow8,    {Alt8}
+  3,      $00, $6A,    ccQuit,           {Alt-F3}
+  3,      $00, $3B,    ccHelp,           {F1}
+  5,$00,$16,$00,$16,   UnloadTsrCmd,     {AltU-AltU}
+  {$IFDEF UseMouse}
+    3,     $00, $EE,    ccQuit,          {click right} {for OPEDITOR}
+  {$ELSE}
+                          0, 0,          {90}
+  0, 0,                                  {100}
+  {$ENDIF}
+        0, 0, 0, 0, 0, 0, 0, 0,          {100}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          {110}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          {120}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          {130}
+  0, 0, 0, 0, 0                          {140}
+  );
+
+  {colors}
+  TpUiColors : ColorSet = (
+    TextColor       : $1E; TextMono       : $0F;
+    CtrlColor       : $1C; CtrlMono       : $07;
+    FrameColor      : $13; FrameMono      : $07;
+    HeaderColor     : $3F; HeaderMono     : $70;
+    ShadowColor     : $08; ShadowMono     : $70;
+    HighlightColor  : $4F; HighlightMono  : $70;
+    PromptColor     : $30; PromptMono     : $07;
+    SelPromptColor  : $30; SelPromptMono  : $07;
+    ProPromptColor  : $30; ProPromptMono  : $07;
+    FieldColor      : $31; FieldMono      : $0F;
+    SelFieldColor   : $31; SelFieldMono   : $0F;
+    ProFieldColor   : $17; ProFieldMono   : $07;
+    ScrollBarColor  : $13; ScrollBarMono  : $07;
+    SliderColor     : $13; SliderMono     : $0F;
+    HotSpotColor    : $30; HotSpotMono    : $70;
+    BlockColor      : $3E; BlockMono      : $0F;
+    MarkerColor     : $5F; MarkerMono     : $70;
+    DelimColor      : $31; DelimMono      : $0F;
+    SelDelimColor   : $31; SelDelimMono   : $0F;
+    ProDelimColor   : $31; ProDelimMono   : $0F;
+    SelItemColor    : $3E; SelItemMono    : $70;
+    ProItemColor    : $17; ProItemMono    : $07;
+    HighItemColor   : $1F; HighItemMono   : $0F;
+    AltItemColor    : $1F; AltItemMono    : $0F;
+    AltSelItemColor : $3F; AltSelItemMono : $70;
+    FlexAHelpColor  : $1F; FlexAHelpMono  : $0F;
+    FlexBHelpColor  : $1F; FlexBHelpMono  : $0F;
+    FlexCHelpColor  : $1B; FlexCHelpMono  : $70;
+    UnselXrefColor  : $1E; UnselXrefMono  : $09;
+    SelXrefColor    : $5F; SelXrefMono    : $70;
+    MouseColor      : $4F; MouseMono      : $70
+  );
+  TpUiMenuColors : ColorSet = (
+    TextColor       : $30; TextMono       : $07;
+    CtrlColor       : $30; CtrlMono       : $07;
+    FrameColor      : $30; FrameMono      : $07;
+    HeaderColor     : $3F; HeaderMono     : $70;
+    ShadowColor     : $08; ShadowMono     : $70;
+    HighlightColor  : $3F; HighlightMono  : $0F;
+    PromptColor     : $30; PromptMono     : $07;
+    SelPromptColor  : $30; SelPromptMono  : $07;
+    ProPromptColor  : $30; ProPromptMono  : $07;
+    FieldColor      : $1E; FieldMono      : $07;
+    SelFieldColor   : $31; SelFieldMono   : $0F;
+    ProFieldColor   : $17; ProFieldMono   : $07;
+    ScrollBarColor  : $13; ScrollBarMono  : $07;
+    SliderColor     : $13; SliderMono     : $0F;
+    HotSpotColor    : $30; HotSpotMono    : $70;
+    BlockColor      : $3E; BlockMono      : $0F;
+    MarkerColor     : $2F; MarkerMono     : $70;
+    DelimColor      : $31; DelimMono      : $0F;
+    SelDelimColor   : $31; SelDelimMono   : $0F;
+    ProDelimColor   : $31; ProDelimMono   : $0F;
+    SelItemColor    : $1F; SelItemMono    : $70;
+    ProItemColor    : $37; ProItemMono    : $07;
+    HighItemColor   : $3F; HighItemMono   : $0F;
+    AltItemColor    : $1F; AltItemMono    : $70;
+    AltSelItemColor : $3F; AltSelItemMono : $0F;
+    FlexAHelpColor  : $1F; FlexAHelpMono  : $0F;
+    FlexBHelpColor  : $1F; FlexBHelpMono  : $0F;
+    FlexCHelpColor  : $1B; FlexCHelpMono  : $70;
+    UnselXrefColor  : $1E; UnselXrefMono  : $09;
+    SelXrefColor    : $5F; SelXrefMono    : $70;
+    MouseColor      : $4F; MouseMono      : $70
+  );
+
+  InactiveColor       : Byte = $30;
+  InactiveMono        : Byte = $07;
+  StatusColor         : Byte = $30;
+  StatusMono          : Byte = $07;
+
+  EditTextColor       : Byte = $1E;
+  EditTextMono        : Byte = $07;
+  PhonePromptColor    : Byte = $1F;
+  PhonePromptMono     : Byte = $07;
+  PhoneSelPromptColor : Byte = $1F;
+  PhoneSelPromptMono  : Byte = $07;
+  PhoneSelFieldColor  : Byte = $31;
+  PhoneSelFieldMono   : Byte = $70;
+  PhoneCtrlColor      : Byte = $31;
+  PhoneCtrlMono       : Byte = $70;
+  PhoneItemColor      : Byte = $1E;
+  PhoneItemMono       : Byte = $07;
+  PhoneSelItemColor   : Byte = $3E;
+  PhoneSelItemMono    : Byte = $70;
+  DirItemColor        : Byte = $1E;
+  DirItemMono         : Byte = $07;
+
+  TermWinTextColor    : Byte = $0F;
+  TermWinTextMono     : Byte = $0F;
+
+  BrowseTextColor     : Byte = $1E;
+  BrowseTextMono      : Byte = $07;
+
+const
+  TpUiCfgEnd          : Byte = 0;
+
+

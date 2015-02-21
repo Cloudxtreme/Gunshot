@@ -1,0 +1,224 @@
+;-------------------------------------------------------------------
+!TOPIC 135 ApAnsi
+ApAnsi provides a simple, easy-to-use terminal emulator that interprets
+0142ANSI escape sequences in a non-object oriented fashion.
+
+ApAnsi provides the following routines and declarations:
+
+  0140ClearScreenProc                0143CurrentAnsiPort
+  0144InhibitAutoLF                  0145InhibitModeChange
+  0147MaskBlinkOnInverse             0138SetClearScreenProc
+  0150SetCurrentAnsiPort             0139SetSoundBellProc
+  0141SoundBellProc                  0146UseVT100Mode
+  0136WriteCharAnsi                  0148WriteCharAnsiPort
+  0137WriteStringAnsi                0149WriteStringAnsiPort
+;
+;-------------------------------------------------------------------
+!TOPIC 136 WriteCharAnsi
+!NOINDEX
+procedure 0135ApAnsi.WriteCharAnsi(C : Char);
+
+Write a character to the screen and handle ANSI escape sequences.
+
+See also:  0150SetCurrentAnsiPort    0148WriteCharAnsiPort
+           0137WriteStringAnsi
+;
+;-------------------------------------------------------------------
+!TOPIC 137 WriteStringAnsi
+!NOINDEX
+procedure 0135ApAnsi.WriteStringAnsi(S : String);
+
+Write a string to the screen and handle 0142ANSI escape sequences.
+
+See also:  0136WriteCharAnsi         0149WriteStringAnsiPort
+;
+;-------------------------------------------------------------------
+!TOPIC 138 SetClearScreenProc
+!NOINDEX
+procedure 0135ApAnsi.SetClearScreenProc(CSP : 0140ClearScreenProc);
+
+Set a ClearScreen procedure to be called for formfeed characters.
+;
+;-------------------------------------------------------------------
+!TOPIC 139 SetSoundBellProc
+!NOINDEX
+procedure 0135ApAnsi.SetSoundBellProc(SBP : 0141SoundBellProc);
+
+Set a SoundBell procedure to be called on Bell characters.
+;
+;-------------------------------------------------------------------
+!TOPIC 140 ClearScreenProc
+!NOINDEX
+type
+  ClearScreenProc = procedure;
+
+A procedure called to clear the screen when a ^L (ASCII FF) character is
+received.
+
+See also:  0138SetClearScreenProc
+;
+;-------------------------------------------------------------------
+!TOPIC 141 SoundBellProc
+!NOINDEX
+type
+  SoundBellProc = procedure;
+
+A procedure called to "ring the bell" when a ^G (ASCII BEL) character is
+received.
+
+See also:  0139SetSoundBellProc
+;
+;-------------------------------------------------------------------
+!TOPIC 142 ANSI escape sequences
+!INDEX 6
+!NOWRAP
+ANSI Escape Sequences
+
+#27'[#;#H'     Move cursor to row;column
+#27'[#;#f'     Move cursor to row;column
+#27'[f'        Move cursor to 1,1
+#27'[#A'       Move cursor up # rows
+#27'[#B'       Move cursor down # rows
+#27'[#C'       Move cursor forward # columns
+#27'[#D'       Move cursor backward # columns
+#27'[s'        Save position of cursor
+#27'[u'        Restore position of cursor
+#27'[0J'       Clear screen below cursor
+#27'[1J'       Clear screen above cursor
+#27'[2J'       Clear entire screen
+#27'[J'        Same as #27'[2J' (DOS) or #27'[0J' (VT100)
+#27'[0K'       Clear screen from cursor to end of line
+#27'[1K'       Clear screen from beginning of line to cursor
+#27'[2K'       Clear current line
+#27'[K'        Same as #27'[2K' (DOS) or #27'[0K' (VT100)
+#27'[n6'       Report cursor position
+#27'[#;...;#m' Set graphics rendition. # is one of the following
+                  0 All attributes off
+                  1 Bold (intensity) on
+                  2 Faint on (not supported)
+                  3 Italic on (not supported)
+                  4 Underscore on (treated same as 1)
+                  5 Blinking on
+                  6 Rapid blinking on (treated same as 5)
+                  7 Reverse video on
+                  8 Invisible text
+                 27 Reverse video off
+                 30 Black foreground
+                 31 Red foreground
+                 32 Green foreground
+                 33 Yellow foreground
+                 34 Blue foreground
+                 35 Magenta foreground
+                 36 Cyan foreground
+                 37 White foreground
+                 40 Black background
+                 41 Red background
+                 42 Green background
+                 43 Yellow background
+                 44 Blue background
+                 45 Magenta background
+                 46 Cyan background
+                 47 White background
+                 48 Subscript background (not supported)
+                 49 Superscript background (not supported)
+               Up to 5 parameters may be passed between the '[' and the
+               'm', with ';' used to separate them
+#27'[=#h'      Set video mode to #, where # is one of the following:
+                 0 40x25 B&W
+                 1 40x25 color
+                 2 80x25 B&W
+                 3 80x25 color
+                 4 320x200 color (not supported)
+                 5 320x200 B&W (not supported)
+                 6 640x200 B&W (not supported)
+                 7 Wrap mode on (not supported--wrap always on)
+#27'[?#h'      Same as #27'[=#h'
+#27'[=#l'      Reset mode. Same as #27'[=#h' except parameter 7 turns wrap
+               mode off rather than on
+#27'[?#l'      Same as #27'[=#l'
+#27'[n6'       Device Status Report. Return the current cursor position
+!WRAP
+;
+;-------------------------------------------------------------------
+!TOPIC 143 CurrentAnsiPort
+!NOINDEX
+const
+  CurrentAnsiPort : PortRecPtr = nil;
+
+Points to the port that APANSI uses when it needs to transmit. This is set
+by 0150SetCurrentAnsiPort.
+;
+;-------------------------------------------------------------------
+!TOPIC 144 InhibitAutoLF
+!NOINDEX
+const
+  InhibitAutoLF : Boolean = True;
+
+If InhibitAutoLF is False, APANSI generates automatic line feeds. This means
+that when a character is written to column 80, APANSI moves the cursor to
+column 1 of the next line. Since some hosts issue their own <CR><LF>, this
+could create the effect of moving down two lines rather than one. Therefore
+the default is InhibitAutoLF = True so that APANSI will not generate the
+automatic line feed.
+;
+;-------------------------------------------------------------------
+!TOPIC 145 InhibitModeChange
+!NOINDEX
+const
+  InhibitModeChange : Boolean = True;
+
+Prevents the remote from changing the local video mode. If you want to
+honor remote ANSI requests to change the video mode (e.g. from color to
+monochrome), change this to False.
+;
+;-------------------------------------------------------------------
+!TOPIC 146 UseVT100Mode
+!NOINDEX
+const
+  UseVT100Mode : Boolean = False;
+
+Specifies how the defaults for the ANSI sequences ED and EL ('J' and 'K')
+are determined. When UseVT100Mode is True, the default for missing
+parameters is zero. When UseVT100Mode is False, the default for missing
+parameters is 2.
+;
+;-------------------------------------------------------------------
+!TOPIC 147 MaskBlinkOnInverse
+!NOINDEX
+const
+  MaskBlinkOnInverse : Boolean = True;
+
+MaskBlinkOnInverse, when True, masks the blink bit after a request to invert
+an attribute. When False, a request to invert an attribute results in a
+blinking attribute if the previous foreground attribute was using an intense
+color and the monitor is using blink mode.
+;
+;-------------------------------------------------------------------
+!TOPIC 148 WriteCharAnsiPort
+!NOINDEX
+procedure 0135ApAnsi.WriteCharAnsiPort(P : PortRecPtr; C : Char);
+
+Write a character to the screen and handle ANSI escape sequences. Supports
+multiple ANSI ports.
+
+See also:  0149WriteStringAnsiPort
+;
+;-------------------------------------------------------------------
+!TOPIC 149 WriteStringAnsiPort
+!NOINDEX
+procedure 0135ApAnsi.WriteStringAnsiPort(P : PortRecPtr; S : String);
+
+Write a string to the screen and handle 0142ANSI escape sequences.
+Supports multiple ANSI ports.
+
+See also:  0150SetCurrentAnsiPort    0137WriteStringAnsi
+;
+;-------------------------------------------------------------------
+!TOPIC 150 SetCurrentAnsiPort
+!NOINDEX
+procedure 0135ApAnsi.SetCurrentAnsiPort(P : PortRecPtr);
+
+Set the current ANSI port for any required ANSI output.
+
+See also:  0136WriteCharAnsi         0148WriteCharAnsiPort
+           0137WriteStringAnsi       0149WriteStringAnsiPort

@@ -1,0 +1,1125 @@
+;-------------------------------------------------------------------
+!TOPIC 815 ApPort
+ApPort is the abstract layer of Async Professional. It provides the
+data and procedural abstractions that the rest of library builds on.
+
+ApPort provides the following routines:
+
+  0821AbortTracing                   0823AddTraceEntry
+  0818CheckForString                 0820ClearTracing
+  0819ComNameString                  0888Declarations
+  0824DumpTrace                      0825DumpTraceHex
+  0822InitTracing                    0816IsPS2
+  0828NoAbortProc                    0829NoErrorProc
+  0891RotateIrqPriority              0817SetPS2DetectMode
+  0826StartTracing                   0827StopTracing
+;
+;-------------------------------------------------------------------
+!TOPIC 816 IsPS2
+!NOINDEX
+function 0815ApPort.IsPS2 : Boolean;
+
+Return True if the current machine is a PS/2.
+
+See also: 0842PS2DetectMode          0869PS2Mode
+;
+;-------------------------------------------------------------------
+!TOPIC 817 SetPS2DetectMode
+!NOINDEX
+procedure 0815ApPort.SetPS2DetectMode(Mode : 0869PS2Mode);
+
+Set PS/2 detect mode.
+
+See also: 0842PS2DetectMode
+;
+;-------------------------------------------------------------------
+!TOPIC 818 CheckForString
+!NOINDEX
+function 0815ApPort.CheckForString(var Index : Byte; C : Char;
+                               S : String; IgnoreCase : Boolean) : Boolean;
+
+Check for a specified string in an incoming data stream.
+;
+;-------------------------------------------------------------------
+!TOPIC 819 ComNameString
+!NOINDEX
+function 0815ApPort.ComNameString(ComName : 0855ComNameType) : String;
+
+Return a displayable name string for a serial port.
+;
+;-------------------------------------------------------------------
+!TOPIC 820 ClearTracing
+!NOINDEX
+!NOWRAP
+{$IFDEF Tracing}
+procedure 0815ApPort.ClearTracing;
+!WRAP
+
+Clear the trace buffer.
+
+See also:  0824DumpTrace             0822InitTracing
+;
+;-------------------------------------------------------------------
+!TOPIC 821 AbortTracing
+!NOINDEX
+!NOWRAP
+{$IFDEF Tracing}
+procedure 0815ApPort.AbortTracing;
+!WRAP
+
+Stop tracing and destroy the trace buffer.
+
+See also:  0824DumpTrace             0822InitTracing
+;
+;-------------------------------------------------------------------
+!TOPIC 822 InitTracing
+!NOINDEX
+!NOWRAP
+{$IFDEF Tracing}
+procedure 0815ApPort.InitTracing(NumEntries : Word);
+!WRAP
+
+Prepare a circular tracing queue.
+
+See also:  0821AbortTracing          0824DumpTrace
+;
+;-------------------------------------------------------------------
+!TOPIC 823 AddTraceEntry
+!NOINDEX
+!NOWRAP
+{$IFDEF Tracing}
+procedure 0815ApPort.AddTraceEntry(CurEntry : Char; CurCh : Char);
+!WRAP
+
+Add a trace entry to the global TraceQueue.
+
+See also:  0822InitTracing
+;
+;-------------------------------------------------------------------
+!TOPIC 824 DumpTrace
+!NOINDEX
+!NOWRAP
+{$IFDEF Tracing}
+procedure 0815ApPort.DumpTrace(FName : PathStr);
+!WRAP
+
+Write the contents of the trace buffer to a file.
+
+See also:  0821AbortTracing          0822InitTracing
+;
+;-------------------------------------------------------------------
+!TOPIC 825 DumpTraceHex
+!NOINDEX
+!NOWRAP
+{$IFDEF Tracing}
+procedure 0815ApPort.DumpTraceHex(FName : PathStr);
+!WRAP
+
+Write the contents of the trace buffer to a hex file.
+
+See also:  0821AbortTracing          0822InitTracing
+;
+;-------------------------------------------------------------------
+!TOPIC 826 StartTracing
+!NOINDEX
+!NOWRAP
+{$IFDEF Tracing}
+procedure 0815ApPort.StartTracing;
+!WRAP
+
+Restart tracing after a call to 0827StopTracing.
+
+See also:  0822InitTracing
+;
+;-------------------------------------------------------------------
+!TOPIC 827 StopTracing
+!NOINDEX
+!NOWRAP
+{$IFDEF Tracing}
+procedure 0815ApPort.StopTracing;
+!WRAP
+
+Stop tracing temporarily.
+
+See also:  0822InitTracing           0826StartTracing
+;
+;-------------------------------------------------------------------
+!TOPIC 828 NoAbortProc
+!NOINDEX
+function 0815ApPort.NoAbortProc : Boolean;
+
+Default abort function. Returns True.
+
+See also:  0848AbortFunc  0313SetAbortFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 829 NoErrorProc
+!NOINDEX
+procedure 0815ApPort.NoErrorProc(P : Pointer; var StatusCode : Word);
+
+Default error procedure. Does nothing.
+
+See also:  0850AsyncErrorProc  0309SetErrorProc
+;
+;-------------------------------------------------------------------
+!TOPIC 830 BadPortOptions
+!NOINDEX
+const
+  BadPortOptions : Word = ptHiIrq;
+
+Port options intended strictly for internal use by Async Professional.
+ptHiIrq is set internally if you use an IRQ > 7.
+
+See also:  0835DefPortOptions        0843Port options
+;
+;-------------------------------------------------------------------
+!TOPIC 831 Character constants,ApPort
+!NOINDEX
+const
+  cNul = #0;  {^@}
+  cSoh = #1;  {^A}
+  cStx = #2;  {^B}
+  cEtx = #3;  {^C}
+  cEot = #4;  {^D}
+  cEnq = #5;  {^E}
+  cAck = #6;  {^F}
+  cBel = #7;  {^G}
+  cBS  = #8;  {^H}
+  cTab = #9;  {^I}
+  cLF  = #10; {^J}
+  cVT  = #11; {^K}
+  cFF  = #12; {^L}
+  cCR  = #13; {^M}
+  cSO  = #14; {^N}
+  cSI  = #15; {^O}
+  cDle = #16; {^P}
+  cDC1 = #17; {^Q}  cXon  = #17;
+  cDC2 = #18; {^R}
+  cDC3 = #19; {^S}  cXoff = #19;
+  cDC4 = #20; {^T}
+  cNak = #21; {^U}
+  cSyn = #22; {^V}
+  cEtb = #23; {^W}
+  cCan = #24; {^X}
+  cEM  = #25; {^Y}
+  cSub = #26; {^Z}
+  cEsc = #27; {^[}
+  cFS  = #28; {^\}
+  cGS  = #29; {^]}
+  cRS  = #30; {^^}
+  cUS  = #31; {^_}
+
+Convenient character constants (and aliases).
+;
+;-------------------------------------------------------------------
+!TOPIC 832 Line status register bit masks
+!NOINDEX
+const
+  DataReadyMask     = $01; {Receive char is ready}
+  OverrunErrorMask  = $02; {Overrun error received}
+  ParityErrorMask   = $04; {Parity error received}
+  FramingErrorMask  = $08; {Framing error received}
+  BreakReceivedMask = $10; {Break received}
+  THREMask          = $20; {Transmitter holding register is empty}
+  TEMask            = $40; {Transmitter is empty}
+  FIFOErrorMask     = $80; {FIFO error received}
+
+These bit masks describe all of the bits in a UART line status register.
+;
+;-------------------------------------------------------------------
+!TOPIC 833 DefaultLineOptions
+!NOINDEX
+const
+  DefaultLineOptions : 0862LineOptionRecord = (
+    Parity   : NoParity;
+    DataBits : 8;
+    StopBits : 1;
+    Options  : 0835DefPortOptionsSimple;
+    InSize   : 2048;
+    OutSize  : 2048 + 30);
+
+The InitPortFast procedures and Init constructors use these default values
+when opening ports. If your port can use these values exactly, then just
+call InitPortFast or Init in your application. If you need other values,
+you can either change this record constant or use the InitPort/InitCustom
+routines.
+;
+;-------------------------------------------------------------------
+!TOPIC 834 DefaultXonChar
+!NOINDEX
+const
+  DefaultXonChar  : Char = cXon;   {Standard Xon char (DC1)}
+  DefaultXoffChar : Char = cXoff;  {Standard Xoff char (DC3)}
+
+Software flow control is also referred to as Xon/Xoff flow control--the Xon
+and Xoff characters start and stop the transmitter. However, there are some
+devices that may use other flow control characters, so Async Professional
+allows for that possibility. Since 99% of the time Xon and Xoff are suitable,
+these constants to refer to them. If your application will always use other
+characters, you might find it more convenient to modify these typed constants
+rather than calling 0282SWFlowSetChars for every serial port.
+;
+;-------------------------------------------------------------------
+!TOPIC 835 DefPortOptions
+!NOINDEX
+const
+  DefPortOptionsSimple = ptReturnPartialGets+ptReturnDelimiter+
+                         ptExecutePartialPuts+ptDropModemOnClose+
+                         ptRaiseModemOnOpen+ptRestoreOnClose;
+  DefPortOptions : Word = DefPortOptionsSimple;
+
+Default port options.
+
+See also:  0830BadPortOptions        0843Port options
+;
+;-------------------------------------------------------------------
+!TOPIC 836 Modem status register bit masks
+!NOINDEX
+const
+  DeltaCTSMask = $01; {CTS changed since last read}
+  DeltaDSRMask = $02; {DSR changed since last read}
+  DeltaRIMask  = $04; {RI changed since last read}
+  DeltaDCDMask = $08; {DCD changed since last read}
+  CTSMask      = $10; {Clear to send}
+  DSRMask      = $20; {Data set ready}
+  RIMask       = $40; {Ring indicator}
+  DCDMask      = $80; {Data carrier detect}
+
+These bit masks describe all of the bits in a UART modem status register.
+;
+;-------------------------------------------------------------------
+!TOPIC 837 Modem control register bit masks
+!NOINDEX
+const
+  DTRMask      = $01; {Data terminal ready}
+  RTSMask      = $02; {Request to send}
+  Out1Mask     = $04; {Output bit 1}
+  Out2Mask     = $08; {Output bit 2}
+  LoopbackMask = $10; {Loopback testing}
+
+These bit masks describe all of the bits in a UART modem control register.
+;
+;-------------------------------------------------------------------
+!TOPIC 838 MaxActivePort
+!NOINDEX
+const
+  MaxActivePort = 36;
+
+The maximum number of simultaneously active (open) ports that can be managed
+by APPORT. Note that the actual limit on the number of simultaneously open
+ports is set by the device layer (in the case of APUART, the limit is four).
+
+See also:  0886ActiveComPort
+;
+;-------------------------------------------------------------------
+!TOPIC 839 MinInBuff
+!NOINDEX
+const
+  MinInBuff = 10;
+  MinOutBuff = 10;
+
+The minimum acceptable sizes for input and output buffers, respectively.
+Requests for smaller buffers will fail.
+;
+;-------------------------------------------------------------------
+!TOPIC 840 Device layer types
+!NOINDEX
+const
+  NoDevice     = 0;
+  UartDevice   = 1;
+  Int14Device  = 2;
+  FossilDevice = 3;
+  Digi14Device = 4;
+
+Constants representing the currently supported device types.
+;
+;-------------------------------------------------------------------
+!TOPIC 841 ParityString
+!NOINDEX
+const
+  ParityString : array[0865ParityType] of String[5] = (
+    'None', 'Odd', 'Even', 'Mark', 'Space');
+
+An array of strings describing all possible parity settings. This is useful
+if your application needs to display the current parity setting.
+;
+;-------------------------------------------------------------------
+!TOPIC 842 PS2DetectMode
+!NOINDEX
+const
+  PS2DetectMode : 0869PS2Mode = PS2Auto;
+
+Controls how port open routines interpret requests to open ports Com3 and
+Com4. The default is to try to detect whether the current machine is a PS/2
+or AT compatible.
+
+See also:  0816IsPS2
+;
+;-------------------------------------------------------------------
+!TOPIC 843 Port options
+!NOINDEX
+const
+  ptReturnPartialGets  = $0001; {True to return partial strings}
+  ptReturnDelimiter    = $0002; {True to return delimiter char}
+  ptExecutePartialPuts = $0004; {True to send partial blocks}
+  ptIgnoreDelimCase    = $0008; {True to ignore case on DelimSets}
+  ptRestoreOnClose     = $0010; {True to restore UART on close}
+  ptDropModemOnClose   = $0020; {True to drop modem signals on close}
+  ptRaiseModemOnOpen   = $0040; {True to raise modem signals on open}
+
+Port options that are used by all device layers. See the appropriate device
+layers for other, specialized port options.
+
+If the ptReturnPartialGets option is on (the default), the various GetBlock
+routines return whatever data is in the input buffer if the requested amount
+of data is not available. If the ptReturnDelimiter option is on (the
+default), the GetString and GetStringTimeout routines return the delimiter
+character that was found, as well as the string it delimits. If the
+ptExecutePartialPuts option is on (the default), the various PutBlock
+routines store as much data as possible in the output buffer if there is
+insufficient space to store the specified data.
+
+If the ptIgnoreDelimCase option is off (the default), then StringReady and
+other routines that work with sets of delimiter characters treat the
+characters in those sets in a case-insensitive fashion. If the
+ptRestoreOnClose option is on (the default), the UART is restored to its
+original state when a port is closed. If the ptDropModemOnClose option is
+on (the default), the modem signals are dropped when a port is closed. If
+the ptRaiseModemOnOpen option is on (the default), then the DTR and RTS
+signals are raised when a port is first opened (see the entry for the core
+procedure InitPort).
+
+Note that there is a slight conflict between ptRestoreOnClose and
+ptDropModemOnClose; the first wants to restore the modem signals to
+whatever they were before the port was opened, the second wants to drop the
+modem signals regardless of what they were when the port was opened. If both
+of the options are specified, ptDropModemOnClose controls the modem signals.
+That is, all of the port conditions are restored except the modem control
+signalsÄ-these are always dropped.
+
+See also:  0830BadPortOptions  0835DefPortOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 844 Interrupt enable register bit masks
+!NOINDEX
+const
+  ReceiveIntMask  = $01; {Interrupt on received data}
+  TransmitIntMask = $02; {Interrupt on THR empty}
+  LineIntMask     = $04; {Interrupt on line status change}
+  ModemIntMask    = $08; {Interrupt on modem status change}
+
+These bit masks describe all of the bits in a UART interrupt enable register.
+;
+;-------------------------------------------------------------------
+!TOPIC 845 UART register numbers
+!NOINDEX
+const
+  THreg  = 0; {Transmitter holding register}
+  RDreg  = 0; {Read data register}
+  BRLreg = 0; {Baud rate, least significant byte}
+  BRHreg = 1; {Baud rate, most significant byte}
+  IEreg  = 1; {Interrupt enable register}
+  IIDreg = 2; {Interrupt identification register}
+  LCreg  = 3; {Line control register}
+  MCreg  = 4; {Modem control register}
+  LSreg  = 5; {Line status register}
+  MSreg  = 6; {Modem status register}
+  Sreg   = 7; {Scratch register}
+
+These constants reflect the UART register designations.
+;
+;-------------------------------------------------------------------
+!TOPIC 846 TracingOn
+!NOINDEX
+const
+  {$IFDEF Tracing}
+  TracingOn : Boolean = False;
+
+This variable is intended for internal use. It is set to True when tracing
+has been enabled by a call to 0822InitTracing or 0826StartTracing.
+;
+;-------------------------------------------------------------------
+!TOPIC 847 Control register bit masks
+!NOINDEX
+const
+  WordLen0Mask     = $01; {Word length select 0}
+  WordLen1Mask     = $02; {Word length select 1}
+  StopBitsMask     = $04; {Number of stop bits}
+  ParityEnableMask = $08; {Parity enable}
+  EvenParityMask   = $10; {Even parity select}
+  StickParityMask  = $20; {Stick parity select}
+  SetBreakMask     = $40; {Set break}
+  DLABMask         = $80; {Set divisor latch access}
+
+These bit masks describe all of the bits in a UART line control register.
+;
+;-------------------------------------------------------------------
+!TOPIC 848 AbortFunc
+!NOINDEX
+type
+  AbortFunc = function : Boolean;
+
+A user-defined abort function. See 0313SetAbortFunc.
+
+See also:  0828NoAbortProc
+;
+;-------------------------------------------------------------------
+!TOPIC 849 ActivatePortProc
+!NOINDEX
+type
+  ActivatePortProc = procedure(P : PortRecPtr; Restore : Boolean);
+
+A core procedure that turn interrupts on or off for the specified port,
+optionally restoring the associated interrupt vector.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 850 AsyncErrorProc
+!NOINDEX
+type
+  AsyncErrorProc = procedure(P : Pointer; var StatusCode : Word);
+
+A user-defined error procedure. See 0309SetErrorProc.
+
+See also:  0829NoErrorProc
+;
+;-------------------------------------------------------------------
+!TOPIC 851 BPtr
+!NOINDEX
+type
+  BPtr = ^Byte;
+
+Used for typecasting the I/O buffer arrays. You can use this if you ever
+need to reference the I/O buffers directly.
+;
+;-------------------------------------------------------------------
+!TOPIC 852 CharArray
+!NOINDEX
+type
+  CharArray = array[0..MaxInt] of Char;
+
+Used for typecasting blocks passed to the GetBlock/PutBlock functions. You
+can use this if you ever need to reference those blocks directly.
+
+See also:  0257GetBlock              0263PutBlock
+;
+;-------------------------------------------------------------------
+!TOPIC 853 CharReadyFunc
+!NOINDEX
+type
+  CharReadyFunc = function(P : PortRecPtr) : Boolean;
+
+A core procedure that returns True if any received characters are available.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 854 CharSet
+!NOINDEX
+type
+  CharSet = Set of Char;
+
+Used for defining sets of delimiter characters.
+
+See also:  0257GetBlock
+;
+;-------------------------------------------------------------------
+!TOPIC 855 ComNameType
+!NOINDEX
+type
+  {$IFNDEF LargeComNameSet}
+  ComNameType = (Com1, Com2, Com3, Com4, Com5, Com6, Com7, Com8);
+  {$ELSE}
+  ComNameType = (Com1,  Com2,  Com3,  Com4,  Com5,  Com6,  Com7,  Com8,
+                 Com9,  Com10, Com11, Com12, Com13, Com14, Com15, Com16,
+                 Com17, Com18, Com19, Com20, Com21, Com22, Com23, Com24,
+                 Com25, Com26, Com27, Com28, Com29, Com30, Com31, Com32,
+                 Com33, Com34, Com35, Com36);
+  {$ENDIF}
+
+Used to reference a serial port by its formal name. The LargeComNameSet
+option is provided for device layer modules that use more than eight serial
+ports. Com1 and Com2 refer to the industry standard definitions. Com5 through
+Com8 refer to the IBM standard for PS/2s. Com3 and Com4 refer to either the
+industry standard definition or IBM's standard. See the type declaration of
+0869PS2Mode for information on how Async Professional treats Com3 and Com4.
+
+See also:  0819ComNameString
+;
+;-------------------------------------------------------------------
+!TOPIC 856 DataBitType
+!NOINDEX
+type
+  DataBitType = 5..8;
+
+Type used for number of data bits. Acceptable values are 5 through 8.
+
+See also:  0877StopBitType
+;
+;-------------------------------------------------------------------
+!TOPIC 857 DonePortProc
+!NOINDEX
+type
+  DonePortProc = procedure(var P : PortRecPtr);
+
+A core procedure responsible for closing the specified port and disposing
+of memory.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 858 GetCharProc
+!NOINDEX
+type
+  GetCharProc = procedure(P : PortRecPtr; var C : Char);
+
+A core procedure that returns the next received character, or reports an
+error if none is available.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 859 GetLineProc
+!NOINDEX
+type
+  GetLineProc = procedure(P : PortRecPtr; var Baud : LongInt;
+                          var Parity : 0865ParityType;
+                          var DataBits : 0856DataBitType;
+                          var StopBits : 0877StopBitType;
+                          FromHardware : Boolean);
+
+A core procedure that returns the current settings for baud rate, parity,
+and data and stop bits for the indicated port. If FromHardware is False,
+the procedure simply returns the values stored in the 0867PortRec.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 860 GetModemProc
+!NOINDEX
+type
+  GetModemProc = procedure(P : PortRecPtr; var DTR, RTS : Boolean);
+
+A core procedure that obtains the current DTR and RTS settings directly
+from the hardware.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 861 GotErrorProc
+!NOINDEX
+type
+  GotErrorProc = procedure(P : PortRecPtr; StatusCode : Word);
+
+A core procedure that is called internally when an error occurs.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 862 LineOptionRecord
+!NOINDEX
+type
+  LineOptionRecord = record
+      Parity    : 0865ParityType;
+      DataBits  : 0856DataBitType;
+      StopBits  : 0877StopBitType;
+      Options   : Word;
+      InSize    : Word;
+      OutSize   : Word;
+    end;
+
+Records of this type hold the default line options used by InitPortFast and
+Init (for port objects). See the typed constant 0833DefaultLineOptions.
+;
+;-------------------------------------------------------------------
+!TOPIC 863 InitPortProc
+!NOINDEX
+type
+  InitPortProc = procedure(var P : PortRecPtr; ComName : 0855ComNameType;
+                           Baud : LongInt; Parity : 0865ParityType;
+                           DataBits : 0856DataBitType; StopBit : 0877StopBitType;
+                           InSize, OutSize : Word; Options : Word);
+
+A core procedure responsible for opening a port according to the given
+specifications. It should initialize a pointer to a port record (or report
+an error).
+
+See also:  0887Core routines         0864InitPortKeepProc
+           0867PortRec
+;
+;-------------------------------------------------------------------
+!TOPIC 864 InitPortKeepProc
+!NOINDEX
+type
+  InitPortKeepProc = procedure(var P : PortRecPtr; ComName : 0855ComNameType;
+                               InSize, OutSize : Word);
+
+A core procedure responsible for opening a port. Unlike an 0863InitPortProc,
+such a procedure does not change the current line settings or DTR/RTS.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 865 ParityType
+!NOINDEX
+type
+  ParityType = (NoParity, OddParity, EvenParity, MarkParity, SpaceParity);
+
+The acceptable values for line parity.
+
+See also:  0841ParityString
+;
+;-------------------------------------------------------------------
+!TOPIC 866 PeekCharProc
+!NOINDEX
+type
+  PeekCharProc = procedure(P : PortRecPtr; var C : Char; PeekAhead : Word);
+
+A core procedure that returns the received character in the PeekAhead
+position of the input buffer. It does not physically remove it from the
+buffer. This routine does nothing if the device layer isn't buffered.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 867 PortRec
+!NOINDEX
+type
+  PortRecPtr = ^PortRec;
+  PortRec = record
+    BaseAddr        : Word;        {Base IO addr of UART}
+    Flags           : Word;        {Option flags for port options}
+    InBuffLen       : Word;        {Length of input buffer}
+    InBuffCount     : Word;        {Current # of chars in buffer}
+    OutBuffLen      : Word;        {Length of output buffer}
+    OutBuffCount    : Word;        {Current # of chars in buffer}
+    LostCharCount   : Word;        {Number of lost characters}
+    SWFFull         : Word;        {Hi-water mark for xoff}
+    SWFResume       : Word;        {Lo-water mark for xon}
+    HWFFull         : Word;        {Hi-water mark for auto-handshaking off}
+    HWFResume       : Word;        {Lo-water mark for auto-handshaking on}
+    CurBaud         : LongInt;     {Baud rate}
+    InBuff          : 0851BPtr;        {Addr of input buffer}
+    InHead          : 0851BPtr;        {Addr of current head}
+    InTail          : 0851BPtr;        {Addr of current tail}
+    InBuffEnd       : 0851BPtr;        {Addr of end of buffer}
+    OutBuff         : 0851BPtr;        {Addr of output buffer}
+    OutHead         : 0851BPtr;        {Addr of current head}
+    OutTail         : 0851BPtr;        {Addr of current tail}
+    OutBuffEnd      : 0851BPtr;        {Addr of end of buffer}
+    StatBuff        : 0851BPtr;        {Addr of status buffer}
+    StatHead        : 0851BPtr;        {Addr of current status head}
+    StatTail        : 0851BPtr;        {Addr of current status tail}
+    StatBuffEnd     : 0851BPtr;        {Addr of end of status buffer}
+    PortName        : 0855ComNameType; {"Standard" name (COM1,COM2...)}
+    Vector          : Byte;        {Vector number of UART interrupt}
+    IrqNumber       : Byte;        {Mask to turn our interrupt on}
+    IntMask         : Byte;        {Current UART interrupt enable}
+    CurrentPort     : Byte;        {Current active port number}
+    ISREntryPoint   : Byte;        {Entry point number into APUART.ASM}
+    ModemStatus     : Byte;        {Current modem status}
+    ModemControl    : Byte;        {Current modem control value}
+    LineStatus      : Byte;        {Current line status}
+    LineControl     : Byte;        {Current line control value}
+    SWFState        : Byte;        {Software flow control options}
+    SWFGotXoff      : Boolean;     {True if Xoff char received}
+    SWFSentXoff     : Boolean;     {True if Xoff char sent}
+    SWFOnChar       : Char;        {SW flow on char (def = $11, Xon)}
+    SWFOffChar      : Char;        {SW flow off char (def = $13, Xoff)}
+    BreakReceived   : Boolean;     {True if break received}
+    TxReady         : Boolean;     {True if transmitter is available}
+    TxInts          : Boolean;     {True if using transmit interrupts}
+    TxIntsActive    : Boolean;     {True if transmit ints are active}
+    Buffered        : Boolean;     {True if using buffer serial I/O}
+    UseStatusBuffer : Boolean;     {True if using status buffer}
+    OldUart         : Boolean;     {True if UART is 8250 or 8250B}
+    CurParity       : 0865ParityType;  {Parity}
+    CurDataBits     : 0856DataBitType; {Data bits}
+    CurStopBits     : 0877StopBitType; {Stop bits}
+    SaveChar        : Char;        {Last known char (used internally)}
+    LastXmitError   : Byte;        {Reason for last failed xmit}
+    HWFTransMask    : Byte;        {Mask to XOR modem status bits to zero}
+    HWFTransHonor   : Byte;        {Mask of required modem status bits}
+    HWFRecMask      : Byte;        {Mask of "on" modem status bits}
+    HWFRecHonor     : Byte;        {Mask of status bits we care about}
+    HWFRemoteOff    : Boolean;     {True if we have turned off the remote}
+    ISRActive       : Boolean;     {True if in debugging mode}
+    ProtocolActive  : Boolean;     {True if this port is doing a protocol}
+    DoneProc        : 0857DonePortProc; {DonePort proc for this port}
+    ErrorProc       : 0850AsyncErrorProc; {Pointer to error procedure}
+    ErrorData       : Pointer;     {Pointer passed to error routine}
+    UserAbort       : 0848AbortFunc;   {Hook for user (keyboard) abort}
+    OrigPortState   : 0868PortSaveRec; {Record for saving init port config}
+  end;
+
+This is the complete record definition of a port. It is shown here for
+informational purposes only. You should not rely on this definition since
+future versions of Async Professional may alter it.
+
+See also:  0863InitPortProc
+;
+;-------------------------------------------------------------------
+!TOPIC 868 PortSaveRec
+!NOINDEX
+type
+  PortSaveRec =
+    record
+      PicMask : Byte;
+      IER     : Byte;
+      MCR     : Byte;
+      LCR     : Byte;
+      BRLR    : Byte;
+      BRHR    : Byte;
+      FIFO    : Byte;
+      Trigger : Byte;
+      Vector  : Pointer;
+    end;
+
+Used to store the data needed to save and restore the state of a com port.
+
+See also:  0871SavePortProc
+;
+;-------------------------------------------------------------------
+!TOPIC 869 PS2Mode
+!NOINDEX
+type
+  PS2Mode = (PS2On, PS2Off, PS2Auto, PS2Ignore);
+
+Defines how InitPort (and its counterparts) interpret requests to open ports
+Com3 or Com4. Two standards for these ports exist: the de facto standard
+followed by nearly all clone/compatible manufacturers, and the IBM standard
+introduced with the IBM PS/2. (See the constant 0842PS2DetectMode.)
+
+PS2On means that InitPort uses the IBM PS/2 definition for Com3 and Com4.
+PS2Off means that InitPort uses the de facto standard. PS2Auto (the default)
+means that InitPort will try to figure out if it's running on a PS/2. While
+this test is guaranteed never to fail for a PS/2, some compatibles may
+incorrectly report that they are PS/2s. To account for this, you may want to
+give your applications an option to force one mode or the other. PS2Ignore
+means that InitPort uses whatever custom port definition you specified with
+SetUart.
+
+See also:  0816IsPS2
+;
+;-------------------------------------------------------------------
+!TOPIC 870 PutCharProc
+!NOINDEX
+type
+  PutCharProc = procedure(P : PortRecPtr; C : Char);
+
+A core procedure that sends one character to the transmitter.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 871 SavePortProc
+!NOINDEX
+type
+  SavePortProc = procedure(P : PortRecPtr; var PSR);
+
+A core procedure that saves or restores the state of a com port.
+
+See also:  0887Core routines         0868PortSaveRec
+;
+;-------------------------------------------------------------------
+!TOPIC 872 SendBreakProc
+!NOINDEX
+type
+  SendBreakProc = procedure(P : PortRecPtr);
+
+A core procedure responsible for sending a break signal.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 873 SetLineProc
+!NOINDEX
+type
+  SetLineProc = procedure(P : PortRecPtr; Baud : LongInt;
+                          Parity : 0865ParityType; DataBits : 0856DataBitType;
+                          StopBits : 0877StopBitType);
+
+A core procedure responsible for setting the line options for an already
+opened port. It is called automatically when a port is opened to establish
+the initial settings.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 874 SetModemProc
+!NOINDEX
+type
+  SetModemProc = procedure(P : PortRecPtr; SetDTR, SetRTS : Boolean);
+
+A core procedure responsible for setting the output handshaking signals.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 875 SetUartProc
+!NOINDEX
+type
+  SetUartProc = procedure(ComName : 0855ComNameType; NewBase : Word;
+                          NewIrq, NewVector : Byte);
+
+A core procedure for a device layer that directly accesses a UART. It
+defines the base address, interrupt mask, and vector for a given com port
+name (Com1, Com2, etc).
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 876 StartTransmitterProc
+!NOINDEX
+type
+  StartTransmitterProc = procedure(P : PortRecPtr);
+
+A core procedure that starts the transmitter. Generally, such a procedure
+is of use only to the device layer and the interface layer, and should not
+be called directly.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 877 StopBitType
+!NOINDEX
+type
+  StopBitType = 1..2;
+
+The acceptable values for number of stop bits. Note that if the number of
+data bits is 5, a stop bit value of 2 is interpreted as 1.5 stop bits.
+
+See also:  0856DataBitType
+;
+;-------------------------------------------------------------------
+!TOPIC 878 TransReadyFunc
+!NOINDEX
+type
+  TransReadyFunc = function(P : PortRecPtr) : Boolean;
+
+A core procedure that returns True if it's OK for the application to
+transmit at least one character.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 879 UpdateLineStatusFunc
+!NOINDEX
+type
+  UpdateLineStatusFunc = function(P : PortRecPtr) : Byte;
+
+A core function that returns the line status register value.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 880 UpdateModemStatusFunc
+!NOINDEX
+type
+  UpdateModemStatusFunc = function(P : PortRecPtr) : Byte;
+
+A core function that returns the modem status register value.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 881 FlowSetProc
+!NOINDEX
+type
+  FlowSetProc = procedure(P : PortRecPtr; Enable : Boolean;
+                          BufferFull, BufferResume : Word;
+                          Options : Word);
+
+A core procedure that starts or stops hardware or software flow control.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 882 FlowGetFunc
+!NOINDEX
+type
+  FlowGetFunc = function(P : PortRecPtr) : 0889FlowState;
+
+A core function that returns the state of hardware or software flow control.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 883 FlowCtlProc
+!NOINDEX
+type
+  FlowCtlProc = procedure(P : PortRecPtr; OnChar, OffChar : Char;
+                          Resume : Boolean);
+
+A core procedure that sets the on/off characters for software flow control
+or resumes a blocked transmitter.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 884 BufferStatusProc
+!NOINDEX
+type
+  BufferStatusProc = procedure(P : PortRecPtr;
+                              var InFree, OutFree, InUsed, OutUsed : Word);
+
+A core procedure that returns buffer usage information.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 885 BufferFlushProc
+!NOINDEX
+type
+  BufferFlushProc = procedure(P : PortRecPtr; FlushIn, FlushOut : Boolean);
+
+A core procedure that flushes the input and/or output buffers.
+
+See also:  0887Core routines
+;
+;-------------------------------------------------------------------
+!TOPIC 886 ActiveComPort
+!NOINDEX
+var
+  ActiveComPort : array[1..MaxActivePort] of PortRecPtr;
+
+This array is used internally by Async Professional to keep track of open
+com ports.
+
+See also:  0838MaxActivePort         0867PortRec
+;
+;-------------------------------------------------------------------
+!TOPIC 887 Core routines
+!NOINDEX
+var
+  {$IFNDEF UseOOP}
+  0330InitPort           : 0863InitPortProc;
+  0362InitPortKeep       : 0864InitPortKeepProc;
+  0331DonePort           : 0857DonePortProc;
+  0332SetLine            : 0873SetLineProc;
+  0333GetLine            : 0859GetLineProc;
+  0334SetModem           : 0874SetModemProc;
+  0335GetModem           : 0860GetModemProc;
+  0336GetChar            : 0858GetCharProc;
+  0337PeekChar           : 0866PeekCharProc;
+  0338PutChar            : 0870PutCharProc;
+  0339StartTransmitter   : 0876StartTransmitterProc;
+  0340CharReady          : 0853CharReadyFunc;
+  0341TransReady         : 0878TransReadyFunc;
+  0342SendBreak          : 0872SendBreakProc;
+  0343ActivatePort       : 0849ActivatePortProc;
+  0344DeactivatePort     : 0849ActivatePortProc;
+  0345SavePort           : 0871SavePortProc;
+  0346RestorePort        : 0871SavePortProc;
+  0347GotError           : 0861GotErrorProc;
+  0356UpdateLineStatus   : 0879UpdateLineStatusFunc;
+  0357UpdateModemStatus  : 0880UpdateModemStatusFunc;
+  0351HWFlowSet          : 0881FlowSetProc;
+  0350HWFlowGet          : 0882FlowGetFunc;
+  0355SWFlowSet          : 0881FlowSetProc;
+  0354SWFlowGet          : 0882FlowGetFunc;
+  0353SWFlowCtl          : 0883FlowCtlProc;
+  0349BufferStatus       : 0884BufferStatusProc;
+  0348BufferFlush        : 0885BufferFlushProc;
+  {$ENDIF}
+  0352SetUart            : 0875SetUartProc;
+
+These are the global procedure pointers referenced by ApCom. They must be
+filled in by a device layer for ApCom to work. These global procedure
+pointers don't apply at all (except for SetUart) when using OoCom if UseOOP
+is defined in APDEFINE.INC.
+
+See also:  0004Layered architecture
+;
+;-------------------------------------------------------------------
+!TOPIC 888 Declarations,ApPort
+!NOINDEX
+!NOSEARCH
+ApPort declares the following types, constants, and variables:
+
+  0848AbortFunc                      0849ActivatePortProc
+  0886ActiveComPort                  0850AsyncErrorProc
+  0830BadPortOptions                 0851BPtr
+  0885BufferFlushProc                0884BufferStatusProc
+  0831Character constants            0852CharArray
+  0853CharReadyFunc                  0854CharSet
+  0855ComNameType                    0887Core routines
+  0856DataBitType                    0833DefaultLineOptions
+  0834DefaultXonChar                 0835DefPortOptions
+  0840Device layer types             0857DonePortProc
+  0883FlowCtlProc                    0882FlowGetFunc
+  0881FlowSetProc                    0889FlowState
+  0858GetCharProc                    0859GetLineProc
+  0860GetModemProc                   0861GotErrorProc
+  0890Hardware flow options          0864InitPortKeepProc
+  0863InitPortProc                   0862LineOptionRecord
+  0838MaxActivePort                  0839MinInBuff
+  0841ParityString                   0865ParityType
+  0866PeekCharProc                   0843Port options
+  0867PortRec                        0868PortSaveRec
+  0842PS2DetectMode                  0869PS2Mode
+  0870PutCharProc                    0871SavePortProc
+  0872SendBreakProc                  0873SetLineProc
+  0874SetModemProc                   0875SetUartProc
+  0892Software flow options          0876StartTransmitterProc
+  0877StopBitType                    0846TracingOn
+  0878TransReadyFunc                 0879UpdateLineStatusFunc
+  0880UpdateModemStatusFunc
+
+In addition, ApPort declares the following groups of constants, mostly
+bit masks, which are intended primarily for internal use:
+
+  0847Control register bit masks
+  0844Interrupt enable register bit masks
+  0832Line status register bit masks
+  0837Modem control register bit masks
+  0836Modem status register bit masks
+  0845UART register numbers
+;
+;-------------------------------------------------------------------
+!TOPIC 889 FlowState
+!NOINDEX
+type
+  FlowState = (fsOff, fsClear, fsTransWait, fsRecWait, fsAllWait);
+
+These are the possible states for hardware or software flow control. If
+flow control is off, the state is fsOff. If neither side of the transmission
+is waiting to send, the state is fsClear. If this side was asked to wait,
+the state is fsTransWait. If the remote was asked to wait, the state is
+fsRecWait. If both sides are waiting, the state is fsAllWait.
+
+See also:  0283HWFlowEnable          0278SWFlowEnable
+;
+;-------------------------------------------------------------------
+!TOPIC 890 Hardware flow options
+!NOINDEX
+const
+  hfUseDTR       = $01; {Use DTR for receive flow control}
+  hfUseRTS       = $02; {Use RTS for receive flow control}
+  hfRequireDSR   = $04; {Require DSR before transmitting}
+  hfRequireCTS   = $08; {Require CTS before transmitting}
+  hfDTRActiveLow = $10; {Make DTR active low}
+  hfRTSActiveLow = $20; {Make RTS active low}
+  hfDSRActiveLow = $40; {Make DSR active low}
+  hfCTSActiveLow = $80; {Make CTS active low}
+
+Hardware flow control options. See 0283HWFlowEnable.
+;
+;---------------------------------------------------------------------
+!TOPIC 891 RotateIrqPriority
+!NOINDEX
+procedure 0815ApPort.RotateIrqPriority(Irq : Byte);
+
+Rotate priorities to give Irq the highest priority at the Programmable
+Interrupt Controller (PIC).
+;
+;-------------------------------------------------------------------
+!TOPIC 892 Software flow options
+!NOINDEX
+const
+  sfReceiveFlow    = $01;   {Use receiver flow control}
+  sfTransmitFlow   = $02;   {Use transmitter flow control}
+  DefSWFOpt        = sfReceiveFlow + sfTransmitFlow;
+
+Software flow control options. See 0373SWFlowEnableOpt for more information.

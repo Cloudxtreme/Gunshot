@@ -1,0 +1,652 @@
+;-------------------------------------------------------------------
+!TOPIC 650 ApMisc
+ApMisc is a collection of routines required by both the communication
+routines and the archiving routines.
+
+ApMisc interfaces the global status variables, AsyncStatus and
+ArchiveStatus and all of the error/status constants. It also defines all of
+the standard status strings associated with those error constants. And, it
+defines all of the various constants required for Object Professional based
+stream support.
+
+ApMisc provides the following routines:
+
+  0664ClearFlag                      0677Declarations
+  0665FlagIsSet                      0662FreeMemCheck
+  0679GetAproFileMode                0653GetArchiveStatus
+  0654GetAsyncStatus                 0661GetMemCheck
+  0680SetAproFileMode                0655SetArchiveStatus
+  0656SetAsyncStatus                 0663SetFlag
+  0652StatusStr                      0657UpdateChecksum
+  0658UpdateCrc                      0660UpdateCrc32
+  0659UpdateCrcKermit
+;
+;-------------------------------------------------------------------
+!TOPIC 651 Root
+!NOINDEX
+!NOWRAP
+{$IFNDEF UseOPro}
+RootPtr = ^Root;
+0650ApMisc.Root = object
+  constructor Init;
+  destructor Done; virtual;
+end;
+!WRAP
+
+All objects in Async Professional are derived from this base object. Root
+isn't really good for anything by itselfÄ-you won't ever want to create an
+instance of Root. This Root object duplicates the Object Professional Root
+object when you don't have UseOPro defined in APDEFINE.INC. In fact, the
+only reason Async Professional needs Root at all is to simplify the
+conditional compilation directives required to use Object Professional-based
+streams.
+;
+;------------------------------------------------------------
+!TOPIC 652 StatusStr
+!NOINDEX
+function 0650ApMisc.StatusStr(Code : Word) : String;
+
+Return a one-line message for the specified error code.
+
+See also:  0676Error codes
+;
+;-------------------------------------------------------------------
+!TOPIC 653 GetArchiveStatus
+!NOINDEX
+function 0650ApMisc.GetArchiveStatus : Word;
+
+Return the value of the global variable ArchiveStatus.
+
+See also:  0655SetArchiveStatus
+;
+;-------------------------------------------------------------------
+!TOPIC 654 GetAsyncStatus
+!NOINDEX
+function 0650ApMisc.GetAsyncStatus : Word;
+
+Return the value of the global variable AsyncStatus.
+
+See also:  0656SetAsyncStatus
+;
+;-------------------------------------------------------------------
+!TOPIC 655 SetArchiveStatus
+!NOINDEX
+procedure 0650ApMisc.SetArchiveStatus(Status : Word);
+
+Set the value of the global variable ArchiveStatus.
+
+See also:  0653GetArchiveStatus
+;
+;-------------------------------------------------------------------
+!TOPIC 656 SetAsyncStatus
+!NOINDEX
+procedure 0650ApMisc.SetAsyncStatus(Status : Word);
+
+Set the value of the global variable AsyncStatus.
+
+See also:  0654GetAsyncStatus
+;
+;-------------------------------------------------------------------
+!TOPIC 657 UpdateChecksum
+!NOINDEX
+function 0650ApMisc.UpdateChecksum(CurByte : Byte; CheckSum : Byte) : Word;
+
+Return an updated checksum.
+
+See also:  0658UpdateCrc        0660UpdateCrc32
+           0659UpdateCrcKermit
+;
+;-------------------------------------------------------------------
+!TOPIC 658 UpdateCrc
+!NOINDEX
+function 0650ApMisc.UpdateCrc(CurByte : Byte; CurCrc : Word) : Word;
+
+Return an updated 16-bit CRC.
+
+See also:  0657UpdateChecksum        0660UpdateCrc32
+           0659UpdateCrcKermit
+;
+;-------------------------------------------------------------------
+!TOPIC 659 UpdateCrcKermit
+!NOINDEX
+function 0650ApMisc.UpdateCrcKermit(CurByte : Byte; CurCrc : Word) : Word;
+
+Return an updated Kermit CRC.
+
+See also:  0657UpdateChecksum        0658UpdateCrc
+           0660UpdateCrc32
+;
+;-------------------------------------------------------------------
+!TOPIC 660 UpdateCrc32
+!NOINDEX
+function 0650ApMisc.UpdateCrc32(CurByte : Byte; CurCrc : LongInt) : LongInt;
+
+Return an updated 32-bit CRC.
+
+See also:  0657UpdateChecksum        0658UpdateCrc
+           0659UpdateCrcKermit
+;
+;-------------------------------------------------------------------
+!TOPIC 661 GetMemCheck
+!NOINDEX
+!NOWRAP
+{$IFDEF Standalone}
+function 0650ApMisc.GetMemCheck(var P; Bytes : Word) : Boolean;
+!WRAP
+
+Allocate heap space.
+
+See also: 0662FreeMemCheck
+;
+;-------------------------------------------------------------------
+!TOPIC 662 FreeMemCheck
+!NOINDEX
+!NOWRAP
+{$IFDEF Standalone}
+procedure 0650ApMisc.FreeMemCheck(var P; Bytes : Word);
+!WRAP
+
+Deallocate heap space.
+
+See also: 0661GetMemCheck
+;
+;-------------------------------------------------------------------
+!TOPIC 663 SetFlag
+!NOINDEX
+!NOWRAP
+{$IFDEF Standalone}
+procedure 0650ApMisc.SetFlag(var Flags : Word; FlagMask : Word);
+!WRAP
+
+Set bit(s) in the parameter Flags. The bits to set are specified in
+FlagMask.
+
+See also:  0664ClearFlag             0665FlagIsSet
+;
+;-------------------------------------------------------------------
+!TOPIC 664 ClearFlag
+!NOINDEX
+!NOWRAP
+{$IFDEF Standalone}
+procedure 0650ApMisc.ClearFlag(var Flags : Word; FlagMask : Word);
+!WRAP
+
+Clear bit(s) in the parameter Flags. The bits to clear are specified in
+FlagMask.
+
+See also:  0665FlagIsSet             0663SetFlag
+;
+;-------------------------------------------------------------------
+!TOPIC 665 FlagIsSet
+!NOINDEX
+!NOWRAP
+{$IFDEF Standalone}
+function 0650ApMisc.FlagIsSet(Flags, FlagMask : Word) : Boolean;
+!WRAP
+
+Return True if the bit specified by FlagMask is set in Flags.
+
+See also:  0664ClearFlag             0663SetFlag
+;
+;-------------------------------------------------------------------
+!TOPIC 666 Object type codes
+!NOINDEX
+const
+  {$IFDEF UseStreams}
+  otUartPort              = 400;
+  otInt14Port             = 401;
+  otFossilPort            = 402;
+  otDigi14Port            = 403;
+  otAbstractProtocol      = 410;
+  otXmodemProtocol        = 411;
+  otYmodemProtocol        = 412;
+  otZmodemProtocol        = 413;
+  otKermitProtocol        = 414;
+  otAsciiProtocol         = 415;
+  otBPlusProtocol         = 416;
+  otAbstractModem         = 420;
+  otHayesModem            = 421;
+  otHstModem              = 422;
+  otMicrocomModem         = 423;
+  otNullModem             = 424;
+  otTerminalEmulator      = 440;
+  otAnsiEmulator          = 441;
+  otSmartVirtScreen       = 450;
+  otTerminalWindow        = 451;
+  otCaptureTerminalWindow = 452;
+  {$ENDIF}
+
+Unique code numbers for all objects that support stream I/O. You typically
+won't need to refer to these codes directly, since the supplied stream
+registration routines do. Values up to 999 are reserved by TurboPower. You
+may assign higher codes to your own objects.
+
+See also:  0667Object version codes  0668Pointer codes
+;
+;-------------------------------------------------------------------
+!TOPIC 667 Object version codes
+!NOINDEX
+const
+  {$IFDEF UseStreams}
+  veUartPort              = 0;
+  veInt14Port             = 0;
+  veFossilPort            = 0;
+  veDigi14Port            = 0;
+  veAbstractProtocol      = 1;
+  veXmodemProtocol        = 1;
+  veYmodemProtocol        = 1;
+  veZmodemProtocol        = 1;
+  veKermitProtocol        = 0;
+  veAsciiProtocol         = 0;
+  veBPlusProtocol         = 0;
+  veAbstractModem         = 0;
+  veHayesModem            = 0;
+  veCourierModem          = 0;
+  veMicrocomModem         = 0;
+  veNullModem             = 0;
+  veTerminalEmulator      = 0;
+  veAnsiEmulator          = 0;
+  veSmartVirtScreen       = 0;
+  veTerminalWindow        = 0;
+  veCaptureTerminalWindow = 0;
+  {$ENDIF}
+
+Version number codes for all objects that support stream I/O. These numbers
+will be incremented only when an object is modified in such a way as to
+require a new Load constructor for it. In that case, the more recent version
+of the object will get a new version code, and the older version of the
+object will get a special Load method (Load00, for example) to allow it to
+be read into the new implementation.
+
+See also:  0666Object type codes     0668Pointer codes
+;
+;-------------------------------------------------------------------
+!TOPIC 668 Pointer codes
+!NOINDEX
+const
+  {$IFDEF UseStreams}
+  ptErrorProc         = 400; {User supplied port error procedure}
+  ptAbortProc         = 401; {User supplied port abort procedure}
+  ptNoErrorProc       = 402; {Default error procedure for ports}
+  ptNoAbortProc       = 403; {Default abort procedure for ports}
+  ptWaitCharProc      = 404; {User supplied port waitchar procedure}
+  ptNoWaitCharProc    = 405; {Default waitchar procedure for ports}
+  ptUserStatus        = 410; {User supplied protocol status procedure}
+  ptNextFile          = 411; {User supplied next file procedure}
+  ptLogFile           = 412; {User supplied log file procedure}
+  ptAcceptFile        = 414; {User supplied accept file procedure}
+  ptNoUserStatus      = 415; {Default status procedure}
+  ptNextFileMask      = 416; {Default next file procedure}
+  ptNoLogFile         = 417; {Default log file procedure}
+  ptNoAcceptFile      = 418; {Default accept file procedure}
+  ptPortPtr           = 419; {AbstractPortPtr code}
+  ptUserBack          = 420; {User supplied protocol background procedure}
+  ptNoUserBack        = 421; {Default userback procedure for protocols}
+  {$ENDIF}
+
+Pointer codes for use in stream I/O. Just as object types are assigned
+unique codes in a stream, so are pointers to static code or data. You'll
+refer to some of these pointer codes as you register your various user
+hooks. The appropriate codes are mentioned in the documentation for the Load
+and Store methods of those objects.
+
+Values up to 999 are reserved by TurboPower. You may assign higher codes to
+your own pointer types.
+
+See also:  0666Object type codes     0667Object version codes
+;
+;-------------------------------------------------------------------
+!TOPIC 669 DefSig
+!NOINDEX
+const
+  DefSig : Array[0..5] of Char = 'APF10'#26;
+
+Default fax signature.
+;
+;-------------------------------------------------------------------
+!TOPIC 670 FaxFileExt
+!NOINDEX
+const
+  FaxFileExt : String[3] = 'APF';
+
+Default fax file extension.
+;
+;-------------------------------------------------------------------
+!TOPIC 671 LH
+!NOINDEX
+type
+  {$IFDEF Standalone}
+  LH =
+    record
+      L, H : Word;
+    end;
+
+Data type used for typecasting long integers; allows easy access to both
+the high (H) and low (L) words that make up the LongInt.
+;
+;-------------------------------------------------------------------
+!TOPIC 672 ArchiveStatus
+!NOINDEX
+var
+  ArchiveStatus : Word;
+
+This global variable is used by the archive-related routines to report errors.
+Note that OOARCHIV, OOLZH, and OOZIP use this variable only in objects'
+constructors. When using protected mode DLL's, you cannot reference this variable. See 0653GetArchiveStatus for more information.
+
+See also:  0673AsyncStatus
+;
+;-------------------------------------------------------------------
+!TOPIC 673 AsyncStatus
+!NOINDEX
+var
+  AsyncStatus : Word;
+
+This global variable is used by the communication routines to report status
+and errors back to your program. When using protected mode DLL's, you cannot
+reference this variable. See 0654GetAsyncStatus for more information.
+
+See also:  0672ArchiveStatus
+;
+;------------------------------------------------------------
+!TOPIC 674 Error classes
+!NOINDEX
+!NOSEARCH
+const
+  etFatal     = 0;  {fatal errors}
+  etNonFatal  = 1;  {non-fatal I/O errors}
+  etWarning   = 2;  {warnings, user input errors, etc.}
+  etMessage   = 3;  {status information, simple messages}
+
+Error types used to classify errors.
+
+See also:  0675Error class prefixes  0676Error codes
+;
+;------------------------------------------------------------
+!TOPIC 675 Error class prefixes
+!NOINDEX
+!NOSEARCH
+const
+  epFatal     = etFatal    * 10000;
+  epNonFatal  = etNonFatal * 10000;
+  epWarning   = etWarning  * 10000;
+  epMessage   = etMessage  * 10000;
+
+Error prefixes added to error numbers before reporting them.
+
+See also:  0674Error classes         0676Error codes
+;
+;------------------------------------------------------------
+!TOPIC 676 Error codes
+!INDEX 7
+!NOSEARCH
+The following is a complete list of Async Professional error codes,
+organized into groups:
+
+!NOWRAP
+DOS errors
+
+ecFileNotFound           = 0002;  {File not found}
+ecPathNotFound           = 0003;  {Path not found}
+ecTooManyFiles           = 0004;  {Too many open files}
+ecAccessDenied           = 0005;  {File access denied}
+ecInvalidHandle          = 0006;  {Invalid file handle}
+ecOutOfMemory            = 0008;  {Insufficient memory}
+ecInvalidDrive           = 0015;  {Invalid drive}
+ecNoMoreFiles            = 0018;  {No more files}
+
+Turbo Pascal I/O errors
+
+ecDiskRead               = 0100;  {Attempt to read beyond end of file}
+ecDiskFull               = 0101;  {Disk is full}
+ecNotAssigned            = 0102;  {File not Assign-ed}
+ecNotOpen                = 0103;  {File not open}
+ecNotOpenInput           = 0104;  {File not open for input}
+ecNotOpenOutput          = 0105;  {File not open for output}
+ecInvalidFormat          = 0106;  {Invalid format for packed window}
+
+DOS critical errors
+
+ecWriteProtected         = 0150;  {Disk is write-protected}
+ecUnknownUnit            = 0151;  {Unknown disk unit}
+ecDriveNotReady          = 0152;  {Drive is not ready}
+ecUnknownCommand         = 0153;  {Unknown command}
+ecCrcError               = 0154;  {Data error}
+ecBadStructLen           = 0155;  {Bad request structure length}
+ecSeekError              = 0156;  {Seek error}
+ecUnknownMedia           = 0157;  {Unknown media type}
+ecSectorNotFound         = 0158;  {Disk sector not found}
+ecOutOfPaper             = 0159;  {Printer is out of paper}
+ecDeviceWrite            = 0160;  {Device write error}
+ecDeviceRead             = 0161;  {Device read error}
+ecHardwareFailure        = 0162;  {General failure}
+
+APUART port errors
+
+ecNoMorePorts            = 2900;  {Can't open port, no slots available}
+ecOverrunError           = 2901;  {UART receiver overrun}
+ecParityError            = 2902;  {UART receiver parity error}
+ecFramingError           = 2903;  {UART receiver framing error}
+
+APINT14 port errors
+
+ecTransmitFailed         = 2910;  {Int14 transmit failed}
+ecUartError              = 2911;  {Int14 receive failed}
+
+APCOM/OOCOM errors/status
+
+ecBlockIncomplete        = 2920;  {Block shorter than requested}
+ecBufferIsFull           = 2921;  {No room for new char in buffer}
+ecBufferIsEmpty          = 2922;  {No characters to get}
+ecTimeout                = 2923;  {Timed out waiting for something}
+ecStringIncomplete       = 2924;  {String shorter than requested}
+ecStringOverrun          = 2925;  {String longer than 255}
+ecUserAbort              = 2926;  {User aborted during "wait"}
+
+APMODEM/OOMODEM errors
+
+ecTableFull              = 2930;  {No room in table to add new entry}
+ecNullCommand            = 2931;  {Modem - no command registered}
+
+Tracing/EventFile file errors
+
+ecEventFileError         = 2940;  {Failed to open/write to event file}
+ecTraceFileError         = 2941;  {Failed to open/write to trace file}
+
+APFOSSIL port errors
+
+ecNoFossil               = 2950;  {No Fossil driver installed}
+
+APDIGI14 port errors
+
+ecDigiFailure            = 2960;  {Generic Digiboard failure code}
+
+APCOM/OOCOM port errors
+
+ecBadPortNumber          = 8900;  {Out-of-range port number}
+ecOutofRange             = 8901;  {General out-of-range error}
+ecPortNotOpen            = 8902;  {Port not open}
+ecInvalidBaudRate        = 8903;  {Bad baud rate for this device}
+ecInvalidArgument        = 8904;  {General programming error}
+ecNoDevice               = 8905;  {No device layer installed}
+ecNotaUart               = 8906;  {Couldn't find a uart at this address}
+ecInvalidParity          = 8907;  {Bad parity option for this device}
+ecNotBuffered            = 8910;  {Operation only allowed on buffered ports}
+ecNotSupported           = 8911;  {Function not supported by device layer}
+
+APFAX error codes
+
+ecFaxVoiceCall           = 9800;  {Call is VOICE}
+ecFaxDataCall            = 9801;  {Call is DATA}
+ecFaxBusy                = 9802;  {Called modem is busy}
+ecFaxNoFontFile          = 9803;  {Could not find font file}
+ecFaxNoCASManager        = 9804;  {CASMGR TSR not installed}
+ecFaxInitError           = 9805;  {Unexpected response in init}
+ecFaxTrainError          = 9806;  {Failed to train with remote modem}
+ecFaxSessionError        = 9807;  {Error during session}
+ecFaxNoConnect           = 9808;  {No connection after dial}
+ecFaxPageError           = 9809;  {Failed to send page after retries}
+
+APABSPCL/OOABSPCL status codes
+
+ecInitFail               = 9900;  {Xmodem init failed}
+ecInitCancel             = 9901;  {Xmodem init was canceled on request}
+ecCancelRequested        = 9902;  {Cancel requested}
+ecDuplicateBlock         = 9903;  {Duplicate block received}
+ecSequenceError          = 9904;  {Wrong block number received}
+ecDirNotFound            = 9905;  {Dir not found in protocol transmit}
+ecNoMatchingFiles        = 9906;  {No matching files in protocol transmit}
+ecLongPacket             = 9907;  {Long packet received during protocol}
+ecEndFile                = 9908;  {End of transmitted file}
+ecHandshakeInProgress    = 9909;  {Initial protocol handshake in progress}
+ecFileRenamed            = 9910;  {Incoming file was renamed}
+ecFileAlreadyExists      = 9911;  {Incoming file already exists}
+ecInvalidFilesize        = 9912;  {Ymodem header has bad file size}
+ecInvalidDateTime        = 9913;  {Ymodem header has bad date/time}
+ecUnexpectedChar         = 9914;  {Unexpected char during protocol}
+ecBlockCheckError        = 9915;  {Incorrect CRC or checksum received}
+ecNoSearchMask           = 9916;  {No search mask specified for transmit}
+ecNoFilename             = 9917;  {No filename specified in Xmodem download}
+ecAsciiReceiveInProgress = 9918;  {Ascii receive in progress}
+ecFileRejected           = 9919;  {Receiver rejected file}
+ecTooManyErrors          = 9920;  {Too many errors received during protocol}
+ecBadFileList            = 9921;  {No end of list marker found in file list}
+
+APZMODEM/OOZMODEM status codes
+
+ecGotCrcE                = 9925;  {Zmodem - got CrcE DataSubpacket}
+ecGotCrcW                = 9926;  {Zmodem - got CrcW DataSubpacket}
+ecGotCrcQ                = 9927;  {Zmodem - got CrcQ DataSubpacket}
+ecGotCrcG                = 9928;  {Zmodem - got CrcG DataSubpacket}
+ecGarbage                = 9929;  {Zmodem - got garbage from remote}
+ecSkipFile               = 9930;  {Zmodem - skip file}
+ecBadPosition            = 9931;  {Zmodem - bad file position}
+ecFileDoesntExist        = 9932;  {Zmodem - specified file doesn't exist}
+ecCantWriteFile          = 9933;  {Zmodem - not allowed to overwrite file}
+ecFailedToHandshake      = 9934;  {Zmodem - never got proper handshake}
+ecNoFilestoReceive       = 9935;  {Zmodem - no files to receive}
+ecBuffersTooSmall        = 9936;  {Zmodem - port buffers too small}
+ecGotHeader              = 9937;  {Zmodem - got a complete header}
+ecNoHeader               = 9938;  {Zmodem - (internal) no header yet}
+
+APMODEM/OOMODEM status codes
+
+ecUnknownModemResult     = 9940;  {Unexpected char in modem result string}
+ecConnect                = 9941;  {Modem response - CONNECT}
+ecRing                   = 9942;  {Modem response - RING}
+ecNoCarrier              = 9943;  {Modem response - NO CARRIER}
+ecNoDialTone             = 9944;  {Modem response - NO DIALTONE}
+ecBusy                   = 9945;  {Modem response - BUSY}
+ecNoAnswer               = 9947;  {Modem response - NO ANSWER}
+ecRinging                = 9948;  {Modem response - RINGING}
+ecVoice                  = 9949;  {Modem response - VOICE}
+ecError                  = 9950;  {Modem response - ERROR}
+
+APKERMIT/OOKERMIT status codes
+
+ecGotData                = 9954;  {Kermit - got packet}
+ecNoData                 = 9955;  {Kermit - no data yet}
+
+Archive status messages
+
+ecUnknownMethod          = 9960;  {Unknown compression method}
+ecFileEncrypted          = 9961;  {Cannot extract--file is encrypted}
+ecBadFileCRC             = 9962;  {Bad CRC--file is probably corrupted}
+ecCannotCreate           = 9963;  {Unable to create output file}
+ecBadFileFormat          = 9964;  {Bad LZH file format}
+ecNotAnLzhFile           = 9965;  {Not an LZH file}
+ecNotAZipFile            = 9966;  {Not a ZIP file}
+ecEmptyFileMaskList      = 9967;  {File mask list is empty}
+
+FAX conversion error/warnings
+
+ecFaxBadFormat           = 9970;  {Not a valid APRO fax file}
+ecFontNotSupported       = 9971;  {Bad font format or unsupported feature}
+ecHPFontCvt              = 9972;  {Converting font}
+ecBadGraphicsFormat      = 9973;  {Bad TIFF/PCX format or unsupported feature}
+ecBadEscapeSeq           = 9974;  {Bad escape sequence in PCL file}
+
+CaptureTerminalWindow error codes
+
+ecScrollBackTooBig       = 9980;  {Scroll back buffer > 64KB}
+
+APBPLUS/OOBPLUS status codes
+
+ecResync                 = 9985;  {Resyncing with host}
+ecWaitACK                = 9986;  {Waiting for ACK}
+ecDropout                = 9987;  {Dropout}
+ecHostCan                = 9988;  {Host cancel}
+ecTryResume              = 9989;  {Attempting resume}
+ecHostResume             = 9990;  {Host resuming}
+ecResumeOK               = 9991;  {Resumed OK}
+ecResumeBad              = 9992;  {Failed to resume}
+ecUnPacket               = 9993;  {Invalid packet type}
+!WRAP
+
+See also:  0850AsyncErrorProc        0675Error class prefixes
+           0674Error classes
+;
+;------------------------------------------------------------
+!TOPIC 677 Declarations,ApMisc
+!NOINDEX
+!NOSEARCH
+ApMisc declares the following types, constants, and variables:
+
+  0672ArchiveStatus                  0673AsyncStatus
+  0669DefSig                         0675Error class prefixes
+  0674Error classes                  0676Error codes
+  0670FaxFileExt                     0671LH
+  0666Object type codes              0667Object version codes
+  0668Pointer codes                  0651Root
+;
+;-------------------------------------------------------------------
+!TOPIC 678 AproFileMode
+!NOINDEX
+type
+  AproFileMode : Byte = $40;
+
+AproFileMode is used throughout the Async Professional library. When a file
+is opened for reading only, the runtime library variable FileMode is set to
+AproFileMode to allow that file to be opened in shared mode.  The default
+value, $40, specifies read-only, deny-none access, meaning that other
+programs can open that file in shared mode while Async Professional is
+reading the file.
+
+Different sharing access can be specified for these files by changing
+AproFileMode as desired. If follows the same rules as the runtime library
+variable FileMode.
+
+When using the protected mode DLLs AproFileMode cannot be accessed directly.
+Instead, applications must call the new routine GetAproFileMode to get the
+current value of AproFileMode; applications must call the new routine
+SetAproFileMode to change the value of AproFileMode.
+
+See also:  0679GetAproFileMode 0680SetAproFileMode
+;
+;-------------------------------------------------------------------
+!TOPIC 679 GetAproFileMode
+!NOINDEX
+!NOWRAP
+procedure 0650ApMisc.GetAproFileMode : Byte;
+!WRAP
+
+Return the value of the global typed constant 0678AproFileMode, used
+for opening files in shared mode. This routine is necessary only for
+applications using the protected mode DLLs; all other applications can
+reference 0678AproFileMode directly.
+
+See also:  0680SetAproFileMode
+;
+;-------------------------------------------------------------------
+!TOPIC 680 SetAproFileMode
+!NOINDEX
+!NOWRAP
+procedure 0650ApMisc.SetAproFileMode(NewMode : Byte);
+!WRAP
+
+Sets the value of the global typed constant 0678AproFileMode, used for
+opening files in shared mode. This routine is necessary only for applications
+using the protected mode DLLs; all other applications can reference
+0678AproFileMode directly.
+
+See also:  0679GetAproFileMode

@@ -1,0 +1,55 @@
+;-------------------------------------------------------------------
+!TOPIC 893 ApTFDD
+ApTFDD is a small unit that provides a "text file device driver" that
+uses the serial port. A text file device driver is a feature of Turbo
+Pascal that allows your programs to take advantage of the formatting power
+of Read(Ln) and Write(Ln) for your I/O routines.
+
+ApTFDD interfaces the following routines and declarations:
+
+  0894AssignPortDev                  0895GetPortDevPtr
+  0896SimulateLF
+;
+;-------------------------------------------------------------------
+!TOPIC 894 AssignPortDev
+!NOINDEX
+procedure 0893ApTFDD.AssignPortDev(var F : Text; P : PortRecPtr);
+!LINE
+procedure 0897OoTFDD.AssignPortDev(var F : Text; P : AbstractPortPtr);
+
+Assign a text file to the specified port.
+
+See also:  0895GetPortDevPtr
+;
+;-------------------------------------------------------------------
+!TOPIC 895 GetPortDevPtr
+!NOINDEX
+function 0893ApTFDD.GetPortDevPtr(var F : Text) : PortRecPtr;
+!LINE
+function 0897OoTFDD.GetPortDevPtr(var F : Text) : AbstractPortPtr;
+
+Return the port pointer (object or record) associated with the specified
+text file.
+
+See also:  0894AssignPortDev
+;
+;-------------------------------------------------------------------
+!TOPIC 896 SimulateLF
+!NOINDEX
+const
+  SimulateLF : Boolean = True;
+
+Controls whether the input routine will automatically insert a line feed
+character into the input buffer whenever it sees a carriage return.
+;
+;-------------------------------------------------------------------
+!TOPIC 897 OoTFDD
+OpTFDD is a small unit that provides a "text file device driver" that
+uses the serial port. A text file device driver is a feature of Turbo
+Pascal that allows your programs to take advantage of the formatting power
+of Read(Ln) and Write(Ln) for your I/O routines.
+
+OoTFDD interfaces the following routines and declarations:
+
+  0894AssignPortDev                  0895GetPortDevPtr
+  0896SimulateLF

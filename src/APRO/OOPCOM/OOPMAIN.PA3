@@ -1,0 +1,1828 @@
+{*********************************************************}
+{*                  OOPMAIN.PA3 2.03                     *}
+{*       Copyright (c) TurboPower Software 1991.         *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+  constructor SwitchToBinary.Init(AP : AbstractPortPtr);
+  begin
+    AP^.GetLine(Baud, Parity, DataBits, StopBits, False);
+    Port := AP;
+    AP^.SetLine(0, NoParity, 8, 1);
+  end;
+
+  destructor SwitchToBinary.Done;
+  begin
+    Port^.SetLine(0, Parity, DataBits, StopBits);
+  end;
+
+  function InitTerm(X1, Y1, X2, Y2 : Byte; Msg : String) : Boolean;
+    {-Initialize the terminal window}
+  const
+    {Frame constants}
+    Frame1 : FrameArray = 'ÕÔ¸¾ÍÍ³³';
+  begin
+    with TermiWin.octwLocalMenu do begin
+      if not InitCustom(2, 2, 15, 13, TpUiMenuColors,
+                        wBordered+wClear+wUserContents+wCoversOnDemand,
+                        Vertical) then begin
+        InitTerm := False;
+        Exit;
+      end;
+      mnOptionsOn(mnAlphaMatch+mnSelectOnMatch+mnArrowSelect+mnAllHotSpots);
+      mnOptionsOff(mnAllowPending+mnPopOnSelect+mnUseItemForTopic+
+                   mnSelectOnClick+mnAltMatch);
+      wFrame.SetFrameType(Frame1);
+      AddShadow(shBR, shSeeThru);
+      AddSeparator('Ã', 'Ä', '´', 5);
+      AddSeparator('Ã', 'Ä', '´', 9);
+      AddItem('Close', 1, 1, hidLocalClose);
+      AddItem('Move', 2, 1, hidLocalMove);
+      AddItem('Resize', 3, 1, hidLocalResize);
+      AddItem('Zoom', 4, 1, hidLocalZoom);
+
+      AddItem('Upload', 6, 1, hidTLUpload);
+      AddItem('Download', 7, 1, hidTLDownload);
+      AddItem('Hangup Modem', 8, 1, hidTLHangup);
+
+      AddItem('Options', 10, 1, hidTLOptions);
+      AddItem('Save options', 11, 1, hidTLSaveOpts);
+      AddItem('Load options', 12, 1, hidTLLoadOpts);
+      ItemsDone;
+      mnOptionsOn(mnUseItemForTopic);
+      {check for errors}
+      if ClassifyError(GetLastError) = etFatal then begin
+        InitTerm := False;
+        Done;
+        Exit;
+      end
+      else
+        InitTerm := True;
+
+      {move the window}
+      MoveWindow(TermiWin.wFrame.frXL, TermiWin.wFrame.frYL);
+    end;
+  end;
+
+  procedure TermStatus;
+  const
+    StatusMsg =
+  '<Alt-F3> Exit  <F3> Dialer   <F4> Toggle capture  <F5> Zoom  <F9> Local menu';
+  begin
+    Message(StatusMsg, True);
+  end;
+
+  procedure Hangup;
+  var
+    Esc : Boolean;
+  begin
+    if YesNo('Hangup modem? ', 'Y', Esc) then
+      TermiWin.octwModem^.HangupModem(0, HangupDropDTR);
+  end;
+
+  procedure ToggleCapture;
+  const
+    FName : String = '';
+  var
+    Esc : Boolean;
+  begin
+    with TermiWin do
+      if CaptureIsOn then begin
+        if YesNo('Close the capture file? ', 'Y', Esc) then
+          Capture(False);
+      end
+      else begin
+        if GetFile(0, 'File to capture to: ', True, True, False, False,
+                   65, 'CAP', FName) then begin
+          if ExistFile(FName) then begin
+            if YesNo('Overwrite ' + FName + '? ', 'N', Esc) then begin
+              twOptionsOn(ctwOverwrite);
+            end
+            else
+              if not Esc then
+                if YesNo('Append to ' + FName + '? ', 'Y', Esc) then
+                  twOptionsOn(ctwOverwrite)
+                else begin
+                  TempMessage('Capture not enabled', TempMessageDelay);
+                  Exit;
+                end;
+          end;
+          SetCaptureFileName(FName);
+          Capture(On);
+          if CaptureIsOn then
+            TempMessage('Capture enabled to ' + FName, TempMessageDelay)
+          else
+            TempMessage('Unable to open capture file ' + FName,
+                        TempMessageDelay);
+        end;
+      end;
+  end;
+
+  procedure AutoDialer;
+  const
+    DialerCmds : Array[1..3] of Word = (SelectSpecial, DialerWinID, ccNone);
+
+  begin
+    Desk.SetCommandList(DialerCmds);
+  end;
+
+  procedure ProcessTerm(var Cmd : Word);
+    {-Process the commands for the terminal window}
+  var
+    AllDone : Boolean;
+  label
+    Reevaluate;
+
+    function ProcessLocalMenu(var Cmd : Word) : Boolean;
+    var
+      Choice : LongInt;
+    begin
+      ProcessLocalMenu := False;
+      with TermiWin.octwLocalMenu do begin
+        StatusLocalMenu;
+        Process;
+        Erase;
+        Cmd := GetLastCommand;
+        case Cmd of
+          ccSelect :
+            begin
+              Choice := MenuChoice;
+              case Choice of
+                hidLocalClose    : Cmd := ccQuit;
+                hidLocalMove     : Cmd := MoveWindowCmd;
+                hidLocalResize   : Cmd := ResizeWindowCmd;
+                hidLocalZoom     : Cmd := ZoomWindowCmd;
+                hidTLUpload      : TermiWin.LaunchProtocol(Transmit);
+                hidTLDownload    : TermiWin.LaunchProtocol(Receive);
+                hidTLOptions     :
+                  begin
+                    if not InitOptions(OptX1, OptY1, OptX2, OptY2, '') then begin
+                      InsufficientMemory;
+                      Exit;
+                    end;
+                    ProcessOptions(Cmd);
+                    CloseOptions(True);
+                    Cmd := ccNone;
+                  end;
+                hidTLLoadOpts    : LoadConfigFile;
+                hidTLSaveOpts    : StoreConfigFile;
+                hidTLHangup      : Hangup;
+              end;
+            end;
+          else
+            Cmd := ccNone;
+        end;
+      end;
+    end;
+
+  begin
+    AllDone := False;
+    with TermiWin do begin
+      repeat
+        TermStatus;
+        SetHelpIndex(TermWinID);
+        Process;
+        Cmd := GetLastCommand;
+
+Reevaluate:
+        {process exit commands}
+        if not Desk.ProcessExitCommands(Cmd) then begin
+          {process any exit commands that TPUI can't handle for us}
+          case Cmd of
+            ccBPlusUp :
+              begin
+                TermiWin.octwProtocol^.UploadBPlus;
+                TermiWin.octwBPlusStarted := False;
+              end;
+            ccBPlusDown :
+              begin
+                TermiWin.octwProtocol^.DownloadBPlus;
+                TermiWin.octwBPlusStarted := False;
+              end;
+            CaptureCommand :
+              ToggleCapture;
+            HangupCommand :
+              HangUp;
+            DialerCommand :
+              begin
+                AutoDialer;
+                Cmd := ccQuit;
+                AllDone := True;
+              end;
+            LocalMenuCmd :
+              if not ProcessLocalMenu(Cmd) then
+                goto Reevaluate;
+            NextWindowCmd..SelectWindow8,
+            ExitProgramCmd,
+            MainMenuCmd,
+            ccQuit :
+              AllDone := True;
+          end;
+        end;
+      until AllDone;
+    end;
+  end;
+
+  procedure CloseTerm(EraseFirst : Boolean);
+    {-Close the terminal window}
+  begin
+    TermiWin.octwLocalMenu.Done;
+    if EraseFirst then
+      TermiWin.Erase;
+  end;
+
+  function OkToCloseTerm : Boolean;
+    {-Return True if OK to close the terminal window}
+  begin
+    OkToCloseTerm := True;
+  end;
+
+  {-------------- options window ----------------}
+  var
+    ScrapOptionsRec : OptionsRecord;
+
+  procedure SetOptions;
+  var
+    AnsiOnNow : Boolean;
+    Emu : TerminalEmulatorPtr;
+    MI : Word;
+  begin
+    with ScrapOptionsRec do begin
+      DefBaud := Baud;
+      DefParity := Parity;
+      DefDataBits := Databits;
+      DefStopBits := StopBits;
+
+      DefComPort := ComPrt;
+      if TermiWin.GetTerminalWinPort^.GetComName <> ComPrt then
+        if not TermiWin.ChangePorts(ComPrt) then
+          ErrorMessage('Unable to open ' + ComNameString(ComPrt), True);
+      with TermiWin.GetTerminalWinPort^ do begin
+        SetLine(Baud, Parity, DataBits, StopBits);
+        {$IFDEF UseUart}
+        if ClassifyUart(GetBaseAddr, False) = U16550A then
+          SetFifoBuffering(GetBaseAddr, True, 4);
+        {$ENDIF}
+      end;
+      with TermiWin do begin
+        if Duplex = dupHalf then
+          twOptionsOn(twShowOutgoing)
+        else
+          twOptionsOff(twShowOutgoing);
+        AnsiOnNow := twOptionsAreOn(twUsingAnsi);
+        if AnsiOnNow = not Ansi then begin
+          if Ansi then begin
+            Emu := New(AnsiEmulatorPtr, Init(DefEmuQueue));
+            SetLongFlag(twOptions, twUsingAnsi);
+          end
+          else begin
+            Emu := New(TerminalEmulatorPtr, Init(DefEmuQueue));
+            ClearLongFlag(twOptions, twUsingAnsi);
+          end;
+          if Emu <> Nil then
+            SetTerminalWinEmulator(Emu);
+        end;
+        if ModemType <> DefModemType then begin
+          DefModemType := ModemType;
+          Dispose(octwModem, Done);
+          with ModemTypes do begin
+            MI := ModemIndex(DefModemType);
+            if MI = 0 then
+              MI := 1;
+            octwModem := InstantiateModem(MI, GetTerminalWinPort);
+            if octwModem = Nil then
+              Terminate('Internal error instantiating modem object');
+          end;
+        end;
+        octwModem^.SetDialPrefix(DialPrefix);
+        if HWFlowOn then
+          SetHardwareFlowControl(DefHWHOptions)
+        else
+          SetHardwareFlowControl(0);
+        SetSoftwareFlowControl(SWFlowOn);
+      end;
+      OOPMAIN0.DefDialTimeout := DialTimeout;
+      OOPMAIN0.DefTimeout := Timeout;
+      OOPMAIN0.DefDelayFactor := DelayFactor;
+
+      DefDialPrefix := DialPrefix;
+      DefTonePulse := TonePulse;
+
+      DefWordCodes := WordCodes;
+    end;
+  end;
+
+  const
+    oIDBaud        = 0;
+    oidParity      = 1;
+    oidDataBits    = 2;
+    oidStopBits    = 3;
+    oidDuplex      = 4;
+    oidAnsi        = 5;
+    oidComPort     = 6;
+    oidDialPrefix  = 7;
+    oidToneOrPulse = 8;
+    oidDialTimeout = 9;
+    oidTimeout     = 10;
+    oidDelayFactor = 11;
+    oidWordOrCode  = 12;
+    oidHWFlow      = 13;
+    oidSWFlow      = 14;
+    oidModems      = 15;
+
+  var
+    ModemPL : PickListPtr;
+
+  procedure ModemPLStringProc(Item : Word; Mode : pkMode;
+                              var IType : pkItemType;
+                              var IString : string;
+                              PickPtr : PickListPtr);
+  begin
+    IString := ' ' + ModemTypes.Entry(Item) + ' ';
+  end;
+
+  procedure OptionsPreEdit(ESP : EntryScreenPtr);
+    {-Called after a field has been edited}
+  var
+    S : String;
+  begin
+    case ESP^.GetCurrentID of
+      oIDBaud         : S := '<Space bar> to toggle baud rate (1200-115k baud)';
+      oidParity       : S := '<Space bar> to toggle parity (none, even, odd, mark)';
+      oidDataBits     : S := '<Space bar> to toggle data bits (5..8)';
+      oidStopBits     : S := '<Space bar> to toggle stop bits (1 or 2)';
+      oidDuplex       : S := '<Space bar> to toggle between half and full duplex';
+      oidAnsi         : S := '<Space bar> to toggle between ANSI emulation on and off';
+      oidComPort      :
+        {$IFDEF LargeComNameSet}
+        S := '<Space bar> to toggle between communication ports (COM1..COM36)';
+        {$ELSE}
+        {$IFDEF UseDigi14}
+         S := '<Space bar> to toggle between communication ports (COM1..COM8)';
+        {$ELSE}
+        if SystemIsPS2 then
+          S := '<Space bar> to toggle between communication ports (COM1..COM8)'
+        else
+          S := '<Space bar> to toggle between communication ports (COM1..COM4)';
+        {$ENDIF}
+        {$ENDIF}
+      oidDialPrefix   : S := 'Enter any prefix command needed by your modem (this is usually blank)';
+      oidToneOrPulse  : S := '<Space bar> to toggle between tone and pulse dial modes';
+      oidDialTimeout  : S := 'Enter timeout for modem dial command in ticks (18.2 ticks = 1 second)';
+      oidTimeout      : S := 'Enter timeout for other modem commands in ticks (18.2 ticks = 1 second)';
+      oidDelayFactor  : S := 'Enter the delay factor for modem commands in ticks (18.2 ticks = 1 second)';
+      oidWordOrCode   : S := '<Space bar> to toggle betweem word and code modem commands';
+      oidHWFlow       : S := '<Space bar> to toggle hardware flow control on or off';
+      oidSWFlow       : S := '<Space bar> to toggle software flow control (XON/XOFF) on or off';
+      oidModems       : S := 'Select desired modem type from pick list';
+    end;
+    Message(S, True);
+  end;
+
+  procedure OptionsIncChoice(var Value; ID : Word; Factor : Integer;
+                             var St : string);
+    {-Increment a multiple choice field value and convert it to a string}
+  const
+    {$IFDEF LargeComNameSet}                                           {!!.01}
+    MaxPort : Array[Boolean] of ComNameType = (Com36, Com36);          {!!.01}
+    {$ELSE}                                                            {!!.01}
+    {$IFDEF UseDigi14}                                                 {!!.01}
+    MaxPort : Array[Boolean] of ComNameType = (Com8, Com8);            {!!.01}
+    {$ELSE}                                                            {!!.01}
+    MaxPort : Array[Boolean] of ComNameType = (Com4, Com8);
+    {$ENDIF}                                                           {!!.01}
+    {$ENDIF}                                                           {!!.01}
+    TonePulseStr : Array[TonePulseType] of String[5] = ('tone', 'pulse');
+    WordCodesStr : Array[WordCodeType] of String[5] = ('words', 'codes');
+  var
+    ComPort : ComNameType absolute Value;
+    TonePulse : TonePulseType absolute Value;
+    WordCodes : WordCodeType absolute Value;
+    HWFlow    : Boolean absolute Value;
+    SWFlow    : Boolean absolute Value;
+  begin
+    case ID of
+      oIDBaud..oIDANSI :
+        IncChoice(Value, ID + idBaud, Factor, St); {xlat ID}
+      oidComPort :
+        begin
+          case Factor of
+            1 :
+              if ComPort >= MaxPort[SystemIsPs2] then
+                ComPort := Com1
+              else
+                Inc(ComPort);
+            -1 :
+              if ComPort = Com1 then
+                ComPort := MaxPort[SystemIsPs2]
+              else
+                Dec(ComPort);
+          end;
+          St := ComNameString(ComPort);
+        end;
+      oidToneOrPulse :
+        begin
+          case Factor of
+            1, -1 :
+              if TonePulse = Pulse then
+                TonePulse := Tone
+              else
+                TonePulse := Pulse;
+          end;
+          St := TonePulseStr[TonePulse];
+        end;
+      oidWordOrCode :
+        begin
+          case Factor of
+            1, -1 :
+              if WordCodes = Codes then
+                WordCodes := Words
+              else
+                WordCodes := Codes;
+          end;
+          St := WordCodesStr[WordCodes];
+        end;
+      oidHWFlow :
+        begin
+          case Factor of
+            1, -1 :
+              HWFlow := not HWFlow;
+          end;
+          St := OffOn[HWFlow];
+        end;
+      oidSWFlow :
+        begin
+          case Factor of
+            1, -1 :
+              SWFlow := not SWFlow;
+          end;
+          St := OffOn[SWFlow];
+        end;
+      else begin
+      end;
+    end;
+  end;
+
+  function InitOptions(X1, Y1, X2, Y2 : Byte; Msg : String) : Boolean;
+    {-Initialize the Options window}
+  const
+    FirstTime : Boolean = True;
+  var
+    W : Word;
+  begin
+    InitOptions  := False;
+    W := ModemTypes.Widest + 2;
+    ModemPL := New(PickListPtr, InitCustom(MPLX1, MPLY1,
+                                           MPLX1 + W,
+                                           MPLY2,
+                                           TpUiMenuColors, DefPickOptions,
+                                           W,
+                                           ModemTypes.Num,
+                                           ModemPLStringProc,
+                                           PickVertical,
+                                           SingleChoice));
+    if ModemPL = Nil then begin
+      InsufficientMemory;
+      Exit;
+    end;
+    with OptWin, ScrapOptionsRec do begin
+      if not Init(X1, Y1, X2, Y2) then begin
+        InsufficientMemory;
+        Exit;
+      end;
+      {set edit screen options}
+      SetWrapMode(WrapAtEdges);
+      SetBeepOnError(On);
+
+      {set field editing options}
+      esFieldOptionsOn(efClearFirstChar);
+
+      {customize the colors}
+      SetPromptAttr(PhonePromptColor, PhonePromptMono);
+      SetSelectedPromptAttr(PhoneSelPromptColor, PhoneSelPromptMono);
+      SetSelectedFieldAttr(PhoneSelFieldColor, PhoneSelFieldMono);
+      SetCtrlAttr(PhoneCtrlColor, PhoneCtrlMono);
+
+      AddChoiceField('Baud rate', 02, 02, '######', 02, 18, hidOptBaud,
+                     SizeOf(Baud), OptionsIncChoice, Baud);
+      AddChoiceField('Parity', 03, 02, 'XXXXX', 03, 18, hidOptParity,
+                     SizeOf(Parity), OptionsIncChoice, Parity);
+      AddChoiceField('Data bits', 04, 02, '#', 04, 18, hidOptData,
+                     SizeOf(DataBits), OptionsIncChoice, DataBits);
+      AddChoiceField('Stop bits', 05, 02, '#', 05, 18, hidOptStop,
+                     SizeOf(StopBits), OptionsIncChoice, StopBits);
+      AddChoiceField('Duplex', 06, 02, 'XXXX', 06, 18, hidOptDuplex,
+                      SizeOf(DuplexType), OptionsIncChoice, Duplex);
+      AddChoiceField('ANSI emulation', 07, 02, 'XXX', 07, 18, hidOptAnsi,
+                      SizeOf(Ansi), OptionsIncChoice, Ansi);
+      AddChoiceField('Com port', 08, 02, 'XXXX', 08, 18, hidOptComPort,
+                      SizeOf(ComPrt), OptionsIncChoice, ComPrt);
+
+      AddStringField('Dial prefix', 09, 02, CharStr('X', MaxDialStr),
+                     09, 18, 10, hidOptDialPre, DialPrefix);
+
+      AddChoiceField('Tone or pulse', 10, 02, 'XXXXX', 10, 18, hidOptTone,
+                     SizeOf(TonePulse), OptionsIncChoice, TonePulse);
+
+      AddWordField('Dial timeout', 11, 02, '9999', 11, 18, hidOptDialTO, 0, 0,
+                   DialTimeout);
+
+      AddWordField('Modem timeout', 12, 02, '9999', 12, 18, hidOptModemTO,
+                   0, 0, Timeout);
+
+      AddWordField('Delay factor', 13, 02, '99', 13, 18, hidOptDF, 0, 0,
+                   DelayFactor);
+
+      AddChoiceField('Words or codes', 14, 02, 'XXXXX', 14, 18, hidOptCodes,
+                     SizeOf(WordCodes), OptionsIncChoice, WordCodes);
+
+      AddChoiceField('HW flow control', 15, 02, 'XXX', 15, 18, hidOptHWFlow,
+                     SizeOf(Boolean), OptionsIncChoice, HWFlowOn);
+
+      AddChoiceField('SW flow control', 16, 02, 'XXX', 16, 18, hidOptSWFlow,
+                     SizeOf(Boolean), OptionsIncChoice, SWFlowOn);
+
+      AddPickStringField('Modem type', 17, 02, 17, 18,
+                         ModemTypes.Widest + 2, hidOptModem, ModemType,
+                         ModemPL^);
+      AddLineField('Ä', 'Ä', 'Ä', 18, 1, Width, False);
+      AddTextField(Center('Press Ctrl-Enter to accept changes', Width), 19, 1);
+      AddTextField(Center('Press Esc to abandon changes', Width), 20, 1);
+      SetPreEditProc(OptionsPreEdit);
+
+      {install error handler}
+      SetErrorProc(TpUiErrorProc);
+      if ClassifyError(GetLastError) = etFatal then
+        Done
+      else
+        InitOptions := True;
+      {fill in scrapoptionsrec with defaults}
+      ComPrt := TermiWin.GetTerminalWinPort^.ComPortName;
+      TermiWin.GetTerminalWinPort^.GetLine(Baud, Parity, DataBits,
+                                           StopBits, True);
+      HWFlowOn    := TermiWin.octwHWHState <> 0;
+      SWFlowOn    := TermiWin.octwSWFState;
+      if FirstTime then begin
+        PortOptions := DefPortOptions;
+        Duplex := DefDuplexType;
+        Ansi   := DefUseAnsi;
+        ComPrt := DefComPort;
+        DialPrefix := DefDialPrefix;
+        TonePulse := DefTonePulse;
+        DialTimeout := OOPMAIN0.DefDialTimeout;
+        Timeout     := OOPMAIN0.DefTimeout;
+        DelayFactor := OOPMAIN0.DefDelayFactor;
+        WordCodes := DefWordCodes;
+        ModemType := DefModemType;
+        FirstTime := False;
+      end;
+    end;
+  end;
+
+  procedure ProcessOptions(var Cmd : Word);
+    {-Process the commands for the options window}
+  var
+    AllDone : Boolean;
+
+  begin
+    AllDone := False;
+    with OptWin do
+      {options window is modal}
+      repeat
+        Process;
+        Cmd := GetLastCommand;
+        {process exit commands}
+        if not Desk.ProcessExitCommands(Cmd) then begin
+          {process any exit commands that TPUI can't handle for us}
+          case Cmd of
+            ccDone :
+              begin
+                SetOptions;
+                Cmd := ccQuit;
+                AllDone := True;
+              end;
+            ccError,
+            ccQuit :
+              AllDone := True;
+          end;
+        end;
+      until AllDone;
+  end;
+
+  procedure CloseOptions(EraseFirst : Boolean);
+  begin
+    if ModemPL <> Nil then
+      Dispose(ModemPL, Done);
+    with OptWin do begin
+      if EraseFirst then
+        Erase;
+      Done;
+    end;
+  end;
+
+  {-------------- protocol window ----------------}
+  function Long2StrBlank(L : LongInt) : string;
+    {-Convert a long/word/integer/byte/shortint to a string}
+  begin
+    if L = 0 then
+      Long2StrBlank := ''
+    else
+      Long2StrBlank := Long2Str(L);
+  end;
+
+  function FormatMinSec(TotalSecs : LongInt) : String;
+    {-Format TotalSecs as minutes:seconds}
+  var
+    Min, Sec : LongInt;
+    S : String;
+  begin
+    Min := TotalSecs div 60;
+    Sec := TotalSecs mod 60;
+    Str(Sec:2, S);
+    if S[1] = ' ' then
+      S[1] := '0';
+    FormatMinSec := LeftPad(Long2Str(Min) + ':' + S, 6);
+  end;
+
+  function FormatMinTenths(TotalSecs : LongInt) : String;
+    {-Format TotalSecs as minutes.tenths}
+  var
+    Min : Real;
+    S : String;
+  begin
+    Min := TotalSecs / 60;
+    Str(Min:6:1, S);
+    FormatMinTenths := S;
+  end;
+
+  procedure UpdateProgressBar(Row, Col, Len : Byte; Percent : Real);
+    {-Fills in a progress bar with Percent complete}
+  const
+    CompleteChar = '²';
+  var
+    CharPercent : Real;
+    CharCount : Byte;
+    BarStr : String;
+  begin
+    {Calculate "percent value" of each character space}
+    if Len > 0 then
+      CharPercent := 100.0 / Len
+    else
+      CharPercent := 0;
+
+    {Calculate how many chars we need to approach (but not exceed) Percent}
+    if CharPercent > 0 then
+      CharCount := Trunc((Percent * 100) / CharPercent)
+    else
+      CharCount := 0;
+
+    {Make sure we don't go past Len}
+    if CharCount > Len then
+      CharCount := Len;
+
+    {Write out the complete bar}
+    FillChar(BarStr[1], CharCount, CompleteChar);
+    BarStr[0] := Char(CharCount);
+    if CharCount <> 0 then
+      with TermiWin.octwProtocol^ do
+        wFastWrite(BarStr, Row, Col, pwFieldAttr);
+  end;
+
+  procedure UpdateStatusMsg(Row, Col, Len : Byte);
+    {-Translate the current AsyncStatus into a status message}
+  const
+    LastStatus : Word = 65535;
+    MaxMsgLen = 40;
+  var
+    Msg : String;
+  begin
+    if AsyncStatus <> LastStatus then begin
+      FillChar(Msg[1], MaxMsgLen, ' ');
+      Msg[0] := Char(MaxMsgLen);
+      with TermiWin.octwProtocol^ do begin
+        wFastWrite(Msg, Row, Col, pwFieldAttr);
+        Msg := StatusStr(AsyncStatus);
+        wFastWrite(Msg, Row, Col, pwFieldAttr);
+      end;
+    end;
+  end;
+
+  procedure ProtocolShowStatus(AP : AbstractProtocolPtr;
+                               Starting, Ending : Boolean);
+
+  const
+    NewProgBar = '°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°';
+    HeaderStr : array[TransferModeType] of String[19] =
+      (' Protocol Upload ', ' Protocol Download ');
+    ModeStr1 : array[TransferModeType] of String[13] =
+      ('Transmitting ', 'Receiving ');
+    ModeStr2 : array[TransferModeType] of String[9] =
+      ('sent:', 'received:');
+    XLow = 0;
+    YLow = 0;
+  var
+    Blocks : Integer;
+    Efficiency, MaxCPS, ActualCPS, R, R1 : Real;
+    CurBlockSize : Word;
+    CurFileSize : LongInt;
+    CurBytesRemaining : LongInt;
+    CurBytesTransferred : LongInt;
+    CurProtocol : Byte;
+    CurElapsedTics : LongInt;
+    CurBlock : Word;
+    S : String;
+    I : Word;
+    B : Boolean;
+  begin
+    with TermiWin.octwProtocol^ do begin
+      if Starting then begin
+        CurBlockSize := 0;
+        CurFileSize := 0;
+        CurBytesRemaining := 0;
+        CurBytesTransferred := 0;
+        CurProtocol := 0;
+        CurElapsedTics := 0;
+        CurBlock := 0;
+        {Write out the fixed text strings}
+        wFastWrite('Protocol:', YLow+1, XLow+2, pwPromptAttr);
+        wFastWrite('Block check:', YLow+2, XLow+2, pwPromptAttr);
+        wFastWrite('File name:', YLow+3, XLow+2, pwPromptAttr);
+        wFastWrite('File size:', YLow+4, XLow+2, pwPromptAttr);
+        wFastWrite('Block size:', YLow+5, XLow+2, pwPromptAttr);
+        wFastWrite('Total blocks:', YLow+6, XLow+2, pwPromptAttr);
+
+        wFastWrite('Est. time:', YLow+8, XLow+2, pwPromptAttr);
+        wFastWrite('Elapsed time:', YLow+9, XLow+2, pwPromptAttr);
+        wFastWrite('Remaining time:', YLow+10, XLow+2, pwPromptAttr);
+
+        wFastWrite('Bytes '+ModeStr2[pwTransferMode], YLow+1, XLow+33, pwPromptAttr);
+        wFastWrite('Bytes remaining:', YLow+2, XLow+33, pwPromptAttr);
+        wFastWrite('Blocks '+ModeStr2[pwTransferMode], YLow+3, XLow+33, pwPromptAttr);
+        wFastWrite('Blocks remaining:', YLow+4, XLow+33, pwPromptAttr);
+        wFastWrite('Block errors:', YLow+5, XLow+33, pwPromptAttr);
+        wFastWrite('Total errors:', YLow+6, XLow+33, pwPromptAttr);
+
+        wFastWrite('Throughput:', YLow+8, XLow+33, pwPromptAttr);
+        wFastWrite('Efficiency:', YLow+9, XLow+33, pwPromptAttr);
+
+        wFastWrite('Progress:', YLow+12, XLow+2, pwPromptAttr);
+        wFastWrite('Status:', YLow+13, XLow+2, pwPromptAttr);
+
+        wFastWrite('Baud:', YLow+15, XLow+2, pwPromptAttr);
+        wFastWrite('DataBits:', YLow+16, XLow+2, pwPromptAttr);
+        wFastWrite('Sfw Flow:', YLow+17, XLow+2, pwPromptAttr);
+
+        wFastWrite('StopBits:', YLow+15, XLow+33, pwPromptAttr);
+        wFastWrite('Parity:', YLow+16, XLow+33, pwPromptAttr);
+        wFastWrite('Hdw Flow:', YLow+17, XLow+33, pwPromptAttr);
+
+        {Only update the port status on startup}
+        with AP^.APort^.PR^ do begin
+          wFastWrite(LeftPad(Long2Str(CurBaud), 8), YLow+15, XLow+18, pwFieldAttr);
+          wFastWrite(LeftPad(Long2Str(CurDataBits), 8), YLow+16, XLow+18, pwFieldAttr);
+          {$IFDEF UseSWFlow}
+          B := AP^.APort^.SWFlowState <> fsOff;
+          {$ELSE}
+          B := False;
+          {$ENDIF}
+          wFastWrite(OffOn[B], YLow+17, XLow+23, pwFieldAttr);
+          wFastWrite(LeftPad(Long2Str(CurStopBits), 8), YLow+15, XLow+50, pwFieldAttr);
+          wFastWrite(LeftPad(ParityString[CurParity], 8), YLow+16, XLow+50, pwFieldAttr);
+          B := AP^.APort^.HWFlowState <> fsOff;
+          wFastWrite(OffOn[B], YLow+17, XLow+55, pwFieldAttr);
+        end;
+      end;
+      {Update the data areas}
+      with AP^ do begin
+        {Store common status info in local variables}
+        CurBlockSize := GetBlockSize;
+        CurFileSize := GetFileSize;
+        CurBytesRemaining := GetBytesRemaining;
+        CurBytesTransferred := GetBytesTransferred;
+        CurProtocol := GetProtocol;
+        CurElapsedTics := GetElapsedTics;
+        CurBlock := GetBlockNum;
+
+        {Protocol and file name}
+        wFastWrite(ProtocolTypeString[CurProtocol], YLow+1, XLow+18, pwFieldAttr);
+
+        case GetCheckType of
+          bcChecksum1 : S := bcsChecksum1;
+          bcChecksum2 : S := bcsChecksum2;
+          bcCrc16     : S := bcsCrc16;
+          bcCrc32     : S := bcsCrc32;
+          bcCrcK      : S := bcsCrcK;
+          else S := '';
+        end;
+
+        wFastWrite(S, YLow+2, XLow+18, pwFieldAttr);
+        wFastWrite(Pad(StUpcase(GetFileName), 12), YLow+3, XLow+18, pwFieldAttr);
+
+        {File size, block size, block check and total blocks}
+        wFastWrite(LeftPad(Long2StrBlank(CurFileSize),8), YLow+4, XLow+18, pwFieldAttr);
+        wFastWrite(LeftPad(Long2Str(CurBlockSize),8), YLow+5, XLow+18, pwFieldAttr);
+        if CurFileSize = 0 then
+          I := 0
+        else
+          I := Succ(CurFileSize div CurBlockSize);
+        wFastWrite(LeftPad(Long2StrBlank(I),8), YLow+6, XLow+18, pwFieldAttr);
+
+        {Estimated time, elapsed time and time remaining}
+        wFastWrite(FormatMinSec(EstimateTransferSecs(CurFileSize)),
+                  YLow+8, XLow+18, pwFieldAttr);
+        wFastWrite(FormatMinSec(Tics2Secs(CurElapsedTics)), YLow+9, XLow+18, pwFieldAttr);
+        wFastWrite(FormatMinSec(EstimateTransferSecs(CurBytesRemaining)),
+                  YLow+10, XLow+18, pwFieldAttr);
+
+        {Bytes transferred and bytes remaining}
+        wFastWrite(LeftPad(Long2Str(CurBytesTransferred),8), YLow+1, XLow+50, pwFieldAttr);
+        wFastWrite(LeftPad(Long2StrBlank(CurBytesRemaining),8), YLow+2, XLow+50, pwFieldAttr);
+
+        {Blocks transferred and blocks remaining}
+        wFastWrite(LeftPad(Long2Str(CurBlock),8),
+                          YLow+3, XLow+50, pwFieldAttr);
+        Blocks := Trunc((BytesRemaining+Pred(CurBlockSize)) div CurBlockSize);
+        wFastWrite(LeftPad(Long2StrBlank(Blocks),8), YLow+4, XLow+50, pwFieldAttr);
+
+        {Error counts}
+        wFastWrite(LeftPad(Long2Str(GetBlockErrors),8), YLow+5, XLow+50, pwFieldAttr);
+        wFastWrite(LeftPad(Long2Str(GetTotalErrors),8), YLow+6, XLow+50, pwFieldAttr);
+
+        {Display an empty progress bar on startup}
+        if CurBytesTransferred = 0 then
+          wFastWrite(NewProgBar, YLow+12, XLow+18, pwFieldAttr);
+
+        {Update the progress bar (if the file size is known}
+        if CurFileSize <> 0 then begin
+          R := CurBytesRemaining;
+          if CurFileSize > 0 then
+            R := R / CurFileSize
+          else
+            R := 1;
+        end else
+          R := 1;
+        UpdateProgressBar(YLow+12, XLow+18, Length(NewProgBar), 1.0 - R);
+
+        {Update status message}
+        UpdateStatusMsg(YLow+13, XLow+18, 35);
+
+        {Calculate and display throughput}
+        if CurElapsedTics > 0 then begin
+          R := CurBytesTransferred;
+          R1 := (CurElapsedTics / 18.2);
+          if R1 > 0 then
+            ActualCPS := R / R1
+          else
+            ActualCPS := 0.0;
+        end else
+          ActualCPS := 0.0;
+        wFastWrite(LeftPad(Long2Str(Trunc(ActualCPS))+' CPS',9),
+                  YLow+8, XLow+50, pwFieldAttr);
+
+        {Calculate and display efficiency}
+        if TermiWin.octwModem^.GetConnectSpeed <> 0 then
+          MaxCPS := TermiWin.octwModem^.GetConnectSpeed div 10
+        else
+          MaxCPS := APort^.PR^.CurBaud div 10;
+        if MaxCPS > 0 then
+          Efficiency := (ActualCPS / MaxCPS) * 100.0
+        else
+          Efficiency := 0.0;
+        wFastWrite(Real2Str(Efficiency, 7, 0)+'%', YLow+9, XLow+50, pwFieldAttr);
+      end;
+    end;
+  end;
+
+  constructor ProtocolWindow.Init(X1, Y1, X2, Y2 : Byte;
+                                  TransferMode : TransferModeType;
+                                  KindOfProtocol : Byte;
+                                  FileMask : PathStr;
+                                  TermP : OCTWindowPtr; Options : Word);
+  begin
+    if not CommandWindow.InitCustom(X1, Y1, X2, Y2,
+                                    TpUiColors,
+                                    wClear+wUserContents+
+                                    +wBordered+wAllMouseEvents,
+                                    ProtocolCommands, ucOopMain) then
+      Fail;
+    wFrame.AddSpanHeader('Ã', 'Ä', '´', 11, frTT);
+    wFrame.AddSpanHeader('Ã', 'Ä', '´', 14, frTT);
+    pwOptions  := Options;
+    pwTerminal := TermP;
+    pwTerminal^.RegisterProtocol(@Self);
+    pwProtocol := Nil;
+    with TpUiColors do begin
+      pwPromptAttr := ColorMono(CtrlColor, CtrlMono);
+      pwFieldAttr  := ColorMono(TextColor, TextMono);
+    end;
+    pwKind       := KindOfProtocol;
+    pwTransferMode := TransferMode;
+    pwFileMask := FileMask;
+    SetCursor(cuHidden);
+  end;
+
+  destructor ProtocolWindow.Done;
+  begin
+    if pwProtocol <> Nil then
+      Dispose(pwProtocol, Done);
+
+    pwTerminal^.DeregisterProtocol;
+    CommandWindow.Done;
+  end;
+
+  procedure ProtocolWindow.ProcessSelf;
+  var
+    Cmd : Word;
+    Key : Word;
+    PPtr : AbstractPortPtr;
+  begin
+    Draw;
+    case pwTransferMode of
+      Transmit : Upload;
+      Receive : Download;
+    end;
+  end;
+
+  procedure ProtocolWindow.DisposeProto;
+  begin
+    if pwProtocol <> Nil then begin
+      Dispose(pwProtocol, Done);
+      pwProtocol := Nil;
+    end;
+  end;
+
+
+  procedure ProtocolWindow.InstantiateProtocol;
+  begin
+    pwProtocol := Nil;
+    case pwKind of
+      XModem..XModem1KG :
+        pwProtocol := New(XModemProtocolPtr,
+                          Init(pwTerminal^.GetTerminalWinPort,
+                               pwKind <> XModem, XModem = XModem1KG));
+      YModem..YModemG :
+        pwProtocol := New(YModemProtocolPtr,
+                          Init(pwTerminal^.GetTerminalWinPort,
+                               True, pwKind = YModemG));
+      ZModem :
+        pwProtocol := New(ZModemProtocolPtr, Init(pwTerminal^.GetTerminalWinPort));
+      Kermit :
+        pwProtocol := New(KermitProtocolPtr, Init(pwTerminal^.GetTerminalWinPort));
+      BPlus :
+        pwProtocol := New(BPlusProtocolPtr, Init(pwTerminal^.GetTerminalWinPort));
+      Ascii :
+        pwProtocol := New(AsciiProtocolPtr, InitCustom(pwTerminal^.GetTerminalWinPort,
+                                                       AsciiCharDelay,
+                                                       AsciiLineDelay, 0));
+    end;
+    if pwProtocol <> Nil then begin
+      case pwKind of
+        XModem..YModemG :
+          with XModemProtocolPtr(pwProtocol)^ do begin
+            SetBlockWait(RelaxedBlockWait);
+            SetHandshakeWait(DefHandShakeWait, 0);
+          end;
+        ZModem :
+          with ZModemProtocolPtr(pwProtocol)^ do begin
+            SetFileMgmtOptions(True, False, WriteClobber);
+          end;
+      end;
+      pwProtocol^.SetShowStatusProc(ProtocolShowStatus);
+    end;
+  end;
+
+  procedure ProtocolWindow.Upload;
+  var
+    BatchProto : Boolean;
+    Bin : SwitchToBinary;
+  begin
+    InstantiateProtocol;
+    if pwProtocol = Nil then begin
+      InsufficientMemory;
+      Exit;
+    end;
+
+    BatchProto := pwProtocol^.SupportsBatch;
+    with pwProtocol^ do begin
+      SetFileMask(pwFileMask);
+      if BatchProto then
+        if IncludeDirs then
+          apOptionsOn(apIncludeDirectory)
+        else
+          apOptionsOff(apIncludeDirectory);
+
+      if pwTerminal^.octwModem^.GetConnectSpeed <> 0 then
+        SetActualBps(pwTerminal^.octwModem^.GetConnectSpeed);
+      Draw;
+      Message('Upload in progress, press ESC to abort', True);
+
+      Bin.Init(APort);
+      ProtocolTransmit;
+      Bin.Done;
+
+      if AsyncStatus = ecOK then
+        TempMessage('Upload complete', 2000)
+      else
+        ErrorMessage('Upload failed: ' + StatusStr(AsyncStatus), True);
+      Erase;
+    end;
+    ClearStatusLine;
+    DisposeProto;
+  end;
+
+  procedure ProtocolWindow.Download;
+  var
+    Bin : SwitchToBinary;
+  begin
+    InstantiateProtocol;
+    if pwProtocol = Nil then begin
+      InsufficientMemory;
+      Exit;
+    end;
+
+    with pwProtocol^ do begin
+      SetReceiveFilename(pwFileMask);
+      SetOverwriteOption(WriteAnyway);
+      Message('Download in progress, press ESC to abort', True);
+      Draw;
+      Bin.Init(APort);
+      ProtocolReceive;
+      Bin.Done;
+      if AsyncStatus = ecOK then
+        TempMessage('Download complete', 2000)
+      else
+        ErrorMessage('Download failed: ' + StatusStr(AsyncStatus), True);
+      Erase;
+    end;
+    ClearStatusLine;
+    DisposeProto;
+  end;
+
+  procedure ProtocolWindow.UploadBPlus;
+  begin
+    with pwProtocol^ do begin
+      if pwTerminal^.octwModem^.GetConnectSpeed <> 0 then
+        SetActualBps(pwTerminal^.octwModem^.GetConnectSpeed);
+      Message('Upload in progress, press ESC to abort', True);
+
+      ProtocolTransmit;
+      Erase;
+
+      if AsyncStatus = ecOK then
+        TempMessage('Upload complete', 2000)
+      else
+        ErrorMessage('Upload failed: ' + StatusStr(AsyncStatus), True);
+      ClearStatusLine;
+      DisposeProto;
+    end;
+  end;
+
+  procedure ProtocolWindow.DownloadBPlus;
+  begin
+    with pwProtocol^ do begin
+      Message('Download in progress, press ESC to abort', True);
+      ProtocolReceive;
+      Erase;
+      if AsyncStatus = ecOK then
+        TempMessage('Download complete', 2000)
+      else
+        ErrorMessage('Download failed: ' + StatusStr(AsyncStatus), True);
+    end;
+    ClearStatusLine;
+    DisposeProto;
+  end;
+
+  {-------------- terminal window ----------------}
+  procedure TermBackgroundHook;
+  begin
+    TermiWin.BackgroundLogic;
+  end;
+
+  function TermGetKeyWord : Word;
+  begin
+    repeat
+      TermiWin.BackgroundLogic;
+    until TerminalCommands.cpKeyPressed;
+    TermGetKeyWord := oldGetKeyProc;
+  end;
+
+  procedure ProtocolIncChoice(var Value; ID : Word; Factor : Integer;
+                              var St : string);
+    {-Increment a multiple choice field value and convert it to a string}
+  var
+    Kind : Byte absolute Value;
+  begin
+    case Factor of
+      1 :
+        if Kind = Ascii then
+          Kind := XModem
+        else
+          Kind := Succ(Kind);
+      -1 :
+        if Kind = XModem then
+          Kind := Ascii
+        else
+          Kind := Pred(Kind);
+    end;
+    St := ProtocolNames[Kind];
+  end;
+
+  constructor OopComTerminalWindow.Init(X1, Y1, X2, Y2 : Byte;
+                                        ScrollBackRows : Word;
+                                        ComPort : ComNameType;
+                                        Baud : LongInt;
+                                        TerminalOptions : LongInt;
+                                        DefCaptureFileName : String;
+                                        CaptureBufferSize : Word;
+                                        BackgroundBufBreak : Byte);
+
+    {-Create a TerminalWindow}
+  var
+    PortPtr  : AbstractPortPtr;
+    EmuPtr   : TerminalEmulatorPtr;
+    ColorAttr, MonoAttr : Byte;
+  begin
+    {$IFDEF UseUart}                                                   {!!.01}
+    PortPtr := New(UartPortPtr, InitFast(DefComPort, Baud));
+    {$ENDIF}                                                           {!!.01}
+    {$IFDEF UseFossil}                                                 {!!.01}
+    PortPtr := New(FossilPortPtr, InitFast(DefComPort, Baud));         {!!.01}
+    {$ENDIF}                                                           {!!.01}
+    {$IFDEF UseDigi14}                                                 {!!.01}
+    PortPtr := New(Digi14PortPtr, InitFast(DefComPort, Baud));         {!!.01}
+    {$ENDIF}                                                           {!!.01}
+    {$IFDEF UseInt14}                                                  {!!.01}
+    PortPtr := New(Int14PortPtr, InitFast(DefComPort, Baud));          {!!.01}
+    {$ENDIF}                                                           {!!.01}
+    if PortPtr = Nil then begin
+      InitStatus := ecBadPortNumber;
+      Fail;
+    end;
+    {instantiate the emulator object}
+    EmuPtr := New(TerminalEmulatorPtr, Init(8));
+    if EmuPtr = Nil then begin
+      Done;
+      InitStatus := ecOutOfMemory;
+      Fail;
+    end;
+    with TpUiColors do begin
+      ColorAttr := TextColor;
+      MonoAttr  := TextMono;
+      TextColor := TermWinTextColor;
+      TextMono  := TermWinTextMono;
+    end;
+    if not OopcomTerminalWindow.InitCustom(X1, Y1, X2, Y2, ScrollBackRows,
+                                           TPUIColors,
+                                           PortPtr, EmuPtr,
+                                           DefWindowOptions,
+                                           TerminalOptions,
+                                           DefCaptureFileName,
+                                           CaptureBufferSize,
+                                           BackgroundBufBreak) then
+      Fail;
+    with TpUiColors do begin
+      TextColor := ColorAttr;
+      TextMono  := MonoAttr;
+    end;
+    twOptionsOn(twInhibitAutoLF or twAdvanceOnClear);
+  end;
+
+  constructor OopComTerminalWindow.InitCustom(X1, Y1, X2, Y2 : Byte;
+                                              ScrollBackRows : Word;
+                                              var Colors : ColorSet;
+                                              Port : AbstractPortPtr;
+                                              Emu   : TerminalEmulatorPtr;
+                                              WindowOptions : LongInt;
+                                              TerminalOptions : LongInt;
+                                              DefCaptureFileName : String;
+                                              CaptureBufferSize : Word;
+                                              BackgroundBufBreak : Byte);
+
+    {-Create a TerminalWindow window with custom options}
+  var
+    MI : Word;
+  begin
+    octwModem := Nil;
+    if not CaptureTerminalWindow.InitCustom(X1, Y1, X2, Y2,
+                                            Colors, WindowOptions,
+                                            Port, Emu,
+                                            ScrollBackRows,
+                                            ScreenWidth,
+                                            TerminalOptions,
+                                            DefCaptureFileName,
+                                            CaptureBufferSize) then
+      Fail;
+
+    with ModemTypes do begin
+      MI := ModemIndex(DefModemType);
+      if MI = 0 then
+        MI := 1;
+      octwModem := InstantiateModem(MI, Port);
+    end;
+    if octwModem = Nil then begin
+      Done;
+      Fail;
+    end;
+
+    octwBreak := BackgroundBufBreak;
+    if octwBreak > 255 then
+      octwBreak := 255;
+    octwHWHState := 0;
+    octwSWFState := False;
+    octwProtocol := Nil;
+    octwBGState  := True;
+    UsingFile := False; {******************}
+    FillChar(octwBuffer, SizeOf(octwBuffer), 0);
+    octwBPlusStarted := False;
+  end;
+
+  {!!.01}
+  destructor OopComTerminalWindow.Done;
+    {-Destroys a TerminalWindow}
+  begin
+    if octwModem <> nil then
+      Dispose(octwModem, Done);
+    if twPort <> nil then
+      Dispose(twPort, Done);
+    if twEmulator <> nil then
+      Dispose(twEmulator, Done);
+
+    CaptureTerminalWindow.Done;
+  end;
+
+  {************************************}
+  procedure OopComTerminalWindow.UseFile(Name : String);
+  begin
+    Assign(InFile, Name);
+    Reset(InFile, 1);
+    UsingFile := IoResult = 0;
+  end;
+  {************************************}
+
+
+  function OopComTerminalWindow.GetIncomingChar(var Key : Char) : Boolean;
+  begin
+    {************************************}
+    if UsingFile then begin
+      if Length(octwBuffer) > 0 then begin
+        Key := octwBuffer[1];
+        Dec(octwBuffer[0]);
+        if Length(octwBuffer) > 0 then
+          Move(octwBuffer[2], octwBuffer[1], Length(octwBuffer));
+        GetIncomingChar := True;
+        Exit;
+      end
+      else
+        if not EOF(InFile) then begin
+          BlockRead(InFile, Key, 1);
+          GetIncomingChar := IoResult = 0;
+        end
+        else
+          GetIncomingChar := False;
+      Exit;
+    end;
+    {************************************}
+    if Length(octwBuffer) > 0 then begin
+      Key := octwBuffer[1];
+      Dec(octwBuffer[0]);
+      if Length(octwBuffer) > 0 then
+        Move(octwBuffer[2], octwBuffer[1], Length(octwBuffer));
+      GetIncomingChar := True;
+    end
+    else
+      GetIncomingChar := CaptureTerminalWindow.GetIncomingChar(Key);
+  end;
+
+  const
+    ProtoX1 = 11;
+    ProtoY1 = 5;
+    ProtoX2 = 69;
+    ProtoY2 = 21;
+
+    pMask : PathStr = '';
+
+  function OopComTerminalWindow.StartBPlus(DrawIt : Boolean) : Boolean;
+    {-Start BPlus}
+  begin
+    if not octwBPlusStarted then begin
+      octwProtocol := New(ProtocolWindowPtr, Init(ProtoX1, ProtoY1,
+                                                  ProtoX2, ProtoY2,
+                                                  Transmit, BPlus,
+                                                  '', @Self,
+                                                  DefProtocolOptions));
+      if octwProtocol <> Nil then begin
+        octwProtocol^.InstantiateProtocol;
+        octwBPlusStarted := True;
+      end else
+        octwBPlusStarted := False;
+    end;
+
+    if octwBPlusStarted and DrawIt then
+      octwProtocol^.Draw;
+
+    StartBPlus := octwBPlusStarted;
+  end;
+
+  procedure OopComTerminalWindow.GetNextCommand;
+  const
+    Index : Byte = 0;
+  var
+    C : Char;
+    Start, IsUpload : Boolean;
+  begin
+    while not cwCmdPtr^.cpKeyPressed do
+      if GetIncomingChar(C) then begin
+        case C of
+          cENQ : if StartBPlus(False) then
+                   BPlusProtocolPtr(octwProtocol^.pwProtocol)^.ProcessENQ;
+          cDLE : if StartBPlus(True) then begin
+                   BPlusProtocolPtr(octwProtocol^.pwProtocol)^.ProcessDLE(Start, IsUpload);
+                   if Start then begin
+                     if IsUpload then
+                       cwCmd := ccBPlusUp
+                     else
+                       cwCmd := ccBPlusDown;
+                     Exit;
+                   end;
+                 end;
+          else begin
+            if CheckForString(Index, C, cEsc+'I', True) then begin
+              BPlusProtocolPtr(octwProtocol^.pwProtocol)^.ProcessEscI(80, 25);
+              AnsiEmulatorPtr(twEmulator)^.InitParser;
+            end else begin
+              cwCmd := ccIncomingChar;
+              cwKey := Word(C);
+              Exit;
+            end;
+          end;
+        end;
+      end;
+    cwCmdPtr^.cpOptionsOn(cpCtrlsAreChars);
+    TerminalWindow.GetNextCommand;
+  end;
+
+  function OopComTerminalWindow.ProcessBuffer : Boolean;
+  var
+    Key : Char;
+    FoundCR : Boolean;
+  begin
+    ProcessBuffer := False;
+    FoundCR := False;
+    if UsingFile then begin
+      while (Length(octwBuffer) < octwBreak) and
+            (not FoundCR) and
+            not EOF(InFile) do begin
+
+        Inc(octwBuffer[0]);
+        BlockRead(Infile, Key, 1);
+        octwBuffer[Length(octwBuffer)] := Key;
+        FoundCR := Key = #13;
+      end;
+    end
+    else
+    while (Length(octwBuffer) < octwBreak) and
+          (not FoundCR) and
+          CaptureTerminalWindow.GetIncomingChar(Key) do begin
+      Inc(octwBuffer[0]);
+      octwBuffer[Length(octwBuffer)] := Key;
+      FoundCR := Key = #13;
+    end;
+    ProcessBuffer := (Length(octwBuffer) >= octwBreak) or FoundCR;
+  end;
+
+  procedure OopComTerminalWindow.BackgroundLogic;
+    {-handle incoming characters while not TerminalWindow.Process (while
+      window is inactive, not current or being resized or moved)}
+  begin
+    if not octwBGState then
+      Exit;
+    if ProcessBuffer then begin
+      WriteString(octwBuffer);
+      octwBuffer[0] := #0;
+    end;
+  end;
+
+  function OopComTerminalWindow.ProtocolActive : Boolean;
+  begin
+    ProtocolActive := octwProtocol <> Nil;
+  end;
+
+  procedure OopComTerminalWindow.GetPortBufferSizes(var InS, OutS : Word);
+  begin
+    with twPort^.PR^ do begin
+      InS  := InBuffLen;
+      OutS := OutBuffLen;
+    end;
+  end;
+
+  procedure OopComTerminalWindow.SetHardwareFlowControl(Options : Word);
+  var
+    rFull, rResume : Real;
+    InSize, OutSize : Word;
+  begin
+    octwHWHState := Options;
+    with GetTerminalWinPort^ do
+      if Options <> 0 then begin
+        GetPortBufferSizes(InSize, OutSize);
+        rFull := InSize * BufferFullPercent;
+        rResume := InSize * BufferResumePercent;
+        HWFlowEnable(Trunc(rFull), Trunc(rResume), Options);
+      end
+      else
+        HWFlowDisable;
+  end;
+
+  procedure OopComTerminalWindow.SetSoftwareFlowControl(On : Boolean);
+  var
+    rFull, rResume : Real;
+    InSize, OutSize : Word;
+  begin
+    octwSWFState := On;
+    with GetTerminalWinPort^ do
+      if On then begin
+        GetPortBufferSizes(InSize, OutSize);
+        rFull := InSize * BufferFullPercent;
+        rResume := InSize * BufferResumePercent;
+        SWFlowEnable(Trunc(rFull), Trunc(rResume));
+      end
+      else
+        SWFlowDisable;
+  end;
+
+  procedure OopComTerminalWindow.RegisterProtocol(PW : ProtocolWindowPtr);
+  begin
+    octwProtocol := PW;
+  end;
+
+  procedure OopComTerminalWindow.DeregisterProtocol;
+  begin
+    RegisterProtocol(Nil);
+  end;
+
+  procedure GetPInfoPreEdit(ESP : EntryScreenPtr);
+    {-Called after a field has been edited}
+  var
+    S : String;
+  begin
+    case ESP^.GetCurrentID of
+      0  : S := '<Space bar> to toggle protocol type';
+      1  : S := 'Enter the file mask';
+    end;
+    Message(S, True);
+  end;
+
+  function OopComTerminalWindow.GetProtocolInfo(Mode : TransferModeType;
+                                                var Kind : Byte;
+                                                var Mask : PathStr;
+                                                var Options : Word) : Boolean;
+  var
+    ES : EntryScreen;
+    AllDone : Boolean;
+    Cmd : Word;
+  begin
+    GetProtocolInfo := False;
+
+    {*** show protocol entry screen}
+    with ES do begin
+      if not Init(5, 8, 56, 11) then begin
+        InsufficientMemory;
+        Exit;
+      end;
+
+      {customize the colors}
+      SetPromptAttr(PhonePromptColor, PhonePromptMono);
+      SetSelectedPromptAttr(PhoneSelPromptColor, PhoneSelPromptMono);
+      SetSelectedFieldAttr(PhoneSelFieldColor, PhoneSelFieldMono);
+      SetCtrlAttr(PhoneCtrlColor, PhoneCtrlMono);
+
+      SetWrapMode(WrapAtEdges);
+      SetPreEditProc(GetPInfoPreEdit);
+
+    {idpProtocol:}
+      AddChoiceField('Protocol type', 2, 2, 'XXXXXXXXXXXXXXXX', 2, 20,
+                     hidPProtocol, SizeOf(Kind), ProtocolIncChoice, Kind);
+
+    {idpFileMask:}
+      AddStringField(
+        'File mask', 3, 2,
+        CharStr('X', Pred(SizeOf(PathStr))), 3, 20, 30,
+        hidPFileMask, Mask);
+      if RawError <> 0 then begin
+        Done;
+        Exit;
+      end;
+      Draw;
+      AllDone := False;
+      repeat
+        Process;
+        Cmd := GetLastCommand;
+        case Cmd of
+          ccQuit : AllDone := True;
+          ccDone:
+            begin
+              AllDone := True;
+              GetProtocolInfo := True;
+            end;
+        end;
+      until AllDone;
+      Erase;
+      Done;
+    end;
+
+  end;
+
+  procedure OopComTerminalWindow.LaunchProtocol(UpOrDown : TransferModeType);
+  var
+    Kind : Byte;
+  begin
+    Kind := DefProtocol;
+    if GetProtocolInfo(UpOrDown, Kind, pMask, DefProtocolOptions) then begin
+      octwProtocol := New(ProtocolWindowPtr, Init(ProtoX1, ProtoY1,
+                                                  ProtoX2, ProtoY2,
+                                                  UpOrDown, Kind,
+                                                  pMask, @Self, DefProtocolOptions));
+      if octwProtocol = Nil then begin
+        InsufficientMemory;
+        Exit;
+      end;
+      DefProtocol := Kind;
+      with octwProtocol^ do
+        case UpOrDown of
+          Transmit : Upload;
+          Receive  : Download;
+        end;
+    end;
+  end;
+
+  function OopComTerminalWindow.GetBaud : LongInt;
+  begin
+    GetBaud := GetTerminalWinPort^.PR^.CurBaud;
+  end;
+
+  function OopComTerminalWindow.ChangePorts(ComName : ComNameType) : Boolean;
+  var
+    P, OldP : AbstractPortPtr;
+    OldComName : ComNameType;
+    OldBaud : LongInt;
+  begin
+    OldP := GetTerminalWinPort;
+    OldComName := OldP^.GetComName;
+    OldBaud := GetBaud;
+    Dispose(OldP, Done);
+    {$IFDEF UseUart}                                                   {!!.01}
+    P := New(UartPortPtr, InitFast(ComName, OldBaud));
+    {$ENDIF}                                                           {!!.01}
+    {$IFDEF UseFossil}                                                 {!!.01}
+    P := New(FossilPortPtr, InitFast(ComName, OldBaud));               {!!.01}
+    {$ENDIF}                                                           {!!.01}
+    {$IFDEF UseDigi14}                                                 {!!.01}
+    P := New(Digi14PortPtr, InitFast(ComName, OldBaud));               {!!.01}
+    {$ENDIF}                                                           {!!.01}
+    {$IFDEF UseInt14}                                                  {!!.01}
+    P := New(Int14PortPtr, InitFast(ComName, OldBaud));                {!!.01}
+    {$ENDIF}                                                           {!!.01}
+    if P <> Nil then with P^ do begin
+      SetTerminalWinPort(P);
+      ChangePorts := True;
+      SetAbortFunc(KeyboardAbort);
+      SetErrorProc(UartErrorProc);
+      {$IFDEF UseUart}
+      if ClassifyUart(GetBaseAddr, False) = U16550A then
+        SetFifoBuffering(GetBaseAddr, True, 4);
+      {$ENDIF}
+      {set hardware flow control options}
+      SetHardwareFlowControl(DefHWHOptions);
+    end else begin
+      ChangePorts := False;
+      with DefaultLineOptions do begin                                 {!!.02}
+        {$IFDEF UseUart}                                               {!!.01}
+        OldP := New(UartPortPtr, InitKeep(OldComName, InSize, OutSize));
+        {$ENDIF}                                                       {!!.01}
+        {$IFDEF UseFossil}                                             {!!.01}
+        OldP := New(FossilPortPtr, InitKeep(OldComName, InSize, OutSize));{!!.01}
+        {$ENDIF}                                                       {!!.01}
+        {$IFDEF UseDigi14}                                             {!!.01}
+        OldP := New(Digi14PortPtr, InitKeep(OldComName, InSize, OutSize));{!!.01}
+        {$ENDIF}                                                       {!!.01}
+        {$IFDEF UseInt14}                                              {!!.01}
+        OldP := New(Int14PortPtr, InitKeep(OldComName, InSize, OutSize));{!!.01}
+        {$ENDIF}                                                       {!!.01}
+      end;                                                             {!!.02}
+      if OldP = Nil then begin
+        {serious error}
+        Halt(1);
+      end;
+    end;
+  end;
+
+  procedure OopComTerminalWindow.SetBackgroundState(On : Boolean);
+  begin
+    octwBGState := On;
+  end;
+
+  procedure OopComTerminalWindow.EnableOptions(var PhoneRecord : PhonePickRec);
+  begin
+    with PhoneRecord do begin
+      TermiWin.GetTerminalWinPort^.SetLine(Baud, Parity, DataBits, StopBits);
+
+    end;
+  end;
+
+  {-------------- Status window ----------------}
+
+  constructor ComStatusWindow.Init(X1, Y1, X2, Y2 : Byte;
+                                   Msg : String; TW : OCTWindowPtr);
+  begin
+    if not CommandWindow.InitCustom(StatusWinX1, StatusWinY1,
+                                    StatusWinX2, StatusWinY2, TpUiColors,
+                                    wClear+wUserContents+
+                                    wAllMouseEvents+wBordered,
+                                    StatusCommands, ucOopMain) then
+      Fail;
+    cswTW := TW;
+    with TpUiColors do begin
+      cswPromptAttr := ColorMono(CtrlColor, CtrlMono);
+      cswFieldAttr  := ColorMono(TextColor, TextMono);
+    end;
+    CustomizeWindow(Self, ' Status ', 8);
+    SetCursor(cuHidden);
+  end;
+
+  procedure ComStatusWindow.UpdateContents;
+  begin
+    cswUpdateContents;
+    CommandWindow.UpdateContents;
+  end;
+
+  procedure ComStatusWindow.cswUpdateContents;
+  const
+    XLow = 1;
+    YLow = 1;
+  var
+    B : Boolean;
+  begin
+    wFastWrite('Baud:', YLow+1, XLow+2, cswPromptAttr);
+    wFastWrite('DataBits:', YLow+2, XLow+2, cswPromptAttr);
+    wFastWrite('Sfw flow:', YLow+3, XLow+2, cswPromptAttr);
+    wFastWrite('Com port:', YLow+4, XLow+2, cswPromptAttr);
+
+    wFastWrite('StopBits:', YLow+1, XLow+33, cswPromptAttr);
+    wFastWrite('Parity:', YLow+2, XLow+33, cswPromptAttr);
+    wFastWrite('Hdw flow:', YLow+3, XLow+33, cswPromptAttr);
+    wFastWrite('FIFO:', YLow+4, XLow+33, cswPromptAttr);
+
+    with cswTW^.GetTerminalWinPort^, PR^ do begin
+      wFastWrite(LeftPad(Long2Str(CurBaud), 8), YLow+1, XLow+18, cswFieldAttr);
+      wFastWrite(LeftPad(Long2Str(CurDataBits), 8), YLow+2, XLow+18, cswFieldAttr);
+      {$IFDEF UseSWFlow}
+      B := SWFlowState <> fsOff;
+      {$ELSE}
+      B := False;
+      {$ENDIF}
+      wFastWrite(OffOn[B], YLow+3, XLow+23, cswFieldAttr);
+      wFastWrite(ComNameString(GetComName), YLow+4, XLow+22, cswFieldAttr);
+      wFastWrite(LeftPad(Long2Str(CurStopBits), 8), YLow+1, XLow+50, cswFieldAttr);
+      wFastWrite(LeftPad(ParityString[CurParity], 8), YLow+2, XLow+50, cswFieldAttr);
+      {$IFDEF UseHWFlow}
+      B := HWFlowState <> fsOff;
+      {$ELSE}
+      B := False;
+      {$ENDIF}
+      wFastWrite(OffOn[B], YLow+3, XLow+55, cswFieldAttr);
+      {$IFDEF UseUart}                                                 {!!.01}
+      B := FifoStatus(GetBaseAddr);
+      wFastWrite(OffOn[B], YLow+4, XLow+55, cswFieldAttr);
+      {$ENDIF}                                                         {!!.01}
+    end;
+  end;
+
+  procedure ComStatusWindow.ProcessSelf;
+  var
+    Finished : Boolean;
+    Cmd : Word;
+  begin
+    Draw;
+    Finished := False;
+    repeat
+      GetNextCommand;
+      Cmd := GetLastCommand;
+      case Cmd of
+        ccHelp :
+          RequestHelp(wHelpIndex);
+        else
+          Finished:= True;
+      end;
+    until Finished;
+  end;
+
+  function InitComStatus(X1, Y1, X2, Y2 : Byte; Msg : String) : Boolean;
+    {-Initialize the ComStatus window}
+  begin
+    InitComStatus := ComStatusWin.Init(X1, Y1, X2, Y2, Msg, @TermiWin);
+  end;
+
+  procedure ProcessComStatus(var Cmd : Word);
+    {-Process the commands for the Statuswindow}
+  const
+    StatusMsg =
+      '<F5> Zoom  <F6> Next  <^F6> Prev  <AltM> Move  <AltR> Resize  <AltX> Exit';
+  var
+    AllDone : Boolean;
+
+    function ProcessLocalMenu(var Cmd : Word) : Boolean;
+      {-Process local menu commands}
+    const
+      LastChoice : Word = 1;
+    var
+      Stop : Boolean;
+      P : Pointer;
+    begin
+      StatusLocalMenu;
+
+      ProcessLocalMenu := True;
+      Stop := False;
+      repeat
+        case GetLocalMenuCmd(ComStatusWin, LastChoice) of
+          ccSelect :
+            begin
+              case LastChoice of
+                hidLocalClose    : Cmd := ccQuit;
+                hidLocalMove     : Cmd := MoveWindowCmd;
+                hidLocalResize   : Cmd := ResizeWindowCmd;
+                hidLocalZoom     : Cmd := ZoomWindowCmd;
+              end;
+              ProcessLocalMenu := False;
+              Stop := True;
+            end;
+          {$IFDEF UseMouse}
+          ccMouseSel :
+            begin
+              P := Desk.WindowClickedOn;
+              if P = @PhoneWin then
+                Stop := True
+              else if P <> nil then begin
+                Cmd := ccMouseSel;
+                ProcessLocalMenu := False;
+                Stop := True;
+              end;
+            end;
+          {$ENDIF}
+          MainMenuCmd :
+            begin
+              Cmd := MainMenuCmd;
+              ProcessLocalMenu := False;
+              Stop := True;
+            end;
+          LocalMenuCmd,
+          ccQuit,
+          ccError :
+            Stop := True;
+        end;
+      until Stop;
+      EraseLocalMenu;
+    end;
+
+  label Reevaluate;
+
+  begin
+    AllDone := False;
+    with ComStatusWin do begin
+      SetHelpIndex(StatusWinID);
+      repeat
+        Message(StatusMsg, True);
+        Process;
+        Cmd := GetLastCommand;
+  Reevaluate:
+        {process exit commands}
+        if not Desk.ProcessExitCommands(Cmd) then begin
+          {process any exit commands that TPUI can't handle for us}
+          case Cmd of
+            LocalMenuCmd :
+              if not ProcessLocalMenu(Cmd) then
+                goto Reevaluate;
+            NextWindowCmd..SelectWindow8,
+            ExitProgramCmd,
+            MainMenuCmd,
+            ccError,
+            ccQuit :
+              AllDone := True;
+          end;
+        end;
+      until AllDone;
+    end;
+  end;
+
+  procedure CloseComStatus(EraseFirst : Boolean);
+    {-Close the ComStatus window}
+  begin
+    if EraseFirst then
+      ComStatusWin.Erase;
+    ComStatusWin.Done;
+  end;
+
+
+  function OkToCloseComStatus : Boolean;
+  begin
+    OkToCloseComStatus := True;
+  end;
+

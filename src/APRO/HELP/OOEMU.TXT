@@ -1,0 +1,282 @@
+;-------------------------------------------------------------------
+!TOPIC 1069 OoEmu
+OoEmu provides two objects relating to terminal emulation. The
+TerminalEmulator object defines the basic data fields and methods needed by
+all terminal emulation objects. The AnsiEmulator object is a descendant of
+TerminalEmulator that can interpret 0142ANSI escape sequences.
+
+The following chart shows the hierarchy of objects implemented in OoEmu:
+
+  [0651Root]
+    1070TerminalEmulator
+      1079AnsiEmulator
+
+OoEmu also declares the following types and constants:
+
+  1088CommandRecord                  1085Emulator commands
+  1087Emulator options               1086Parser characters
+;
+;-------------------------------------------------------------------
+!TOPIC 1070 TerminalEmulator
+!NOINDEX
+TerminalEmulatorPtr = ^TerminalEmulator;
+!LINE
+TerminalEmulator = object(0651Root)
+
+Basic terminal emulator object. Makes no changes to incoming characters.
+Defines data fields and methods shared in common by "real" terminal objects.
+
+TerminalEmulator provides the following methods:
+
+  1072Done                           1071Init
+  1077Load                           1073ProcessChar
+  1078Store                          1076teOptionsAreOn
+  1075teOptionsOff                   1074teOptionsOn
+
+See also:  1079AnsiEmulator
+;
+;-------------------------------------------------------------------
+!TOPIC 1071 Init,TerminalEmulator
+!NOINDEX
+constructor 1070TerminalEmulator.Init(QueueSize : Byte);
+
+Initialize a TerminalEmulator.
+
+See also:  1072Done
+;
+;-------------------------------------------------------------------
+!TOPIC 1072 Done,TerminalEmulator
+!NOINDEX
+destructor 1070TerminalEmulator.Done; virtual;
+
+Dispose of a TerminalEmulator.
+
+See also:  1071Init
+;
+;-------------------------------------------------------------------
+!TOPIC 1073 ProcessChar,TerminalEmulator
+!NOINDEX
+procedure 1070TerminalEmulator.ProcessChar(C : Char;
+                                    var Command : 1088CommandRecord); virtual;
+
+Process a character and return a CommandRecord.
+
+See also:  1082AnsiEmulator.ProcessChar
+;
+;-------------------------------------------------------------------
+!TOPIC 1074 teOptionsOn
+!NOINDEX
+procedure 1070TerminalEmulator.teOptionsOn(Options : Word);
+
+Turn options on.
+
+See also:  1087Emulator options      1076teOptionsAreOn
+           1075teOptionsOff
+;
+;-------------------------------------------------------------------
+!TOPIC 1075 teOptionsOff
+!NOINDEX
+procedure 1070TerminalEmulator.teOptionsOff(Options : Word);
+
+Turn options off.
+
+See also:  1087Emulator options      1076teOptionsAreOn
+           1074teOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 1076 teOptionsAreOn
+!NOINDEX
+function 1070TerminalEmulator.teOptionsAreOn(Options : Word) : Boolean;
+
+Return True if all specified options are on.
+
+See also:  1087Emulator options      1075teOptionsOff
+           1074teOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 1077 Load,TerminalEmulator
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 1070TerminalEmulator.Load(var S : IdStream);
+!WRAP
+
+Load a TerminalEmulator object from a stream. The stream registration
+routine for a TerminalEmulator object is TerminalEmulatorStream.
+
+See also:  1078Store
+;
+;-------------------------------------------------------------------
+!TOPIC 1078 Store,TerminalEmulator
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+procedure 1070TerminalEmulator.Store(var S : IdStream);
+!WRAP
+
+Store a TerminalEmulator object to a stream. The stream registration
+routine for a TerminalEmulator object is TerminalEmulatorStream.
+
+See also:  1077Load
+;
+;-------------------------------------------------------------------
+!TOPIC 1079 AnsiEmulator
+!NOINDEX
+AnsiEmulatorPtr = ^AnsiEmulator;
+!LINE
+AnsiEmulator = object(1070TerminalEmulator)
+
+Emulator object for PC 0142ANSI escape sequences.
+
+AnsiEmulator provides the follow methods:
+
+  1081Done                           1080Init
+  1083Load                           1082ProcessChar
+  1084Store
+;
+;-------------------------------------------------------------------
+!TOPIC 1080 Init,AnsiEmulator
+!NOINDEX
+constructor 1079AnsiEmulator.Init(QueueSize : Byte);
+
+Initialize an AnsiEmulator.
+
+See also:  1071TerminalEmulator.Init
+;
+;-------------------------------------------------------------------
+!TOPIC 1081 Done,AnsiEmulator
+!NOINDEX
+destructor 1079AnsiEmulator.Done; virtual;
+
+Dispose of an AnsiEmulator.
+
+See also:  1072TerminalEmulator.Done
+;
+;-------------------------------------------------------------------
+!TOPIC 1082 ProcessChar,AnsiEmulator
+!NOINDEX
+procedure 1079AnsiEmulator.ProcessChar(C : Char; var Command : 1088CommandRecord);
+                                                                  virtual;
+
+Process a character and return a CommandRecord. For example:
+
+  var
+    AE : AnsiEmulator;
+    CR : CommandRecord;
+    S  : string;
+    I  : Byte;
+  ...
+    S := ^L'Hello world!';
+    for I := 1 to Length(S) do begin
+      AE.ProcessChar(S[I], CR);
+      case CR.Cmd of
+        eClearScreen : ClrScr;
+        eChar : Write(CR.Ch);
+        {... handle other commands ...}
+      end;
+    end;
+
+When I = 1, CR.Cmd would be eClearScreen. Thereafter, CR.Cmd would be eChar
+and CR.Ch would contain the I'th character in S.
+
+See also:  1085Emulator commands     1073TerminalEmulator.ProcessChar
+;
+;-------------------------------------------------------------------
+!TOPIC 1083 Load,AnsiEmulator
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 1079AnsiEmulator.Load(var S : IdStream);
+!WRAP
+
+Load an AnsiEmulator object from a stream. The stream registration routine
+for an AnsiEmulator object is AnsiEmulatorStream.
+
+See also:  1084Store
+;
+;-------------------------------------------------------------------
+!TOPIC 1084 Store,AnsiEmulator
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+procedure 1079AnsiEmulator.Store(var S : IdStream);
+!WRAP
+
+Store an AnsiEmulator object to a stream. The stream registration routine
+for an AnsiEmulator object is AnsiEmulatorStream.
+
+See also:  1083Load
+;
+;-------------------------------------------------------------------
+!TOPIC 1085 Emulator commands
+!NOINDEX
+const
+  eNone             = 0;   {no command, ignore this char}
+  eChar             = 1;   {no command, process the char}
+  eGotoXY           = 2;   {absolute goto cursor position call}
+  eUp               = 3;   {cursor up}
+  eDown             = 4;   {cursor down}
+  eRight            = 5;   {cursor right}
+  eLeft             = 6;   {cursor left}
+  eClearBelow       = 7;   {clear screen below cursor}
+  eClearAbove       = 8;   {clear screen above cursor}
+  eClearScreen      = 9;   {clear entire screen}
+  eClearEndofLine   = 10;  {clear from cursor to end of line}
+  eClearStartOfLine = 11;  {clear from cursor to the start of line}
+  eClearLine        = 12;  {clear entire line that cursor is on}
+  eSetMode          = 13;  {set video mode}
+  eSetBackground    = 14;  {set background attribute}
+  eSetForeground    = 15;  {set foreground attribute}
+  eSetAttribute     = 16;  {set video attribute (foreground & background)}
+  eSaveCursorPos    = 17;  {save cursor position}
+  eRestoreCursorPos = 18;  {restore cursor position}
+  eError            = 255; {parser error}
+
+Emulator commands.
+
+See also:  1082AnsiEmulator.ProcessChar  1088CommandRecord
+;
+;-------------------------------------------------------------------
+!TOPIC 1086 Parser characters
+!NOINDEX
+const
+  Escape      = #27;
+  LeftBracket = #91;
+  Semicolon   = #59;
+  FormFeed    = #12;
+
+Special parser characters for 0142ANSI escape sequences.
+;
+;-------------------------------------------------------------------
+!TOPIC 1087 Emulator options
+!NOINDEX
+const
+  teMapVT100 = $0001;
+  teMaskBlinkOnInverse = $0002;
+
+Emulator options. If the teMapVT100 option is set, the AnsiEmulator object
+assumes a parameter of 0 (as VT100 terminals do) rather than 2 (as ANSI.SYS
+does) when the J or K commands are issued with no parameters. To ensure
+proper behavior of the emulator, this option should always be set when
+emulating a VT100. If the teMaskBlinkOnInverse option is set, the blink bit
+is masked after a request to invert an attribute. If it is not set, a
+request to invert an attribute results in a blinking attribute if the
+previous foreground attribute was using an intense color and the monitor is
+using blink mode.
+
+See also:  1074TerminalEmulator.teOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 1088 CommandRecord
+!NOINDEX
+type
+  CommandRecord =
+    record
+      Ch   : Char;     {the character}
+      Cmd  : Byte;     {the command}
+      X, Y, Z : Byte;  {the parameters (only X and Y used currently)}
+    end;
+
+Record type used to describe a command and its parameters.
+
+See also:  1082AnsiEmulator.ProcessChar  1085Emulator commands

@@ -1,0 +1,113 @@
+const
+  MaxTags      = 5;     {Maximum number of err corr or data comp tags}
+  TagSepChar   = ',';   {Character that separates tags in a profile String}
+  ModemNameLen = 31;    {Length of a modem name String}
+  CmdLen       = 41;    {Maximum length of a modem command}
+  RspLen       = 21;    {Maximum length of a modem response}
+  TagLen       = 21;    {Maximum length of a tag String}
+  TagProfLen   = 105;   {Maximum length of a tag profile String}
+  BoolLen      = 5;     {Maximum length of a boolean String}
+  BaudLen      = 7;     {Maximum length of a baud rate String}
+  ConfigLen    = 255;   {Maximum length of a configuration String}
+
+type
+  ModemNameType    = String[ModemNameLen];
+  CmdStrType       = String[CmdLen];
+  RspStringType    = String[RspLen];
+  TagStringType    = String[TagLen];
+  TagProfStrType   = String[TagProfLen];
+  ConfigStringType = String[ConfigLen];
+  BooleanStrType   = String[BoolLen];
+  BaudStrType      = String[BaudLen];
+
+  TTagArray = array[1..MaxTags] of TagStringType;
+
+  ModemBaseDataPtr = ^ModemBaseData;
+  ModemBaseData = record
+    Name          : ModemNameType;
+    InitCmd       : CmdStrType;
+    DialCmd       : CmdStrType;
+    DialTerm      : CmdStrType;
+    DialCancel    : CmdStrType;
+    HangupCmd     : CmdStrType;
+    ConfigCmd     : ConfigStringType;
+    AnswerCmd     : CmdStrType;
+    OkMsg         : RspStringType;
+    ConnectMsg    : RspStringType;
+    BusyMsg       : RspStringType;
+    VoiceMsg      : RspStringType;
+    NoCarrierMsg  : RspStringType;
+    NoDialToneMsg : RspStringType;
+    ErrorMsg      : RspStringType;
+    RingMsg       : RspStringType;
+  end;
+
+  ModemDataPtr = ^ModemData;
+  ModemData = record
+    Data         : ModemBaseData;
+    NumErrors    : Word;
+    Errors       : TTagArray;
+    NumComps     : Word;
+    Compression  : TTagArray;
+    LockDTE      : Boolean;
+    DefBaud      : LongInt;
+  end;
+
+  ModemDBaseRecPtr = ^ModemDBaseRec;
+  ModemDBaseRec = IniDataBaseRec;
+
+{$IFDEF UsePModeDLL}
+  procedure InitModemDB(var D : ModemDBaseRecPtr; FName : String;
+                        ReadOnly : Boolean; AlwaysRW: Boolean); Export;
+  procedure DoneModemDB(D : ModemDBaseRecPtr); Export;
+  procedure AddModem(D : ModemDBaseRecPtr; Modem : ModemData); Export;
+  procedure UpdModem(D : ModemDBaseRecPtr; ModemName : ModemNameType;
+                     Modem : ModemData); Export;
+  procedure DelModem(D : ModemDBaseRecPtr; ModemName : ModemNameType); Export;
+  procedure RetrieveModem(D : ModemDBaseRecPtr; ModemName : ModemNameType;
+                          var Modem : ModemData); Export;
+  function NumModems(D : ModemDBaseRecPtr) : Integer; Export;
+  procedure WriteModemToIni(D : ModemDBaseRecPtr; Rec : ModemData;
+                            Group, IniFile : String); Export;
+  procedure ReadModemFromIni(D : ModemDBaseRecPtr; var Rec : ModemData;
+                             Group, IniFile : String); Export;
+  procedure FlushModDBFile(D : ModemDBaseRecPtr); Export;
+  procedure SetModDBFileName(D : ModemDBaseRecPtr; NewName : String); Export;
+{$ELSE}
+  procedure InitModemDB(var D : ModemDBaseRecPtr; FName : String;
+                        ReadOnly : Boolean; AlwaysRW: Boolean);
+    {-Initialize a modem database}
+
+  procedure DoneModemDB(D : ModemDBaseRecPtr);
+
+  procedure AddModem(D : ModemDBaseRecPtr; Modem : ModemData);
+    {-Add a modem to the database}
+
+  procedure UpdModem(D : ModemDBaseRecPtr; ModemName : ModemNameType;
+                     Modem : ModemData);
+    {-Update a modem's record in the database}
+
+  procedure DelModem(D : ModemDBaseRecPtr; ModemName : ModemNameType);
+    {-Delete a modem from the database}
+
+  procedure RetrieveModem(D : ModemDBaseRecPtr; ModemName : ModemNameType;
+                          var Modem : ModemData);
+    {-Get a modem from the database}
+
+  function NumModems(D : ModemDBaseRecPtr) : Integer;
+    {-Return the number of modems in a database}
+
+  procedure WriteModemToIni(D : ModemDBaseRecPtr; Rec : ModemData;
+                            Group, IniFile : String);
+    {-Write the modem to a user-specified .INI file}
+
+  procedure ReadModemFromIni(D : ModemDBaseRecPtr; var Rec : ModemData;
+                             Group, IniFile : String);
+    {-Read the modem from a user-specified .INI file}
+
+  procedure FlushModDBFile(D : ModemDBaseRecPtr);
+    {-Write a modem database to disk}
+
+  procedure SetModDBFileName(D : ModemDBaseRecPtr; NewName : String);
+    {-Change filename of a modem database}
+{$ENDIF}

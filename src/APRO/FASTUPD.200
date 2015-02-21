@@ -1,0 +1,119 @@
+
+This file summarizes changes made between Async Profession 1.12 and 2.00.
+It is of interest primarily to Fast Update Plan subscribers.
+
+New Features
+---------------------------------------------------------------------
+
+This section provides an overview of the new features in Async
+Professional version 2.0. It also describes a few changes that might
+impact your Async Professional 1.x programs.
+
+Async Professional now provides fax capabilities. You can convert
+text, PCX, and TIFF documents to fax format. You can display and print
+received fax files, and even convert them to PCX. The fax send and
+receive units are modeled after the protocol units, with a similar set
+of features and user hooks. Async Professional supports Class 1, Class
+2, and CAS send and receive faxmodems. See Chapter 10 for a complete
+description of the fax facilities.
+
+Another new feature of Async Professional version 2.0 is DOS protected
+mode DLLs. Using Borland Pascal 7.0, you can compile Async
+Professional to a series of DLLs rather than directly linking the
+code. Naturally you are free to distribute the DLLs with your
+applications. See 2.F for more information on protected mode DLLs.
+
+Two new device layer units were added. APFOSSIL provides support for
+FOSSIL device drivers. APDIGI14 provides support for DigiBoards using
+the DigiBoard XIDOS5.SYS device driver. The bonus DigiBoard unit from
+early versions of Async Professional is gone because APDIGI14 works
+with a much wider set of DigiBoard products. These changes first
+appeared in Async Professional 1.10 and 1.11. They are now also
+documented in the manual (see 4.D and 4.E).
+
+Buffer information and software/hardware flow control functions were
+moved to the device layer from the interface layer.
+
+The protocol layer of Async Professional now includes the CompuServe
+B+ protocol. The architecture of B+ closely matches that of other
+Async Professional protocols. The B+ bonus unit is gone, although the
+GIF support remains in the bonus archive GIFDEMO.LZH. See 7.H for a
+description of the B+ protocol.
+
+All file transfer protocols now support the background model, which
+permits multitasking the protocols with another process in your
+program or writing true background protocol TSRs. See 7.C for more
+information on background file transfers.
+
+The ZIP and LZH units now support compression in addition to
+decompression. ZIP 1.x implode compression is supported. On the LZH
+side, support was added for both compression and decompression of LHA
+2.x files. The compression units are documented in Chapter 11.
+
+If you are upgrading from version 1.x of Async Professional, you will
+notice a few changes. The biggest change is that Turbo Pascal 6.0 is
+now required. This is because many of the new routines take advantage
+of features that are available in Turbo Pascal 6.0 and later.
+
+If you wrote a device layer using Async Professional 1.03 or earlier,
+you need to add some additional core functions in the area of buffer
+information and flow control. See 4.G for more information on the
+core routines.
+
+A misnamed public identifier was changed: NoAbortProc was renamed to
+NoAbortFunc.
+
+
+Bugs Fixed
+---------------------------------------------------------------------
+
+ APDIGI14
+   - OutBuffUsed may return wrong value
+
+ APFOSSIL
+   - Drops DTR and possibly DCD if SetRTS is called
+   - Added epNonFatal to PeekChar buffer full condition
+
+ APUART
+   - SetUart improvements
+   - EventLogging report looks weird when ShareIrq is on
+
+ APPORT
+   - CheckForString could fail to find a valid match
+
+ OOABSPCL/APABSPCL
+   - Flow control could get stuck with apRTSLowForWrite
+
+ OOASCII/APASCII
+   - Rewrite for background support
+
+ OOCOM/APCOM
+   - GetBlockDirect doesn't work with delimiters
+
+ OOKERMIT/APKERMIT
+   - Rewrite for background support
+
+ OOLZH/APLZH
+   - Hang on some invalid LZH files
+
+ OOMODEM/APMODEM
+   - AddModemCommand sometimes doesn't replace commands
+   - Made modem units usable with a one-char peekChar
+
+ OOXMODEM/APXMODEM
+   - SetReceiveFilename to be called after SetDestDir
+   - Possible extra call to status window after close
+
+ OOYMODEM/APYMODEM
+   - Collect last Ack in Ymodem xmit
+   - Ymodem receives don't recover from unexpected handshake chars
+
+ OOZMODEM/APZMODEM
+   - Misses first character of first file in file list
+   - Could lose a file handle
+
+ TERMWIN\COMUTIL
+   - Capture append leaves ^Z in file
+   - Floating view lost if twFullScreenZoom option is off
+
+

@@ -1,0 +1,145 @@
+This file summarizes changes made between Async Professional 2.01 and
+2.02. It is of interest primarily to recipients of the APR202.EXE patch
+file from TurboPower Software's Electronic Maintenance System.
+
+New Features
+---------------------------------------------------------------------
+Most of the new features are described in detail in READ.1ST. The
+following is a brief description of them, arranged by unit. Minor
+enhancements to existing programs and routines are listed here only and
+are denoted by asterisks.
+
+General
+  * FileMode changed to read/deny none around all file resets
+  * compiles with OPRO 1.30
+  * added PeekChar/PeekCharTimeout support to APINT14
+
+APFOSSIL
+  - added new option ptBufferGetChar
+
+APDIGI14
+  - added new option ptBufferGetChar
+
+APPORT
+  - added AppendTrace/AppendTraceHex functions
+
+APUART
+  * increased active port count to 8
+
+APFAX12/OOFAX12
+  - added GetModemClassSupportEx to detect class 2.0 faxmodems
+  * saves partial received fax files
+  * improved hangup logic after failed fax session
+  * added fpWaiting state for class 1 and class 2 modems
+
+COMTEST/COMTESTO
+  - added /Q command line option for specifying non-standard IRQs
+
+All fax demos
+  - modified to report class 2.0 modems
+
+
+Bugs Fixed
+---------------------------------------------------------------------
+
+DPMI
+  - SetSegmentLimit throws away status
+  - AllocLTDDescriptors can return 0 on failure
+
+APANSI/OOEMU
+  - fails with "setmode" strings with multiple default parameters
+  - error not returned on some invalid sequences
+
+TERMWIN
+  - various visual problems
+
+APTIMER
+  - Delay function sometimes incorrect
+
+APUART
+  - IRQ chaining was broken in 2.00 and 2.01
+
+APFOSSIL
+  - protocols don't work with apRTSLowForWrite option
+
+APCOM/OOCOM
+  - could lose line breaks
+  - WaitForString could miss a string
+  - possible HW flow control lock when using GetBlockDirect
+
+APMODEM/OOMODEM
+  - SetModemCmdMode would times out if +++ not echoed
+  - GetModemRegister doesn't work
+  - AddModemCode doesn't add options properly
+  - doesn't work in pmode (APMODEM only)
+
+APABSPCL/OOABSPCL
+  - Random protocol receive hangs
+  - EstimateTransferSeconds wrong if TurnDelay is large
+
+APXMODEM/OOXMODEM
+  - couldn't receive 1K blocks at 300 or 1200 baud
+  - ProtocolReceive could get stuck at end of protocol
+
+APKERMIT/OOKERMIT
+  - valid received files sometimes discarded
+  - lockup when transferring to some hosts
+
+APASCII/OOASCII
+  - would miss last few received bytes if stopped by <ESC>
+
+APZMODEM/OOZMODEM
+  - uploads to Delphi online service fail
+
+APFAXCVT/OOFAXCVT
+  - ignores rest of line after formfeed
+  - pad to end of page too short
+  - loss of up to 7 pixels during TIFF compression
+
+APFAX12/OOFAX12
+  - leaks file handles when fax sessions are aborted
+  - class 1 high BPS rates (12000, 14400) don't work
+  - doesn't always call error procedure on errors
+  - could hang in tfSendPage a while
+  - support for low baud not perfect
+  - might not receive at 4800 BPS
+  - possible 204 on low-memory during InitTextConverter
+  - GetModemInfo could return non-zero AsyncStatus
+  - possible bad fax sent if cover page only, in class 2
+  - CvrF could be uninitialized during a Close call
+  - AsyncStatus set to zero after some failures
+  - retrain after page not working in class 2
+  - can't send via class 1 to some fax machines
+  - GetModemClassSupport would classify class 2.0 modems as class 2
+  - problem sending APF as cover page only in class 2
+
+APARCHIV/OOARCHIV
+  - wouldn't restore default directory in some situations
+
+APZIP/OOZIP
+  - ReadString, dReadBuf, Deflate return undefined on BlockRead errors
+  - misses CRC error on deflate
+  - memory leak when deleting file comment
+  - GPF in dLongestMatch
+  - file handle leak
+  - allows duplicate files in archive
+
+APFAXPRN/OOFAXPRN
+  - AsyncStatus sometimes got cleared inadvertently
+
+APLZH/OOLZH
+  - memory leak when compressing zero-length files
+  - memory leaks in low-memory conditions
+  - Create method doesn't initialize compression method
+  - can't abort decompress
+
+TPFAX
+  - HWFlowEnable was failing
+  - downward scrolling could result in displayed garbage or GPF
+
+ZIPX/ZIPXO
+  - 32-byte heap leak
+
+ZIPV/ZIPVO
+  - runtime error 200 if archive contains a directory
+

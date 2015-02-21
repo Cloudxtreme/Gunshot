@@ -1,0 +1,652 @@
+;-------------------------------------------------------------------
+!TOPIC 1089 TermWin
+TermWin combines the lower-level facilities in Async Professional with
+those in Object Professional to create a pair of objects that can display
+incoming and outgoing text within a window that can be scrolled, moved,
+zoomed, or resized. The TerminalWindow object, derived from the Object
+Professional CommandWindow, provides this basic functionality, and the
+CaptureTerminalWindow object adds the ability to capture all incoming
+characters to a file. The object hierarchy looks like this:
+
+  [CommandWindow]
+    1090TerminalWindow
+      1111CaptureTerminalWindow
+
+See also:  1134Commands
+;
+;-------------------------------------------------------------------
+!TOPIC 1090 TerminalWindow
+!NOINDEX
+TerminalWindowPtr = ^TerminalWindow;
+!LINE
+TerminalWindow = object(CommandWindow)
+
+Terminal emulation object derived from an Object Professional
+CommandWindow. It displays incoming text in a moveable, zoomable,
+resizeable window. It provides the following methods:
+
+  1099CopyVirtToFile                 1133Declarations
+  1093Done                           1095GetIncomingChar
+  1108GetTerminalWinEmulator         1107GetTerminalWinPort
+  1091Init                           1092InitCustom
+  1109Load                           1094ProcessSelf
+  1096SendOutgoingChar               1101SetPageSize
+  1106SetTerminalWinEmulator         1105SetTerminalWinPort
+  1100SetView                        1110Store
+  1104twOptionsAreOn                 1103twOptionsOff
+  1102twOptionsOn                    1097WriteChar
+  1098WriteString
+;
+;-------------------------------------------------------------------
+!TOPIC 1091 Init,TerminalWindow
+!NOINDEX
+constructor 1090TerminalWindow.Init(X1, Y1, X2, Y2 : Byte;
+                                Port : AbstractPortPtr);
+
+Create a TerminalWindow.
+
+See also:  1093Done                  1092InitCustom
+           1106SetTerminalWinEmulator
+;
+;-------------------------------------------------------------------
+!TOPIC 1092 InitCustom,TerminalWindow
+!NOINDEX
+constructor 1090TerminalWindow.InitCustom(X1, Y1, X2, Y2 : Byte;
+                                      var Colors : ColorSet;
+                                      WindowOptions : LongInt;
+                                      Port : AbstractPortPtr;
+                                      Emu : TerminalEmulatorPtr;
+                                      ScrollBackRows : Word;
+                                      ScrollBackCols : Word;
+                                      TerminalOptions : LongInt);
+
+Create a TerminalWindow with custom options.
+
+See also:  0320AbstractPort          1125DefScrollBackCols
+           1126DefScrollBackRows     1127DefTerminalWinOptions
+           1093Done                  1130Options
+           1070TerminalEmulator
+;
+;-------------------------------------------------------------------
+!TOPIC 1093 Done,TerminalWindow
+!NOINDEX
+destructor 1090TerminalWindow.Done; virtual;
+
+Dispose of a TerminalWindow.
+
+See also:  1091Init                  1092InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1094 ProcessSelf,TerminalWindow
+!NOINDEX
+procedure 1090TerminalWindow.ProcessSelf; virtual;
+
+Begin processing a TerminalWindow.
+
+See also:  1134Commands
+;
+;-------------------------------------------------------------------
+!TOPIC 1095 GetIncomingChar,TerminalWindow
+!NOINDEX
+function 1090TerminalWindow.GetIncomingChar(var Key : Char) : Boolean; virtual;
+
+Return True if an incoming character has arrived at the serial port.
+
+See also:  1094ProcessSelf           1096SendOutgoingChar
+;
+;-------------------------------------------------------------------
+!TOPIC 1096 SendOutgoingChar
+!NOINDEX
+procedure 1090TerminalWindow.SendOutgoingChar(C : Char); virtual;
+
+Send a character out the serial port.
+
+See also:  1095GetIncomingChar
+;
+;-------------------------------------------------------------------
+!TOPIC 1097 WriteChar
+!NOINDEX
+procedure 1090TerminalWindow.WriteChar(C : Char); virtual;
+
+Write a character to the TerminalWindow with emulation.
+
+See also:  1092InitCustom            1106SetTerminalWinEmulator
+           1098WriteString
+;
+;-------------------------------------------------------------------
+!TOPIC 1098 WriteString
+!NOINDEX
+procedure 1090TerminalWindow.WriteString(S : String);
+
+Write a string to the TerminalWindow with emulation.
+
+See also:  1097WriteChar
+;
+;-------------------------------------------------------------------
+!TOPIC 1099 CopyVirtToFile
+!NOINDEX
+procedure 1090TerminalWindow.CopyVirtToFile(StartLine, EndLine : Integer;
+                                        FName : String;
+                                        StripTrailing : Boolean;
+                                        AsciiText : Boolean;
+                                        AppendIfExists : Boolean);
+
+Copy the specified lines of the virtual screen to a file.
+;
+;-------------------------------------------------------------------
+!TOPIC 1100 SetView
+!NOINDEX
+procedure 1090TerminalWindow.SetView(X, Y : Integer);
+
+Set the viewport into virtual screen.
+
+See also:  1130Options
+;
+;-------------------------------------------------------------------
+!TOPIC 1101 SetPageSize
+!NOINDEX
+procedure 1090TerminalWindow.SetPageSize(PageHeight : Integer);
+
+Set the height of a page in the virtual screen.
+
+See also:  1130Options
+;
+;-------------------------------------------------------------------
+!TOPIC 1102 twOptionsOn
+!NOINDEX
+procedure 1090TerminalWindow.twOptionsOn(Options : LongInt);
+
+Activate multiple terminal window options.
+
+See also:  1121BadTerminalWinOptions  1130Options
+           1104twOptionsAreOn         1103twOptionsOff
+;
+;-------------------------------------------------------------------
+!TOPIC 1103 twOptionsOff
+!NOINDEX
+procedure 1090TerminalWindow.twOptionsOff(Options : LongInt);
+
+Deactivate multiple terminal window options.
+
+See also:  1121BadTerminalWinOptions  1130Options
+           1104twOptionsAreOn         1102twOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 1104 twOptionsAreOn
+!NOINDEX
+function 1090TerminalWindow.twOptionsAreOn(Options : LongInt) : Boolean;
+
+Return True if all specified terminal window options are on.
+
+See also:  1130Options               1103twOptionsOff
+           1102twOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 1105 SetTerminalWinPort
+!NOINDEX
+procedure 1090TerminalWindow.SetTerminalWinPort(NewPort : AbstractPortPtr);
+
+Change the internal port object.
+
+See also:  1107GetTerminalWinPort    1092InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1106 SetTerminalWinEmulator
+!NOINDEX
+procedure 1090TerminalWindow.SetTerminalWinEmulator(NewEmu :
+                                                    TerminalEmulatorPtr);
+
+Change the internal emulator object.
+
+See also:  1108GetTerminalWinEmulator  1091Init
+           1092InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1107 GetTerminalWinPort
+!NOINDEX
+function 1090TerminalWindow.GetTerminalWinPort : AbstractPortPtr;
+
+Return a pointer to the port object.
+
+See also:  1092InitCustom            1105SetTerminalWinPort
+;
+;-------------------------------------------------------------------
+!TOPIC 1108 GetTerminalWinEmulator
+!NOINDEX
+function 1090TerminalWindow.GetTerminalWinEmulator : TerminalEmulatorPtr;
+
+Return a pointer to an emulator object.
+
+See also:  1091Init                  1092InitCustom
+           1106SetTerminalWinEmulator
+;
+;-------------------------------------------------------------------
+!TOPIC 1109 Load,TerminalWindow
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 1090TerminalWindow.Load(var S : IdStream);
+!WRAP
+
+Load a TerminalWindow object from a stream. The registration procedure for
+a TerminalWindow is TerminalWindowStream.
+
+See also:  1110Store
+;
+;-------------------------------------------------------------------
+!TOPIC 1110 Store,TerminalWindow
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+procedure 1090TerminalWindow.Store(var S : IdStream);
+!WRAP
+
+Store a TerminalWindow object to a stream. The registration procedure for a
+TerminalWindow is TerminalWindowStream.
+
+See also:  1109Load
+;
+;-------------------------------------------------------------------
+!TOPIC 1111 CaptureTerminalWindow
+!NOINDEX
+CaptureTerminalWindowPtr = ^CaptureTerminalWindow;
+!LINE
+CaptureTerminalWindow = object(1090TerminalWindow)
+
+A TerminalWindow with the ability to capture incoming characters and store
+them in a file. It provides the following methods:
+
+  1117Capture                        1118CaptureIsOn
+  1133Declarations                   1114Done
+  1116GetCaptureFileName             1112Init
+  1113InitCustom                     1119Load
+  1115SetCaptureFileName             1120Store
+;
+;-------------------------------------------------------------------
+!TOPIC 1112 Init,CaptureTerminalWindow
+!NOINDEX
+constructor 1111CaptureTerminalWindow.Init(X1, Y1, X2, Y2 : Byte;
+                                       Port : AbstractPortPtr);
+
+Create a CaptureTerminalWindow.
+
+See also:  1114Done                  1113InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1113 InitCustom,CaptureTerminalWindow
+!NOINDEX
+constructor 1111CaptureTerminalWindow.InitCustom(X1, Y1, X2, Y2 : Byte;
+                                             var Colors : ColorSet;
+                                             WindowOptions : LongInt;
+                                             Port : AbstractPortPtr;
+                                             Emu : TerminalEmulatorPtr;
+                                             ScrollBackRows : Word;
+                                             ScrollBackCols : Word;
+                                             TerminalOptions : LongInt;
+                                             CaptureFileName : String;
+                                             CaptureBufferSize : Word);
+
+Create a CaptureTerminalWindow with custom options.
+
+See also:
+  1123DefCaptureBufferSize           1124DefCaptureFileName
+  1127DefTerminalWinOptions          1114Done
+  1128MinCaptureBufferSize           1115SetCaptureFileName
+  1092TerminalWindow.InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1114 Done,CaptureTerminalWindow
+!NOINDEX
+destructor 1111CaptureTerminalWindow.Done; virtual;
+
+Dispose of a CaptureTerminalWindow.
+
+See also:  1113InitCustom            1093TerminalWindow.Done
+;
+;-------------------------------------------------------------------
+!TOPIC 1115 SetCaptureFileName
+!NOINDEX
+procedure 1111CaptureTerminalWindow.SetCaptureFileName(FName : String);
+
+Set the name of the capture file.
+
+See also:  1124DefCaptureFileName    1116GetCaptureFileName
+           1113InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1116 GetCaptureFileName
+!NOINDEX
+function 1111CaptureTerminalWindow.GetCaptureFileName : String;
+
+Get the name of the capture file.
+
+See also:  1118CaptureIsOn           1113InitCustom
+           1115SetCaptureFileName
+;
+;-------------------------------------------------------------------
+!TOPIC 1117 Capture
+!NOINDEX
+procedure 1111CaptureTerminalWindow.Capture(On : Boolean);
+
+Turn data capture on or off.
+
+See also:  1118CaptureIsOn           1113InitCustom
+           1115SetCaptureFileName
+;
+;-------------------------------------------------------------------
+!TOPIC 1118 CaptureIsOn
+!NOINDEX
+function 1111CaptureTerminalWindow.CaptureIsOn : Boolean;
+
+Return True if data capture is on.
+
+See also:  1117Capture
+;
+;-------------------------------------------------------------------
+!TOPIC 1119 Load,CaptureTerminalWindow
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 1111CaptureTerminalWindow.Load(var S : IdStream);
+!WRAP
+
+Load a CaptureTerminalWindow object from a stream. The registration
+procedure for a CaptureTerminalWindow is CaptureTerminalWindowStream.
+
+See also:  1120Store                 1109TerminalWindow.Load
+;
+;-------------------------------------------------------------------
+!TOPIC 1120 Store,CaptureTerminalWindow
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+procedure 1111CaptureTerminalWindow.Store(var S : IdStream);
+!WRAP
+
+Store a CaptureTerminalWindow object to a stream. The registration
+procedure for a CaptureTerminalWindow is CaptureTerminalWindowStream.
+
+See also:  1119Load                  1110TerminalWindow.Store
+;
+;-------------------------------------------------------------------
+!TOPIC 1121 BadTerminalWinOptions
+!NOINDEX
+const
+  BadTerminalWinOptions : LongInt =
+    twWasBordered+twCursorIsOn+twMouseCursor+twZoomed+ctwCaptureOn;
+
+TerminalWindow options that exist for internal use, and cannot be altered by
+calling 1102twOptionsOn or 1103twOptionsOff.
+
+See also:  1127DefTerminalWinOptions  1130Options
+;
+;-------------------------------------------------------------------
+!TOPIC 1122 ccIncomingChar
+!NOINDEX
+const
+  ccIncomingChar = ccUser54;
+
+A special user command used internally.
+;
+;-------------------------------------------------------------------
+!TOPIC 1123 DefCaptureBufferSize
+!NOINDEX
+const
+  DefCaptureBufferSize : Word = MinCaptureBufferSize;
+
+Default size of capture buffer used by CaptureTerminalWindow.
+
+See also:  1113InitCustom            1128MinCaptureBufferSize
+;
+;-------------------------------------------------------------------
+!TOPIC 1124 DefCaptureFileName
+!NOINDEX
+const
+  DefCaptureFileName = 'CAPTURE.LOG';
+
+Default name of capture file used by CaptureTerminalWindow.
+
+See also:  1113InitCustom            1115SetCaptureFileName
+;
+;-------------------------------------------------------------------
+!TOPIC 1125 DefScrollBackCols
+!NOINDEX
+const
+  DefScrollBackCols : Word = 80;
+
+Default number of columns for a TerminalWindow's virtual screen.
+
+See also:  1126DefScrollBackRows     1092InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1126 DefScrollBackRows
+!NOINDEX
+const
+  DefScrollBackRows : Word = 200;
+
+Default number of scroll back rows for a TerminalWindow.
+
+See also:  1125DefScrollBackCols     1092InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1127 DefTerminalWinOptions
+!NOINDEX
+const
+  DefTerminalWinOptions : LongInt =
+    twFloatingVView+twAdvanceOnClear+twFullScreenZoom;
+
+The default options for a TerminalWindow.
+
+See also:  1121BadTerminalWinOptions  1130Options
+;
+;-------------------------------------------------------------------
+!TOPIC 1128 MinCaptureBufferSize
+!NOINDEX
+const
+  MinCaptureBufferSize = 128;
+
+Minimum size of the capture buffer for a CaptureTerminalWindow.
+
+See also:  1123DefCaptureBufferSize  1113InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1129 Configuration data
+!NOINDEX
+!NOSEARCH
+const
+  TerminalKeyMax = 106;
+  TerminalKeyID : string[18] = 'terminal key array';
+  TerminalKeySet : array[0..TerminalKeyMax] of Byte = (...);
+  TerminalCfgEnd : Byte = 0;
+
+TerminalKeyId is an ID string used to mark the beginning of the
+configuration data area for TermWin; TerminalCfgEnd marks the end of the
+configuration data area. Between them is TerminalKeySet, the command table
+used by TerminalCommands. TerminalKeyMax is the last valid index into the
+table.
+
+See also:  1134Commands              1132TerminalCommands
+;
+;-------------------------------------------------------------------
+!TOPIC 1130 Options,TermWin
+!NOINDEX
+!NOSEARCH
+const
+  twFloatingHView = $00000001;  {horiz view follows cursor through vscreen}
+  twFloatingVView = $00000002;  {vert view follows cursor through vscreen}
+  twAdvanceOnClear= $00000004;  {advance view automatically on ClrScr}
+  twShowOutgoing  = $00000008;  {echo outgoing characters}
+  twWrapInWin     = $00000010;  {wrap text within window}
+  twOutCRtoCRLF   = $00000020;  {convert outgoing ^M to ^M^J}
+  twInCRtoCRLF    = $00000040;  {convert incoming ^M to ^M^J}
+  twOutLFtoCRLF   = $00000080;  {convert outgoing ^J to ^M^J}
+  twInLFtoCRLF    = $00000100;  {convert incoming ^J to ^M^J}
+  twMapMono       = $00000200;  {map ANSI/VT100 attributes to mono}
+  tw7Bits         = $00000400;  {strip high bit of incoming chars}
+  twFullScreenZoom= $00000800;  {eliminate border when zooming}
+  ctwOverwrite    = $00001000;  {capture should overwrite existing file}
+  ctwCaptureOn    = $08000000;  {internal flags}
+  twWasBordered   = $10000000;
+  twCursorIsOn    = $20000000;
+  twMouseCursor   = $40000000;
+  twZoomed        = $80000000;
+
+The available options for TerminalWindows. If the twFloatingHView option is
+on, the viewport is changed automatically when characters are received to
+ensure that the column containing the virtual cursor is visible on screen.
+If the twFloatingVView option is on, the viewport is changed automatically
+to ensure that the row containing the virtual cursor is visible on screen.
+Note that the twFloatingHView option by itself is undesirable. It is best
+to choose only the twFloatingVView option, or both options, or neither
+option.
+
+The twAdvanceOnClear option determines what happens to the virtual screen
+when a Clear Screen command is received from the remote (e.g., a ^L). If it
+is off, the entire virtual screen is cleared, the viewport is reset to 1,1,
+and the virtual cursor is moved to 1,1. If it is on, the virtual cursor and
+the viewport are moved to the top left corner of the next "page" and the
+page is cleared, leaving previously received text intact.
+
+If the twShowOutgoing option is on, any characters entered in the terminal
+window by the user are echoed to the screen before they are sent to the
+remote.
+
+If the twWrapInWin option is on, displayed text is wrapped as necessary to
+make it all visible within the window (e.g., if the window is 50 columns
+wide, when the 51st character on a line comes in, it is displayed at the
+beginning of the next line). If the option is off, text is wrapped (if
+necessary) when it reaches the right edge of the virtual screen (typically
+the same width as the physical screen), and the window must be scrolled
+horizontally to view text beyond the right edge of the window.
+
+If the twOutCRtoCRLF option is on, any outgoing CR (^M) characters are
+converted to CRLF (^M^J) pairs before they are sent to the remote. If the
+twInCRtoCRLF option is on, any CR (^M) characters received from the remote
+are converted to CRLF pairs.
+
+If the twOutLFtoCRLF option is on, any outgoing LF (^J) characters are
+converted to CRLF (^M^J) pairs before they are sent to the remote. (This
+option is generally useful only when using a TerminalWindow descendant to
+send characters from files created on a UNIX system.) If the twInLFtoCRLF
+option is on, any LF (^J) characters received from the remote are converted
+to CRLF (^M^J) pairs. (This option is generally useful only when
+communicating with a UNIX system.)
+
+The twMapMono option is useful if an AnsiEmulator is in use and a program
+is running on a monochrome display. If this option is on and a color change
+command is received from the remote, the TerminalWindow uses OPCRT's color
+mapping routines to alter the requested color for best results on the
+monochrome display.
+
+If the tw7Bits option is on, the high bit of all incoming characters is
+automatically stripped.
+
+If the twFullScreenZoom option is on, the border for the terminal window
+disappears when it is zoomed, and the frame coordinates are adjusted
+automatically to allow the zoomed window to occupy the entire screen.
+
+The ctwOverwrite option applies only to CaptureTerminalWindows. It
+determines what happens if Capture is asked to open a capture file that
+already exists. If the ctwOverwrite option is On, the file is overwritten.
+If not, new capture data is simply appended to the existing file.
+
+The remaining options are intended strictly for internal use by TERMWIN.
+
+See also:  1121BadTerminalWinOptions  1127DefTerminalWinOptions  1102twOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 1131 ucTermWin
+!NOINDEX
+const
+  ucTermWin = 40;
+
+Unit code passed to the help routine by TerminalWindow.ProcessSelf.
+
+See also:  1134Commands
+;
+;-------------------------------------------------------------------
+!TOPIC 1132 TerminalCommands
+!NOINDEX
+var
+  {$IFDEF UseDrag}
+  TerminalCommands : DragProcessor;
+  {$ELSE}
+  TerminalCommands : CommandProcessor;
+  {$ENDIF}
+
+The default CommandProcessor for a TerminalWindow.
+
+See also:  1134Commands              1129Configuration data
+;
+;-------------------------------------------------------------------
+!TOPIC 1133 Declarations,TermWin
+!NOINDEX
+!NOSEARCH
+TermWin declares the following constants and variables:
+
+  1121BadTerminalWinOptions          1122ccIncomingChar
+  1129Configuration data             1123DefCaptureBufferSize
+  1124DefCaptureFileName             1125DefScrollBackCols
+  1126DefScrollBackRows              1127DefTerminalWinOptions
+  1128MinCaptureBufferSize           1130Options
+  1132TerminalCommands               1131ucTermWin
+;
+;-------------------------------------------------------------------
+!TOPIC 1134 Commands,TermWin
+!NOINDEX
+!NOSEARCH
+The commands available while within a terminal window are arranged by
+category in the list below. The first line gives the name of the command,
+followed by the key(s) to which it is normally assigned. The second and
+following lines give a brief description of the command.
+
+!NOWRAP
+ccLeft        <Left>
+Scroll the display left one column.
+
+ccRight       <Right>
+Scroll the display right one column.
+
+ccUp          <Up>
+Scroll the display up one row.
+
+ccDown        <Down>
+Scroll the display down one row.
+
+ccHome        <Home>
+Scroll to the left edge of the virtual screen.
+
+ccEnd         <End>
+Scroll to the right edge of the virtual screen.
+
+ccPageUp      <PgUp>
+Scroll the display up one page (= height of window).
+
+ccPageDn      <PgDn>
+Scroll the display down one page (= height of window).
+
+ccTopOfFile   <^PgUp>, <CtrlQ><R>
+Scroll to the beginning of the virtual screen.
+
+ccEndOfFile   <^PgDn>, <CtrlQ><C>
+Scroll to the end of the virtual screen.
+
+ccMouseSel    <ClickLeft>
+!WRAP
+Does nothing inside the terminal window itself. Used to operate scroll
+bars, select hot spots, etc.
+
+!NOWRAP
+ccHelp        <F1>, <ClickBoth>
+!WRAP
+If a user-written help routine was established by calling
+TerminalCommands.SetHelpProc, pressing <F1> calls that routine;
+otherwise this command does nothing. If there is a GetHelpProc, the
+terminal window passes it the following three parameters: ucTermWin,
+@Self, and the window's help index (specified with SetHelpIndex).
+
+!NOWRAP
+ccQuit        <AltF3>, <ClickRight>
+Close the terminal window.
+
+See also:  1132TerminalCommands      1131ucTermWin

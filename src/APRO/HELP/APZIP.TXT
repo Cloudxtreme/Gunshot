@@ -1,0 +1,916 @@
+;-------------------------------------------------------------------
+!TOPIC 972 ApZip
+ApZip provides facilities for working with ZIP archives. It allows you to
+archive files, list the files stored in an archive, and extract files from
+an archive. At this time, APZIP works only with ZIP files that can be
+processed successfully by PKZIP version 1.x.
+
+ApZip offers the following routines:
+
+  0977BuildZipFileList               1020Compress
+  1019CompressFileMaskList           1032CreateZipFile
+  1016Declarations                   1022DeleteFileMaskList
+  1023DeleteFilesZip                 0978DeleteZipFileListNode
+  0974DoneZipFile                    0980DoneZipFileList
+  1018Extract                        0975ExtractFileMaskList
+  0979ExtractZipFileList             1021FreshenArchive
+  0973InitZipFile                    0976InitZipFileList
+  1029SetCompressionMode             1027SetCompressSuccessFunc
+  1041SetDeflateLevel                0984SetExtractSuccessFunc
+  1028SetFileCommentFunc             1030SetImplodeFactors
+  1026SetOkToCompressFunc            0981SetOkToWriteFunc
+  0982SetShowCommentsProc            0983SetShowMethodProc
+  0985SetShowProgressFunc            1024SetZipComment
+  1025UpdateCommentsFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 973 InitZipFile
+!NOINDEX
+procedure 0972ApZip.InitZipFile(ZipName : PathStr);
+
+Open a ZIP file.
+
+See also:  0974DoneZipFile
+;
+;-------------------------------------------------------------------
+!TOPIC 974 DoneZipFile
+!NOINDEX
+procedure 0972ApZip.DoneZipFile;
+
+Close the ZIP file.
+
+See also:  0973InitZipFile
+;
+;-------------------------------------------------------------------
+!TOPIC 975 ExtractFileMaskList,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.ExtractFileMaskListZip(var FML : 0180FileMaskList);
+!LINE
+procedure 0996UnZip.ExtractFileMaskList(var FML : 0166FileMaskList);
+
+Extract all files that match the file mask list.
+
+See also:  0979ExtractZipFileList    0174GetLastError
+;
+;-------------------------------------------------------------------
+!TOPIC 976 InitZipFileList
+!NOINDEX
+procedure 0972ApZip.InitZipFileList(var ZFL : 1008ZipFileList);
+
+Initialize a ZipFileList.
+
+See also:  0977BuildZipFileList      0980DoneZipFileList
+           0979ExtractZipFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 977 BuildZipFileList
+!NOINDEX
+procedure 0972ApZip.BuildZipFileList(var ZFL : 1008ZipFileList;
+                                 var FML : 0180FileMaskList);
+!LINE
+procedure 0996UnZip.BuildZipFileList(var ZFL : 0991ZipFileList;
+                                 var FML : 0166FileMaskList);
+
+Build a list of files to be unzipped.
+
+See also:  0980DoneZipFileList       0174GetLastError
+           0992Init                  0976InitZipFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 978 DeleteZipFileListNode
+!NOINDEX
+procedure 0972ApZip.DeleteZipFileListNode(var ZFL : 1008ZipFileList;
+                                      ZNP : 1009ZipNodePtr);
+
+Delete the specified node from the ZipFileList.
+
+See also:  0995Delete
+;
+;-------------------------------------------------------------------
+!TOPIC 979 ExtractZipFileList
+!NOINDEX
+procedure 0972ApZip.ExtractZipFileList(var ZFL : 1008ZipFileList);
+!LINE
+procedure 0996UnZip.ExtractZipFileList(var ZFL : 0991ZipFileList);
+
+Extract all files in the specified ZipFileList.
+
+See also:  0977BuildZipFileList      1018Extract
+           0975ExtractFileMaskList   0174GetLastError
+           0976InitZipFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 980 DoneZipFileList
+!NOINDEX
+procedure 0972ApZip.DoneZipFileList(var ZFL : 1008ZipFileList);
+
+Destroy a ZipFileList.
+
+See also:  0977BuildZipFileList      0976InitZipFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 981 SetOkToWriteFunc,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.SetOkToWriteFuncZip(OKF : 1004OkToWriteFunc);
+!LINE
+procedure 0996UnZip.SetOkToWriteFunc(OKF : 1012OkToWriteFunc);
+
+Specify a function to call before extracting a file.
+;
+;-------------------------------------------------------------------
+!TOPIC 982 SetShowCommentsProc
+!NOINDEX
+procedure 0972ApZip.SetShowCommentsProcZip(SCP : 1005ShowCommentsProc);
+!LINE
+procedure 0996UnZip.SetShowCommentsProc(SZCP : 1013ShowCommentsProc);
+
+Specify a function to display ZIP file name/comments.
+;
+;-------------------------------------------------------------------
+!TOPIC 983 SetShowMethodProc,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.SetShowMethodProcZip(SMP : 1006ShowMethodProc);
+!LINE
+procedure 0996UnZip.SetShowMethodProc(SMP : 1014ShowMethodProc);
+
+Specify a procedure to display file name and compression method.
+;
+;-------------------------------------------------------------------
+!TOPIC 984 SetExtractSuccessFunc,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.SetExtractSuccessFuncZip(ESF : 1003ExtractSuccessFunc);
+!LINE
+procedure 0996UnZip.SetExtractSuccessFunc(ESF : 1011ExtractSuccessFunc);
+
+Specify a function to call after a file is unarchived.
+;
+;-------------------------------------------------------------------
+!TOPIC 985 SetShowProgressFunc,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.SetShowProgressFuncZip(SPF : 1007ShowProgressFunc);
+!LINE
+procedure 0996UnZip.SetShowProgressFunc(SPF : 1015ShowProgressFunc);
+
+Specify a function to call to show progress.
+;
+;-------------------------------------------------------------------
+!TOPIC 986 OoZip
+OoZip provides facilities for working with ZIP archives. It allows you to
+archive files, list the files stored in an archive, and extract files from
+an archive. At this time, OOZIP works only with ZIP files that can be
+processed successfully by PKZIP version 1.x.
+
+OoZip implements four objects:
+
+  0987ZipNode     - A single file in an ZIP archive
+
+  0991ZipFileList - A list of files in an ZIP archive
+
+  [0171Archive]
+    0996UnZip     - Object for extracting files from ZIP archives
+      01033Zip    - Object for compressing files into ZIP archives
+
+See also:  1017Declarations
+;
+;-------------------------------------------------------------------
+!TOPIC 987 ZipNode,OoZip
+!NOINDEX
+ZipNodePtr = ^ZipNode;
+!LINE
+ZipNode =
+  object
+    znNext   : ZipNodePtr;
+    znCDH    : 0999CentralDirHead;
+    znFName  : PathStr;
+    znCP     : 1001CommentPtr;
+    znTagged : Boolean;
+  end;
+
+A single node in a ZipFileList. znFName is the name of the compressed file
+described by the CentralDirHead. znCP is the comment associated with the
+file, if any. The length of the comment is znCDH.CommentLength. znNext
+points to the next node in the list. znTagged may be set to False to
+prevent the file from being extracted. ZipFileList provides the following
+methods:
+
+  0989Done                           0988Init
+  0990SetTag
+
+See also:  0991ZipFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 988 Init,ZipNode
+!NOINDEX
+constructor 0987ZipNode.Init(var CDH : 0999CentralDirHead;
+                         var CP : 1001CommentPtr; var FName : PathStr);
+
+Initialize a node.
+
+See also:  0989Done                  0994ZipFileList.Append
+;
+;-------------------------------------------------------------------
+!TOPIC 989 Done,ZipNode
+!NOINDEX
+destructor 0987ZipNode.Done; virtual;
+
+Destroy a node.
+
+See also:  0988Init
+;
+;-------------------------------------------------------------------
+!TOPIC 990 SetTag,ZipNode
+!NOINDEX
+procedure 0987ZipNode.SetTag(On : Boolean);
+
+Tag/untag this node.
+;
+;-------------------------------------------------------------------
+!TOPIC 991 ZipFileList,OoZip
+!NOINDEX
+ZipFileListPtr = ^ZipFileList;
+!LINE
+ZipFileList =
+  object
+    zfHead : ZipNodePtr;
+    zfTail : ZipNodePtr;
+    zfCount : Word;
+  end;
+
+A singly-linked list of files in a ZIP file, generally created by calling
+UnZip.BuildZipFileList. zfHead points to the first node in the list, zfTail
+to the last. zfCount is the number of nodes in the list. ZipFileList
+provides the following methods:
+
+  0994Append                         0995Delete
+  0993Done                           0992Init
+
+See also:  0987ZipNode
+;
+;-------------------------------------------------------------------
+!TOPIC 992 Init,ZipFileList
+!NOINDEX
+constructor 0991ZipFileList.Init;
+
+Initialize a ZipFileList.
+
+See also:  0993Done
+;
+;-------------------------------------------------------------------
+!TOPIC 993 Done,ZipFileList
+!NOINDEX
+destructor 0991ZipFileList.Done; virtual;
+
+Destroy a ZipFileList.
+
+See also:  0992Init
+;
+;-------------------------------------------------------------------
+!TOPIC 994 Append,ZipFileList
+!NOINDEX
+function 0991ZipFileList.Append(var CDH : 0999CentralDirHead;
+                            var CP : 1001CommentPtr; var FName : PathStr) : Boolean;
+
+Add a node to the list.
+
+See also:  0977BuildZipFileList      0988ZipNode.Init
+;
+;-------------------------------------------------------------------
+!TOPIC 995 Delete,ZipFileList
+!NOINDEX
+procedure 0991ZipFileList.Delete(ZNP : 0987ZipNodePtr);
+
+Delete the specified node from the ZipFileList.
+
+See also:  0978DeleteZipFileListNode
+;
+;-------------------------------------------------------------------
+!TOPIC 996 UnZip
+!NOINDEX
+UnZipPtr = ^UnZip;
+!LINE
+UnZip =
+  object(0171Archive)
+    uzCrc : LongInt; {running CRC counter}
+    ...
+  end;
+
+An object used for extracting information and/or compressed files from a
+ZIP archive. uzCRC is a running CRC counter, used when extracting a file.
+This variable may be used by an ExtractSuccess function in the event of an
+ecBadFileCRC error to determine what the computed CRC value was. UnZip
+provides the following methods:
+
+  0977BuildZipFileList               1017Declarations
+  1018Extract                        0975ExtractFileMaskList
+  0979ExtractZipFileList             0997Init
+  0984SetExtractSuccessFunc          0981SetOkToWriteFunc
+  0982SetShowCommentsProc            0983SetShowMethodProc
+  0985SetShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 997 Init,UnZip
+!NOINDEX
+constructor 0996UnZip.Init(FName : PathStr);
+
+Initialize the archive and open the input file.
+
+See also:  0173Archive.Done          0172Archive.Init
+;
+;-------------------------------------------------------------------
+!TOPIC 998 Compression method codes,ApZip/OoZip
+!NOINDEX
+const
+  cmcStored   = 0; {stored (no compression)}
+  cmcShrunk   = 1; {shrunk}
+  cmcReduced1 = 2; {reduced - factor of 1}
+  cmcReduced2 = 3; {reduced - factor of 2}
+  cmcReduced3 = 4; {reduced - factor of 3}
+  cmcReduced4 = 5; {reduced - factor of 4}
+  cmcImploded = 6; {imploded}
+
+The possible compression method codes.
+
+See also:  0999CentralDirHead        0983SetShowMethodProc
+;
+;-------------------------------------------------------------------
+!TOPIC 999 CentralDirHead
+!NOINDEX
+type
+  CentralDirHead =
+    record
+      {... signature ...}         {a longint, $02014B50}
+      VersionMade : Word;         {version created by}
+      VersionNeeded : Word;       {version needed to extract}
+      BitFlag : Word;             {general purpose bit flag}
+      Method : Word;              {compression method: 0..6}
+      Time : Word;                {time file was last modified}
+      Date : Word;                {date file was last modified}
+      Crc : LongInt;              {32-bit CRC}
+      NewSize : LongInt;          {compressed size of file}
+      OrigSize : LongInt;         {uncompressed size of file}
+      NameLength : Word;          {length of filename}
+      ExtraLength : Word;         {length of extra field}
+      CommentLength : Word;       {length of comment for file}
+      DiskNumberStart : Word;     {number of disk on which file begins}
+      InternalAttrs : Word;       {internal file attrs, low bit = Text}
+      ExternalAttrs : LongInt;    {external file attrs, DOS dir attr}
+      LocalHeaderOfs : LongInt;   {rel. offset of local header for file}
+      {... filename (variable size)     ...}
+      {... extra field (variable size)  ...}
+      {... file comment (variable size) ...}
+    end;
+
+Entry for an individual file in the central directory of a ZIP file.
+
+See also:  1000CentralDirTail        0998Compression method codes
+           1002LocalHeader
+;
+;-------------------------------------------------------------------
+!TOPIC 1000 CentralDirTail
+!NOINDEX
+type
+  CentralDirTail =
+    record
+      {... signature ...}       {a longint, $06054B50}
+      DiskNumber : Word;        {disk number for this disk}
+      CentralDirDisk : Word;    {# of disk with start of central dir}
+      EntriesThisDisk : Word;   {total entries in directory on this disk}
+      TotalEntries : Word;      {total entries in central directory}
+      CentralDirSize : LongInt; {size of the central directory}
+      CentralDirOfs : LongInt;  {offset of start of central dir with
+                                 respect to starting disk number}
+      CommentLength : Word;     {length of ZIP file comment}
+      {... zip file comment (variable size) ...}
+    end;
+
+Record that marks the end of a ZIP file's central directory.
+
+See also:  0999CentralDirHead
+;
+;-------------------------------------------------------------------
+!TOPIC 1001 CommentPtr
+!NOINDEX
+type
+  CommentPtr = ^ZipComment;
+  ZipComment = array[1..65521] of Char;
+
+A comment in a ZIP file. Note that there is no length byte or terminating
+character (such as a #0). The length of the comment is stored separately.
+
+See also:  1005ApZip.ShowCommentsProc  1013OoZip.ShowCommentsProc
+;
+;-------------------------------------------------------------------
+!TOPIC 1002 LocalHeader
+!NOINDEX
+type
+  LocalHeader =
+    record
+      {... signature ...}   {a longint, $04034B50}
+      VersionNeeded : Word; {version needed to extract}
+      BitFlag : Word;       {general purpose bit flag}
+      Method : Word;        {compression method: 0-6}
+      Time : Word;          {time file was last modified}
+      Date : Word;          {date file was last modified}
+      Crc : LongInt;        {32-bit CRC}
+      NewSize : LongInt;    {compressed size of file}
+      OrigSize : LongInt;   {uncompressed size of file}
+      NameLength : Word;    {length of filename}
+      ExtraLength : Word;   {length of extra field}
+      {... filename (variable size)     ...}
+      {... extra field (variable size)  ...}
+      {... compressed data ...}
+    end;
+
+A header that precedes a compressed file in a ZIP archive.
+
+See also:  0999CentralDirHead
+;
+;-------------------------------------------------------------------
+!TOPIC 1003 ExtractSuccessFunc,ApZip
+!NOINDEX
+type
+  ApZip.ExtractSuccessFunc = function(var CDH : 0999CentralDirHead;
+                                      FName   : PathStr;
+                                      ErrCode : Word) : Boolean;
+
+A function called after a file is extracted from an archive. ErrCode
+contains 0 if the extraction was successful, else an error code. CDH is the
+header for the file being extracted, and FName is the name of the output
+file that was created. The function should return True if it wants the
+extraction operation to continue.
+
+See also:  0984SetExtractSuccessFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1004 OkToWriteFunc,ApZip
+!NOINDEX
+type
+  ApZip.OkToWriteFunc = function(var CDH   : 0999CentralDirHead;
+                                 var FName : PathStr) : Boolean;
+
+A function of this type is called to determine whether or not the specified
+file (FName) should be extracted from the ZIP archive. This function can
+also change the name of the file to be written. Note that the call is made
+after any file mask matching has been done.
+
+See also:  0981SetOkToWriteFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1005 ShowCommentsProc,ApZip
+!NOINDEX
+type
+  ShowCommentsProc = procedure(FName : PathStr; CP : 1001CommentPtr;
+                               CLen  : Word);
+
+A procedure of this type is called when a ZipFileList is being built, giving
+you an opportunity to display the name of the ZIP file and the associated
+file comment, if any.
+
+See also:  0982SetShowCommentsProc
+;
+;-------------------------------------------------------------------
+!TOPIC 1006 ShowMethodProc,ApZip
+!NOINDEX
+type
+  ApZip.ShowMethodProc = procedure(Method : Byte; FName : PathStr);
+
+A procedure of this type is called just before the specified file (FName)
+is compressed or extracted, giving you an opportunity to display its name
+and (during extraction) the compression method used (cmcStored through
+cmcImploded).
+
+See also:  0998Compression method codes  0983SetShowMethodProc
+;
+;-------------------------------------------------------------------
+!TOPIC 1007 ShowProgressFunc,ApZip
+!NOINDEX
+type
+  ApZip.ShowProgressFunc = function(BytesWritten : LongInt;
+                                    TotalBytes : LongInt) : Boolean;
+
+A function of this type is called periodically during the compression or
+extraction of a file, giving you an opportunity to indicate to the user that
+progress is being made. It should return False if it wants to abort the
+extract operation.
+
+See also:  0985SetShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1008 ZipFileList,ApZip
+!NOINDEX
+type
+  ZipFileList =
+    record
+      Head, Tail : ZipNodePtr;
+      Count : Word;
+    end;
+
+A singly-linked list of files in a ZIP file, generally created by calling
+0977BuildZipFileList. Head points to the first node in the list, Tail to the
+last. Count is the number of nodes in the list.
+
+See also:  1009ZipNode
+;
+;-------------------------------------------------------------------
+!TOPIC 1009 ZipNode,ApZip
+!NOINDEX
+type
+  ZipNodePtr = ^ZipNode;
+  ZipNode =
+    record
+      Next   : ZipNodePtr;
+      CDH    : CentralDirHead;
+      FName  : PathStr;
+      CP     : CommentPtr;
+      Tagged : Boolean;
+    end;
+
+A single node in a ZipFileList. FName is the name of the compressed file
+described by the CentralDirHead. CP is the comment associated with the
+file, if any. The length of the comment is CDH.CommentLength. Next points
+to the next node in the list. Tagged may be set to False to prevent the
+file from being extracted.
+
+See also:  0999CentralDirHead        1008ZipFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 1010 Crc,ApZip
+!NOINDEX
+var
+  ApZip.Crc : LongInt;
+
+Running CRC counter. This variable can be used by an ExtractSuccess
+function in the event of an ecBadFileCRC error to determine what the
+computed CRC value was. (CDH.CRC would contain the correct CRC value.)
+
+See also:  1003ExtractSuccessFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1011 ExtractSuccessFunc,OoZip
+!NOINDEX
+type
+  ExtractSuccessFunc = function(ZNP : 1009ZipNodePtr; FName : PathStr;
+                                UP : UnZipPtr) : Boolean;
+
+A function called after a file has been extracted from an archive. ZNP
+points the ZipNode corresponding to the file being extracted, and FName is
+the name of the output file that was being created. The success of the
+operation can be determined by calling UP^.GetLastError. The function should
+return True if it wants the extraction operation to continue.
+
+See also:  0984SetExtractSuccessFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1012 OkToWriteFunc,OoZip
+!NOINDEX
+type
+  OkToWriteFunc = function(ZNP : 1009ZipNodePtr; var FName : PathStr;
+                           UP : UnZipPtr) : Boolean;
+
+A function of this type is called to determine whether or not the specified
+file (FName) should be extracted from the ZIP archive. This function can
+also change the name of the file to be written. Note that the call is made
+after any file mask matching has been done.
+
+See also:  0981SetOkToWriteFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1013 ShowCommentsProc,OoZip
+!NOINDEX
+type
+  ShowCommentsProc = procedure(CP : 1001CommentPtr; CLen : Word;
+                               UP : UnZipPtr);
+
+A procedure of this type is called when a ZipFileList is being built,
+giving you an opportunity to display the name of the ZIP file and the
+associated file comment, if any.
+
+See also:  0982SetShowCommentsProc
+;
+;-------------------------------------------------------------------
+!TOPIC 1014 ShowMethodProc,OoZip
+!NOINDEX
+type
+  ShowMethodProc = procedure(ZNP : 1009ZipNodePtr; FName : PathStr;
+                             UP : UnZipPtr);
+
+A procedure of this type is called just before the specified file (FName) is
+compressed or extracted, giving you an opportunity to display its name and
+(during extraction) the compression method used (cmcStored..cmcImploded).
+
+See also:  0983SetShowMethodProc
+;
+;-------------------------------------------------------------------
+!TOPIC 1015 ShowProgressFunc,OoZip
+!NOINDEX
+type
+  ShowProgressFunc = function(UP : UnZipPtr; BytesWritten : LongInt;
+                              TotalBytes : LongInt) : Boolean;
+
+A function of this type is called periodically during compression or
+extraction of a file, giving you an opportunity to indicate to the user that
+progress is being made. It should return False if it wants to abort the
+extract operation.
+
+See also:  0985SetShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1016 Declarations,ApZip
+!NOINDEX
+!NOSEARCH
+ApZip declares the following types, constants, and variables:
+
+  0999CentralDirHead                 1000CentralDirTail
+  1001CommentPtr                     0998Compression method codes
+  1035CompressSuccessFunc            1010Crc
+  1003ExtractSuccessFunc             1036FileCommentFunc
+  1002LocalHeader                    1034OkToCompressFunc
+  1004OkToWriteFunc                  1005ShowCommentsProc
+  1006ShowMethodProc                 1007ShowProgressFunc
+  1008ZipFileList                    1009ZipNode
+
+;
+;-------------------------------------------------------------------
+!TOPIC 1017 Declarations,OoZip
+!NOINDEX
+!NOSEARCH
+OoZip declares the following types and constants:
+
+  0999CentralDirHead                 1000CentralDirTail
+  1001CommentPtr                     0998Compression method codes
+  1038CompressSuccessFunc            1011ExtractSuccessFunc
+  1039FileCommentFunc                1002LocalHeader
+  1037OkToCompressFunc               1012OkToWriteFunc
+  1013ShowCommentsProc               1014ShowMethodProc
+  1015ShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1018 Extract,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.ExtractZip(Mask : PathStr);
+!LINE
+procedure 0996UnZip.Extract(Mask : PathStr);
+
+Extract all files that match the specified file mask.
+;
+;------------------------------------------------------------------
+!TOPIC 1019 CompressFileMaskList,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.CompressFileMaskListZip(var FML : FileMaskList);
+!LINE
+procedure 1033Zip.CompressFileMaskList(var FML : FileMaskList);
+
+Compress all files that match a file mask list.
+
+See also:  1020Compress              1029SetCompressionMode
+;
+;------------------------------------------------------------------
+!TOPIC 1020 Compress,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.CompressZip(Mask : PathStr);
+!LINE
+procedure 1033Zip.Compress(Mask : PathStr);
+
+Compress all files that match a file mask.
+
+See also:  1019CompressFileMaskList
+;
+;------------------------------------------------------------------
+!TOPIC 1021 FreshenArchive,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.FreshenArchiveZip;
+!LINE
+procedure 1033Zip.FreshenArchive;
+
+Conditionally update files in the current archive.
+
+See also:  1019CompressFileMaskList
+;
+;------------------------------------------------------------------
+!TOPIC 1022 DeleteFileMaskList,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.DeleteFileMaskListZip(var FML : FileMaskList);
+!LINE
+procedure 1033Zip.DeleteFileMaskList(var FML : FileMaskLIst);
+
+Remove all files that match any mask in the file mask list from an archive.
+
+See also:  1023DeleteFilesZip
+;
+;------------------------------------------------------------------
+!TOPIC 1023 DeleteFilesZip
+!NOINDEX
+procedure 0972ApZip.DeleteFilesZip(Mask : PathStr);
+!LINE
+procedure 1033Zip.DeleteFiles(Mask : PathStr);
+
+Remove all files that match a file mask from an archive.
+
+See also:  1022DeleteFileMaskList
+;
+;------------------------------------------------------------------
+!TOPIC 1024 SetZipComment
+!NOINDEX
+procedure 0972ApZip.SetZipComment(var Comment; Len : Word);
+!LINE
+procedure 1033Zip.SetZipComment(var Comment; Len : Word);
+
+Add or update a ZIP comment.
+
+See also:  1025UpdateCommentsFileMaskList
+;
+;------------------------------------------------------------------
+!TOPIC 1025 UpdateCommentsFileMaskList
+!NOINDEX
+procedure 0972ApZip.UpdateCommentsFileMaskList(var FML : FileMaskList);
+!LINE
+procedure 1033Zip.UpdateCommentsFileMaskList(var FML : FileMaskLIst);
+
+Call the FileComment hook for all files in the archive that match FML.
+
+See also:  1028SetFileCommentFunc
+;
+;------------------------------------------------------------------
+!TOPIC 1026 SetOkToCompressFunc,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.SetOkToCompressFuncZip(OKC : 1034OkToCompressFunc);
+!LINE
+procedure 1033Zip.SetOkToCompressFunc(OKC : 1037OkToCompressFunc);;
+
+Specify a function to call before compressing a file.
+;
+;------------------------------------------------------------------
+!TOPIC 1027 SetCompressSuccessFunc,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.SetCompressSuccessFuncZip(CSF : 1035CompressSuccessFunc);
+!LINE
+procedure 1033Zip.SetCompressSuccessFunc(CSF : 1038CompressSuccessFunc);
+
+Specify a function to call after each file is compressed.
+;
+;------------------------------------------------------------------
+!TOPIC 1028 SetFileCommentFunc
+!NOINDEX
+procedure 0972ApZip.SetFileCommentFunc(FCF : 1036FileCommentFunc);
+!LINE
+procedure 1033Zip.SetFileCommentFunc(FCF : 1039FileCommentFunc);
+
+Specify a function to call for file comments.
+;
+;------------------------------------------------------------------
+!TOPIC 1029 SetCompressionMode,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.SetCompressionModeZip(Mode : 1040CompressionMode);
+!LINE
+procedure 0996UnZip.SetCompressionMode(Mode : 1040CompressionMode);
+
+Force the type of compression used.
+
+See also:  1041SetDeflateLevel
+;
+;------------------------------------------------------------------
+!TOPIC 1030 SetImplodeFactors
+!NOINDEX
+procedure 0972ApZip.SetImplodeFactors(MatchLength, Reps : Integer);
+!LINE
+procedure 1033Zip.SetImplodeFactors(MatchLength, Reps : Integer);
+
+Set the factors that affect speed and compression ratios.
+;
+;-------------------------------------------------------------------
+!TOPIC 1031 Create,Zip
+!NOINDEX
+constructor 1033Zip.Create(FName : PathStr);
+
+Create a new ZIP archive file.
+
+See also:  0988Init
+;
+;-------------------------------------------------------------------
+!TOPIC 1032 CreateZipFile
+!NOINDEX
+procedure 0972ApZip.CreateZipFile(ZipName : PathStr);
+
+Create a new ZIP archive file.
+
+See also:  0974DoneZipFile           0973InitZipFile
+;
+;------------------------------------------------------------------
+!TOPIC 1033 Zip
+!NOINDEX
+ZipPtr = ^Zip;
+!LINE
+Zip =
+  object(0996UnZip)
+    ...
+  end;
+
+An object used for adding files to or updating files within an ZIP archive.
+Zip provides the following methods:
+
+  1020Compress                           1019CompressFileMaskList
+  1031Create                             1023DeleteFiles
+  1022DeleteFileMaskList                 1021FreshenArchive
+  0988Init                               1029SetCompressionMode
+  1027SetCompressSuccessFunc             1041SetDeflateLevel
+  1028SetFileCommentFunc                 1030SetImplodeFactors
+  1026SetOkToCompressFunc                1024SetZipComment
+  1025UpdateCommentsFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 1034 OkToCompressFunc,ApZip
+!NOINDEX
+type
+  ApZip.OkToCompressFunc = function(NewFile, OldFile : PathStr;
+                                    var CDH : 0999CentralDirHead) : Boolean;
+
+A function of this type is called before each file is compressed, giving you
+the chance to skip the compression.
+
+See also:  0642SetOkToCompressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1035 CompressSuccessFunc,ApZip
+!NOINDEX
+type
+  ApZip.CompressSuccessFunc = function(var CDH : 0999CentralDirHead;
+                                       FName : PathStr;
+                                       ErrCode : Word) : Boolean;
+
+A function of this type is called after each file is compressed, giving you
+a chance to update your status display.
+
+See also:  1027SetCompressSuccessFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1036 FileCommentFunc,ApZip
+!NOINDEX
+type
+  FileCommentFunc = function(var CDH : 0999CentralDirHead;
+                             FName : PathStr;
+                             var CP : CommentPtr;
+                             var Len : Word) : Boolean;
+
+A function of this type is called after each file is compressed, or for each
+file that meets the file mask list supplied to UpdateCommentsFileMaskList,
+to get a new file comment.
+
+See also:  1028SetFileCommentFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1037 OkToCompressFunc,OoZip
+!NOINDEX
+type
+  OkToCompressFunc = function(NewFile, OldFile : PathStr;
+                              var CDH : 0999CentralDirHead;
+                              ZP : ZipPtr) : Boolean;
+
+A function of this type is called before each file is compressed, giving you
+the chance to skip the compression.
+
+See also:  0642SetOkToCompressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1038 CompressSuccessFunc,OoZip
+!NOINDEX
+type
+  CompressSuccessFunc = function(ZNode : 1009ZipNodePtr;
+                                 ZP : ZipPtr) : Boolean;
+
+A function of this type is called after each file is compressed, giving you
+a chance to update your status display.
+
+See also:  1027SetCompressSuccessFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1039 FileCommentFunc,OoZip
+!NOINDEX
+type
+  FileCommentFunc = function(ZNode : 1009ZipNodePtr; var CP : CommentPtr;
+                             var Len : Word; ZP : 1033ZipPtr) : Boolean;
+
+A function of this type is called after each file is compressed, or for each
+file that meets the file mask list supplied to UpdateCommentsFileMaskList,
+to get a new file comment.
+
+See also:  1028SetFileCommentFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 1040 CompressionMode,ApZip
+!NOINDEX
+type
+  ApZip.CompressionMode =
+    (cmBestMethod, cmStore, cmShrink, cmImplode, cmDeflate);
+
+Used by 1029SetCompressionMode to select the ZIP compression type.
+;
+;-------------------------------------------------------------------
+!TOPIC 1041 SetDeflateLevel,ApZip/OoZip
+!NOINDEX
+procedure 0972ApZip.SetDeflateLevel(Level : Byte);
+!LINE
+procedure 1033Zip.SetDeflateLevel(Level : Byte);
+
+Force the type of compression used.
+
+See also:  1029SetCompressionMode

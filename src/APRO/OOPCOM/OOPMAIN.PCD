@@ -1,0 +1,606 @@
+{*********************************************************}
+{*                  OOPMAIN.PCD 2.03                     *}
+{*       Copyright (c) TurboPower Software 1991.         *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+{.F-}
+
+  {------------ configuration options -----------}
+type
+  DirSortType     = (dstName, dstExt, dstDate, dstSize, dstDos);
+  DuplexType = (dupHalf, dupFull);
+  TonePulseType = (Tone, Pulse);
+  WordCodeType  = (Words, Codes);
+  ModemName     = String[12];
+
+  OptionsRecord =
+    record
+      Baud : LongInt;
+      Parity : ParityType;
+      DataBits : DataBitType;
+      StopBits : StopBitType;
+      HWFlowOn : Boolean;
+      SWFlowOn : Boolean;
+      PortOptions : Word;
+      Duplex : DuplexType;
+      Ansi : Boolean;
+      ComPrt : ComNameType;
+      DialPrefix : PrefixStr;
+      TonePulse : TonePulseType;
+      DialTimeOut : Word;
+      TimeOut     : Word;
+      DelayFactor : Word;
+      WordCodes   : WordCodeType;
+      ModemType   : ModemName;
+    end;
+
+const
+  OptX1           = 27;
+  OptY1           = 4;
+  OptX2           = 62;
+  OptY2           = 23;
+
+  StatusWinX1     = 10;
+  StatusWinY1     = 10;
+  StatusWinX2     = 70;
+  StatusWinY2     = 15;
+
+  MPLX1           = 57;
+  MPLY1           = 17;
+  MPLY2           = 23;
+
+  twUsingAnsi     = $01000000;  {terminal window using Ansi emulation}
+
+  {special exit commands}
+  ccToggleMode    = ccUser21;
+  ccNewMask       = ccUser22;
+  ccDeleteItem    = ccUser23;
+  ccInsertItem    = ccUser24;
+  ccCopyFiles     = ccUser25;
+  ccMoveFiles     = ccUser26;
+  ccDeleteFiles   = ccUser27;
+  ccRenameFile    = ccUser28;
+  ccLoadEditor    = ccUser29;
+  ccLoadBrowser   = ccUser30;
+  ccDialPhone     = ccUser31;
+  ccHangUpModem   = ccUser32;
+  ccBPlusUp       = ccUser33;
+  ccBPlusDown     = ccUser34;
+  MoveHotCode   = hsRegion0; {move, resize and zoom}
+  ResizeHotCode = hsRegion1;
+  ZoomHotCode   = hsRegion2;
+
+  ucOopMain = 30;
+
+  OneK = 1024;
+  InstallProgName = 'OOPINST.EXE';
+  DefEmuQueue           : Byte = 16;
+
+  {ID string to mark beginning of configuration data}
+  OopComID : string[23] = 'OopCom config data 1.0â';
+  ConfigFileName : PathStr = 'OOPCOM.CFG';
+
+  UseEmsForOverlays : Boolean = True;
+  {display options}
+  DefMouseSupport : Boolean = True;  {enable mouse support if mouse installed}
+  UseSoftMouseCursor : Boolean = True;
+  DefColorMap     : ColorChoice = UseDefault; {force color or mono?}
+
+  {browser}
+  BrowsePages     : Byte = 3;        {# of pages for browse window}
+  BrowseExpandTabs: Boolean = True; {expand tabs}
+  BrowseStripHigh : Boolean = False; {strip high bits}
+  BrowseHexMode   : Boolean = False; {hex/ascii}
+  BrowseDefExt    : ExtStr = '';     {default extension}
+
+  {editor}
+  EditBufferSize  : Word = 60 * OneK;{size of edit buffer}
+  EditAutoIndent  : Boolean = True;  {auto-indent}
+  EditWordWrap    : Boolean = True;  {word wrap}
+  EditDeleteJoins : Boolean = False; {delete joins lines}
+  EditIndentIsPara: Boolean = False;{indent starts paragraph}
+  EditReadPartial : Boolean = False; {read partial files}
+  EditMakeBackups : Boolean = True;  {make backup files}
+  EditSmartTabs   : Boolean = True;  {smart tabs}
+  EditWrapAtLeft  : Boolean = False; {wrap at left}
+  EditTabDelta    : Byte = 8;        {fixed tab size}
+  EditDefExt      : ExtStr = '';     {default extension}
+
+  {phone book}
+  DefPhoneExt     : ExtStr = 'PB';
+  PhoneBookName   : PathStr = 'OOPCOM.PB';
+
+  {help system}
+  HelpFileName    : PathStr = 'OOPCOM.HLP';
+  HelpX1          : Byte = 3;
+  HelpY1          : Byte = 15;
+  HelpX2          : Byte = 78;
+  HelpY2          : Byte = 22;
+
+  {terminal window info}
+  DefTermWinX1    : Byte = 2;
+  DefTermWinY1    : Byte = 3;
+  DefTermWinX2    : Byte = 55;
+  DefTermWinY2    : Byte = 22;
+  ScrollBackRows  : Word = 200;
+  DefComPort      : ComNameType = Com1;
+  DefCaptureName        : PathStr = 'OOPCOM.CAP';
+  CaptureBufferSize     : Word = 512;
+  BackgroundBufferBreak : Byte = 128;
+  BufferFullPercent     = 0.8;
+  BufferResumePercent   = 0.2;
+  DefUseAnsi            : Boolean = True;
+  DefDuplexType         : DuplexType = dupFull;
+  DefBaud : LongInt = 2400;
+  DefParity : ParityType = NoParity;
+  DefDataBits : DataBitType = 8;
+  DefStopBits : StopBitType = 1;
+  DefHWHOptions         : Word = {hfUseDTR +} hfUseRTS + hfRequireCTS;
+  DefSWFlow             : Boolean = False;
+
+  {modem options}
+  HangupDropDTR : Boolean = True;
+  DefWordCodes  : WordCodeType = Words;
+  DefModemType  : ModemName = 'HAYES';
+  DefDialTimeout: Word = 1092;
+  DefTimeout    : Word = 182;
+  DefDelayFactor : Word = 2;
+  DefDialPrefix : PrefixStr = '';
+  DefTonePulse  : TonePulseType = Tone;
+  ModemLibName  : PathStr = 'MODEM.OPL';
+  {$IFDEF OPRO12}
+  ModemLibSig   : OpLibrarySig = 'MODEMLIB';
+  {$ELSE}
+  ModemLibSig   : LibrarySig = 'MODEMLIB';
+  {$ENDIF}
+
+  DefProtocol : Byte = XModem;
+  IncludeDirs : Boolean = False;
+  HonorDir             : Boolean = False;
+  OverwriteMode        : WriteFailOptions = WriteFail;
+  AsciiCharDelay       : Word = 0;
+  AsciiLineDelay       : Word = 0;
+  ZMOverride           : Boolean = False;
+  ZMSkipNoFile         : Boolean = False;
+  MaxPacketLen         : Byte = 80;
+  MaxTimeout           : Byte = 5;
+  PadChar              : Byte = 0;
+  PadCount             : Byte = 0;
+  Terminator           : Byte = 13;
+  CtrlPrefix           : Char = '#';
+  HiBitPrefix          : Char = 'Y';
+  ChecksumType         : Char = '1';
+  RepeatPrefix         : Char = '~';
+
+  {colors}
+  TpUiColors : ColorSet = (
+    TextColor       : $1E; TextMono       : $0F;
+    CtrlColor       : $1C; CtrlMono       : $07;
+    FrameColor      : $13; FrameMono      : $07;
+    HeaderColor     : $3F; HeaderMono     : $70;
+    ShadowColor     : $08; ShadowMono     : $70;
+    HighlightColor  : $4F; HighlightMono  : $70;
+    PromptColor     : $30; PromptMono     : $07;
+    SelPromptColor  : $30; SelPromptMono  : $07;
+    ProPromptColor  : $30; ProPromptMono  : $07;
+    FieldColor      : $31; FieldMono      : $0F;
+    SelFieldColor   : $31; SelFieldMono   : $0F;
+    ProFieldColor   : $17; ProFieldMono   : $07;
+    ScrollBarColor  : $13; ScrollBarMono  : $07;
+    SliderColor     : $13; SliderMono     : $0F;
+    HotSpotColor    : $30; HotSpotMono    : $70;
+    BlockColor      : $3E; BlockMono      : $0F;
+    MarkerColor     : $5F; MarkerMono     : $70;
+    DelimColor      : $31; DelimMono      : $0F;
+    SelDelimColor   : $31; SelDelimMono   : $0F;
+    ProDelimColor   : $31; ProDelimMono   : $0F;
+    SelItemColor    : $3E; SelItemMono    : $70;
+    ProItemColor    : $17; ProItemMono    : $07;
+    HighItemColor   : $1F; HighItemMono   : $0F;
+    AltItemColor    : $1F; AltItemMono    : $0F;
+    AltSelItemColor : $3F; AltSelItemMono : $70;
+    FlexAHelpColor  : $1A; FlexAHelpMono  : $0F;
+    FlexBHelpColor  : $1B; FlexBHelpMono  : $0F;
+    FlexCHelpColor  : $1C; FlexCHelpMono  : $70;
+    UnselXrefColor  : $1F; UnselXrefMono  : $09;
+    SelXrefColor    : $5F; SelXrefMono    : $70;
+    MouseColor      : $4F; MouseMono      : $70
+  );
+  TpUiMenuColors : ColorSet = (
+    TextColor       : $30; TextMono       : $07;
+    CtrlColor       : $30; CtrlMono       : $07;
+    FrameColor      : $30; FrameMono      : $07;
+    HeaderColor     : $3F; HeaderMono     : $70;
+    ShadowColor     : $08; ShadowMono     : $70;
+    HighlightColor  : $3F; HighlightMono  : $0F;
+    PromptColor     : $30; PromptMono     : $07;
+    SelPromptColor  : $30; SelPromptMono  : $07;
+    ProPromptColor  : $30; ProPromptMono  : $07;
+    FieldColor      : $1E; FieldMono      : $07;
+    SelFieldColor   : $31; SelFieldMono   : $0F;
+    ProFieldColor   : $17; ProFieldMono   : $07;
+    ScrollBarColor  : $13; ScrollBarMono  : $07;
+    SliderColor     : $13; SliderMono     : $0F;
+    HotSpotColor    : $30; HotSpotMono    : $70;
+    BlockColor      : $3E; BlockMono      : $0F;
+    MarkerColor     : $2F; MarkerMono     : $70;
+    DelimColor      : $31; DelimMono      : $0F;
+    SelDelimColor   : $31; SelDelimMono   : $0F;
+    ProDelimColor   : $31; ProDelimMono   : $0F;
+    SelItemColor    : $1F; SelItemMono    : $70;
+    ProItemColor    : $37; ProItemMono    : $07;
+    HighItemColor   : $3F; HighItemMono   : $0F;
+    AltItemColor    : $1F; AltItemMono    : $70;
+    AltSelItemColor : $3F; AltSelItemMono : $0F;
+    FlexAHelpColor  : $1F; FlexAHelpMono  : $0F;
+    FlexBHelpColor  : $1F; FlexBHelpMono  : $0F;
+    FlexCHelpColor  : $1B; FlexCHelpMono  : $70;
+    UnselXrefColor  : $1E; UnselXrefMono  : $09;
+    SelXrefColor    : $5F; SelXrefMono    : $70;
+    MouseColor      : $4F; MouseMono      : $70
+  );
+
+  InactiveColor       : Byte = $30;
+  InactiveMono        : Byte = $07;
+  StatusColor         : Byte = $30;
+  StatusMono          : Byte = $07;
+
+  EditTextColor       : Byte = $1E;
+  EditTextMono        : Byte = $07;
+  PhonePromptColor    : Byte = $1F;
+  PhonePromptMono     : Byte = $07;
+  PhoneSelPromptColor : Byte = $1F;
+  PhoneSelPromptMono  : Byte = $07;
+  PhoneSelFieldColor  : Byte = $31;
+  PhoneSelFieldMono   : Byte = $70;
+  PhoneCtrlColor      : Byte = $31;
+  PhoneCtrlMono       : Byte = $70;
+  PhoneItemColor      : Byte = $1E;
+  PhoneItemMono       : Byte = $07;
+  PhoneSelItemColor   : Byte = $3E;
+  PhoneSelItemMono    : Byte = $70;
+  DirItemColor        : Byte = $1E;
+  DirItemMono         : Byte = $07;
+
+  TermWinTextColor    : Byte = $0F;
+  TermWinTextMono     : Byte = $0F;
+
+  BrowseTextColor     : Byte = $1E;
+  BrowseTextMono      : Byte = $07;
+
+  {.F-}
+  {Keystroke to command mapping}
+  DirKeyMax       = 190;
+  DirKeySet       : array[0..DirKeyMax] of Byte = (
+  {length keys         command type      key sequence}
+  3,      $00, $12,    ccLoadEditor,     {AltE}
+  3,      $00, $30,    ccLoadBrowser,    {AltB}
+  3,      $00, $3B,    ccHelp,           {F1}
+  3,      $00, $3D,    ccNewMask,        {F3}
+  3,      $00, $41,    ccBlkBegin,       {F7}
+  3,      $00, $42,    ccBlkEnd,         {F8}
+  3,      $00, $47,    ccHome,           {Home}
+  3,      $00, $48,    ccUp,             {Up}
+  3,      $00, $49,    ccPageUp,         {PgUp}
+  3,      $00, $4B,    ccLeft,           {Left}
+  3,      $00, $4D,    ccRight,          {Right}
+  3,      $00, $4F,    ccEnd,            {End}
+  3,      $00, $50,    ccDown,           {Down}
+  3,      $00, $51,    ccPageDn,         {PgDn}
+  3,      $00, $53,    ccDel,            {Del}
+  2,      $03,         ccPageDn,         {^C}
+  2,      $04,         ccRight,          {^D}
+  2,      $05,         ccUp,             {^E}
+  2,      $0A,         ccBlkToggle,      {^J, ^Enter}
+  2,      $0D,         ccSelect,         {^M, Enter}
+  2,      $12,         ccPageUp,         {^R}
+  2,      $13,         ccLeft,           {^S}
+  2,      $17,         ccUp,             {^W}
+  2,      $18,         ccDown,           {^X}
+  2,      $19,         ccDeleteItem,     {^Y}
+  2,      $1A,         ccDown,           {^Z}
+  2,      $1B,         ccQuit,           {Esc}
+  2,      $20,         ccToggleMode,     {' '}
+  2,      $2B,         ccToggle,         {'+'}
+  2,      $2D,         ccDel,            {'-'}
+  3,      $0B, $02,    ccBlkBegin,       {^K^B}
+  3,      $0B, $03,    ccCopyFiles,      {^K^C}
+  3,      $0B, $0B,    ccBlkEnd,         {^K^K}
+  3,      $0B, $08,    ccRestore,        {^K^H}
+  3,      $0B, $0E,    ccRenameFile,     {^K^N}
+  3,      $0B, $16,    ccMoveFiles,      {^K^V}
+  3,      $0B, $19,    ccDeleteFiles,    {^K^Y}
+  3,      $11, $03,    ccEnd,            {^Q^C}
+  3,      $11, $12,    ccHome,           {^Q^R}
+  {$IFDEF UseMouse}
+  3,      $00, $EF,    ccMouseSel,       {Click left}
+  3,      $00, $EE,    ccQuit,           {Click right}
+  3,      $00, $ED,    ccHelp,           {Click both}
+  {$ELSE}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          {150}
+  0, 0,                                  {160}
+  {$ENDIF}
+        0, 0, 0, 0, 0, 0, 0, 0,          {160}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          {170}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          {180}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0           {190}
+  );
+
+  {Keystroke to command mapping}
+  PhoneKeyMax   = 150;
+  PhoneKeySet   : array[0..PhoneKeyMax] of Byte = (
+  {length keys         command type      key sequence}
+  3,      $00, $20,    ccDialPhone,      {AltD}
+  3,      $00, $23,    ccHangUpModem,    {AltH}
+  3,      $00, $3B,    ccHelp,           {F1}
+  3,      $00, $3D,    ccNewMask,        {F3}
+  3,      $00, $47,    ccHome,           {Home}
+  3,      $00, $48,    ccUp,             {Up}
+  3,      $00, $49,    ccPageUp,         {PgUp}
+  3,      $00, $4B,    ccLeft,           {Left}
+  3,      $00, $4D,    ccRight,          {Right}
+  3,      $00, $4F,    ccEnd,            {End}
+  3,      $00, $50,    ccDown,           {Down}
+  3,      $00, $51,    ccPageDn,         {PgDn}
+  2,      $03,         ccPageDn,         {^C}
+  2,      $04,         ccRight,          {^D}
+  2,      $05,         ccUp,             {^E}
+  2,      $0D,         ccSelect,         {^M, Enter}
+  2,      $0E,         ccInsertItem,     {^N}
+  2,      $12,         ccPageUp,         {^R}
+  2,      $13,         ccLeft,           {^S}
+  2,      $17,         ccUp,             {^W}
+  2,      $18,         ccDown,           {^X}
+  2,      $19,         ccDeleteItem,     {^Y}
+  2,      $1A,         ccDown,           {^Z}
+  2,      $1B,         ccQuit,           {Esc}
+  3,      $11, $12,    ccHome,           {^QR}
+  3,      $11, $03,    ccEnd,            {^QC}
+  {$IFDEF UseMouse}
+  3,      $00, $EF,    ccMouseSel,       {Click left}
+  3,      $00, $EE,    ccQuit,           {Click right}
+  3,      $00, $ED,    ccHelp,           {Click both}
+  {$ELSE}
+     0, 0, 0, 0, 0, 0, 0, 0, 0,          {100}
+  0, 0, 0,                               {110}
+  {$ENDIF}
+           0, 0, 0, 0, 0, 0, 0,          {110}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          {120}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          {130}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          {140}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0           {150}
+  );
+
+  ProtoKeyMax      = 22;
+  ProtoKeySet      : array[0..ProtoKeyMax] of Byte = (
+  {length keys         command type      key sequence}
+  2,      $03,         ccQuit,           {^C}
+  2,      $1B,         ccQuit,           {Esc}
+  3,      $00, $3B,    ccHelp,           {F1}
+  {$IFDEF UseMouse}
+  3,      $00, $EF,    ccMouseSel,       {Click left}
+  3,      $00, $EE,    ccQuit,           {Click right}
+  3,      $00, $ED,    ccHelp,           {Click both}
+  {$ELSE}
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  {$ENDIF}
+  0);
+
+{.F+}
+
+const
+  DeskMainCfgEnd  : Byte = 0;
+  TempMessageDelay = 2000;
+
+  ProtocolNames : Array[XModem..Ascii] of String[16] =
+                    ('XModem', 'XModem CRC', 'XModem 1K',
+                     'XModem 1KG', 'YModem (batch)',
+                     'YModem-G (batch)',
+                     'ZModem', 'Kermit', 'Ascii');
+
+
+{ phone books constants and types}
+const
+  PhoneLen      = 59;
+type
+  IdString      = string[21];
+  PhoneRec      =
+    record
+      Phone   : string[20];
+      Name    : string[30];
+      Notes   : array[1..4] of string[40];
+      Baud    : LongInt;
+      Parity  : ParityType;
+      DataBits: DataBitType;
+      StopBits: StopBitType;
+      Options : Word;
+      Duplex  : DuplexType;
+      Ansi    : Boolean;
+    end;
+  IdRec =
+    record
+      Id      : IdString;
+    end;
+  PhoneString   = string[PhoneLen];
+  PhonePickRec  =
+    record
+      RNum    : Word;
+      PSP     : ^PhoneString;
+      Baud    : LongInt;
+      Parity  : ParityType;
+      DataBits: DataBitType;
+      StopBits: StopBitType;
+      Options : Word;
+      Duplex  : DuplexType;
+      Ansi    : Boolean;
+    end;
+
+const
+  MaxPhones     = 250;
+  PhoneBookId   : IdString = 'OOPCOM 1.00 Phonebook';
+
+  idName        = 0;
+  idPhone       = 1;
+  idBaud        = 2;
+  idParity      = 3;
+  idDataBits    = 4;
+  idStopBits    = 5;
+  idDuplex      = 6;
+  idAnsi        = 7;
+  idNotes       = 8;
+
+
+  {window ID's}
+  DialerWinId     = 1;
+  TermWinId       = 2;
+  BrowseWinId     = 3;
+  EditWinId       = 4;
+  StatusWinId     = 5;
+  HelpWinID       = 6;
+  AboutId         = 8;
+
+  {Help IDs}
+  FilesID        = 142;
+  DosShellID     = 143;
+  QuitID         = 144;
+  HelpID         = 145;
+  HelpIndexID    = 146;
+  PreviousTopicID= 147;
+  HelpOnHelpID   = 148;
+
+  {local menu help IDs}
+  hidLocalClose  = 133;
+  hidLocalMove   = 134;
+  hidLocalReSize = 135;
+  hidLocalZoom   = 136;
+
+  {local browse menu help IDs}
+  hidBLHidden    = 137;
+  hidBLPrint     = 138;
+  hidBLWrite     = 139;
+  hidBLBlock     = 140;
+  hidBLBlockBegin= 141;
+  hidBLBlockEnd  = 142;
+
+  hidBLOptions   = 9;
+  hidBLExpand    = 10;
+  hidBLHighBits  = 11;
+  hidBLMode      = 12;
+  hidBLSearch    = 13;
+  hidBLAgain     = 14;
+  hidBLFind      = 15;
+  hidBLFindOpts  = 16;
+  hidBLGlobal    = 17;
+  hidBLIgnore    = 18;
+  hidBLReverse   = 19;
+  hidBLMarkers   = 20;
+  hidBLJump      = 21;
+  hidBLSet       = 22;
+
+  {local edit menu help IDs}
+  hidELLower     = 23;
+  hidELToggle    = 24;
+  hidELUpper     = 25;
+  hidELHidden    = 26;
+  hidELIndent    = 27;
+  hidELUnindent  = 28;
+  hidELLevel     = 29;
+  hidELPrint     = 30;
+  hidELRead      = 31;
+  hidELWrite     = 32;
+
+  hidELNew       = 33;
+  hidELSave      = 34;
+  hidELWriteAs   = 35;
+
+  hidELOptions   = 36;
+  hidELAutoindent= 37;
+  hidELBackups   = 38;
+  hidELDelJoins  = 39;
+  hidELMargin    = 40;
+  hidELPartialFiles
+                 = 41;
+  hidELSmartTabs = 42;
+  hidELTabSize   = 43;
+  hidELWordWrap  = 44;
+  hidELSearch    = 45;
+  hidELAgain     = 46;
+  hidELFind      = 47;
+  hidELFindOptions
+                 = 48;
+  hidELBlockOnly = 49;
+  hidELConfirm   = 50;
+  hidELGlobal    = 51;
+  hidELIgnorecase= 52;
+  hidELReverse   = 53;
+  hidELReplace   = 54;
+  hidELMarkers   = 55;
+  hidELMHidden   = 56;
+  hidELJump      = 57;
+  hidELSet       = 58;
+
+  hidELBlock     = 59;
+  hidELCase      = 60;
+  hidELIndentation
+                 = 61;
+  hidELFile      = 62;
+  hidELBlockBegin= 63;
+  hidELBlockEnd  = 64;
+
+  {Terminal Window local help/menu IDs}
+  hidTLUpload    = 65;
+  hidTLDownload  = 66;
+  hidTLHangup    = 67;
+  hidTLOptions   = 68;
+  hidTLSaveOpts  = 69;
+  hidTLLoadOpts  = 70;
+
+  {Options entry screen help IDs}
+  hidOptBaud     = 75;
+  hidOptParity   = 76;
+  hidOptData     = 77;
+  hidOptStop     = 78;
+  hidOptDuplex   = 79;
+  hidOptAnsi     = 80;
+  hidOptComPort  = 81;
+  hidOptDialPre  = 82;
+  hidOptTone     = 83;
+  hidOptDialTO   = 84;
+  hidOptModemTO  = 85;
+  hidOptDF       = 86;
+  hidOptCodes    = 87;
+  hidOptHWFlow   = 88;
+  hidOptSWFlow   = 89;
+  hidOptModem    = 90;
+
+  {protocol entry screen help IDs}
+  hidPProtocol   = 91;
+  hidPFileMask   = 92;
+
+  {phone entry screen help IDs}
+  hidPhoneName   = 95;
+  hidPhoneNumber = 96;
+  hidPhoneBaud   = 97;
+  hidPhoneParity = 98;
+  hidPhoneData   = 99;
+  hidPhoneStop   = 100;
+  hidPhoneDuplex = 101;
+  hidPhoneAnsi   = 102;
+  hidPhoneNotes  = 103;
+
+  hidTerminalCmds= 110;
+  hidGlobalCmds  = 111;
+  hidBrowseCmds  = 112;
+  hidEditorCmds  = 113;
+  hidDialerCmds  = 114;
+
+  hidAbout       = 120;
+  hidDosShell    = 123;
+  hidQuit        = 124;
+  hidHelp        = 128;
+  hidIndex       = 129;
+  hidPrevious    = 130;
+  hidHelpOnHelp  = 131;
+  hidDirList     = 132;
+

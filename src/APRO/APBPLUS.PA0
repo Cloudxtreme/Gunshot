@@ -1,0 +1,219 @@
+const
+  {!!.01 name changes to agree with OOBPLUS}
+  {Compile-time constants}
+  BPTimeoutMax     = 546;  {Max tics allowed timeout per-char, 30 seconds}
+  BPErrorMax       = 10;   {Max sequential errors}
+  BPBufferMax      = 2048; {Largest data block available}              {!!.01}
+  BPSendAheadMax   = 2;    {Max number of packets we can send ahead (normal)}
+  BPDefFinishWait : Word = 273;  {Wait time for error ack, 15 seconds}
+
+const
+  ESCIResponse : String[80] = '#IB1,SSxx,GF,PB,DT';
+
+  {For estimating protocol transfer times}
+  BPlusTurnDelay : Word = 0;        {Millisecond turnaround delay}
+  BPlusOverHead : Word = 20;        {Default overhead for each data subpacket}
+
+type
+  DataBlockTypePtr = ^DataBlockType;                                   {!!.01}
+  BPDataBlockType = array[1..BPBufferMax] of Char;                     {!!.01}
+
+  {Window buffer}
+  SABuffType = record
+    Seq   : Word;                {Sequence number}
+    Num   : Word;                {Packet's data size}
+    PType : Char;                {Packet type}
+    Buf   : ^BPDataBlockType;    {Packet's data}                       {!!.01}
+  end;
+  SPackets = Array[1..BPSendAheadMax] of SABuffType;
+
+  {For quoting params sets}
+  QuoteArray = Array[0..7] of Byte;
+
+const
+  {All chars in ranges $00..$1F and $80..$9F}
+  DQFull    : QuoteArray = ($FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF);
+  {ETX ENQ DLE XON XOFF NAK}
+  DQDefault : QuoteArray = ($14, $00, $D4, $00, $00, $00, $00, $00);
+
+type
+  {Main BPlus state table}
+  BPlusStateType = (
+    {Receive states}
+    rbInitial,         {0  Start waiting for first N packet}
+    rbGetDLE,          {1  Get header start, <DLE>}
+    rbGetB,            {2  Get B of header start}
+    rbCollectPacket,   {3  Collect packet, checksum and verify}
+    rbProcessPacket,   {4  Check packet type and dispatch}
+    rbFinished,        {5  Normal end of protocol}
+    rbSendEnq,         {6  Send <ENQ><ENQ> after a timeout}
+    rbError,           {7  Error end of protocol}
+    rbWaitErrorAck,    {8  Wait for Ack for failure packet}
+    rbCleanup,         {9  Cleanup and end protocol}
+    rbDone,            {10 Signal end}
+
+    {Transmit states}
+    tbInitial,         {11 Startup stuff}
+    tbGetBlock,        {12 Read next block to xmit}
+    tbWaitFreeSpace,   {13 Wait for free space to send block}
+    tbSendData,        {14 Transmit the next block}
+    tbCheckAck,        {15 Wait for acknowledgements (handle re-xmits)}
+    tbEndOfFile,       {16 Send TC packet}
+    tbEofAck,          {17 Wait for TC ack}
+    tbError,           {18 Failed}
+    tbWaitErrorAck,    {19  Wait for Ack for failure packet}
+    tbCleanup,         {20 Cleanup and end protocol}
+    tbDone);           {21 Signal end}
+
+  {Packet collection states}
+  PacketStateType = (
+    psGetDLE,          {0  Waiting for DLE}
+    psGetB,            {1  Waiting for B}
+    psGetSeq,          {2  Waiting for sequence number}
+    psGetType,         {3  Get type byte}
+    psGetData,         {4  Collecting data}
+    psGetCheck1,       {5  Waiting for first check byte}
+    psGetCheck2,       {6  Waiting for second check byte, if any}
+    psCheckCheck,      {7  Checking block check}
+    psSendAck,         {8  OK, sending ACK (finished)}
+    psError,           {9  Error collecting packet}
+    psSuccess);        {10 Finished OK}
+
+  {Terminal packet state, when processing packets in terminal mode}
+  TermPacketStateType = (
+    tpsStart,          {Got DLE, inits}
+    tpsWaitB,          {Waiting for B}
+    tpsWaitSeq,        {Waiting for sequence}
+    tpsWaitType,       {Waiting for packet type, process when found}
+    tpsError);         {Error collecting packet}
+
+  {Ack collection state}
+  AckCollectionStateType = (
+    acGetDLE,          {0  Wait for DLE}
+    acGetNum,          {1  Wait for packet number}
+    acHaveAck,         {2  Got ack, check sequence}
+    acGetPacket,       {3  Got packet, start collecting}
+    acCollectPacket,   {4  Collect packet}
+    acSkipPacket1,     {5  Discard packet data}
+    acSkipPacket2,     {6  Discard 1st checksum byte}
+    acSkipPacket3,     {7  Discard quoted part of 1st checksum byte}
+    acSkipPacket4,     {8  Discard 2nd checksum byte}
+    acSkipPacket5,     {9  Discard quoted part of 2nd checksum byte}
+    acTimeout,         {10 Timeout collecting data}
+    acError,           {11 Error processing ack/packet}
+    acSendNak,         {12 Sending nak}
+    acSendEnq,         {13 Sending enq and resyncing}
+    acResync1,         {14 Collect 1st DLE of resync}
+    acResync2,         {15 Collect seq of first resync}
+    acResync3,         {16 Collect 2nd DLE of resync}
+    acResync4,         {17 Collect seq of second resync}
+    acSendData,        {18 Sending data}
+    acFailed);         {19 Failed miserably}
+
+  {Protocol direction options}
+  DirectionType = (dUpload, dDownload);
+
+  {Transfer parameters}
+  ParamsRecord = record
+    WinSend,                              {Send window size}
+    WinRecv,                              {Receive window size}
+    BlkSize,                              {Block size (* 128)}
+    ChkType  : Byte;                      {Check type, chksum or CRC}
+    QuoteSet : QuoteArray;                {Chars to quote}
+    DROpt,                                {DL Recovery option}
+    UROpt,                                {UL Recovery option}
+    FIOpt    : Byte;                      {File Info option}
+  end;
+
+  BPlusPtr = ^BPlusProtocol;
+
+  {User resume procedure}
+  HandleResumeProc = procedure(P : ProtocolRecPtr);
+
+  BPlusProtocol = record
+    PData       : ProtocolDataPtr;         {General protocol data}
+    Quoted      : Boolean;                 {True if last ch recd was quoted}
+    QuoteTable  : Array[0..255] of Char;   {Active quoting table}
+    Checksum    : Word;                    {Checksum or CRC}
+    Direction   : DirectionType;           {upload or download}
+    HostParams  : ParamsRecord;            {Host's parameters}
+    OurParams   : ParamsRecord;            {Our parameters}
+    AbortCount  : Integer;                 {# of abort requests so far}
+    ResumeFlag  : Boolean;                 {True if resuming an aborted dl}
+    Aborting    : Boolean;                 {True if processing abort}
+    BPlusMode   : Boolean;                 {True if in full B+ mode}
+    RSize       : Integer;                 {Size of last recd buffer}
+    RBuffer     : ^BPDataBlockType;        {Receive buffer}             {!!.01}
+    SBuffer     : SPackets;                {Send buffers}
+    SeqNum      : Integer;                 {Current sequence number}
+    Next2ACK    : Integer;                 {Packet pending ACK}
+    Next2Fill   : Integer;                 {Packet to load for send}
+    SAMax       : Integer;                 {Highest current sendahead cnt}
+    SAWaiting   : Integer;                 {# of packets outstanding ACKs}
+    SAErrors    : Integer;                 {Keep track of SendAhead errors}
+    RRaw        : LongInt;                 {Raw bytes received}
+    RPackets    : LongInt;                 {Packets received}
+    SRaw        : LongInt;                 {Raw bytes sent}
+    SPackets    : LongInt;                 {Packets sent}
+    BPlusState  : BPlusStateType;          {Main state}
+    PacketState : PacketStateType;         {Packet collection state}
+    AckState    : AckCollectionStateType;  {Ack collection state}
+    ReplyTimer  : EventTimer;              {Used to timeout replies}
+    QuotePending: Boolean;                 {True if 2nd quote char pending}
+    SaveC       : Char;                    {Save last char between states}
+    LastType    : Char;                    {Last received packet type}
+    NextSeq     : Integer;                 {Next sequence number}
+    NAKSent     : Boolean;                 {True if NAK just sent}
+    SaveStatus  : Word;                    {Holds status between states}
+    Failed      : Boolean;                 {True if write failed}
+    PacketNum   : Integer;                 {Current packet num}
+    Idx         : Integer;                 {Index for collecting data blocks}
+    ErrorStatus : Word;                    {Holds error status after failure}
+    FinishWait  : Word;                    {Ticks to wait for finish ack}
+    LastBlock   : Boolean;                 {True at eof}
+    LastBlockSize: Word;                   {Size of last transmit block}
+    SentENQ     : Boolean;                 {True if sent ENQ in CollectAck}
+    NewChk      : Word;                    {Calculated block check}
+    HandleResume: HandleResumeProc;        {Resume procedure}
+  end;
+
+{$IFDEF UsePModeDLL}
+
+procedure InitBPlus(var P : ProtocolRecPtr; PortPtr : PortRecPtr); Export;
+procedure InitCustomBPlus(var P : ProtocolRecPtr;
+                          PortPtr : PortRecPtr;
+                          Options : Word); Export;
+procedure DoneBPlus(var P : ProtocolRecPtr); Export;
+procedure ProcessENQ(P : ProtocolRecPtr); Export;
+procedure ProcessESCI(P : ProtocolRecPtr; X, Y : Byte); Export;
+procedure ProcessDLE(P : ProtocolRecPtr; var Start, Upload : Boolean); Export;
+procedure SetHandleResumeProc(P : ProtocolRecPtr; HRP : HandleResumeProc); Export;
+procedure PrepareTransmitPartBP(P : ProtocolRecPtr); Export;
+function ProtocolTransmitPartBP(P : ProtocolRecPtr) : ProtocolStateType; Export;
+procedure ProtocolTransmitBP(P : ProtocolRecPtr); Export;
+procedure PrepareReceivePartBP(P : ProtocolRecPtr); Export;
+function ProtocolReceivePartBP(P : ProtocolRecPtr) : ProtocolStateType; Export;
+procedure ProtocolReceiveBP(P : ProtocolRecPtr); Export;
+procedure NoHandleResume(P : ProtocolRecPtr); Export;
+
+{$ELSE}
+
+procedure InitBPlus(var P : ProtocolRecPtr; PortPtr : PortRecPtr);
+procedure InitCustomBPlus(var P : ProtocolRecPtr;
+                          PortPtr : PortRecPtr;
+                          Options : Word);
+procedure DoneBPlus(var P : ProtocolRecPtr);
+procedure ProcessENQ(P : ProtocolRecPtr);
+procedure ProcessESCI(P : ProtocolRecPtr; X, Y : Byte);
+procedure ProcessDLE(P : ProtocolRecPtr; var Start, Upload : Boolean);
+procedure SetHandleResumeProc(P : ProtocolRecPtr; HRP : HandleResumeProc);
+procedure PrepareTransmitPartBP(P : ProtocolRecPtr);
+function ProtocolTransmitPartBP(P : ProtocolRecPtr) : ProtocolStateType;
+procedure ProtocolTransmitBP(P : ProtocolRecPtr);
+procedure PrepareReceivePartBP(P : ProtocolRecPtr);
+function ProtocolReceivePartBP(P : ProtocolRecPtr) : ProtocolStateType;
+procedure ProtocolReceiveBP(P : ProtocolRecPtr);
+procedure NoHandleResume(P : ProtocolRecPtr);
+
+{$ENDIF}
+

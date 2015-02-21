@@ -1,0 +1,27 @@
+const
+
+  ViewerKeyMax = 71;
+  ViewerKeySet : array[0..ViewerKeyMax] of Byte = (
+  {length keys         command type      key sequence}
+  3,      $00, $48,    ccUp,             {Up}
+  3,      $00, $50,    ccDown,           {Down}
+  3,      $00, $49,    ccPageUp,         {PgUp}
+  3,      $00, $51,    ccPageDn,         {PgDn}
+  3,      $00, $4B,    ccLeft,           {Left}
+  3,      $00, $4D,    ccRight,          {Right}
+  2,           $1B,    ccQuit,           {Escape}
+  2,           $6E,    ccNextRec,        {'n'}
+  2,           $4E,    ccNextRec,        {'N'}
+  2,           $62,    ccPrevRec,        {'b'}
+  2,           $42,    ccPrevRec,        {'B'}
+  3,      $00, $4F,    ccEnd,            {End}
+  3,      $00, $76,    ccEndOfFile,      {^PgDn}
+  2,           $6C,    ccEndOfFile,      {'l'}
+  2,           $4C,    ccEndOfFile,      {'L'}
+  3,      $00, $47,    ccHome,           {Home}
+  3,      $00, $84,    ccTopOfFile,      {^PgUp}
+  2,           $66,    ccTopOfFile,      {'f'}
+  2,           $46,    ccTopOfFile,      {'F'}
+  3,      $00, $EE,    ccQuit,           {click right = ESC} 0);
+
+

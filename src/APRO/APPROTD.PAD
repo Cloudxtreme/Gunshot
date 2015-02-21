@@ -1,0 +1,194 @@
+{$S-,R-,V-,I-}
+
+{$I APDEFINE.INC}
+
+{$IFNDEF UsePModeDLL}
+  !! STOP COMPILE - UsePModeDLL must be defined to compile this library
+{$ENDIF}
+
+{*********************************************************}
+{*                  APPROTD.PAD 2.03                     *}
+{*     Copyright (c) TurboPower Software 1993.           *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+library ApProtD;
+
+uses
+  ApAbsPcl,
+  ApXmodem,
+  ApYmodem,
+  ApZmodem,
+  ApKermit,
+  ApAscii,
+  ApBplus;
+
+Exports
+  {from APABSPCL}
+  InitProtocolData            index indexAPABSPCL + 1,
+  DoneProtocolData            index indexAPABSPCL + 2,
+  SetShowStatusProc           index indexAPABSPCL + 3,
+  SetNextFileFunc             index indexAPABSPCL + 4,
+  SetFileMask                 index indexAPABSPCL + 5,
+  SetFileList                 index indexAPABSPCL + 6,
+  MakeFileList                index indexAPABSPCL + 7,
+  DisposeFileList             index indexAPABSPCL + 8,
+  AddFileToList               index indexAPABSPCL + 9,
+  SetDestinationDirectory     index indexAPABSPCL + 10,
+  SetReceiveFilename          index indexAPABSPCL + 11,
+  SetLogFileProc              index indexAPABSPCL + 12,
+  SetAcceptFileFunc           index indexAPABSPCL + 13,
+  SetBackgroundProc           index indexAPABSPCL + 14,
+  SetHandshakeWait            index indexAPABSPCL + 15,
+  SetOverwriteOption          index indexAPABSPCL + 16,
+  SetActualBPS                index indexAPABSPCL + 17,
+  SetEfficiencyParms          index indexAPABSPCL + 18,
+  SetProtocolPort             index indexAPABSPCL + 19,
+  apOptionsOn                 index indexAPABSPCL + 20,
+  apOptionsOff                index indexAPABSPCL + 21,
+  apOptionsAreOn              index indexAPABSPCL + 22,
+  GetFilename                 index indexAPABSPCL + 23,
+  GetPathname                 index indexAPABSPCL + 24,
+  GetFileSize                 index indexAPABSPCL + 25,
+  GetBytesRemaining           index indexAPABSPCL + 26,
+  GetBytesTransferred         index indexAPABSPCL + 27,
+  GetElapsedTics              index indexAPABSPCL + 28,
+  GetBlockErrors              index indexAPABSPCL + 29,
+  GetTotalErrors              index indexAPABSPCL + 30,
+  GetProtocol                 index indexAPABSPCL + 31,
+  GetBlockSize                index indexAPABSPCL + 32,
+  GetBlockNum                 index indexAPABSPCL + 33,
+  GetCurrentBlockNum          index indexAPABSPCL + 34,
+  SupportsBatch               index indexAPABSPCL + 35,
+  GetCheckType                index indexAPABSPCL + 36,
+  GetInitialFilePos           index indexAPABSPCL + 37,
+  EstimateTransferSecs        index indexAPABSPCL + 38,
+  ShowFirstStatus             index indexAPABSPCL + 39,
+  ShowLastStatus              index indexAPABSPCL + 40,
+  ResetStatus                 index indexAPABSPCL + 41,
+  WaitForFreeSpace            index indexAPABSPCL + 42,
+  Crc32ofFile                 index indexAPABSPCL + 43,
+  NoStatus                    index indexAPABSPCL + 44,
+  NoNextFile                  index indexAPABSPCL + 45,
+  NoLogFile                   index indexAPABSPCL + 46,
+  NoAcceptFile                index indexAPABSPCL + 47,
+  NoUserBack                  index indexAPABSPCL + 48,
+  NextFileMask                index indexAPABSPCL + 49,
+  NextFileList                index indexAPABSPCL + 50,
+  AcceptOneFile               index indexAPABSPCL + 51,
+  apPrepareReading            index indexAPABSPCL + 52,
+  apFinishReading             index indexAPABSPCL + 53,
+  apReadProtocolBlock         index indexAPABSPCL + 54,
+  apPrepareWriting            index indexAPABSPCL + 55,
+  apFinishWriting             index indexAPABSPCL + 56,
+  apWriteProtocolBlock        index indexAPABSPCL + 57,
+  apUserStatus                index indexAPABSPCL + 58,
+  TrimZeros                   index indexAPABSPCL + 59,
+  OctalStr                    index indexAPABSPCL + 60,
+  OctalStr2Long               index indexAPABSPCL + 61,
+  PackToYMTimeStamp           index indexAPABSPCL + 62,
+  YMTimeStampToPack           index indexAPABSPCL + 63,
+  CurrentTimeStamp            index indexAPABSPCL + 64,
+
+  {from APXMODEM}
+  InitXmodem                  index indexAPXMODEM + 1,
+  InitCustomXmodem            index indexAPXMODEM + 2,
+  DoneXmodem                  index indexAPXMODEM + 3,
+  Set1KMode                   index indexAPXMODEM + 4,
+  SetGMode                    index indexAPXMODEM + 5,
+  SetBlockWait                index indexAPXMODEM + 6,
+  SetFinishWaitXM             index indexAPXMODEM + 7,
+  SendHandshakeChar           index indexAPXMODEM + 8,
+  PrepareTransmitPartXM       index indexAPXMODEM + 9,
+  ProtocolTransmitPartXM      index indexAPXMODEM + 10,
+  ProtocolTransmitXM          index indexAPXMODEM + 11,
+  PrepareReceivePartXM        index indexAPXMODEM + 12,
+  ProtocolReceivePartXM       index indexAPXMODEM + 13,
+  ProtocolReceiveXM           index indexAPXMODEM + 14,
+
+  {from APYMODEM}
+  InitYmodem                  index indexAPYMODEM + 1,
+  InitCustomYmodem            index indexAPYMODEM + 2,
+  DoneYmodem                  index indexAPYMODEM + 3,
+  ProtocolTransmitYM          index indexAPYMODEM + 4,
+  PrepareTransmitPartYM       index indexAPYMODEM + 5,
+  ProtocolTransmitPartYM      index indexAPYMODEM + 6,
+  ProtocolReceiveYM           index indexAPYMODEM + 7,
+  PrepareReceivePartYM        index indexAPYMODEM + 8,
+  ProtocolReceivePartYM       index indexAPYMODEM + 9,
+
+  {from APZMODEM}
+  InitZmodem                  index indexAPZMODEM + 1,
+  InitCustomZmodem            index indexAPZMODEM + 2,
+  DoneZmodem                  index indexAPZMODEM + 3,
+  SetFileMgmtOptions          index indexAPZMODEM + 4,
+  SetRecoverOption            index indexAPZMODEM + 5,
+  SetBigSubpacketOption       index indexAPZMODEM + 6,
+  SetFinishWaitZM             index indexAPZMODEM + 7,
+  PrepareTransmitPartZM       index indexAPZMODEM + 8,
+  ProtocolTransmitPartZM      index indexAPZMODEM + 9,
+  ProtocolTransmitZM          index indexAPZMODEM + 10,
+  PrepareReceivePartZM        index indexAPZMODEM + 11,
+  ProtocolReceivePartZM       index indexAPZMODEM + 12,
+  ProtocolReceiveZM           index indexAPZMODEM + 13,
+
+  {from APKERMIT}
+  InitKermit                  index indexAPKERMIT + 1,
+  InitCustomKermit            index indexAPKERMIT + 2,
+  DoneKermit                  index indexAPKERMIT + 3,
+  SetKermitOptions            index indexAPKERMIT + 4,
+  SetMaxPacketLen             index indexAPKERMIT + 5,
+  SetMaxLongPacketLen         index indexAPKERMIT + 6,
+  SetMaxWindows               index indexAPKERMIT + 7,
+  SetSWCTurnDelay             index indexAPKERMIT + 8,
+  SetMaxTimeoutSecs           index indexAPKERMIT + 9,
+  SetPacketPadding            index indexAPKERMIT + 10,
+  SetTerminator               index indexAPKERMIT + 11,
+  SetCtlPrefix                index indexAPKERMIT + 12,
+  SetHibitPrefix              index indexAPKERMIT + 13,
+  SetRepeatPrefix             index indexAPKERMIT + 14,
+  SetKermitCheck              index indexAPKERMIT + 15,
+  GetSwcSize                  index indexAPKERMIT + 16,
+  GetLPStatus                 index indexAPKERMIT + 17,
+  WindowsUsed                 index indexAPKERMIT + 18,
+  PrepareTransmitPartKM       index indexAPKERMIT + 19,
+  ProtocolTransmitPartKM      index indexAPKERMIT + 20,
+  ProtocolTransmitKM          index indexAPKERMIT + 21,
+  PrepareReceivePartKM        index indexAPKERMIT + 22,
+  ProtocolReceivePartKM       index indexAPKERMIT + 23,
+  ProtocolReceiveKM           index indexAPKERMIT + 24,
+  kpFinishWriting             index indexAPKERMIT + 25,
+
+  {from APASCII}
+  InitAscii                   index indexAPASCII + 1,
+  InitCustomAscii             index indexAPASCII + 2,
+  DoneAscii                   index indexAPASCII + 3,
+  SetDelays                   index indexAPASCII + 4,
+  SetEOLChar                  index indexAPASCII + 5,
+  GetLineNumber               index indexAPASCII + 6,
+  PrepareTransmitPartAS       index indexAPASCII + 7,
+  ProtocolTransmitPartAS      index indexAPASCII + 8,
+  ProtocolTransmitAS          index indexAPASCII + 9,
+  PrepareReceivePartAS        index indexAPASCII + 10,
+  ProtocolReceivePartAS       index indexAPASCII + 11,
+  ProtocolReceiveAS           index indexAPASCII + 12,
+
+  {from APBPLUS}
+  InitBPlus                   index indexAPBPLUS + 1,
+  InitCustomBPlus             index indexAPBPLUS + 2,
+  DoneBPlus                   index indexAPBPLUS + 3,
+  ProcessENQ                  index indexAPBPLUS + 4,
+  ProcessESCI                 index indexAPBPLUS + 5,
+  ProcessDLE                  index indexAPBPLUS + 6,
+  SetHandleResumeProc         index indexAPBPLUS + 7,
+  PrepareTransmitPartBP       index indexAPBPLUS + 8,
+  ProtocolTransmitPartBP      index indexAPBPLUS + 9,
+  ProtocolTransmitBP          index indexAPBPLUS + 10,
+  PrepareReceivePartBP        index indexAPBPLUS + 11,
+  ProtocolReceivePartBP       index indexAPBPLUS + 12,
+  ProtocolReceiveBP           index indexAPBPLUS + 13,
+  NoHandleResume              index indexAPBPLUS + 14;
+
+begin
+end.
+

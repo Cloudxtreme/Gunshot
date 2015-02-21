@@ -1,0 +1,599 @@
+;
+;-------------------------------------------------------------------
+!TOPIC 379 ApFaxCas
+ApFaxCas provides the data and procedure declarations necessary to provide
+access to the fax send and receive services of a CAS faxmodem driver. It
+provides the following:
+
+  0387AbortCurrentEvent              0417CASInstalled
+  0391CloseFile                      0426Declarations
+  0393DeleteAllFiles                 0392DeleteFile
+  0385DoneCASFax                     0416FaxReceive
+  0415FaxReceivePart                 0413FaxTransmit
+  0412FaxTransmitPart                0388FindFirstCAS
+  0389FindNextCAS                    0409GetAllStatus
+  0394GetEventDate                   0400GetEventStatus
+  0396GetEventTime                   0398GetExternalDataBlock
+  0402GetHardwareStatus              0407GetPageInfo
+  0401GetQueueStatus                 0399GetSetAutoReceive
+  0383InitCASFax                     0404MoveReceivedFile
+  0390OpenFile                       0414PrepareFaxReceivePart
+  0411PrepareFaxTransmitPart         0403RunDiagnostics
+  0408SetCASAbortFunc                0410SetCASResolution
+  0406SetLogoFile                    0395SetTaskDate
+  0397SetTaskTime                    0405SubmitSingleFile
+  0386SubmitTask
+;
+;-------------------------------------------------------------------
+!TOPIC 380 OoFaxCas
+OoFaxCas provides the data and procedure declarations necessary to
+provide access to the fax send and receive services of a CAS faxmodem
+driver. OoFaxCas contains the following:
+
+    0418CASInstalled
+    0381CASFax
+;
+;-------------------------------------------------------------------
+!TOPIC 381 CASFax
+!NOINDEX
+!NOWRAP
+CASFaxPtr = ^CASFax;
+CASFax = object(0009AbstractFax)
+!WRAP
+
+The object used for sending and receiving faxes using CAS services.
+
+CasFax provides the following:
+
+  0387AbortCurrentEvent              0391CloseFile
+  0427Declarations                   0393DeleteAllFiles
+  0392DeleteFile                     0384Done
+  0416FaxReceive                     0415FaxReceivePart
+  0413FaxTransmit                    0412FaxTransmitPart
+  0388FindFirstCAS                   0389FindNextCAS
+  0409GetAllStatus                   0394GetEventDate
+  0400GetEventStatus                 0396GetEventTime
+  0398GetExternalDataBlock           0402GetHardwareStatus
+  0407GetPageInfo                    0401GetQueueStatus
+  0399GetSetAutoReceive              0382Init
+  0404MoveReceivedFile               0390OpenFile
+  0414PrepareFaxReceivePart          0411PrepareFaxTransmitPart
+  0403RunDiagnostics                 0408SetCASAbortFunc
+  0410SetCASResolution               0406SetLogoFile
+  0395SetTaskDate                    0397SetTaskTime
+  0405SubmitSingleFile               0386SubmitTask
+;
+;-------------------------------------------------------------------
+!TOPIC 382 Init,CASFax
+!NOINDEX
+constructor 0381CASFax.Init(ID : Str20);
+
+Initialize a CASFax object.
+
+See also:  0384Done
+;
+;-------------------------------------------------------------------
+!TOPIC 383 InitCASFax
+!NOINDEX
+procedure 0379ApFaxCas.InitCASFax(var FP : FaxRecPtr; ID : Str20);
+
+Allocate and initialize a CAS fax record.
+
+See Also:  0385DoneCASFax
+;
+;-------------------------------------------------------------------
+!TOPIC 384 Done,CASFax
+!NOINDEX
+destructor 0381CASFax.Done; virtual;
+
+Destroy a CASFax object.
+
+See also:  0382Init
+;
+;-------------------------------------------------------------------
+!TOPIC 385 DoneCASFax
+!NOINDEX
+procedure 0379ApFaxCas.DoneCASFax(var FP : FaxRecPtr);
+
+Dispose of a CAS fax record.
+
+See also:  0383InitCASFax
+;
+;-------------------------------------------------------------------
+!TOPIC 386 SubmitTask
+!NOINDEX
+procedure 0379ApFaxCas.SubmitTask(FP : FaxRecPtr; FName : PathStr;
+                              var Handle : Word);
+!LINE
+procedure 0381CASFax.SubmitTask(FName : PathStr;
+                            var Handle : Word);
+
+Submit a task to the CAS manager.
+
+See also:  0405SubmitSingleFile
+;
+;-------------------------------------------------------------------
+!TOPIC 387 AbortCurrentEvent
+!NOINDEX
+procedure 0379ApFaxCas.AbortCurrentEvent(FP : FaxRecPtr; var Handle : Word);
+!LINE
+procedure 0381CASFax.AbortCurrentEvent(var Handle : Word);
+
+Abort the current CAS event.
+;
+;-------------------------------------------------------------------
+!TOPIC 388 FindFirstCAS
+!NOINDEX
+procedure 0379ApFaxCas.FindFirstCAS(FP : FaxRecPtr; Q : 0423QueueType;
+                                Direction : Boolean; Status : Integer;
+                                var Handle : Word);
+!LINE
+procedure 0381CASFax.FindFirstCAS(Q : 0423QueueType;
+                              Direction : Boolean; Status : Integer;
+                              var Handle : Word);
+
+Find the first matching event in the specified queue.
+
+See also:  0389FindNextCAS
+;
+;-------------------------------------------------------------------
+!TOPIC 389 FindNextCAS
+!NOINDEX
+procedure 0379ApFaxCas.FindNextCAS(FP : FaxRecPtr; Q : 0423QueueType;
+                               var Handle : Word);
+!LINE
+procedure 0381CASFax.FindNextCAS(Q : 0423QueueType;
+                             var Handle : Word);
+
+Find the next matching event in the specified queue.
+
+See also:  0388FindFirstCAS
+;
+;-------------------------------------------------------------------
+!TOPIC 390 OpenFile
+!NOINDEX
+procedure 0379ApFaxCas.OpenFile(FP : FaxRecPtr; Q : 0423QueueType;
+                            FileNumber : Word; Handle : Word;
+                            var FHandle : Word);
+!LINE
+procedure 0381CASFax.OpenFile(Q : 0423QueueType;
+                          FileNumber : Word; Handle : Word;
+                          var FHandle : Word);
+
+Open a file in the specified queue.
+;
+;-------------------------------------------------------------------
+!TOPIC 391 CloseFile
+!NOINDEX
+procedure 0379ApFaxCas.CloseFile(FP : FaxRecPtr; FHandle : Word);
+!LINE
+procedure 0381CASFax.CloseFile(Handle : Word);
+
+Close an open file handle.
+
+See also:  0390OpenFile
+;
+;-------------------------------------------------------------------
+!TOPIC 392 DeleteFile
+!NOINDEX
+procedure 0379ApFaxCas.DeleteFile(FP : FaxRecPtr; Handle : Word;
+                              FileNumber : Word; Q : 0423QueueType);
+!LINE
+procedure 0381CASFax.DeleteFile(Handle : Word;
+                            FileNumber : Word; Q : 0423QueueType);
+
+Delete a file from the specified queue.
+
+See also:  0393DeleteAllFiles
+;
+;-------------------------------------------------------------------
+!TOPIC 393 DeleteAllFiles
+!NOINDEX
+procedure 0379ApFaxCas.DeleteAllFiles(FP : FaxRecPtr; Q : 0423QueueType);
+!LINE
+procedure 0381CASFax.DeleteAllFiles(Q : 0423QueueType);
+
+Delete all files in the specified queue.
+
+See also:  0392DeleteFile
+;
+;-------------------------------------------------------------------
+!TOPIC 394 GetEventDate
+!NOINDEX
+procedure 0379ApFaxCas.GetEventDate(FP : FaxRecPtr; Handle : Word;
+                                Q : 0423QueueType;
+                                var Year, Month, Day : Word);
+!LINE
+procedure 0381CASFax.GetEventDate(Handle : Word;
+                              Q : 0423QueueType;
+                              var Year, Month, Day : Word);
+
+Get the date for the specified event.
+
+See also:  0396GetEventTime
+;
+;-------------------------------------------------------------------
+!TOPIC 395 SetTaskDate
+!NOINDEX
+procedure 0379ApFaxCas.SetTaskDate(FP : FaxRecPtr; Handle : Word;
+                               Year, Month, Day : Word);
+!LINE
+procedure 0381CASFax.SetTaskDate(Handle : Word;
+                             Year, Month, Day : Word);
+
+Set the date for the specified event.
+
+See also:  0394GetEventDate          0397SetTaskTime
+;
+;-------------------------------------------------------------------
+!TOPIC 396 GetEventTime
+!NOINDEX
+procedure 0379ApFaxCas.GetEventTime(FP : FaxRecPtr; Handle : Word;
+                                Q : 0423QueueType; var Hour, Min, Sec : Word);
+!LINE
+procedure 0381CASFax.GetEventTime(Handle : Word;
+                              Q : 0423QueueType; var Hour, Min, Sec : Word);
+
+Get the time for the specified event.
+
+See also:  0394GetEventDate
+;
+;-------------------------------------------------------------------
+!TOPIC 397 SetTaskTime
+!NOINDEX
+procedure 0379ApFaxCas.SetTaskTime(FP : FaxRecPtr; Handle : Word;
+                               Hour, Min, Sec : Word);
+!LINE
+procedure 0381CASFax.SetTaskTime(Handle : Word;
+                             Hour, Min, Sec : Word);
+
+Set the time for the specified event.
+
+See also:  0396GetEventTime          0395SetTaskDate
+;
+;-------------------------------------------------------------------
+!TOPIC 398 GetExternalDataBlock
+!NOINDEX
+procedure 0379ApFaxCas.GetExternalDataBlock(FP : FaxRecPtr;
+                                        var EDB : 0421ExternalDataBlock);
+!LINE
+procedure 0381CASFax.GetExternalDataBlock(var EDB : 0421ExternalDataBlock);
+
+Return information about the resident CAS driver.
+;
+;-------------------------------------------------------------------
+!TOPIC 399 GetSetAutoReceive
+!NOINDEX
+procedure 0379ApFaxCas.GetSetAutoReceive(FP : FaxRecPtr; var Rings : Word;
+                                     GetSet : Word);
+!LINE
+procedure 0381CASFax.GetSetAutoReceive(var Rings : Word;
+                                   GetSet : Word);
+
+Get or set the state of auto-receive.
+
+See also:  0416FaxReceive
+;
+;-------------------------------------------------------------------
+!TOPIC 400 GetEventStatus
+!NOINDEX
+procedure 0379ApFaxCas.GetEventStatus(FP : FaxRecPtr; var SRec : 0425StatusRecord);
+!LINE
+procedure 0381CASFax.GetEventStatus(var SRec : 0425StatusRecord);
+
+Return the status of the current event.
+
+See also:  0409GetAllStatus
+;
+;-------------------------------------------------------------------
+!TOPIC 401 GetQueueStatus
+!NOINDEX
+procedure 0379ApFaxCas.GetQueueStatus(FP : FaxRecPtr; Q : 0423QueueType;
+                          var Changes, ControlFiles, ReceivedFiles : Word);
+!LINE
+procedure 0381CASFax.GetQueueStatus(Q : 0423QueueType;
+                          var Changes, ControlFiles, ReceivedFiles : Word);
+
+Get the status of the specified queue.
+;
+;-------------------------------------------------------------------
+!TOPIC 402 GetHardwareStatus
+!NOINDEX
+procedure 0379ApFaxCas.GetHardwareStatus(FP : FaxRecPtr;
+                                     var SArray : 0424StatusArray);
+!LINE
+procedure 0381CASFax.GetHardwareStatus(var SArray : 0424StatusArray);
+
+Return vendor-specific hardware status information.
+;
+;-------------------------------------------------------------------
+!TOPIC 403 RunDiagnostics
+!NOINDEX
+procedure 0379ApFaxCas.RunDiagnostics(FP : FaxRecPtr; Mode : Word);
+!LINE
+procedure 0381CASFax.RunDiagnostics(Mode : Word);
+
+Run CAS hardware diagnostics.
+;
+;-------------------------------------------------------------------
+!TOPIC 404 MoveReceivedFile
+!NOINDEX
+procedure 0379ApFaxCas.MoveReceivedFile(FP : FaxRecPtr; Handle : Word;
+                                    FileNumber : Word; NewName : PathStr);
+!LINE
+procedure 0381CASFax.MoveReceivedFile(Handle : Word;
+                                  FileNumber : Word; NewName : PathStr);
+
+Extract a file from the receive queue to a DOS file.
+;
+;-------------------------------------------------------------------
+!TOPIC 405 SubmitSingleFile
+!NOINDEX
+procedure 0379ApFaxCas.SubmitSingleFile(FP : FaxRecPtr; TransType : Word;
+                                    TextSize : Word; Time : Word;
+                                    Date : Word; Dest : String;
+                                    FName : PathStr; Number : String;
+                                    Cover : PathStr; var Handle : Word);
+!LINE
+procedure 0381CASFax.SubmitSingleFile(TransType : Word;
+                                  TextSize : Word; Time : Word;
+                                  Date : Word; Dest : String;
+                                  FName : PathStr; Number : String;
+                                  Cover : PathStr; var Handle : Word);
+
+Submit a single fax transmission to the CAS manager.
+
+See also:  0386SubmitTask
+;
+;-------------------------------------------------------------------
+!TOPIC 406 SetLogoFile
+!NOINDEX
+procedure 0379ApFaxCas.SetLogoFile(FP : FaxRecPtr; LF : PathStr);
+!LINE
+procedure 0381CASFax.SetLogoFile(LF : PathStr);
+
+Set PCX logo file for the cover page.
+;
+;-------------------------------------------------------------------
+!TOPIC 407 GetPageInfo,ApFaxCas/OoCasFax
+!NOINDEX
+procedure 0379ApFaxCas.GetPageInfoCAS(FP : FaxRecPtr; var Pages : Word;
+                                  var Page : Word;
+                                  var BytesTransferred : LongInt;
+                                  var PageLength : LongInt);
+!LINE
+procedure 0381CASFax.GetPageInfo(var Pages : Word;
+                             var Page : Word;
+                             var BytesTransferred : LongInt;
+                             var PageLength : LongInt); virtual;
+
+Return status information about the current page.
+;
+;-------------------------------------------------------------------
+!TOPIC 408 SetCASAbortFunc
+!NOINDEX
+procedure 0379ApFaxCas.SetCASAbortFunc(FP : FaxRecPtr; CAF : AbortFunc);
+!LINE
+procedure 0381CASFax.SetCASAbortFunc(CAF : AbortFunc);
+
+Set a CAS user abort function.
+
+See also:  0416FaxReceive            0413FaxTransmit
+;
+;-------------------------------------------------------------------
+!TOPIC 409 GetAllStatus
+!NOINDEX
+procedure 0379ApFaxCas.GetAllStatus(FP : FaxRecPtr; var Event : Byte;
+                                var AStatus : Word; var Pages : Word;
+                                var PageTotal : Word; var Bytes : LongInt;
+                                var FName : PathStr; var Remote : String);
+!LINE
+procedure 0381CASFax.GetAllStatus(var Event : Byte;
+                              var AStatus : Word; var Pages : Word;
+                              var PageTotal : Word; var Bytes : LongInt;
+                              var FName : PathStr; var Remote : String);
+
+Return selected status fields for the current event.
+;
+;-------------------------------------------------------------------
+!TOPIC 410 SetCASResolution
+!NOINDEX
+procedure 0379ApFaxCas.SetCASResolution(FP : FaxRecPtr; High : Boolean);
+!LINE
+procedure 0381CASFax.SetCASResolution(High : Boolean);
+
+Set the fax resolution.
+;
+;-------------------------------------------------------------------
+!TOPIC 411 PrepareFaxTransmitPart,ApFaxCas/OoCasFax
+!NOINDEX
+procedure 0379ApFaxCas.PrepareFaxTransmitPartCAS(FP : FaxRecPtr);
+!LINE
+procedure 0381CASFax.PrepareFaxTransmitPart;
+
+Prepare to call 0412FaxTransmitPart.
+;
+;-------------------------------------------------------------------
+!TOPIC 412 FaxTransmitPart,ApFaxCas/OoCasFax
+!NOINDEX
+function 0379ApFaxCas.FaxTransmitPartCAS(FP : FaxRecPtr) : 0035FaxStateType;
+!LINE
+function 0381CASFax.FaxTransmitPart : 0035FaxStateType;
+
+Perform one step of a CAS fax transmit.
+
+See also:  0413FaxTransmit           0411PrepareFaxTransmitPart
+;
+;-------------------------------------------------------------------
+!TOPIC 413 FaxTransmit,ApFaxCas/OoCasFax
+!NOINDEX
+procedure 0379ApFaxCas.FaxTransmitCAS(FP : FaxRecPtr);
+!LINE
+procedure 0381CASFax.FaxTransmit; virtual;
+
+Transmit one or more fax files.
+
+See also:  0412FaxTransmitPart
+;
+;-------------------------------------------------------------------
+!TOPIC 414 PrepareFaxReceivePart,ApFaxCas/OoCasFax
+!NOINDEX
+procedure 0379ApFaxCas.PrepareFaxReceivePartCAS(FP : FaxRecPtr);
+!LINE
+procedure 0381CASFax.PrepareFaxReceivePart;
+
+Prepare to call 0415FaxReceivePart.
+;
+;-------------------------------------------------------------------
+!TOPIC 415 FaxReceivePart,ApFaxCas/OoFaxCas
+!NOINDEX
+function 0379ApFaxCas.FaxReceivePartCAS(FP : FaxRecPtr) : 0035FaxStateType;
+!LINE
+function 0381CASFax.FaxReceivePart : 0035FaxStateType;
+
+Perform one step of a CAS fax receive.
+
+See also:  0416FaxReceive            0414PrepareFaxReceivePart
+;
+;-------------------------------------------------------------------
+!TOPIC 416 FaxReceive,ApFaxCas/OoCasFax
+!NOINDEX
+procedure 0379ApFaxCas.FaxReceiveCAS(FP : FaxRecPtr);
+!LINE
+procedure 0381CASFax.FaxReceive; virtual;
+
+Receive one or more fax files.
+
+See also:  0415FaxReceivePart
+;
+;-------------------------------------------------------------------
+!TOPIC 417 CASInstalled,ApFaxCas
+!NOINDEX
+function 0379ApFaxCas.CASInstalled : Boolean;
+
+Return True if the CAS driver is installed. Your program should call this
+function to ensure that the CAS driver TSR is installed before it uses any
+other CAS functions.
+;
+;-------------------------------------------------------------------
+!TOPIC 418 CASInstalled,OoFaxCas
+!NOINDEX
+function 0380OoFaxCas.CASInstalled : Boolean;
+
+Return True if the CAS driver is installed. your program should call this
+function to ensure that the CAS driver TSR is installed before it uses any
+other CAS functions.
+;
+;-------------------------------------------------------------------
+!TOPIC 419 MaxCoverData
+!NOINDEX
+const
+  MaxCoverData = 2048;
+
+Maximum size, in bytes, of the cover text file after any substitutions are
+performed. Any data beyond this limit is discarded.
+;
+;-------------------------------------------------------------------
+!TOPIC 420 ControlFileRecord
+!NOINDEX
+type
+  ControlFileRecord = record
+    ...
+  end;
+
+CAS Control File Record. This record is returned as part of a 0425StatusRecord
+when you call 0400GetEventStatus, a native CAS function. You'll need to read
+the CAS specification to understand the two dozen fields in this record.
+It contains information such as the type of event to process, the time a
+transmission should start, and the phone number of a fax recipient.
+;
+;-------------------------------------------------------------------
+!TOPIC 421 ExternalDataBlock
+!NOINDEX
+type
+  ExternalDataBlock= record
+    Major    : Byte;                  {CAS major version number}
+    Minor    : Byte;                  {CAS minor version number}
+    Path     : Array[0..67] of Char;  {Directory of CAS driver/support
+                                       files}
+    PB       : Array[0..12] of Char;  {Default phonebook file name}
+    Logo     : Array[0..12] of Byte;  {Default logo file name}
+    Sender   : Array[0..31] of Char;  {Default sender name}
+    CSID     : Array[0..20] of Char;  {Default station ID}
+    Reserved : Array[0..106] of Byte; {For future expansion}
+  end;
+
+CAS External Data Block record, returned by 0398GetExternalDataBlock, a native
+CAS function. All of the character arrays contain null-terminated strings.
+See the CAS specification for further details.
+;
+;-------------------------------------------------------------------
+!TOPIC 422 FileTransferRecord
+!NOINDEX
+type
+  FileTransferRecord = record
+    FileType   : Byte;                  {Type of file: text, PCX, etc.}
+    TextSize   : Byte;                  {Page size for text files}
+    Status     : Byte;                  {File status}
+    BytesSent  : LongInt;               {Bytes transferred so far}
+    SizeTotal  : LongInt;               {Total file size in bytes}
+    PagesSent  : Word;                  {Pages transferred so far}
+    PagesTotal : Word;                  {Total pages in fax}
+    Path       : Array[0..79] of Char;  {Full pathname of file, ASCIIZ}
+    Increments : Byte;                  {Fractional page length}
+    PageLen    : Byte;                  {Page length code}
+    Reserved   : Array[0..30] of Byte;  {For future expansion}
+  end;
+
+CAS File Transfer Record, not including the cover data. This record is
+returned as part of a 0425StatusRecord when you call 0400GetEventStatus, a native
+CAS function. A CAS control file is composed of a 0420ControlFileRecord,
+followed by one or more FileTransferRecords. See the CAS specification for
+more information.
+;
+;-------------------------------------------------------------------
+!TOPIC 423 QueueType
+!NOINDEX
+type
+  QueueType = (qTask, qReceive, qLog);
+
+Types of CAS queues.
+;
+;-------------------------------------------------------------------
+!TOPIC 424 StatusArray
+!NOINDEX
+type
+  StatusArray = array[0..127] of Char;
+
+Array for vendor specific hardware status. See 0402GetHardwareStatus.
+;
+;-------------------------------------------------------------------
+!TOPIC 425 StatusRecord
+!NOINDEX
+type
+  StatusRecord = record
+    CFRec         : 0420ControlFileRecord;
+    FTRec         : 0422FileTransferRecord;
+  end;
+
+CAS status record returned by 0400GetEventStatus.
+;
+;-------------------------------------------------------------------
+!TOPIC 426 Declarations,ApFaxCas
+!NOINDEX
+0379ApFaxCas declares the following types and constants:
+
+  0420ControlFileRecord              0421ExternalDataBlock
+  0422FileTransferRecord             0419MaxCoverData
+  0423QueueType                      0424StatusArray
+  0425StatusRecord
+;
+;-------------------------------------------------------------------
+!TOPIC 427 Declarations,OoCasFax
+!NOINDEX
+0380OoFaxCas declares the following types and constants:
+
+  0420ControlFileRecord              0421ExternalDataBlock
+  0422FileTransferRecord             0419MaxCoverData
+  0423QueueType                      0424StatusArray
+  0425StatusRecord

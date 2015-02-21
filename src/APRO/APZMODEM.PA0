@@ -1,0 +1,260 @@
+const
+  {Compile-time constants}
+  MaxAttentionLen = 32;              {Maximum length of attention string}
+  MaxBlockSize = 1024;               {Maximum data bytes on one zmodem frame}
+  HandshakeWaitZM = 1092;            {Tics to wait for first hdr (60 secs)}
+  PeekTimeout = 5;                   {Wait 5 tics for various peeks}
+
+  {Run-time constants}
+  DrainingStatusInterval : Word = 18;{Default status interval for draining eof}
+  DefFinishWaitZM : Word = 364;      {Wait time for ZFins, 30 secs}
+  DefFinishRetryZM : Word = 3;       {Retry ZFin 3 times}
+  MaxBadBlocks : Word = 20;          {Quit if this many bad blocks}
+
+  {For estimating protocol transfer times}
+  ZmodemTurnDelay : Word = 0;        {Millisecond turnaround delay}
+  ZmodemOverHead : Word = 20;        {Default overhead for each data subpacket}
+
+  {For checking max block sizes}
+  ZMaxBlk : Array[Boolean] of Word = (1024, 8192);
+  ZMaxWrk : Array[Boolean] of Word = (2048, 16384);
+
+  {Zmodem constants}
+  ZPad       = '*';                  {Pad}
+  ZDle       = ^X;                   {Data link escape}
+  ZDleE      = 'X';                  {An escaped data link escape character}
+  ZBin       = 'A';                  {Binary header using Crc16}
+  ZHex       = 'B';                  {Hex header using Crc16}
+  ZBin32     = 'C';                  {Binary header using Crc32}
+
+  {Zmodem frame types}
+  ZrQinit    = #0;                   {Request init (to receiver)}
+  ZrInit     = #1;                   {Init (to sender)}
+  ZsInit     = #2;                   {Init (to receiver) (optional)}
+  ZAck       = #3;                   {Acknowledge last frame}
+  ZFile      = #4;                   {File info frame (to receiver)}
+  ZSkip      = #5;                   {Skip to next file (to receiver)}
+  ZNak       = #6;                   {Error receiving last data subpacket}
+  ZAbort     = #7;                   {Abort protocol}
+  ZFin       = #8;                   {Finished protocol}
+  ZRpos      = #9;                   {Resume from this file position}
+  ZData      = #10;                  {Data subpacket(s) follows}
+  ZEof       = #11;                  {End of current file}
+  ZFerr      = #12;                  {Error reading or writing file}
+  ZCrc       = #13;                  {Request for file CRC (to receiver)}
+  ZChallenge = #14;                  {Challenge the sender}
+  ZCompl     = #15;                  {Complete}
+  ZCan       = #16;                  {Cancel requested (to either)}
+  ZFreeCnt   = #17;                  {Request diskfree}
+  ZCommand   = #18;                  {Execute this command (to receiver)}
+
+  {File management options (how and when to accept a file)}
+  WriteNewerLonger = 1;          {Transfer if new, newer or longer}
+  WriteCrc         = 2;          {Not supported, same as WriteNewer}
+  WriteAppend      = 3;          {Transfer if new, append if exists}
+  WriteClobber     = 4;          {Transfer regardless}
+  WriteNewer       = 5;          {Transfer if new or newer}
+  WriteDifferent   = 6;          {Transfer if new or diff dates/lens}
+  WriteProtect     = 7;          {Transfer only if new}
+
+type
+  {Holds an escaped character}
+  Str2 = String[2];
+
+  {Main Zmodem state table}
+  ZmodemStateType = (
+    {Transmit states}
+    tzInitial,       {0  Allocates buffers, sends zrqinit}
+    tzHandshake,     {1  Wait for hdr (zrinit), rsend zrqinit on timout}
+    tzGetFile,       {1  Call NextFile, build ZFile packet}
+    tzSendFile,      {3  Send ZFile packet}
+    tzCheckFile,     {4  Wait for hdr (zrpos), set next state to tzData}
+    tzStartData,     {5  Send ZData and next data subpacket}
+    tzEscapeData,    {6  Check for header, escape next block}
+    tzSendData,      {7  Wait for free space in buffer, send escaped block}
+    tzWaitAck,       {8  Wait for Ack on ZCRCW packets}
+    tzSendEof,       {9  Send eof}
+    tzDrainEof,      {10 Wait for output buffer to drain}
+    tzCheckEof,      {11 Wait for hdr (zrinit)}
+    tzSendFinish,    {12 Send zfin}
+    tzCheckFinish,   {13 Wait for hdr (zfin)}
+    tzError,         {14 Cleanup after errors}
+    tzCleanup,       {15 Release buffers and other cleanup}
+    tzDone,          {16 Signal end of protocol}
+
+    {Receive states}
+    rzRqstFile,      {17 Send zrinit}
+    rzDelay,         {18 Delay handshake for Telix}
+    rzWaitFile,      {19 Waits for hdr (zrqinit, zrfile, zsinit, etc)}
+    rzCollectFile,   {20 Collect file info into work block}
+    rzSendInit,      {21 Extract send init info}
+    rzSendBlockPrep, {22 Collect post-hexhdr chars}                    {!!.03}
+    rzSendBlock,     {23 Collect sendinit block}
+    rzSync,          {24 Send ZrPos with current file position}
+    rzStartFile,     {25 Extract file info, prepare writing, etc., put zrpos}
+    rzStartData,     {26 Wait for hdr (zrdata)}
+    rzCollectData,   {27 Collect data subpacket}
+    rzGotData,       {28 Got dsp, put it}
+    rzWaitEof,       {29 Wait for hdr (zreof)}
+    rzEndOfFile,     {30 Close file, log it, etc}
+    rzSendFinish,    {31 Send ZFin, goto rzWaitOO}
+    rzCollectFinish, {32 Check for OO, goto rzFinish}
+    rzError,         {33 Handle errors while file was open}
+    rzWaitCancel,    {34 Wait for the cancel to leave the outbuffer}
+    rzCleanup,       {35 Clean up buffers, etc.}
+    rzDone);         {36 Signal end of protocol}
+
+  {General header collection states}
+  HeaderStateType = (
+    hsNone,          {Not currently checking for a header}
+    hsGotZPad,       {Got initial or second asterisk}
+    hsGotZDle,       {Got ZDle}
+    hsGotZBin,       {Got start of binary header}
+    hsGotZBin32,     {Got start of binary 32 header}
+    hsGotZHex,       {Got start of hex header}
+    hsGotHeader);    {Got complete header}
+
+  {Hex header collection states}
+  HexHeaderStates = (
+    hhFrame,         {Processing frame type char}
+    hhPos1,          {Processing 1st position info byte}
+    hhPos2,          {Processing 2nd position info byte}
+    hhPos3,          {Processing 3rd position info byte}
+    hhPos4,          {Processing 4th position info byte}
+    hhCrc1,          {Processing 1st CRC byte}
+    hhCrc2);         {Processing 2nd CRC byte}
+
+  {Binary header collection states}
+  BinaryHeaderStates = (
+    bhFrame,         {Processing frame type char}
+    bhPos1,          {Processing 1st position info byte}
+    bhPos2,          {Processing 2nd position info byte}
+    bhPos3,          {Processing 3rd position info byte}
+    bhPos4,          {Processing 1th position info byte}
+    bhCrc1,          {Processing 1st CRC byte}
+    bhCrc2,          {Processing 2nd CRC byte}
+    bhCrc3,          {Processing 3rd CRC byte}
+    bhCrc4);         {Processing 4th CRC byte}
+
+  {Only two states possible when receiving blocks}
+  ReceiveBlockStates = (
+    rbData,          {Receiving data bytes}
+    rbCrc);          {Receiving block check bytes}
+
+  {Describes working buffer for expanding a standard buffer with escapes}
+  WorkBlockType = array[1..2*MaxBlockSize] of Char;
+
+  {Describes data area of headers}
+  PosFlagsType = array[0..3] of Byte;
+
+  {Pointer to a protocol record}
+  ZmodemPtr = ^ZmodemProtocol;
+
+  {A Zmodem protocol object}
+  ZmodemProtocol = record
+    {General...}
+    PData            : ProtocolDataPtr; {General protocol data}
+    UseCrc32         : Boolean;         {True when using 32bit CRCs}
+    CanCrc32         : Boolean;         {True when Crc32 capable}
+    LastFileOfs      : LongInt;         {File position reported by remote}
+    AttentionStr     : array[1..MaxAttentionLen] of Byte;   {Attn string value}
+    ConvertOpts      : Byte;            {File conversion opts rqst by sender}
+    FileMgmtOpts     : Byte;            {File mgmt opts rqst by sender}
+    TransportOpts    : Byte;            {File transport opts rqst by sender}
+    FileMgmtOverride : Boolean;         {True to override senders file mg opts}
+    ReceiverRecover  : Boolean;         {True to force file recovery}
+    FinishWait       : Word;            {Wait time for ZFin response}
+    FinishRetry      : Byte;            {Times to resend ZFin}
+    LastFrame        : Char;            {Holds last frame type for status}
+    EscapeAll        : Boolean;         {True when escaping all ctl chrs}{!!.02}
+
+    ZmodemState      : ZmodemStateType; {Current Zmodem state}
+    HeaderState      : HeaderStateType; {Current Header state}
+    ReplyTimer       : EventTimer;      {Used to timeout replies}
+    WorkSize         : Word;            {Index into working buffer}
+    LastBlock        : Boolean;         {True if no more blocks}
+    Terminator       : Char;            {Current block type}
+    HexPending       : Boolean;         {True for next char in hex pair}
+    HexByte          : Byte;            {Used to build hex byte}
+    EscapePending    : Boolean;         {True for next char in esc pair}
+    ControlCharSkip  : Boolean;         {True to skip ctl chars}       {!!.01}
+    HeaderType       : Char;            {Current header type}
+    HexHdrState      : HexHeaderStates; {Current hex header state}
+    BinHdrState      : BinaryHeaderStates; {Current binary header state}
+    RcvBlockState    : ReceiveBlockStates; {Current receive block state}
+    FilesSent        : Boolean;         {True if at least one file sent}
+    CanCount         : Byte;            {Track contiguous <cancels>}
+    SaveStatus       : Word;            {Maintain status across parts}
+    CrcCnt           : Byte;            {Number of CRC bytes expected}
+    LastStatus       : Word;            {Status to set in ReceiveBlock}
+    OCnt             : Byte;            {'O' byte received from 'OO'}
+    TimerPending     : Boolean;         {True if waiting to start timer}
+    DataInTransit    : Word;            {Count of bytes in window}
+    TimerStarted     : Boolean;         {True if timer started}
+    WasHex           : Boolean;         {True if last header was hex}  {!!.03}
+    DiscardCnt       : Word;            {Count chars before sendblock} {!!.03}
+
+    {For controlling autoadjustment of block size}
+    Use8KBlocks      : Boolean;         {True when using 8K blocks}
+    TookHit          : Boolean;         {True if we got ZrPos packet}
+    GoodAfterBad     : Word;            {Holds count of good blocks}
+    {NoFallBack      : Boolean;}         {True if CrcW sent on Pos}
+
+    {Working buffers}
+    DataBlock        : ^DataBlockType;  {Standard data block}
+    DataBlockLen     : Word;            {Count of valid data in DataBlock}
+    WorkBlock        : ^WorkBlockType;  {Holds fully escaped data block}
+
+    {Receiving...}
+    RcvHeader        : PosFlagsType;    {Received header}
+    RcvFrame         : Char;            {Type of last received frame}
+
+    {Transmitting...}
+    TransHeader      : PosFlagsType;    {Header to transmit}
+    RcvBuffLen       : Word;            {Size of receiver's buffer}
+    LastChar         : Char;            {Last character sent}
+  end;
+
+{$IFDEF UsePModeDLL}
+
+procedure InitZmodem(var P : ProtocolRecPtr; PortPtr : PortRecPtr); Export;
+procedure InitCustomZmodem(var P : ProtocolRecPtr;
+                           PortPtr : PortRecPtr;
+                           Options : Word); Export;
+procedure DoneZmodem(var P : ProtocolRecPtr); Export;
+procedure SetFileMgmtOptions(P : ProtocolRecPtr;
+                             Override, SkipNoFile : Boolean;
+                             FOpt : Byte); Export;
+procedure SetRecoverOption(P : ProtocolRecPtr; OnOff : Boolean); Export;
+procedure SetBigSubpacketOption(P : ProtocolRecPtr; UseBig : Boolean); Export;
+procedure SetFinishWaitZM(P : ProtocolRecPtr;
+                          NewWait : Word; NewRetry : Byte); Export;
+procedure PrepareTransmitPartZM(P : ProtocolRecPtr); Export;
+function ProtocolTransmitPartZM(P : ProtocolRecPtr) : ProtocolStateType; Export;
+procedure ProtocolTransmitZM(P : ProtocolRecPtr); Export;
+procedure PrepareReceivePartZM(P : ProtocolRecPtr); Export;
+function ProtocolReceivePartZM(P : ProtocolRecPtr) : ProtocolStateType; Export;
+procedure ProtocolReceiveZM(P : ProtocolRecPtr); Export;
+
+{$ELSE}
+
+procedure InitZmodem(var P : ProtocolRecPtr; PortPtr : PortRecPtr);
+procedure InitCustomZmodem(var P : ProtocolRecPtr;
+                           PortPtr : PortRecPtr;
+                           Options : Word);
+procedure DoneZmodem(var P : ProtocolRecPtr);
+procedure SetFileMgmtOptions(P : ProtocolRecPtr;
+                             Override, SkipNoFile : Boolean;
+                             FOpt : Byte);
+procedure SetRecoverOption(P : ProtocolRecPtr; OnOff : Boolean);
+procedure SetBigSubpacketOption(P : ProtocolRecPtr; UseBig : Boolean);
+procedure SetFinishWaitZM(P : ProtocolRecPtr;
+                          NewWait : Word; NewRetry : Byte);
+procedure PrepareTransmitPartZM(P : ProtocolRecPtr);
+function ProtocolTransmitPartZM(P : ProtocolRecPtr) : ProtocolStateType;
+procedure ProtocolTransmitZM(P : ProtocolRecPtr);
+procedure PrepareReceivePartZM(P : ProtocolRecPtr);
+function ProtocolReceivePartZM(P : ProtocolRecPtr) : ProtocolStateType;
+procedure ProtocolReceiveZM(P : ProtocolRecPtr);
+
+{$ENDIF}

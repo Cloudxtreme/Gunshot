@@ -1,0 +1,1021 @@
+{*********************************************************}
+{*                 OOPINSTM.PA1 2.03                     *}
+{*           Installation program for OOPCOM             *}
+{*       Copyright (c) TurboPower Software 1991.         *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+  procedure NormalScreen;
+  begin
+    Window(1, 1, ScreenWidth, ScreenHeight);
+    TextAttr := $07;
+    ClrScr;
+    NormalCursor;
+  end;
+
+  procedure Abort(S : String);
+  begin
+    ErrorMessage(S, True);
+    if ReadKey = #0 then if ReadKey = #0 then ;
+    NormalScreen;
+    Halt;
+  end;
+
+  procedure About;
+    {-Display program name, copyright info}
+  var
+    I : Word;
+    {W : CommandWindow;}
+  begin
+    if not AboutWin.Init(18, 7, 62, 18, EntryCommands, 0) then begin
+      InsufficientMemory;
+      Exit;
+    end;
+    AboutWin.wFrame.AddShadow(shBR, shSeeThru);
+    AboutWin.wOptionsOff(wResizeable);
+    AboutWin.SetCursor(cuHidden);
+    AboutWin.Draw;
+    AboutWin.wFastCenter(ProgName, 2, TextAttr);
+    AboutWin.wFastCenter('Created with Object Professional', 3, TextAttr);
+    AboutWin.wFastCenter('and Async Professional', 4, TextAttr);
+    AboutWin.wFastCenter(Copyright, 5, TextAttr);
+
+    AboutWin.wFastCenter('P.O. Box 49009', 7, TextAttr);
+    AboutWin.wFastCenter('Colorado Springs, Co. 80949-9009', 8, TextAttr);
+    AboutWin.wFastCenter('Tech support: 719-260-6641', 10, TextAttr);
+
+    AboutWin.wFastCenter('Order line: 800-333-4160', 11, TextAttr);
+  end;
+
+  procedure UpdateHelpLine(CurrentItem : MenuItemNodePtr; MPtr : MenuPtr);
+    {-Update HelpLine for each menu item}
+  var
+    S : String;
+  begin
+    if CurrentItem = nil then
+      S := ''
+    else
+      S := CurrentItem^.HelpString;
+    Message(S, True);
+  end;
+
+  function InitMainMenu : Boolean;
+  const
+    Frame1 : FrameArray = 'ÚÀ¿ÙÄÄ³³';
+  begin
+    with MainMenu do begin
+      if not InitCustom(1, 1, 80, 1, MenuColors,
+                        wClear+wUserContents+wCoversOnDemand,
+                        Horizontal) then begin
+        InitMainMenu := False;
+        Exit;
+      end;
+      mnOptionsOn(mnAlphaMatch+mnSelectOnMatch+mnArrowSelect+
+                  mnAllHotSpots+mnAllowPending+mnUseItemForTopic);
+      mnOptionsOff(mnPopOnSelect+mnSelectOnClick+mnAltMatch);
+      AddItemHelp('Load', 6, 1, miLoad,
+                  'Load defaults from a configuration file');
+      AddItemHelp('Customize', 23, 1, miCustomize,
+                  'Customize options');
+        AddFramedSubMenu(21, 3, 35, 11, Vertical, Frame1);
+        AddShadow(shBR, shSeeThru);
+        AddItemHelp('Browser', 1, 1, miBrowser,
+                    'Customize Browser options');
+        AddItemHelp('Dialer', 2, 1, miDialer,
+                    'Customize Dialer options');
+        AddItemHelp('Editor', 3, 1, miEditor,
+                    'Customize Editor options');
+        AddItemHelp('Help', 4, 1, miHelp,
+                    'Customize help system options');
+        AddItemHelp('Modem', 5, 1, miModem,
+                    'Customize Modem options');
+        AddItemHelp('Protocols', 6, 1, miProtocols,
+                    'Customize protocol options');
+        AddItemHelp('Terminal', 7, 1, miTerminal,
+                    'Customize terminal window options');
+        AddItemHelp('Colors', 8, 1, miColors,
+                    'Customize colors');
+        AddItemHelp('Miscellaneous', 9, 1, miMisc,
+                    'Customize miscellaneous options (EMS, mouse, etc.)');
+        ItemsDone;
+      AddItemHelp('Save', 49, 1, miSave,
+                  'Save the current settings to a configuration file');
+      AddItemHelp('Quit', 72, 1, miQuit,
+                  'Exit this program');
+      ItemsDone;
+      SetCurrentItemProc(UpdateHelpLine);
+      InitMainMenu := RawError = 0;
+    end;
+  end;
+
+  procedure InitScreen;
+    {-Initialize screen, mouse stuff}
+  begin
+    {clear the screen}
+    TextChar := BackdropChar;
+    TextAttr := BackdropAttr;
+    ClrScr;
+
+    {$IFDEF UseMouse}
+    if MouseInstalled then
+      with EntryColors do begin
+        {activate mouse cursor}
+        SoftMouseCursor($0000, (ColorMono(MouseColor, MouseMono) shl 8)+
+                               Byte(MouseChar));
+        ShowMouse;
+
+        {enable mouse support}
+        MenuCommands.cpOptionsOn(cpEnableMouse);
+        EntryCommands.cpOptionsOn(cpEnableMouse);
+        SelectCommands.cpOptionsOn(cpEnableMouse);
+        PickCommands.cpOptionsOn(cpEnableMouse);
+      end;
+    {$ENDIF}
+  end;
+
+  procedure CloneData(Loading : Boolean);
+  begin
+    if Clone = Nil then
+      GetMem(Clone, ConfigSize);
+    if not Loading then
+      Modified := True;
+    if Clone = Nil then
+      Abort('Insufficient memory for clone area');
+    Move(OopComID, Clone^, ConfigSize);
+  end;
+
+  procedure LoadConfig(FName : PathStr);
+  var
+    ErrorCode : Word;
+    Msg       : String;
+  begin
+    ErrorCode := LoadConfiguration(FName, OopComID,
+                                   @OopComID, ConfigSize);
+    case ErrorCode of
+      0 :
+        begin
+          Msg := 'Configuration read from ' + FName;
+          Modified := False;
+        end;
+      1, $FFFF : Msg := 'File incorrect format';
+      2 : Msg := FName + ' configuration file not found';
+      else
+        Msg := 'Unknown error ' + Long2Str(ErrorCode) + ' reading ' + FName;
+    end;
+    if ErrorCode = 0 then
+      TempMessage(Msg, 1500)
+    else
+      ErrorMessage(Msg, True);
+    CloneData(True);
+  end;
+
+  procedure LoadDefaults;
+  var
+    FName     : PathStr;
+  begin
+    FName := ConfigFileName;
+    if GetFile(0, 'Enter name of configuration file: ', True, True,
+               False, True, SizeOf(FName) - 1, 'CFG', FName) then begin
+      if Length(FName) = 0 then
+        Exit;
+      LoadConfig(FName);
+    end;
+  end;
+  procedure TerminalPreEdit(ESP : EntryScreenPtr);
+  var
+    ID : Word;
+  begin
+    ID := ESP^.GetCurrentID;
+    if (ID >= 0) and (ID <= idRequireCTS) then
+      Message(TerminalMsgs[ID], True);
+  end;
+  procedure BrowserPreEdit(ESP : EntryScreenPtr);
+  var
+    ID : Word;
+  begin
+    ID := ESP^.GetCurrentID;
+    if (ID >= 0) and (ID <= idBrowseDefExt) then
+      Message(BrowserMsgs[ID], True);
+  end;
+  procedure EditorPreEdit(ESP : EntryScreenPtr);
+  var
+    ID : Word;
+  begin
+    ID := ESP^.GetCurrentID;
+    if (ID >= 0) and (ID <= idEditDefExt) then
+      Message(EditorMsgs[ID], True);
+  end;
+  procedure ModemPreEdit(ESP : EntryScreenPtr);
+  var
+    ID : Word;
+  begin
+    ID := ESP^.GetCurrentID;
+    if (ID >= 0) and (ID <= idModemPickList) then
+      Message(ModemMsgs[ID], True);
+  end;
+  procedure DialerPreEdit(ESP : EntryScreenPtr);
+  var
+    ID : Word;
+  begin
+    ID := ESP^.GetCurrentID;
+    if (ID >= 0) and (ID <= idDefPhoneExt) then
+      Message(DialerMsgs[ID], True);
+  end;
+  procedure HelpPreEdit(ESP : EntryScreenPtr);
+  var
+    ID : Word;
+  begin
+    ID := ESP^.GetCurrentID;
+    if (ID >= 0) and (ID <= idHelpFileName) then
+      Message(HelpMsgs[ID], True);
+  end;
+  procedure ProtocolPreEdit(ESP : EntryScreenPtr);
+  var
+    ID : Word;
+  begin
+    ID := ESP^.GetCurrentID;
+    if (ID >= 0) and (ID <= idRepeatPrefix) then
+      Message(ProtocolMsgs[ID], True);
+  end;
+  procedure MiscPreEdit(ESP : EntryScreenPtr);
+  var
+    ID : Word;
+  begin
+    ID := ESP^.GetCurrentID;
+    if (ID >= 0) and (ID <= idDefColorMap) then
+      Message(MiscMsgs[ID], True);
+  end;
+
+  procedure CustomizeEntryScreen(var ES : EntryScreen; Title : String);
+  const
+    PromptColor    = $1F;
+    PromptMono     = $07;
+    SelPromptColor = $1F;
+    SelPromptMono  = $07;
+    SelFieldColor  = $31;
+    SelFieldMono   = $70;
+    CtrlColor      = $31;
+    CtrlMono       = $70;
+    ItemColor      = $1E;
+    ItemMono       = $07;
+    SelItemColor   = $3E;
+    SelItemMono    = $70;
+    HelpMsg        = '<^Enter> to accept screen, <ESC> to abort';
+  begin
+    with ES do begin
+      with wFrame do begin
+        AddShadow(shBR, shSeeThru);
+        SetFrameType(Frame1);
+        AddHeader(Title, heTC);
+        AddHeader(HelpMsg, heBC);
+      end;
+      SetWrapMode(WrapAtEdges);
+      SetBeepOnError(On);
+      {set field editing options}
+      esFieldOptionsOn(efClearFirstChar);
+      {customize the colors}
+      SetPromptAttr(PromptColor, PromptMono);
+      SetSelectedPromptAttr(SelPromptColor, SelPromptMono);
+      SetSelectedFieldAttr(SelFieldColor, SelFieldMono);
+      SetCtrlAttr(CtrlColor, CtrlMono);
+    end;
+  end;
+  procedure ModemIncChoice(var Value; ID : Word; Factor : Integer;
+                           var St : string);
+  const
+    TonePulseStr : Array[TonePulseType] of String[5] = ('tone', 'pulse');
+    WordCodesStr : Array[WordCodeType] of String[5] = ('words', 'codes');
+  var
+    TonePulse : TonePulseType absolute Value;
+    WordCodes : WordCodeType absolute Value;
+  begin
+    case ID of
+      idDefTonePulse :
+        begin
+          case Factor of
+            1, -1 :
+              if TonePulse = Pulse then
+                TonePulse := Tone
+              else
+                TonePulse := Pulse;
+          end;
+          St := TonePulseStr[TonePulse];
+        end;
+      idDefWordCodes :
+        begin
+          case Factor of
+            1, -1 :
+              if WordCodes = Codes then
+                WordCodes := Words
+              else
+                WordCodes := Codes;
+          end;
+          St := WordCodesStr[WordCodes];
+        end;
+    end;
+  end;
+
+  procedure PackHWFlow;
+  begin
+    DefHWHOptions := Ord(UseDTR) or (Ord(UseRTS) shl 1) or
+                     (Ord(RequireDSR) shl 2) or
+                     (Ord(RequireCTS) shl 3);
+  end;
+
+  procedure UnpackHWFlow;
+  begin
+    UseDTR := DefHWHOptions and hfUseDTR <> 0;
+    UseRTS := DefHWHOptions and hfUseRTS <> 0;
+    RequireDSR := DefHWHOptions and hfRequireDSR <> 0;
+    RequireCTS := DefHWHOptions and hfRequireCTS <> 0;
+  end;
+
+  procedure TerminalIncChoice(var Value; ID : Word; Factor : Integer;
+                              var St : string);
+  const
+    {$IFDEF LargeComNameSet}                                           {!!.01}
+    MaxPort : Array[Boolean] of ComNameType = (Com36, Com36);          {!!.01}
+    {$ELSE}                                                            {!!.01}
+    {$IFDEF UseDigi14}                                                 {!!.01}
+    MaxPort : Array[Boolean] of ComNameType = (Com8, Com8);            {!!.01}
+    {$ELSE}                                                            {!!.01}
+    MaxPort : Array[Boolean] of ComNameType = (Com4, Com8);
+    {$ENDIF}                                                           {!!.01}
+    {$ENDIF}                                                           {!!.01}
+  var
+    ComPort : ComNameType absolute Value;
+    Duplex   : DuplexType absolute Value;
+    Baud : LongInt absolute Value;
+    Parity : ParityType absolute Value;
+    DataBits : DataBitType absolute Value;
+    StopBits : StopBitType absolute Value;
+  begin
+    case ID of
+      idDefComPort :
+        begin
+          case Factor of
+            1 :
+              if ComPort >= MaxPort[SystemIsPs2] then
+                ComPort := Com1
+              else
+                Inc(ComPort);
+            -1 :
+              if ComPort = Com1 then
+                ComPort := MaxPort[SystemIsPs2]
+              else
+                Dec(ComPort);
+          end;
+          St := ComNameString(ComPort);
+        end;
+      idDefDuplexType :
+        begin
+          case Factor of
+            -1, 1 :
+              if Duplex = dupHalf then
+                Duplex := dupFull
+              else
+                Duplex := dupHalf;
+          end;
+          if Duplex = dupHalf then
+            St := 'half'
+          else
+            St := 'full';
+        end;
+      idDefBaud :
+        begin
+          case Factor of
+            1 :
+              if Baud = 300 then
+                Baud := 1200
+              else if Baud = 1200 then
+                Baud := 2400
+              else if Baud = 2400 then
+                Baud := 4800
+              else if Baud = 4800 then
+                Baud := 9600
+              else if Baud = 9600 then
+                Baud := 19200
+              else if Baud = 19200 then
+                Baud := 38400
+              else if Baud = 38400 then
+                Baud := 57600
+              else if Baud = 57600 then
+                Baud := 115200
+              else if Baud = 115200 then
+                Baud := 300
+              else
+                Baud := DefBaud;
+            -1 :
+              if Baud = 115200 then
+                Baud := 57600
+              else if Baud = 57600 then
+                Baud := 38400
+              else if Baud = 38400 then
+                Baud := 19200
+              else if Baud = 19200 then
+                Baud := 9600
+              else if Baud = 9600 then
+                Baud := 4800
+              else if Baud = 4800 then
+                Baud := 2400
+              else if Baud = 2400 then
+                Baud := 1200
+              else if Baud = 1200 then
+                Baud := 300
+              else if Baud = 300 then
+                Baud := 115200
+              else
+                Baud := DefBaud;
+          end;
+          Str(Baud, St);
+        end;
+      idDefParity :
+        begin
+          case Factor of
+            1 :
+              if Parity = SpaceParity then
+                Parity := NoParity
+              else
+                Inc(Parity);
+            -1 :
+              if Parity = NoParity then
+                Parity := SpaceParity
+              else
+                Dec(Parity);
+          end;
+          if (Ord(Parity) <= Ord(SpaceParity)) and
+             (Ord(Parity) >= Ord(NoParity)) then
+            St := ParityString[Parity]
+          else
+            St := 'error';
+        end;
+      idDefDataBits :
+        begin
+          case Factor of
+            1 :
+              if DataBits = 8 then
+                DataBits := 5
+              else
+                Inc(DataBits);
+            -1 :
+              if DataBits = 5 then
+                DataBits := 8
+              else
+                Dec(DataBits);
+          end;
+          Str(DataBits, St);
+        end;
+      idDefStopBits :
+        begin
+          case Factor of
+            -1, 1 :
+              if StopBits = 2 then
+                StopBits := 1
+              else
+                StopBits := 2;
+          end;
+          Str(StopBits, St);
+        end;
+    end;
+  end;
+
+  {the following InitXXX routines are used to initialize the data entry
+   screens used by this program}
+
+  procedure InitTerminal;
+  begin
+    with TerminalES do begin
+      if not InitCustom(5, 3, 76, 23, EntryColors, ESWinOptions) then
+        Abort('Unable to create Terminal entry screen');
+      CustomizeEntryScreen(TerminalES, ' Terminal Window Options ');
+      AddByteField(
+        'Default left column', 2, 2,
+        '99', 2, 32,
+        0, 2, 74, DefTermWinX1);
+      AddByteField(
+        'Default top row', 3, 2,
+        '99', 3, 32,
+        0, 3, 20, DefTermWinY1);
+      AddByteField(
+        'Default right column', 4, 2,
+        '99', 4, 32,
+        0, 6, 79, DefTermWinX2);
+      AddByteField(
+        'Default bottom row', 5, 2,
+        '99', 5, 32,
+        0, 6, 23, DefTermWinY2);
+      AddWordField(
+        'Scrollback rows', 6, 2,
+        '999', 6, 32,
+        0, 25, 400, ScrollBackRows);
+      AddChoiceField(
+        'Default COM port', 7, 2,
+        'XXXX', 7, 32,
+        0, SizeOf(DefComPort), TerminalIncChoice, DefComPort);
+      AddStringField(
+        'Default capture file name', 8, 2,
+        CharStr('X', SizeOf(PathStr) - 1), 8, 32, 40,
+        0, DefCaptureName);
+      AddWordField(
+        'Capture buffer size', 9, 2,
+        '9999', 9, 32,
+        0, 64, 9999, CaptureBufferSize);
+      AddByteField(
+        'Background buffer break', 10, 2,
+        '999', 10, 32,
+        0, 16, 255, BackgroundBufferBreak);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Use ANSI', 11, 2,
+        'Y', 11, 32,
+        0, DefUseAnsi);
+      AddChoiceField(
+        'Half or full duplex', 12, 2,
+        'XXXX', 12, 32,
+        0, SizeOf(DefDuplexType),
+        TerminalIncChoice, DefDuplexType);
+      AddChoiceField('Baud rate', 13, 02, '######', 13, 32, 0,
+                     SizeOf(DefBaud), TerminalIncChoice, DefBaud);
+      AddChoiceField('Parity', 14, 02, 'XXXXX', 14, 32, 0,
+                     SizeOf(DefParity), TerminalIncChoice, DefParity);
+      AddChoiceField('Data bits', 15, 02, '#', 15, 32, 0,
+                     SizeOf(DefDataBits), TerminalIncChoice, DefDataBits);
+      AddChoiceField('Stop bits', 16, 02, '#', 16, 32, 0,
+                     SizeOf(DefStopBits), TerminalIncChoice, DefStopBits);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Software flow control', 17, 2,
+        'Y', 17, 32,
+        0, DefSWFlow);
+      AddTextField('Hardware flow control:', 18, 2);
+
+      AddYesNoField(
+        'Use DTR', 19, 2,
+        'Y', 19, 32,
+        0, UseDTR);
+      AddYesNoField(
+        'Use RTS', 19, 40,
+        'Y', 19, 70,
+        0, UseRTS);
+      AddYesNoField(
+        'Require DSR', 20, 2,
+        'Y', 20, 32,
+        0, RequireDSR);
+      AddYesNoField(
+        'Require CTS', 20, 40,
+        'Y', 20, 70,
+        0, RequireCTS);
+      SetPreEditProc(TerminalPreEdit);
+    end;
+  end;
+
+  procedure InitBrowser;
+  begin
+    with BrowserES do begin
+      if not InitCustom(7, 13, 74, 19, EntryColors, ESWinOptions) then
+        Abort('Unable to create Browser entry screen');
+      CustomizeEntryScreen(BrowserES, ' Browser Options ');
+      AddByteField(
+        'Browser pages in ram', 2, 2,
+        '99', 2, 32,
+        0, 1, 20, BrowsePages);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Expand tabs', 3, 2,
+        'Y', 3, 32,
+        0, BrowseExpandTabs);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Strip high bits', 4, 2,
+        'Y', 4, 32,
+        0, BrowseStripHigh);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Display in HEX mode', 5, 2,
+        'Y', 5, 32,
+        0, BrowseHexMode);
+      esFieldOptionsOff(efClickExit);
+      AddStringField(
+        'Default file extension', 6, 2,
+        'XXX', 6, 32, 3,
+        0, BrowseDefExt);
+      SetPreEditProc(BrowserPreEdit);
+    end;
+  end;
+
+  procedure InitDialer;
+  begin
+    with DialerES do begin
+      if not InitCustom(10, 11, 70, 14, EntryColors, ESWinOptions) then
+        Abort('Unable to create Browser entry screen');
+      CustomizeEntryScreen(DialerES, ' Dialer Options ');
+      AddStringField(
+        'Default phone book name', 2, 2,
+        CharStr('X', SizeOf(PathStr) - 1), 2, 32, 27,
+        0, PhoneBookName);
+      AddStringField(
+        'Default phone book extension', 3, 2,
+        'XXX', 3, 32, 3,
+        0, DefPhoneExt);
+      SetPreEditProc(DialerPreEdit);
+    end;
+  end;
+
+  procedure InitEditor;
+  begin
+    with EditorES do begin
+      if not InitCustom(6, 8, 75, 20, EntryColors, ESWinOptions) then
+        Abort('Unable to create Editor entry screen');
+      CustomizeEntryScreen(EditorES, ' Editor Options ');
+      AddWordField(
+        'Editor buffer size', 2, 2,
+        '99999', 2, 32,
+        0, 1024, 65535, EditBufferSize);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Auto indent', 3, 2,
+        'Y', 3, 32,
+        0, EditAutoIndent);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Word wrap', 4, 2,
+        'Y', 4, 32,
+        0, EditWordWrap);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Delete joins lines', 5, 2,
+        'Y', 5, 32,
+        0, EditDeleteJoins);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Indent starts paragraph', 6, 2,
+        'Y', 6, 32,
+        0, EditIndentIsPara);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Read partial files', 7, 2,
+        'Y', 7, 32,
+        0, EditReadPartial);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Make backup files', 8, 2,
+        'Y', 8, 32,
+        0, EditMakeBackups);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Smart tabs', 9, 2,
+        'Y', 9, 32,
+        0, EditSmartTabs);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Wrap at left', 10, 2,
+        'Y', 10, 32,
+        0, EditWrapAtLeft);
+      esFieldOptionsOff(efClickExit);
+      AddByteField(
+        'Tab delta', 11, 2,
+        '9', 11, 32,
+        0, 0, 255, EditTabDelta);
+      AddStringField(
+        'Default file extensions', 12, 2,
+        'XXX', 12, 32, 3,
+        0, EditDefExt);
+      SetPreEditProc(EditorPreEdit);
+    end;
+  end;
+
+  procedure InitHelp;
+  begin
+    with HelpES do begin
+      if not InitCustom(5, 12, 76, 18, EntryColors, ESWinOptions) then
+        Abort('Unable to create help entry screen');
+      CustomizeEntryScreen(HelpES, ' Help Options ');
+      AddByteField(
+        'Default left column', 2, 2,
+        '99', 2, 32,
+        0, 2, 70, HelpX1);
+      AddByteField(
+        'Default top row', 3, 2,
+        '99', 3, 32,
+        0, 3, 22, HelpY1);
+      AddByteField(
+        'Default right column', 4, 2,
+        '99', 4, 32,
+        0, 10, 79, HelpX2);
+      AddByteField(
+        'Default bottom row', 5, 2,
+        '99', 5, 32,
+        0, 6, 23, HelpY2);
+      AddStringField(
+        'Help file name', 6, 2,
+        CharStr('X', SizeOf(PathStr) - 1), 6, 32, 27,
+        0, HelpFileName);
+      SetPreEditProc(HelpPreEdit);
+    end;
+  end;
+
+  procedure ModemPLStringProc(Item : Word; Mode : pkMode;
+                              var IType : pkItemType;
+                              var IString : string;
+                              PickPtr : PickListPtr);
+  begin
+    IString := ' ' + ModemTypes.Entry(Item) + ' ';
+  end;
+
+  procedure InitModemList;
+  var
+    ModemLibFound : Boolean;
+  begin
+    if not InitializeModems(ModemLibFound) then
+      Abort('Unable to create Modem list');
+    if not ModemLibFound then
+      TempMessage(ModemLibName + ' not found, using defaults...', 2000);
+  end;
+
+  procedure InitModem;
+  var
+    W : Word;
+  begin
+    W := ModemTypes.Widest + 2;
+    ModemPL := New(PickListPtr, InitCustom(MPLX1, MPLY1,
+                                           MPLX1 + W,
+                                           MPLY2,
+                                           OOPMAIN0.TpUiMenuColors, DefPickOptions,
+                                           W,
+                                           ModemTypes.Num,
+                                           ModemPLStringProc,
+                                           PickVertical,
+                                           SingleChoice));
+    if ModemPL = Nil then
+      Abort('Unable to create Modem list');
+    with ModemES do begin
+      if not InitCustom(9, 9, 72, 18, EntryColors, ESWinOptions) then
+        Abort('Unable to create Modem entry screen');
+
+      CustomizeEntryScreen(ModemES, ' Modem Options ');
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Drop DTR on hangup', 2, 2,
+        'Y', 2, 32,
+        0, HangupDropDTR);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddChoiceField(
+        'Modem word or code responses', 3, 2,
+        'XXXXX', 3, 32, 0, SizeOf(DefWordCodes),
+        ModemIncChoice, DefWordCodes);
+      esFieldOptionsOff(efClickExit);
+      AddWordField(
+        'Dial timeout', 4, 2,
+        '99999', 4, 32,
+        0, 0, 65535, DefDialTimeout);
+      AddWordField(
+        'Command timeout', 5, 2,
+        '99999', 5, 32,
+        0, 0, 65535, DefTimeout);
+      AddWordField(
+        'Delay factor', 6, 2,
+        '99999', 6, 32,
+        0, 0, 65535, DefDelayFactor);
+      AddStringField(
+        'Dial prefix', 7, 2,
+        CharStr('X', 30), 7, 32, 30,
+        0, DefDialPrefix);
+      esFieldOptionsOn(efClickExit);
+      AddChoiceField(
+        'Tone or pulse dialing', 8, 2,
+        'XXXXX', 8, 32,
+        0, SizeOf(DefTonePulse),
+        ModemIncChoice, DefTonePulse);
+      AddPickStringField('Modem type', 9, 02, 9, 32,
+                         W, 0, DefModemType,
+                         ModemPL^);
+      esFieldOptionsOff(efClickExit);
+      SetPreEditProc(ModemPreEdit);
+    end;
+  end;
+
+  procedure ProtoIncChoice(var Value; ID : Word; Factor : Integer;
+                           var St : string);
+  const
+    OverwriteModes : Array[WriteFailOptions] of String[9] = ('fail',
+                                                             'rename',
+                                                             'overwrite',
+                                                             'resume');
+  var
+    Overwrite : WriteFailOptions absolute Value;
+    Checksum  : Char absolute Value;
+    Kind : Byte absolute Value;
+  begin
+    case ID of
+      idDefProtocol :
+        begin
+          case Factor of
+            1 :
+              if Kind = Ascii then
+                Kind := XModem
+              else
+                Kind := Succ(Kind);
+            -1 :
+              if Kind = XModem then
+                Kind := Ascii
+              else
+                Kind := Pred(Kind);
+          end;
+          St := ProtocolNames[Kind];
+        end;
+      idOverwriteMode :
+        begin
+          case Factor of
+            1 :
+              if Overwrite = WriteAnyway then
+                Overwrite := WriteFail
+              else
+                Inc(Overwrite);
+            -1 :
+              if Overwrite = WriteFail then
+                Overwrite := WriteAnyway
+              else
+                Dec(Overwrite);
+          end;
+          St := OverwriteModes[Overwrite];
+        end;
+      idChecksumType :
+        begin
+          case Factor of
+            1 :
+              if Checksum = '3' then
+                Checksum := '1'
+              else
+                Inc(Checksum);
+            -1 :
+              if Checksum = '1' then
+                Checksum := '3'
+              else
+                Dec(Checksum);
+          end;
+          St := Checksum;
+        end;
+    end;
+  end;
+
+  procedure InitProtocol;
+  begin
+    with ProtoES do begin
+      if not InitCustom(8, 5, 73, 22, EntryColors, ESWinOptions) then
+        Abort('Unable to create protocol entry screen');
+
+      CustomizeEntryScreen(ProtoES, ' Protocol Options ');
+      wFrame.SetFrameType(Frame1);
+      wFrame.AddShadow(shBR, shSeeThru);
+      wFrame.AddHeader('Protocol Options', heTC);
+      SetWrapMode(WrapAtEdges);
+
+      AddTextField(
+        'Ascii protocol options', 6, 2);
+      AddTextField(
+        'ZModem options', 9, 2);
+      AddTextField(
+        'Kermit options', 12, 2);
+      esFieldOptionsOn(efClickExit);
+      AddChoiceField(
+        'Default protocol type', 2, 2,
+        CharStr('X', 16), 2, 26, 0,
+        SizeOf(DefProtocol), ProtoIncChoice, DefProtocol);
+
+      AddYesNoField(
+        'Include directories', 3, 2,
+        'Y', 3, 26,
+        2, IncludeDirs);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Honor directories', 3, 37,
+        'Y', 3, 61,
+        3, HonorDir);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddChoiceField('Replace file mode', 4, 2,
+                     'XXXXXXXXX', 4, 26, 0,
+                     SizeOf(OverwriteMode), ProtoIncChoice, OverwriteMode);
+      esFieldOptionsOff(efClickExit);
+      AddWordField(
+        'ASCII character delay', 7, 2,
+        '99999', 7, 26,
+        5, 0, 65535, AsciiCharDelay);
+      AddWordField(
+        'ASCII line delay', 7, 37,
+        '99999', 7, 61,
+        6, 0, 65535, AsciiLineDelay);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Override sender', 10, 2,
+        'Y', 10, 26,
+        7, ZMOverride);
+      esFieldOptionsOff(efClickExit);
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Skip if no file', 10, 37,
+        'Y', 10, 61,
+        8, ZMSkipNoFile);
+      esFieldOptionsOff(efClickExit);
+      AddByteField(
+        'Maximum packet length', 13, 2,
+        '99', 13, 26,
+        9, 0, 94, MaxPacketLen);
+      AddByteField(
+        'Maximum timeout', 13, 37,
+        '99', 13, 61,
+        10, 0, 50, MaxTimeout);
+      AddByteField(
+        'ASCII code of pad char', 14, 2,
+        '999', 14, 26,
+        11, 0, 127, PadChar);
+      AddByteField(
+        'Pad count', 14, 37,
+        '99', 14, 61,
+        12, 0, 50, PadCount);
+      AddByteField(
+        'Terminator character', 15, 2,
+        '999', 15, 26,
+        13, 0, 127, Terminator);
+      esFieldOptionsOff(efTrimBlanks);
+      AddCharField(
+        'Control prefix', 15, 37,
+        'X', 15, 61,
+        14, #0, #0, CtrlPrefix);
+      esFieldOptionsOn(efTrimBlanks);
+      esFieldOptionsOff(efTrimBlanks);
+      AddCharField(
+        'High bit prefix', 16, 2,
+        'X', 16, 26,
+        15, #0, #0, HiBitPrefix);
+      AddChoiceField('Checksum type', 16, 37, 'X', 16, 61, 0,
+                     SizeOf(Char), ProtoIncChoice, ChecksumType);
+      AddCharField(
+        'Repeat prefix', 17, 2,
+        'X', 17, 26,
+        17, #0, #0, RepeatPrefix);
+      esFieldOptionsOn(efTrimBlanks);
+      SetPreEditProc(ProtocolPreEdit);
+    end;
+  end;
+
+  procedure MiscIncChoice(var Value; ID : Word; Factor : Integer; var St : string);
+    {-Increment a multiple choice field value and convert it to a string}
+  const
+    ColorChoiceSt : array[ColorChoice] of string[5] = ('Auto', 'Color', 'Mono');
+  var
+    CC  : ColorChoice absolute Value;
+  begin
+    case ID of
+      idDefColorMap :
+        begin
+          if Factor <> 0 then
+            if CC = ForceMono then
+              CC := UseDefault
+            else
+              Inc(CC);
+           St := ColorChoiceSt[CC];
+        end;
+      else
+        St := '';
+    end;
+  end;
+
+  procedure InitMisc;
+  begin
+    with MiscES do begin
+      if not InitCustom(12, 10, 69, 15, EntryColors, ESWinOptions) then
+        Abort('Unable to create protocol entry screen');
+
+      CustomizeEntryScreen(MiscES, ' Misc Options ');
+      esFieldOptionsOn(efClickExit);
+      AddYesNoField(
+        'Use EMS for overlays', 2, 2,
+        'Y', 2, 32,
+        1, UseEmsForOverlays);
+      AddYesNoField(
+        'Use mouse if found', 3, 2,
+        'Y', 3, 32,
+        2, DefMouseSupport);
+      AddYesNoField(
+        'Use soft mouse cursor', 4, 2,
+        'Y', 4, 32,
+        3, UseSoftMouseCursor);
+      esFieldOptionsOff(efClickExit);
+      AddChoiceField('Color selection', 5, 2, 'XXXXX', 5, 32, 0,
+                     SizeOf(DefColorMap), MiscIncChoice, DefColorMap);
+      SetPreEditProc(MiscPreEdit);
+    end;
+  end;
+

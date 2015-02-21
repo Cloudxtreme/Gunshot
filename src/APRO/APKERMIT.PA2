@@ -1,0 +1,1443 @@
+  procedure SendInitialize(P : ProtocolRecPtr);
+    {-Send our SendInit packet and get a response}
+  const
+    StdHdrLen = 13;
+  var
+    SaveCheckChar : Char;
+    PLen : Byte;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Send the header}
+      PutHeader(P, KSendInit, StdHdrLen+3);
+
+      with KermitOptions do begin
+        WindowSize := WindowSize and $1F;
+        {Send the data bytes for the Send Initialize packet}
+        PutToChar(P, Char(MaxPacketLen));
+        PutToChar(P, Char(MaxTimeout));
+        PutToChar(P, Char(PadCount));
+        PutChar(PR, Ctl(PadChar));
+        PutToChar(P, Terminator);
+        PutChar(PR, CtlPrefix);
+        PutChar(PR, HibitPrefix);
+        PutChar(PR, Check);
+        PutChar(PR, RepeatPrefix);
+        PutToChar(P, Char(CapabilitiesMask));
+        PutToChar(P, Char(WindowSize));
+        PutToChar(P, Char(MaxLongPacketLen div 95));
+        PutToChar(P, Char(MaxLongPacketLen mod 95));
+
+        {Always use 1-byte checksum for SendInit packets}
+        SaveCheckChar := Check;
+        Check := '1';
+
+        {Update the check value}
+        UpdateBlockCheck(P, Byte(ToChar(Char(MaxPacketLen))));
+        UpdateBlockCheck(P, Byte(ToChar(Char(MaxTimeout))));
+        UpdateBlockCheck(P, Byte(ToChar(Char(PadCount))));
+        UpdateBlockCheck(P, Byte(Ctl(PadChar)));
+        UpdateBlockCheck(P, Byte(ToChar(Terminator)));
+        UpdateBlockCheck(P, Byte(CtlPrefix));
+        UpdateBlockCheck(P, Byte(HibitPrefix));
+        UpdateBlockCheck(P, Byte(SaveCheckChar));
+        UpdateBlockCheck(P, Byte(RepeatPrefix));
+        UpdateBlockCheck(P, Byte(ToChar(Char(CapabilitiesMask))));
+        UpdateBlockCheck(P, Byte(ToChar(Char(WindowSize))));
+        UpdateBlockCheck(P, Byte(ToChar(Char(MaxLongPacketLen div 95))));
+        UpdateBlockCheck(P, Byte(ToChar(Char(MaxLongPacketLen mod 95))));
+
+        {Send the check value and terminator}
+        SendBlockCheck(P);
+        SendTerminator(P);
+
+        {Flush input buffer in preparation for reply}
+        FlushInBuffer(PR);
+
+        {Restore the desired check type}
+        Check := SaveCheckChar;
+      end;
+    end;
+  end;
+
+  procedure DisplayPacket(P : ProtocolRecPtr);
+    {-Display the contents of the packet to StdOut}
+  var
+    I : Integer;
+  begin
+    with KermitPtr(P)^ do
+      for I := 1 to ActualDataLen do
+        Write(DataBlock^[I]);
+  end;
+
+  procedure SendDataPacket(P : ProtocolRecPtr; Slot : Word);
+    {-Send the prepared data packet in DataTable[Slot]}
+  var
+    SaveBlockNum : Word;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Move data from table to DataBlock}
+      DataLen := InfoTable[Slot].Len;
+      Move(DataTable^[(Slot-1)*BlockLen], DataBlock^, DataLen);
+
+      {Send the packet}
+      SaveBlockNum := BlockNum;
+      BlockNum := InfoTable[Slot].Seq;
+      SendPacket(P, KData);
+      BlockNum := SaveBlockNum;
+    end;
+  end;
+
+  procedure SendFilePacket(P : ProtocolRecPtr);
+    {-Fill in the Data field with Pathname and send a file packet}
+  var
+    PName : PathStr;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Send the data field}
+      if FlagIsSet(apFlags, apKermitNoStripName) then
+        PName := Pathname
+      else
+        PName := JustFilename(Pathname);
+      Move(PName[1], DataBlock^[1], Length(PName));
+      DataLen := Length(PName);
+      SendPacket(P, KFile);
+    end;
+  end;
+
+  procedure ProcessOptions(P : ProtocolRecPtr);
+    {-Save the just-received options}
+  var
+    Tmp : Byte;
+    LBLen : Word;
+    NewTableSize : Word;
+    NewBlockLen : Word;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      SetAsyncStatus(ecOk);
+
+      {Move defaults in}
+      UsingRepeat := False;
+      UsingHibit := False;
+      RmtKermitOptions := MissingKermitOptions;
+
+      {Override the defaults where specified}
+      Move(DataBlock^[1], RmtKermitOptions, RecDataLen);
+
+      {Set repeat option if both sides are asking for it}
+      Tmp := Byte(RmtKermitOptions.RepeatPrefix);
+      if (Char(Tmp) = KermitOptions.RepeatPrefix) and
+         (((Tmp > 32) and (Tmp < 63)) or ((Tmp > 95) and (Tmp < 127))) then
+        UsingRepeat := True;
+
+      {Set hibit quoting option if either side asks for it}
+      Tmp := Byte(RmtKermitOptions.HibitPrefix);
+      if ((Tmp > 32) and (Tmp < 63)) or ((Tmp > 95) and (Tmp < 127)) then begin
+        UsingHibit := True;
+        KermitOptions.HibitPrefix := RmtKermitOptions.HibitPrefix;
+      end;
+      if not UsingHibit then begin
+        Tmp := Byte(KermitOptions.HibitPrefix);
+        {if we want it, and the remote said he can do it if requested, turn it on}
+        if ((Tmp > 32) and (Tmp < 63)) or ((Tmp > 95) and (Tmp < 127)) then
+          if RmtKermitOptions.HibitPrefix = 'Y' then
+            UsingHibit := True;
+      end;
+
+      {Set long packets if sender asks and we allow}
+      if (Byte(RmtKermitOptions.CapabilitiesMask) and LongPackets <> 0) and
+         (FlagIsSet(apFlags, apKermitLongPackets)) then begin
+        KermitOptions.CapabilitiesMask := KermitOptions.CapabilitiesMask or LongPackets;
+        LBLen := Word(Byte(UnChar(DataBlock^[MaxLx1])) * 95) +
+                     (Byte(UnChar(DataBlock^[MaxLx2])));
+        if LBLen = 0 then
+          KermitOptions.MaxLongPacketLen := KermitOptions.MaxPacketLen
+        else if (LBLen > 0) and (LBLen <= 1024) then
+          KermitOptions.MaxLongPacketLen := LBLen
+        else
+          KermitOptions.MaxLongPacketLen := 500;
+        LPInUse := True;
+      end else                                                         {!!.02}
+        KermitOptions.CapabilitiesMask :=                              {!!.02}
+          KermitOptions.CapabilitiesMask and not LongPackets;          {!!.02}
+
+      {Set SWC if sender asks and we allow}
+      NewTableSize := TableSize;
+      if (Byte(RmtKermitOptions.CapabilitiesMask) and SlidingWindows <> 0) and
+         (FlagIsSet(apFlags, apKermitSWC)) then begin
+        KermitOptions.CapabilitiesMask := KermitOptions.CapabilitiesMask or SlidingWindows;
+        {If remote's window size is less than ours then use its size}
+        Tmp := RmtKermitOptions.WindowSize and $1F;
+        if Tmp < KermitOptions.WindowSize then begin
+          KermitOptions.WindowSize := Tmp;
+          NewTableSize := Tmp;
+        end;
+      end else begin
+        NewTableSize := 1;
+        KermitOptions.WindowSize := 1;
+        KermitOptions.CapabilitiesMask :=                              {!!.02}
+          KermitOptions.CapabilitiesMask and not SlidingWindows;       {!!.02}
+      end;
+
+      if KermitState = rkCollectInit then
+        {We're receiving, use whatever block check type sender asks for}
+        if (RmtKermitOptions.Check >= '1') and
+           (RmtKermitOptions.Check <= '3') then
+          KermitOptions.Check := RmtKermitOptions.Check
+      else
+        {We're transmitting, agree on check type or force '1'}
+        if KermitOptions.Check <> RmtKermitOptions.Check then
+          KermitOptions.Check := '1';
+      CheckType := CheckVal[Byte(KermitOptions.Check)-$30];
+
+      {Set status and other options}
+      NewBlockLen := BlockLen;
+      with KermitOptions do begin
+        if LPInUse then
+          NewBlockLen := MaxLongPacketLen
+        else
+          NewBlockLen := MaxPacketLen;
+        if NewTableSize > 1 then
+          TurnDelay := SWCKermitTurnDelay
+        else
+          TurnDelay := KermitTurnDelay;
+      end;
+
+      {Allocate new DataTable to account for changes in blocklen/window count}
+      if (NewTableSize <> TableSize) or (NewBlockLen <> BlockLen) then begin
+        DeallocateWindowTable(P);
+        TableSize := NewTableSize;
+        BlockLen := NewBlockLen;
+        if not AllocateWindowTable(P) then
+          GotError(PR, epFatal+ecOutOfMemory);
+      end;
+    end;
+  end;
+
+  procedure SendOptions(P : ProtocolRecPtr);
+    {-Send our options}
+  var
+    TotalLen : Byte;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      Move(KermitOptions, DataBlock^[1], MaxKermitOption);
+      DataBlock^[12] := Char(KermitOptions.MaxLongPacketLen div 95);
+      DataBlock^[13] := Char(KermitOptions.MaxLongPacketLen mod 95);
+      TotalLen := MaxKermitOption+3;
+
+      {Can't use SendAck so we'll do everything here}
+      PutHeader(P, KAck, TotalLen);
+
+      {Put each option, transforming as required}
+      PutToChar(P, DataBlock^[1]);                             {MaxL}
+      UpdateBlockCheck(P, Byte(ToChar(DataBlock^[1])));
+      PutToChar(P, DataBlock^[2]);                             {Time}
+      UpdateBlockCheck(P, Byte(ToChar(DataBlock^[2])));
+      PutToChar(P, DataBlock^[3]);                             {NPad}
+      UpdateBlockCheck(P, Byte(ToChar(DataBlock^[3])));
+      PutChar(PR, Ctl(DataBlock^[4]));                         {PadC}
+      UpdateBlockCheck(P, Byte(Ctl(DataBlock^[4])));
+      PutToChar(P, DataBlock^[5]);                             {EOL}
+      UpdateBlockCheck(P, Byte(ToChar(DataBlock^[5])));
+      PutChar(PR, DataBlock^[6]);                              {QCtl}
+      UpdateBlockCheck(P, Byte(DataBlock^[6]));
+      PutChar(PR, DataBlock^[7]);                              {QBin}
+      UpdateBlockCheck(P, Byte(DataBlock^[7]));
+      PutChar(PR, DataBlock^[8]);                              {Chkt}
+      UpdateBlockCheck(P, Byte(DataBlock^[8]));
+      PutChar(PR, DataBlock^[9]);                              {Rept}
+      UpdateBlockCheck(P, Byte(DataBlock^[9]));
+      PutToChar(P, DataBlock^[10]);                            {Capas}
+      UpdateBlockCheck(P, Byte(ToChar(DataBlock^[10])));
+      PutToChar(P, DataBlock^[11]);                            {Windo}
+      UpdateBlockCheck(P, Byte(ToChar(DataBlock^[11])));
+      PutToChar(P, DataBlock^[12]);                            {MaxLx1}
+      UpdateBlockCheck(P, Byte(ToChar(DataBlock^[12])));
+      PutToChar(P, DataBlock^[13]);                            {MaxLx2}
+      UpdateBlockCheck(P, Byte(ToChar(DataBlock^[13])));
+
+      {Put checksum and terminator}
+      SendBlockCheck(P);
+      SendTerminator(P);
+
+      {Check type has been decided upon}
+      CheckKnown := True;
+    end;
+  end;
+
+  function CheckRetries(P : ProtocolRecPtr) : Boolean;
+    {-Increments retry count, returns True if greater than HandshakeRetry}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      ForceStatus := True;
+
+      {Exit if an abort is pending}
+      if (GetAsyncStatus mod 10000) = ecCancelRequested then
+        CheckRetries := True
+      else begin
+        Inc(BlockErrors);
+        Inc(TotalErrors);
+        CheckRetries := BlockErrors > HandshakeRetry;
+      end;
+    end;
+  end;
+
+  procedure LoadTransmitData(P : ProtocolRecPtr);
+    {-Escapes data from WorkBlock into DataBlock}
+  label
+    Skip;
+  const
+    SafetyMargin = 5;
+  var
+    WIndex : Word;
+    DIndex : Word;
+    RIndex : Word;
+    RepeatCnt : Word;
+    C : Char;
+    ByteCnt : Word;
+
+    function Repeating(C : Char; var Cnt : Word) : Boolean;
+      {Returns True (and new index) if repeat C's are found}
+    const
+      MaxRpt = 94;  {Per Kermit Protocol Manual}
+    var
+      Index : Word;
+    begin
+      with KermitPtr(P)^, PData^ do begin
+        Index := WIndex;
+        Cnt := 1;
+
+        {Loop while next chars are the same as C}
+        while (Index <= WorkLen) and
+              (WorkBlock^[Index] = C) and
+              (Cnt < MaxRpt) do begin
+          Inc(Cnt);
+          Inc(Index);
+        end;
+
+        {Set function result (Cnt already has repeat count)}
+        Repeating := Cnt > MinRepeatCnt;
+      end;
+    end;
+
+    function ReloadWorkBlock : Boolean;
+      {-Reloads WorkBlock if required -- Return False to Exit}
+    begin
+      with KermitPtr(P)^, PData^ do begin
+        ReloadWorkBlock := False;
+        if WorkEndPending and (WIndex > WorkLen) then
+          Exit;
+
+        {Reload WorkBlock as needed}
+        if (WIndex > SizeOf(WorkBlock^)) then begin
+          WorkLen := SizeOf(WorkBlock^);
+          WorkEndPending := ReadProtocolBlock(P, WorkBlock^, WorkLen);
+
+          {Finished if no more bytes read}
+          if WorkEndPending and (WorkLen = 0) then
+            Exit;
+
+          if GetAsyncStatus = ecOk then begin
+            WIndex := 1;
+            Inc(FileOfs, WorkLen);
+          end else begin
+            AbortProtocol(P);
+            Exit;
+          end;
+        end;
+
+        {If we get here, block was reloaded ok or didn't need reload}
+        ReloadWorkBlock := True;
+      end;
+    end;
+
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Exit immediately if no more DataBlocks to send}
+      if (WorkEndPending) and (LastWorkIndex > WorkLen) then begin
+        SetAsyncStatus(ecEndFile);
+        Exit;
+      end;
+
+      with KermitOptions do begin
+        WIndex := LastWorkIndex;
+        DIndex := 1;
+        ByteCnt := 0;
+
+        if LPInUse then
+          RIndex := KermitOptions.MaxLongPacketLen - SafetyMargin
+        else
+          RIndex := KermitOptions.MaxPacketLen - SafetyMargin;
+
+        while DIndex < RIndex do begin
+          {C is the next character to move}
+          C := WorkBlock^[WIndex];
+          Inc(WIndex);
+          Inc(ByteCnt);
+
+          {Look ahead for repeating char sequence}
+          if UsingRepeat then
+            if Repeating(C, RepeatCnt) then begin
+              {C is a repeating char, add repeat prefix and count}
+              DataBlock^[DIndex] := RepeatPrefix;
+              DataBlock^[DIndex+1] := ToChar(Char(RepeatCnt));
+              Inc(DIndex, 2);
+              Inc(WIndex, RepeatCnt-1);
+              Inc(ByteCnt, RepeatCnt-1);
+            end;
+
+          {Process all escaping conditions}
+          if UsingHibit then begin
+            if (C = HibitPrefix) or (C = Chr(Byte(HibitPrefix) or $80)) then begin
+              if IsHibit(C) then begin
+                DataBlock^[DIndex] := HibitPrefix;
+                Inc(DIndex);
+              end;
+              DataBlock^[DIndex] := CtlPrefix;
+              DataBlock^[DIndex+1] := HibitPrefix;
+              Inc(Dindex,2);
+              goto Skip;
+            end else if IsHibit(C) then begin
+              C := Chr(Byte(C) and $7F);
+              DataBlock^[DIndex] := HibitPrefix;
+              Inc(DIndex);
+            end;
+          end;
+
+          if IsCtl(C) then begin
+            {C is a control character, add prefix and modified C}
+            DataBlock^[DIndex] := CtlPrefix;
+            DataBlock^[DIndex+1] := Ctl(C);
+            Inc(DIndex, 2);
+          end else if (C = CtlPrefix) or (C = HiBit(CtlPrefix)) then begin
+            {C is the prefix char, add prefix and normal CtlPrefix char}
+            DataBlock^[DIndex] := CtlPrefix;
+            DataBlock^[DIndex+1] := C;
+            Inc(DIndex, 2);
+          end else if UsingRepeat and
+            ((C = RepeatPrefix) or (C = Hibit(RepeatPrefix))) then begin
+            {C is repeat prefix char, add prefix and normal RepeatPrefix char}
+            DataBlock^[DIndex] := CtlPrefix;
+            DataBlock^[Dindex+1] := C;
+            Inc(DIndex, 2);
+          end else begin
+            {Normal, single, unescaped character}
+            DataBlock^[DIndex] := C;
+            Inc(DIndex);
+          end;
+
+Skip:
+          {Check if WorkBlock should be reloaded}
+          if not ReloadWorkBlock then begin
+            DataLen := DIndex - 1;
+            Dec(BytesRemaining, ByteCnt);
+            Inc(BytesTransferred, ByteCnt);
+            ElapsedTics := ElapsedTime(Timer);
+            LastWorkIndex := WIndex;
+            Exit;
+          end;
+        end;
+
+        DataLen := DIndex - 1;
+        Dec(BytesRemaining, ByteCnt);
+        Inc(BytesTransferred, ByteCnt);
+        ElapsedTics := ElapsedTime(Timer);
+        LastWorkIndex := WIndex;
+      end;
+    end;
+  end;
+
+  procedure OpenFile(P : ProtocolRecPtr);
+    {-Open file from data in just received file packet}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Assume error}
+      KermitState := rkError;
+
+      {Get info from file packet}
+      ExtractFileInfo(P);
+
+      {Send file name to user's LogFile procedure}
+      LogFile(P, lfReceiveStart);
+
+      {Accept this file?}
+      Skipped := False;
+      if not AcceptFile(P) then begin
+        Cancel(P);
+        Skipped := True;
+        Exit;
+      end;
+
+      {Reset status stuff}
+      FileOfs := 0;
+      BlockNum := Inc64(RecBlockNum);
+      BlockErrors := 0;
+      NewTimer(Timer, 1);
+      TimerStarted := False;
+      BytesRemaining := 0;
+      BytesTransferred := 0;
+      TotalErrors := 0;
+      SrcFileLen := 0;
+
+      {Prepare to write to file}
+      SetAsyncStatus(ecOk);
+      PrepareWriting(P);
+      if GetAsyncStatus = ecOk then begin
+        {File opened OK}
+        ReceiveInProgress := True;
+        SendAck(P, RecBlockNum);
+
+        {Init sequence}
+        TableHead := 1;
+        TableTail := 1;
+        FillChar(InfoTable, SizeOf(InfoTable), 0);
+        InfoTable[1].Seq := RecBlockNum;
+
+        {Set next state}
+        KermitState := rkGetData;
+        NewTimer(ReplyTimer, HandshakeWait);
+
+      end else if GetAsyncStatus = ecFileAlreadyExists then begin
+        {File already exists and not allowed to overwrite}
+        Skipped := True;
+        SendError(P, eFileExists);
+        SetAsyncStatus(ecFileAlreadyExists);
+
+      end else begin
+        {Error opening/creating file}
+        SaveStatus := GetAsyncStatus;
+        SendError(P, eFileError);
+        SetAsyncStatus(SaveStatus);
+      end;
+    end;
+  end;
+
+  procedure PrepareReceivePartKM(P : ProtocolRecPtr);
+    {-Prepare to start receiving}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      PR^.ProtocolActive := True;
+      GotOneFile := False;
+      SetAsyncStatus(ecOk);
+      BlockNum := 0;
+      ReceiveInProgress := False;
+      TransmitInProgress := False;
+      BytesRemaining := 0;
+      BytesTransferred := 0;
+      TotalErrors := 0;
+      ForceStatus := True;
+      KermitState := rkInit;
+      HeaderState := khsNone;
+      SaveStatus := ecOk;
+      FillChar(InfoTable, SizeOf(InfoTable), 0);
+      ElapsedTics := 0;
+      ResetStatus(P);
+      ShowFirstStatus(P);
+      NewTimer(StatusTimer, StatusInterval);
+      TableHead := 1;
+      TableTail := 1;
+      TimerStarted := False;
+      CheckKnown := False;
+    end;
+  end;
+
+  function ProtocolReceivePartKM(P : ProtocolRecPtr) : ProtocolStateType;
+    {-Process current receive state}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Always restore AsyncStatus}
+      SetAsyncStatus(SaveStatus);
+
+      {Check for user abort (but not twice)}
+      if GetAsyncStatus <> ecCancelRequested then
+        if HandleAbort(P) then begin
+          SetAsyncStatus(ecCancelRequested);
+          NewTimer(ReplyTimer, CancelWait);
+          KermitState := rkWaitCancel;
+        end;
+
+      {Show status at requested intervals and after significant events}
+      if ForceStatus or TimerExpired(StatusTimer) then begin
+        if TimerStarted then
+          ElapsedTics := ElapsedTime(Timer);
+        UserStatus(P, False, False);
+
+        {Use user-specified status interval unless draining eof}
+        NewTimer(StatusTimer, StatusInterval);
+        ForceStatus := False;
+      end;
+
+      {Preprocess incoming headers}
+      case KermitState of
+        rkGetInit,
+        rkGetFile,
+        rkGetData :
+          {Header might be present, try to get one}
+          if CharReady(PR) then begin
+            CheckForHeader(P);
+            case GetAsyncStatus of
+              ecOk, ecNoHeader, ecGotHeader : ;
+              else if CheckRetries(P) then
+                KermitState := rkError;
+            end;
+          end else if TimerExpired(ReplyTimer) then begin
+            if CheckRetries(P) then
+              {Fatal error if too many retries}
+              KermitState := rkError
+            else
+              {Let state machine take apropriate recovery action}
+              SetAsyncStatus(ecTimeout)
+          end else
+            SetAsyncStatus(ecNoHeader);
+      end;
+
+      {Preprocess incoming datapackets}
+      case KermitState of
+        rkCollectInit,
+        rkCollectFile,
+        rkCollectData :
+          if CharReady(PR) then begin
+            ReceiveBlock(P);
+            case GetAsyncStatus of
+              ecOk, ecNoData, ecGotData : ;
+              else begin
+                ForceStatus := True;
+                if CheckRetries(P) then
+                  KermitState := rkError
+              end;
+            end;
+          end else if TimerExpired(ReplyTimer) then begin
+            ForceStatus := True;
+            if CheckRetries(P) then
+              {Fatal error if too many retries}
+              KermitState := rkError
+            else
+              {Let state machine take apropriate recovery action}
+              SetAsyncStatus(ecTimeout);
+          end else
+            SetAsyncStatus(ecNoData);
+      end;
+
+      {Process current state}
+      case KermitState of
+        rkInit :
+          begin
+            BlockNum := 0;
+
+            {Wait for SendInit packet}
+            NewTimer(ReplyTimer, HandshakeWait);
+            KermitState := rkGetInit;
+            RecDataLen := 0;
+          end;
+
+        rkGetInit :
+          case GetAsyncStatus of
+            ecGotHeader :
+              begin
+                KermitState := rkCollectInit;
+                DataState := FirstDataState[RecDataLen=0];
+                BlockIndex := 1;
+              end;
+            ecNoheader :
+              {Keep waiting};
+            else
+              NewTimer(ReplyTimer, HandshakeWait);
+          end;
+
+        rkCollectInit :
+          case GetAsyncStatus of
+            ecGotData :
+              case PacketType of
+                KSendInit :
+                  begin
+                    ProcessOptions(P);
+                    if GetAsyncStatus = ecOk then begin
+                      SendOptions(P);
+                      BlockErrors := 0;
+                      KermitState := rkGetFile;
+                    end else
+                      KermitState := rkError;
+                  end;
+                KError :
+                  KermitState := rkError;
+                else begin
+                  KermitState := rkGetInit;
+                  NewTimer(ReplyTimer, HandshakeWait);
+                end;
+              end;
+            ecNoData :
+              {Keep waiting for data};
+            else begin
+              {Timeout or other error, retry}
+              KermitState := rkGetInit;
+              NewTimer(ReplyTimer, HandshakeWait);
+            end;
+          end;
+
+        rkGetFile :
+          case GetAsyncStatus of
+            ecGotHeader :
+              begin
+                KermitState := rkCollectFile;
+                DataState := FirstDataState[RecDataLen=0];
+                BlockIndex := 1;
+              end;
+            ecNoheader :
+              {Keep waiting};
+            else
+              SendNak(P);
+          end;
+
+        rkCollectFile :
+          case GetAsyncStatus of
+            ecGotData :
+              case PacketType of
+                KFile :     {Open/create the file}
+                  OpenFile(P);
+                KSendInit : {Got another SendInit, process again}
+                  begin
+                    ProcessOptions(P);
+                    if GetAsyncStatus = ecOk then begin
+                      SendOptions(P);
+                      BlockErrors := 0;
+                      KermitState := rkGetFile;
+                    end else
+                      KermitState := rkError;
+                  end;
+                KDisplay : {Display text on screen}
+                  if FlagIsSet(apFlags, apKermitDisplay) then
+                    DisplayPacket(P);
+                KBreak : {Got break, protocol transfer is finished}
+                  begin
+                    SendAck(P, RecBlockNum);
+                    KermitState := rkComplete;
+                  end;
+                KEndOfFile :  {Got out of place end of file header}
+                  begin
+                    SendAck(P, RecBlockNum);
+                    if CheckRetries(P) then begin
+                      SendError(P, eSync);
+                      KermitState := rkError;
+                    end;
+                    KermitState := rkGetFile;
+                  end;
+                else
+                  KermitState := rkError;
+              end;
+            ecNoData :
+              {Keep waiting for data};
+            else
+              {Timeout or other error, retry}
+              KermitState := rkGetFile;
+              SendNak(P);
+              NewTimer(ReplyTimer, HandshakeWait);
+          end;
+
+        rkGetData :
+          case GetAsyncStatus of
+            ecGotHeader :
+              begin
+                KermitState := rkCollectData;
+                DataState := FirstDataState[RecDataLen=0];
+                BlockIndex := 1;
+              end;
+            ecNoheader :
+              {Keep waiting};
+            else
+              NewTimer(ReplyTimer, HandshakeWait);
+          end;
+
+        rkCollectData :
+          case GetAsyncStatus of
+            ecGotData :
+              case PacketType of
+                KData : {Got data packet}
+                  begin
+                    ForceStatus := True;
+                    ProcessDataPacket(P);
+                    if GetAsyncStatus = ecOk then begin
+                      BlockErrors := 0;
+                      KermitState := rkGetData;
+                      NewTimer(ReplyTimer, HandshakeWait);
+                    end else begin
+                      SaveStatus := GetAsyncStatus;
+                      Cancel(P);
+                      SetAsyncStatus(SaveStatus);
+                      KermitState := rkError;
+                    end;
+                  end;
+                KEndOfFile :
+                  if (ActualDataLen > 1) and                           {!!.02}
+                     (DataBlock^[1] = DiscardChar) then begin          {!!.02}
+                    KermitState := rkError;
+                    SetAsyncStatus(ecCancelRequested);
+                  end else begin
+                    FlushTableToDisk(P);
+                    FinishWriting(P);
+                    SetAsyncStatus(ecOk);
+                    LogFile(P, lfReceiveOk);
+                    ReceiveInProgress := False;
+                    SendAck(P, RecBlockNum);
+                    BlockNum := NextSeq(P,RecBlockNum);
+                    BlockErrors := 0;
+                    KermitState := rkGetFile;
+                    TimerStarted := False;
+                  end;
+                KFile :
+                  begin
+                    SendAck(P, RecBlockNum);
+                    if CheckRetries(P) then begin
+                      SendError(P, eSync);
+                      KermitState := rkError;
+                    end else
+                      NewTimer(ReplyTimer, HandshakeWait);
+                  end;
+              end;
+            ecNoData :
+              {Keep waiting for data};
+
+            else begin
+              {NAK if not using Windows (window logic will NAK later)}
+              if TableSize = 1 then
+                SendNak(P);
+              KermitState := rkGetData;
+              NewTimer(ReplyTimer, HandshakeWait);
+            end;
+          end;
+
+        rkComplete :
+          begin
+            {Normal complete, just exit}
+            KermitState := rkDone;
+            ShowLastStatus(P);
+            PR^.ProtocolActive := False;
+          end;
+
+        rkWaitCancel :
+          if TimerExpired(ReplyTimer) or (OutBuffUsed(PR) <= 1) then
+            KermitState := rkError;
+
+        rkError :
+          begin
+            if GetAsyncStatus = ecOk then
+              SetAsyncStatus(ecCancelRequested);
+            FinishReading(P);
+            if Skipped then
+              LogFile(P, lfReceiveSkip)
+            else
+              LogFile(P, lfReceiveFail);
+            KermitState := rkDone;
+            ShowLastStatus(P);
+            PR^.ProtocolActive := False;
+          end;
+      end;
+
+      {Reset header state after complete headers}
+      if GetAsyncStatus = ecGotHeader then
+        HeaderState := khsNone;
+
+      {Reset AsyncStatus for various conditions}
+      case GetAsyncStatus of
+        ecGotHeader, ecNoHeader, ecGotData, ecNoData : SetAsyncStatus(ecOk);
+      end;
+
+      {Save last AsyncStatus value}
+      SaveStatus := GetAsyncStatus;
+
+      {Send function result}
+      case KermitState of
+        {Waiting states}
+        rkGetInit,
+        rkCollectInit,
+        rkGetFile,
+        rkCollectFile,
+        rkGetData,
+        rkCollectData,
+        rkWaitCancel  : ProtocolReceivePartKM := psWaiting;
+
+        {Ready states}
+        rkInit,
+        rkError,
+        rkComplete    : ProtocolReceivePartKM := psReady;
+
+        {Done state}
+        rkDone        : ProtocolReceivePartKM := psFinished;
+      end;
+    end;
+  end;
+
+  procedure ProtocolReceiveKM(P : ProtocolRecPtr);
+    {-Normal protocol receive}
+  var
+    State : ProtocolStateType;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      PrepareReceivePartKM(P);
+      if GetAsyncStatus <> ecOk then
+        Exit;
+
+      {Get file in parts}
+      repeat
+        State := ProtocolReceivePartKM(P);
+        if State = psWaiting then
+          UserBack(P);
+      until State = psFinished;
+    end;
+  end;
+
+  procedure PrepareTransmitPartKM(P : ProtocolRecPtr);
+    {-Prepare to start transmitting}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      FindingFirst := True;
+      FileListIndex := 0;
+      PR^.ProtocolActive := True;
+      SetAsyncStatus(ecOk);
+      BlockNum := 0;
+      ReceiveInProgress := False;
+      TransmitInProgress := False;
+      BytesRemaining := 0;
+      BytesTransferred := 0;
+      TotalErrors := 0;
+      ForceStatus := True;
+      KermitState := tkInit;
+      HeaderState := khsNone;
+      SaveStatus := ecOk;
+      FillChar(InfoTable, SizeOf(InfoTable), 0);
+      ElapsedTics := 0;
+      ResetStatus(P);
+      ShowFirstStatus(P);
+      NewTimer(StatusTimer, StatusInterval);
+      TimerStarted := False;
+      CheckKnown := False;
+    end;
+  end;
+
+  function ProtocolTransmitPartKM(P : ProtocolRecPtr) : ProtocolStateType;
+    {-Process current transmit state}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Always restore AsyncStatus}
+      SetAsyncStatus(SaveStatus);
+
+      {Check for user abort (but not twice)}
+      if GetAsyncStatus <> ecCancelRequested then
+        if HandleAbort(P) then begin
+          SetAsyncStatus(ecCancelRequested);
+          NewTimer(ReplyTimer, CancelWait);
+          KermitState := tkWaitCancel;
+        end;
+
+      {Show status at requested intervals and after significant events}
+      if ForceStatus or TimerExpired(StatusTimer) then begin
+        if TimerStarted then
+          ElapsedTics := ElapsedTime(Timer);
+        UserStatus(P, False, False);
+
+        {Use user-specified status interval unless draining eof}
+        NewTimer(StatusTimer, StatusInterval);
+        ForceStatus := False;
+      end;
+
+      {Preprocess incoming headers}
+      case KermitState of
+        tkInitReply,
+        tkFileReply,
+        tkBlockReply,
+        tkEofReply,
+        tkBreakReply :
+          {Header might be present, try to get one}
+          if CharReady(PR) then
+            CheckForHeader(P)
+          else if TimerExpired(ReplyTimer) then begin
+            ForceStatus := True;
+            if CheckRetries(P) then
+              {Fatal error if too many retries}
+              KermitState := tkError
+            else
+              {Let state machine take apropriate recovery action}
+              SetAsyncStatus(ecTimeout)
+          end else
+            SetAsyncStatus(ecNoHeader);
+      end;
+
+      {Preprocess incoming datapackets}
+      case KermitState of
+        tkCollectInit,
+        tkCollectFile,
+        tkCollectBlock,
+        tkCollectEof,
+        tkCollectBreak :
+          if CharReady(PR) then begin
+            ReceiveBlock(P);
+            case GetAsyncStatus of
+              ecOk, ecNoData, ecGotData : ;
+              else begin
+                ForceStatus := True;
+                if CheckRetries(P) then
+                  KermitState := tkError
+              end;
+            end;
+          end else if TimerExpired(ReplyTimer) then begin
+            ForceStatus := True;
+            if CheckRetries(P) then
+              {Fatal error if too many retries}
+              KermitState := tkError
+            else
+              {Let state machine take apropriate recovery action}
+              SetAsyncStatus(ecTimeout);
+          end else
+            SetAsyncStatus(ecNoData);
+      end;
+
+      {Process current state}
+      case KermitState of
+        tkInit :
+          begin
+            BlockNum := 0;
+
+            {Send SendInit packet}
+            SendInitialize(P);
+
+            {Start waiting for reply}
+            NewTimer(ReplyTimer, HandshakeWait);
+            KermitState := tkInitReply;
+          end;
+
+        tkInitReply :
+          case GetAsyncStatus of
+            ecGotHeader :
+              begin
+                KermitState := tkCollectInit;
+                DataState := FirstDataState[RecDataLen=0];
+                BlockIndex := 1;
+              end;
+            ecNoheader :
+              {Keep waiting};
+            else
+              {Timeout or block error, resend SendInit}
+              KermitState := tkInit;
+          end;
+
+        tkCollectInit :
+          case GetAsyncStatus of
+            ecGotData :
+              case PacketType of
+                KAck :
+                  begin
+                    ProcessOptions(P);
+                    if GetAsyncStatus = ecOk then begin
+                      KermitState := tkOpenFile;
+                      BlockErrors := 0;
+                      CheckKnown := True;
+                    end else
+                      KermitState := tkError;
+                  end;
+                KError :
+                  KermitState := tkError;
+                else
+                  if CheckRetries(P) then
+                    KermitState := tkError
+                  else
+                    KermitState := tkInit;
+              end;
+            ecNoData :
+              {Keep waiting for data};
+            else
+              {Timeout or other error, retry}
+              KermitState := tkInit;
+          end;
+
+        tkOpenFile :
+          begin
+            ForceStatus := True;
+            ResetStatus(P);
+            if not NextFile(P, Pathname) then begin
+              {Error - no files to send (AsyncStatus already set)}
+              KermitState := tkError;
+            end else begin
+              ForceStatus := True;
+              Pathname := StUpcase(Pathname);
+              PrepareReading(P);
+              if GetAsyncStatus = ecOk then begin
+                {Read the first protocol buffer}
+                WorkLen := SizeOf(WorkBlock^);
+                FileOfs := 0;
+                WorkEndPending := ReadProtocolBlock(P, WorkBlock^, WorkLen);
+                if GetAsyncStatus = ecOk then begin
+                  FileOfs := WorkLen;
+                  LastWorkIndex := 1;
+                  TransmitInProgress := True;
+                  LogFile(P, lfTransmitStart);
+                  KermitState := tkSendFile;
+                  NewTimer(Timer, 1);
+                  TimerStarted := True;
+                end else
+                  KermitState := tkError;
+              end else
+                KermitState := tkError;
+            end;
+          end;
+
+        tkSendFile :
+          begin
+            ForceStatus := True;
+            BlockNum := Inc64(BlockNum);
+            SendFilePacket(P);
+            NewTimer(ReplyTimer, HandshakeWait);
+            KermitState := tkFileReply;
+          end;
+
+        tkFileReply :
+          case GetAsyncStatus of
+            ecGotHeader :
+              begin
+                KermitState := tkCollectFile;
+                DataState := FirstDataState[RecDataLen=0];
+                BlockIndex := 1;
+              end;
+            ecNoheader :
+              {Keep waiting};
+            else
+              KermitState := tkSendFile;
+          end;
+
+        tkCollectFile :
+          case GetAsyncStatus of
+            ecGotData :
+              case PacketType of
+                KAck :
+                  if RecBlockNum = ExpectedAck then begin
+                    BlockErrors := 0;
+                    TableHead := 1;
+                    KermitState := tkCheckTable;
+                  end else begin
+                    if CheckRetries(P) then
+                      KermitState := tkError
+                    else
+                      KermitState := tkSendFile;
+                  end;
+                KEndOfFile,
+                KError :
+                  KermitState := tkError;
+                else
+                  if CheckRetries(P) then
+                    KermitState := tkError
+                  else
+                    KermitState := tkSendFile;
+              end;
+            ecNoData :
+              {Keep waiting for data} ;
+            else
+              {Timeout or other error}
+              KermitState := tkSendFile;
+          end;
+
+        tkCheckTable :
+          begin
+            {See if there is room to load another buffer into table}
+            if not TableFull(P) then begin
+              {Get next escaped block}
+              LoadTransmitData(P);
+              if GetAsyncStatus = ecEndFile then begin
+                {No more data to send, wait for acks or send eof}
+                if PacketsOutstanding(P) then
+                  KermitState := tkBlockReply
+                else
+                  KermitState := tkSendEof;
+              end else begin
+                {Save in table}
+                BlockNum := Inc64(BlockNum);
+                TableHead := NextSeq(P, TableHead);
+                Move(DataBlock^, DataTable^[(TableHead-1)*BlockLen], DataLen);
+                InfoTable[TableHead].Len := DataLen;
+                InfoTable[TableHead].InUse := True;
+                InfoTable[TableHead].Seq := BlockNum;
+                InfoTable[TableHead].Retries := 0;
+                Next2Send := TableHead;
+                KermitState := tkSendData;
+                NewTimer(ReplyTimer, TransTimeout);
+              end;
+            end else begin
+              {Table full, wait for Acks...}
+              KermitState := tkBlockReply;
+            end;
+          end;
+
+        tkSendData :
+          begin
+            {Send the already prepared data block}
+            if OutBuffFree(PR) > InfoTable[Next2Send].Len+FreeMargin then begin
+              ForceStatus := True;
+              SendDataPacket(P, Next2Send);
+              KermitState := tkBlockReply;
+              NewTimer(ReplyTimer, HandshakeWait);
+            end else if TimerExpired(ReplyTimer) then begin
+              GotError(PR, epFatal+ecTimeout);
+              KermitState := tkError;
+            end;
+          end;
+
+        tkBlockReply :
+          case GetAsyncStatus of
+            ecGotHeader :
+              begin
+                KermitState := tkCollectBlock;
+                DataState := FirstDataState[RecDataLen=0];
+                BlockIndex := 1;
+              end;
+            ecNoHeader :
+              KermitState := tkCheckTable;
+            else begin
+              KermitState := tkSendData;
+              NewTimer(ReplyTimer, TransTimeout);
+            end;
+          end;
+
+        tkCollectBlock :
+          case GetAsyncStatus of
+            ecGotData :
+              case PacketType of
+                KAck :
+                  begin
+                    BlockErrors := 0;
+                    if (RecDataLen > 0) and (DataBlock^[1] in ['Z', 'X', 'D']) then
+                      {Abort requested}
+                      KermitState := tkError
+                    else begin
+                      {Signal Ack, then go load next block}
+                      GotAck(P, RecBlockNum);
+                      KermitState := tkCheckTable;
+                      NewTimer(ReplyTimer, HandshakeWait);
+                    end;
+                  end;
+                KError :
+                  KermitState := tkError;
+                else
+                  if CheckRetries(P) then
+                    KermitState := tkError
+                  else begin
+                    Next2Send := SeqInTable(P, RecBlockNum);
+                    if Next2Send <> -1 then begin
+                      {Resend Nak'd packet}
+                      Inc(InfoTable[Next2Send].Retries);
+                      if InfoTable[Next2Send].Retries < HandshakeRetry then begin
+                        KermitState := tkSendData;
+                        NewTimer(ReplyTimer, TransTimeout);
+                      end else
+                        KermitState := tkError;
+                    end else begin
+                      {Nak outside of table, ignore it}
+                      Next2Send := TableHead;
+                      KermitState := tkCheckTable;
+                    end;
+                  end;
+              end;
+            ecNoData :
+              {Keep waiting};
+            else
+              KermitState := tkSendData;
+          end;
+
+        tkSendEof :
+          begin
+            ForceStatus := True;
+            FinishReading(P);
+            SetAsyncStatus(ecOk);
+            LogFile(P, lfTransmitOk);
+            TransmitInProgress := False;
+            DataLen := 0;
+            BlockNum := Inc64(BlockNum);
+            SendPacket(P, KEndOfFile);
+            KermitState := tkEofReply;
+            NewTimer(ReplyTimer, HandshakeWait);
+          end;
+
+        tkEofReply :
+          case GetAsyncStatus of
+            ecGotHeader :
+              begin
+                KermitState := tkCollectEof;
+                DataState := FirstDataState[RecDataLen=0];
+                BlockIndex := 1;
+              end;
+            ecNoHeader :
+              {Keep waiting} ;
+            else
+              {Timeout or other error}
+              KermitState := tkSendEof;
+          end;
+
+        tkCollectEof :
+          case GetAsyncStatus of
+            ecGotData :
+              case PacketType of
+                KAck :
+                  begin
+                    BlockErrors := 0;
+                    if not NextFile(P, Pathname) then begin
+                      {No more files, terminate protocol}
+                      KermitState := tkSendBreak;
+                      SetAsyncStatus(ecOk);
+                    end else begin
+                      ResetStatus(P);
+                      Pathname := StUpcase(Pathname);
+                      PrepareReading(P);
+                      if GetAsyncStatus = ecOk then begin
+                        {Read the first protocol buffer}
+                        WorkLen := SizeOf(WorkBlock^);
+                        FileOfs := 0;
+                        WorkEndPending := ReadProtocolBlock(P, WorkBlock^, WorkLen);
+                        if GetAsyncStatus = ecOk then begin
+                          FileOfs := WorkLen;
+                          LastWorkIndex := 1;
+                          TransmitInProgress := True;
+                          LogFile(P, lfTransmitStart);
+                          KermitState := tkSendFile;
+                          NewTimer(Timer, 1);
+                          TimerStarted := True;
+                        end else
+                          KermitState := tkError;
+                      end else
+                        KermitState := tkError;
+                    end;
+                  end;
+                KError :
+                   KermitState := tkError;
+                else
+                  if CheckRetries(P) then
+                    KermitState := tkError
+                  else
+                    KermitState := tkSendEof;
+              end;
+            ecNoData :
+              {Keep waiting for data};
+            else
+              {Timeout or other error}
+              KermitState := tkSendEof;
+          end;
+
+        tkSendBreak :
+          begin
+            ForceStatus := True;
+            DataLen := 0;
+            BlockNum := Inc64(BlockNum);
+            SendPacket(P, KBreak);
+            KermitState := tkBreakReply;
+          end;
+
+        tkBreakReply :
+          case GetAsyncStatus of
+            ecGotHeader :
+              begin
+                KermitState := tkCollectBreak;
+                DataState := FirstDataState[RecDataLen=0];
+                BlockIndex := 1;
+              end;
+            ecNoHeader :
+              {Keep waiting};
+            else
+              {Timeout or other error}
+              KermitState := tkSendBreak;
+          end;
+
+        tkCollectBreak :
+          case GetAsyncStatus of
+            ecGotData :
+              case PacketType of
+                KAck :
+                  KermitState := tkComplete
+                else
+                  KermitState := tkError;
+              end;
+            ecNoData :
+              {Keep waiting for data};
+            else
+              {Timeout or other error}
+              KermitState := tkSendBreak;
+          end;
+
+        tkComplete :
+          begin
+            {Normal complete, just exit}
+            KermitState := tkDone;
+            ShowLastStatus(P);
+            TimerStarted := False;
+            PR^.ProtocolActive := False;
+          end;
+
+        tkWaitCancel :
+          if TimerExpired(ReplyTimer) or (OutBuffUsed(PR) <= 1) then
+            KermitState := tkError;
+
+        tkError :
+          begin
+            if GetAsyncStatus = ecOk then
+              SetAsyncStatus(ecCancelRequested);
+            FinishReading(P);
+            LogFile(P, lfTransmitFail);
+            KermitState := tkDone;
+            ShowLastStatus(P);
+            TimerStarted := False;
+            PR^.ProtocolActive := False;
+          end;
+      end;
+
+      {Reset header state after complete headers}
+      if GetAsyncStatus = ecGotHeader then
+        HeaderState := khsNone;
+
+      {Reset AsyncStatus for various conditions}
+      case GetAsyncStatus of
+        ecGotHeader, ecNoHeader, ecGotData, ecNoData : SetAsyncStatus(ecOk);
+      end;
+
+      {Save last AsyncStatus value}
+      SaveStatus := GetAsyncStatus;
+
+      {Send function result}
+      case KermitState of
+        {Waiting states}
+        tkInitReply,
+        tkCollectInit,
+        tkFileReply,
+        tkCollectFile,
+        tkBlockReply,
+        tkCollectBlock,
+        tkEofReply,
+        tkCollectEof,
+        tkBreakReply,
+        tkCollectBreak,
+        tkWaitCancel   : ProtocolTransmitPartKM := psWaiting;
+
+        {Ready states}
+        tkInit,
+        tkOpenFile,
+        tkSendFile,
+        tkCheckTable,
+        tkSendData,
+        tkSendEof,
+        tkSendBreak,
+        tkComplete,
+        tkError        : ProtocolTransmitPartKM := psReady;
+
+        {Done state}
+        tkDone         : ProtocolTransmitPartKM := psFinished;
+      end;
+    end;
+  end;
+
+  procedure ProtocolTransmitKM(P : ProtocolRecPtr);
+    {-Normal protocol transmit}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      PrepareTransmitPartKM(P);
+      if GetAsyncStatus <> ecOk then
+        Exit;
+
+      KermitState := tkInit;
+      repeat
+        UserBack(P);
+      until ProtocolTransmitPartKM(P) = psFinished;
+    end;
+  end;
+

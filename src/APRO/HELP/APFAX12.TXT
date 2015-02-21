@@ -1,0 +1,511 @@
+;
+;-------------------------------------------------------------------
+!TOPIC 493 ApFax12
+ApFax12 provides fax send and receive services for Class 1 and Class 2
+faxmodems. It provides the following:
+
+  0528DoneC12ReceiveFax              0515DoneC12SendFax
+  0536FaxReceive                     0534FaxReceivePart
+  0523FaxTransmit                    0521FaxTransmitPart
+  0510GetHangupResult                0507GetLastPageStatus
+  0501GetModemClassSupport           0502GetModemClassSupportEx
+  0504GetModemFeatures               0503GetModemInfo
+  0506GetPageInfo                    0508GetRemoteID
+  0509GetSessionParams               0526InitC12ReceiveFax
+  0513InitC12SendFax                 0533InitModemForFaxReceive
+  0535PrepareFaxReceivePart          0522PrepareFaxTransmitPart
+  0529SetAnswerOnRing                0500SetClassType
+  0531SetConnectState                0517SetDialPrefix
+  0518SetDialTime                    0530SetFaxAndData
+  0498SetFaxPort                     0519SetHeaderText
+  0537SetInitBaudRate                0520SetMaxRetries
+  0505SetModemFeatures               0499SetModemInit
+  0532SetOneFax                      0516SetToneDial
+;
+;-------------------------------------------------------------------
+!TOPIC 494 OoFax12
+OoFax12 provides fax send and receive services for Class 1 and Class 2
+faxmodems. Following is the hierarchy diagram for the fax send and receive
+objects:
+
+    0495C12AbstractFax
+      0511C12SendFax
+      0524C12ReceiveFax
+;
+;-------------------------------------------------------------------
+!TOPIC 495 C12AbstractFax
+!NOINDEX
+C12AbstractFaxPtr = ^C12AbstractFax;
+!LINE
+C12AbstractFax = object(0009AbstractFax)
+
+An intermediate object that defines the data and methods needed by both
+C12SendFax and C12ReceiveFax.
+
+C12AbstractFax provides the following:
+
+  0497Done                           0510GetHangupResult
+  0507GetLastPageStatus              0501GetModemClassSupport
+  0502GetModemClassSupportEx         0504GetModemFeatures
+  0503GetModemInfo                   0506GetPageInfo
+  0508GetRemoteID                    0509GetSessionParams
+  0496Init                           0500SetClassType
+  0498SetFaxPort                     0537SetInitBaudRate
+  0505SetModemFeatures               0499SetModemInit
+;
+;-------------------------------------------------------------------
+!TOPIC 496 Init,C12AbstractFax
+!NOINDEX
+constructor 0495C12AbstractFax.Init(ID : Str20; ComPort : AbstractPortPtr);
+
+Initialize a C12AbstractFax object.
+;
+;-------------------------------------------------------------------
+!TOPIC 497 Done,C12AbstractFax
+!NOINDEX
+destructor 0495C12AbstractFax.Done; virtual;
+
+Destroy a C12AbstractFax object.
+
+See also:  0496Init
+;
+;-------------------------------------------------------------------
+!TOPIC 498 SetFaxPort
+!NOINDEX
+procedure 0493ApFax12.SetFaxPort(FP : FaxRecPtr; ComPort : PortRecPtr);
+!LINE
+procedure 0495C12AbstractFax.SetFaxPort(ComPort : AbstractPortPtr);
+
+Specify a new com port record/object.
+;
+;-------------------------------------------------------------------
+!TOPIC 499 SetModemInit
+!NOINDEX
+procedure 0493ApFax12.SetModemInit(FP : FaxRecPtr; MIS : String);
+!LINE
+procedure 0495C12AbstractFax.SetModemInit(MIS : String);
+
+Specify a custom modem initialization string.
+
+See also:  0501GetModemClassSupport 0502GetModemClassSupportEx
+;
+;-------------------------------------------------------------------
+!TOPIC 500 SetClassType
+!NOINDEX
+function 0493ApFax12.SetClassType(FP : FaxRecPtr; CT : ClassType) : ClassType;
+!LINE
+function 0495C12AbstractFax.SetClassType(CT : ClassType) : ClassType;
+
+Set class of faxmodem support, returning the now current class.
+
+See also:  0501GetModemClassSupport
+           0502GetModemClassSupportEx
+           0533InitModemForFaxReceive
+;
+;-------------------------------------------------------------------
+!TOPIC 501 GetModemClassSupport
+!NOINDEX
+function 0493ApFax12.GetModemClassSupport(FP : FaxRecPtr;
+                                      var Class1, Class2 : Boolean;
+                                      Reset : Boolean) : Boolean;
+!LINE
+function 0495C12AbstractFax.GetModemClassSupport(var Class1, Class2 : Boolean;
+                                             Reset : Boolean) : Boolean;
+
+Determine which fax classes a modem supports.
+
+See also:  0502GetModemClassSupportEx
+           0503GetModemInfo
+           0500SetClassType
+;
+;-------------------------------------------------------------------
+!TOPIC 502 GetModemClassSupportEx
+!NOINDEX
+function 0493ApFax12.GetModemClassSupportEx(FP : FaxRecPtr;
+                                        var Class1, Class2,
+                                        Class3 : Boolean;
+                                        Reset : Boolean) : Boolean;
+!LINE
+function 0495C12AbstractFax.GetModemClassSupportEx(var Class1,
+                                               Class2, Class3 : Boolean;
+                                               Reset : Boolean) : Boolean;
+
+Determine which fax classes a modem supports.
+
+See also:  0501GetModemClassSupport
+           0503GetModemInfo
+           0500SetClassType
+;
+;-------------------------------------------------------------------
+!TOPIC 503 GetModemInfo
+!NOINDEX
+function 0493ApFax12.GetModemInfo(FP : FaxRecPtr; var Class : Char;
+                              var Model, Chip, Rev : String;
+                              Reset : Boolean) : Boolean;
+!LINE
+function 0495C12AbstractFax.GetModemInfo(var Class : Char;
+                                     var Model, Chip, Rev : String;
+                                     Reset : Boolean) : Boolean;
+
+Get information about a Class1 or Class 2 faxmodem.
+
+See also:  0501GetModemClassSupport 0502GetModemClassSupportEx
+;
+;-------------------------------------------------------------------
+!TOPIC 504 GetModemFeatures
+!NOINDEX
+procedure 0493ApFax12.GetModemFeatures(FP : FaxRecPtr; var BPS : LongInt;
+                                   var Correction : Char);
+!LINE
+procedure 0495C12AbstractFax.GetModemFeatures(var BPS : LongInt;
+                                          var Correction : Char);
+
+Return the features supported by a Class 2 faxmodem.
+
+See also:  0501GetModemClassSupport
+           0502GetModemClassSupport
+           0505SetModemFeatures
+;
+;-------------------------------------------------------------------
+!TOPIC 505 SetModemFeatures
+!NOINDEX
+procedure 0493ApFax12.SetModemFeatures(FP : FaxRecPtr; BPS : LongInt;
+                                   Correction : Char);
+!LINE
+procedure 0495C12AbstractFax.SetModemFeatures(BPS : LongInt;
+                                          Correction : Char);
+
+Set the desired modem features for a fax session.
+
+See also:  0504GetModemFeatures
+;
+;-------------------------------------------------------------------
+!TOPIC 506 GetPageInfo,ApFax12/OoFax12
+!NOINDEX
+procedure 0493ApFax12.GetPageInfoC12(FP : FaxRecPtr;
+                                 var Pages : Word; var Page : Word;
+                                 var BytesTransferred : LongInt;
+                                 var PageLength : LongInt);
+!LINE
+procedure 0495C12AbstractFax.GetPageInfo(var Pages : Word; var Page : Word;
+                                     var BytesTransferred : LongInt;
+                                     var PageLength : LongInt); virtual;
+
+Get information about the page currently being transmitted or received.
+;
+;-------------------------------------------------------------------
+!TOPIC 507 GetLastPageStatus
+!NOINDEX
+function 0493ApFax12.GetLastPageStatus(FP : FaxRecPtr) : Boolean;
+!LINE
+function 0495C12AbstractFax.GetLastPageStatus : Boolean;
+
+Return True if the last page was received successfully.
+;
+;-------------------------------------------------------------------
+!TOPIC 508 GetRemoteID
+!NOINDEX
+function 0493ApFax12.GetRemoteID(FP : FaxRecPtr) : Str20;
+!LINE
+function 0495C12AbstractFax.GetRemoteID : Str20;
+
+Return the remote station ID.
+;
+;-------------------------------------------------------------------
+!TOPIC 509 GetSessionParams
+!NOINDEX
+procedure 0493ApFax12.GetSessionParams(FP : FaxRecPtr; var BPS : LongInt;
+                                   var Resolution : Boolean;
+                                   var Correction : Boolean);
+!LINE
+procedure 0495C12AbstractFax.GetSessionParams(var BPS : LongInt;
+                                          var Resolution : Boolean;
+                                          var Correction : Boolean);
+
+Return fax session parameters.
+;
+;-------------------------------------------------------------------
+!TOPIC 510 GetHangupResult
+!NOINDEX
+function 0493ApFax12.GetHangupResult(FP : FaxRecPtr) : Word;
+!LINE
+function 0495C12AbstractFax.GetHangupResult : Word;
+
+Return the last hangup code for a Class 2 fax transfer.
+;
+;-------------------------------------------------------------------
+!TOPIC 511 C12SendFax
+!NOINDEX
+C12SendFaxPtr = ^C12SendFax;
+!LINE
+C12SendFax = object(0495C12AbstractFax)
+
+The object used for sending faxes on a Class 1 or Class 2 faxmodem.
+
+C12SendFax provides the following:
+
+  0514Done                           0523FaxTransmit
+  0521FaxTransmitPart                0512Init
+  0522PrepareFaxTransmitPart         0517SetDialPrefix
+  0518SetDialTime                    0519SetHeaderText
+  0520SetMaxRetries                  0516SetToneDial
+;
+;-------------------------------------------------------------------
+!TOPIC 512 Init,C12SendFax
+!NOINDEX
+constructor 0511C12SendFax.Init(ID : Str20; ComPort : AbstractPortPtr);
+
+Initialize a C12SendFax object.
+;
+;-------------------------------------------------------------------
+!TOPIC 513 InitC12SendFax
+!NOINDEX
+procedure 0493ApFax12.InitC12SendFax(var FP : FaxRecPtr; ID : Str20;
+                                 ComPort : PortRecPtr);
+
+Allocate and initialize a send fax record.
+
+See also:  0515DoneC12SendFax
+;
+;-------------------------------------------------------------------
+!TOPIC 514 Done,C12SendFax
+!NOINDEX
+destructor 0511C12SendFax.Done; virtual;
+
+Destroy a C12SendFax object.
+
+See also:  0512Init
+;
+;-------------------------------------------------------------------
+!TOPIC 515 DoneC12SendFax
+!NOINDEX
+procedure 0493ApFax12.DoneC12SendFax(var FP : FaxRecPtr);
+
+Dispose of a send fax record.
+
+See also:  0513InitC12SendFax
+;
+;-------------------------------------------------------------------
+!TOPIC 516 SetToneDial
+!NOINDEX
+procedure 0493ApFax12.SetToneDial(FP : FaxRecPtr; Tone : Boolean);
+!LINE
+procedure 0511C12SendFax.SetToneDial(Tone : Boolean);
+
+Select tone or pulse dialing for fax transmissions.
+;
+;-------------------------------------------------------------------
+!TOPIC 517 SetDialPrefix,ApFax12/OoFax12
+!NOINDEX
+procedure 0493ApFax12.SetDialPrefix(FP : FaxRecPtr; P : String);
+!LINE
+procedure 0511C12SendFax.SetDialPrefix(P : String);
+
+Set the dial prefix string.
+
+See also:  0518SetDialTime           0516SetToneDial
+;
+;-------------------------------------------------------------------
+!TOPIC 518 SetDialTime
+!NOINDEX
+procedure 0493ApFax12.SetDialTime(FP : FaxRecPtr; DT : Integer);
+!LINE
+procedure 0511C12SendFax.SetDialTime(DT : Integer);
+
+Set the dial timeout.
+;
+;-------------------------------------------------------------------
+!TOPIC 519 SetHeaderText
+!NOINDEX
+procedure 0493ApFax12.SetHeaderText(FP : FaxRecPtr; S : String);
+!LINE
+procedure 0511C12SendFax.SetHeaderText(S : String);
+
+Specify a fax header line.
+
+See also:  0015SetTitle
+;
+;-------------------------------------------------------------------
+!TOPIC 520 SetMaxRetries
+!NOINDEX
+procedure 0493ApFax12.SetMaxRetries(FP : FaxRecPtr; MR : Integer);
+!LINE
+procedure 0511C12SendFax.SetMaxRetries(MR : Integer);
+
+Set the maximum number of retries for transmitting a fax.
+;
+;-------------------------------------------------------------------
+!TOPIC 521 FaxTransmitPart,ApFax12/OoFax12
+!NOINDEX
+function 0493ApFax12.FaxTransmitPartC12(FP : FaxRecPtr) : FaxStateType;
+!LINE
+function 0511C12SendFax.FaxTransmitPart : FaxStateType; virtual;
+
+Perform one step of a fax transmit.
+
+See also:  0523FaxTransmit           0522PrepareFaxTransmitPart
+;
+;-------------------------------------------------------------------
+!TOPIC 522 PrepareFaxTransmitPart,ApFax12/OoFax12
+!NOINDEX
+procedure 0493ApFax12.PrepareFaxTransmitPartC12(FP : FaxRecPtr);
+!LINE
+procedure 0511C12SendFax.PrepareFaxTransmitPart;
+
+Prepare to call 0521FaxTransmitPart.
+;
+;-------------------------------------------------------------------
+!TOPIC 523 FaxTransmit,ApFax12/OoFax12
+!NOINDEX
+procedure 0493ApFax12.FaxTransmitC12(FP : FaxRecPtr);
+!LINE
+procedure 0511C12SendFax.FaxTransmit; virtual;
+
+Transmit one or more fax files.
+
+See also:  0521FaxTransmitPart
+;
+;-------------------------------------------------------------------
+!TOPIC 524 C12ReceiveFax
+!NOINDEX
+C12ReceiveFaxPtr = ^C12ReceiveFax;
+!LINE
+C12ReceiveFax = object(0495C12AbstractFax)
+
+The object used for receiving faxes on a Class 1 or Class 2 faxmodem.
+
+C12ReceiveFax provides the following:
+
+  0527Done                           0536FaxReceive
+  0534FaxReceivePart                 0525Init
+  0533InitModemForFaxReceive         0535PrepareFaxReceivePart
+  0529SetAnswerOnRing                0531SetConnectState
+  0530SetFaxAndData                  0532SetOneFax
+;
+;-------------------------------------------------------------------
+!TOPIC 525 Init,C12ReceiveFax
+!NOINDEX
+constructor 0524C12ReceiveFax.Init(ID : Str20; ComPort : AbstractPortPtr);
+
+Initialize a C12ReceiveFax object.
+;
+;-------------------------------------------------------------------
+!TOPIC 526 InitC12ReceiveFax
+!NOINDEX
+procedure 0493ApFax12.InitC12ReceiveFax(var FP : FaxRecPtr; ID : Str20;
+                                    ComPort : PortRecPtr);
+
+Allocate and initialize a receive fax record.
+
+See also:  0528DoneC12ReceiveFax
+;
+;-------------------------------------------------------------------
+!TOPIC 527 Done,C12ReceiveFax
+!NOINDEX
+destructor 0524C12ReceiveFax.Done; virtual;
+
+Destroy a C12ReceiveFax object.
+
+See also:  0525Init
+;
+;-------------------------------------------------------------------
+!TOPIC 528 DoneC12ReceiveFax
+!NOINDEX
+procedure 0493ApFax12.DoneC12ReceiveFax(var FP : FaxRecPtr);
+
+Dispose of a receive fax record.
+
+See also:  0526InitC12ReceiveFax
+;
+;-------------------------------------------------------------------
+!TOPIC 529 SetAnswerOnRing
+!NOINDEX
+procedure 0493ApFax12.SetAnswerOnRing(FP : FaxRecPtr; AOR : Integer);
+!LINE
+procedure 0524C12ReceiveFax.SetAnswerOnRing(AOR : Integer);
+
+Set the number of rings before a call is answered.
+;
+;-------------------------------------------------------------------
+!TOPIC 530 SetFaxAndData
+!NOINDEX
+procedure 0493ApFax12.SetFaxAndData(FP : FaxRecPtr; OnOff : Boolean);
+!LINE
+procedure 0524C12ReceiveFax.SetFaxAndData(OnOff : Boolean);
+
+Specify whether a compatible faxmodem will answer data calls.
+
+See also:  0533InitModemForFaxReceive 0531SetConnectState
+;
+;-------------------------------------------------------------------
+!TOPIC 531 SetConnectState
+!NOINDEX
+procedure 0493ApFax12.SetConnectState(FP : FaxRecPtr);
+!LINE
+procedure 0524C12ReceiveFax.SetConnectState;
+
+Force the receiver to pick up a connection in progress.
+;
+;-------------------------------------------------------------------
+!TOPIC 532 SetOneFax
+!NOINDEX
+procedure 0493ApFax12.SetOneFax(FP : FaxRecPtr; OnOff : Boolean);
+!LINE
+procedure 0524C12ReceiveFax.SetOneFax(OnOff : Boolean);
+
+Enable or disable "one fax" receive behavior.
+
+See also:  0531SetConnectState       0530SetFaxAndData
+;
+;-------------------------------------------------------------------
+!TOPIC 533 InitModemForFaxReceive
+!NOINDEX
+function 0493ApFax12.InitModemForFaxReceive(FP : FaxRecPtr) : Boolean;
+!LINE
+function 0524C12ReceiveFax.InitModemForFaxReceive : Boolean;
+
+Reinitialize a faxmodem for receiving faxes.
+
+See also:  0536FaxReceive
+;
+;-------------------------------------------------------------------
+!TOPIC 534 FaxReceivePart,ApFax12/OoFax12
+!NOINDEX
+function 0493ApFax12.FaxReceivePartC12(FP : FaxRecPtr) : FaxStateType;
+!LINE
+function 0524C12ReceiveFax.FaxReceivePart : FaxStateType;
+
+Perform one step of a fax receive.
+
+See also:  0536FaxReceive            0535PrepareFaxReceivePart
+;
+;-------------------------------------------------------------------
+!TOPIC 535 PrepareFaxReceivePart,ApFax12/OoFax12
+!NOINDEX
+procedure 0493ApFax12.PrepareFaxReceivePartC12(FP : FaxRecPtr);
+!LINE
+procedure 0524C12ReceiveFax.PrepareFaxReceivePart;
+
+Prepare to call 0534FaxReceivePart.
+;
+;-------------------------------------------------------------------
+!TOPIC 536 FaxReceive,ApFax12/OoFax12
+!NOINDEX
+procedure 0493ApFax12.FaxReceiveC12(FP : FaxRecPtr);
+!LINE
+procedure 0524C12ReceiveFax.FaxReceive; virtual;
+
+Receive one or more fax files.
+
+See also:  0534FaxReceivePart
+;
+;-------------------------------------------------------------------
+!TOPIC 537 SetInitBaudRate
+!NOINDEX
+function 0493ApFax12.SetInitBaudRate(FP : FaxRecPtr;
+                                 InitRate, NormalRate : LongInit);
+!LINE
+function 0495C12AbstractFax.SetInitBaudRate(InitRate,
+                                        NormalRate : LongInt);
+
+Set baud rate to use when sending initialization commands to the modem.

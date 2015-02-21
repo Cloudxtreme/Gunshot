@@ -1,0 +1,263 @@
+;
+;-------------------------------------------------------------------
+!TOPIC 210 ApBPlus
+ApBPlus builds on ApAbsPcl to implement the CompuServe B+ protocol. It
+provides the following routines:
+
+  0233Declarations                   0218DoneBPlus
+  0215InitBPlus                      0216InitCustomBPlus
+  0129PrepareReceivePartBP           0127PrepareTransmitPartBP
+  0221ProcessDLE                     0219ProcessENQ
+  0220ProcessESCI                    0090ProtocolReceiveBP
+  0089ProtocolTransmitBP             0130ProtocolReceivePartBP
+  0128ProtocolTransmitPartBP         0222SetHandleResumeProc
+;
+;-------------------------------------------------------------------
+!TOPIC 211 OoBPlus
+OoBPlus provides the BPlusProtocol object, which implements the
+CompuServe B+ file transfer protocol:
+
+  [0086AbstractProtocol]
+    0212BPlusProtocol
+;
+;-------------------------------------------------------------------
+!TOPIC 212 BPlusProtocol,OoBPlus
+!NOINDEX
+BPlusProtocolPtr = ^BPlusProtocol;
+!LINE
+BPlusProtocol = object(0086AbstractProtocol)
+
+Object that defines data fields and methods needed to implement the
+CompuServe B+ protocol.
+
+BPlusProtocol provides the following:
+
+  0234Declarations                   0217Done
+  0213Init                           0214InitCustom
+  0223Load                           0129PrepareReceivePart
+  0127PrepareTransmitPart            0221ProcessDLE
+  0219ProcessENQ                     0220ProcessESCI
+  0090ProtocolReceive                0089ProtocolTransmit
+  0130ProtocolReceivePart            0128ProtocolTransmitPart
+  0222SetHandleResumeProc            0224Store
+;
+;-------------------------------------------------------------------
+!TOPIC 213 Init,BPlusProtocol
+!NOINDEX
+constructor 0212BPlusProtocol.Init(APPtr : AbstractPortPtr);
+
+Instantiate a B+ protocol object.
+
+See also:  0214InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 214 InitCustom,BPlusProtocol
+!NOINDEX
+constructor 0212BPlusProtocol.InitCustom(APPtr : AbstractPortPtr;
+                                     Options : Word);
+
+Instantiate a B+ protocol object with custom options.
+
+See also:  0213Init
+;
+;-------------------------------------------------------------------
+!TOPIC 215 InitBPlus
+!NOINDEX
+procedure 0210ApBPlus.InitBPlus(var P : ProtocolRecPtr; PortPtr : PortRecPtr);
+
+Allocate and initialize a protocol record.
+
+See also:  0216InitCustomBPlus
+;
+;-------------------------------------------------------------------
+!TOPIC 216 InitCustomBPlus
+!NOINDEX
+procedure 0210ApBPlus.InitCustomBPlus(var P : ProtocolRecPtr;
+                                  PortPtr : PortRecPtr; Options : Word);
+
+Allocate and initialize a protocol record with custom options.
+
+See also:  0215InitBPlus
+;
+;-------------------------------------------------------------------
+!TOPIC 217 Done,BPlusProtocol
+!NOINDEX
+destructor 0212BPlusProtocol.Done; virtual;
+
+Dispose of the protocol record.
+
+See also:  0213Init                  0214InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 218 DoneBPlus
+!NOINDEX
+procedure 0210ApBPlus.DoneBPlus(var P : ProtocolRecPtr);
+
+Dispose of a B+ protocol record.
+
+See also:  0215InitBPlus              0216InitCustomBPlus
+;
+;-------------------------------------------------------------------
+!TOPIC 219 ProcessENQ
+!NOINDEX
+procedure 0210ApBPlus.ProcessENQ(P : ProtocolRecPtr);
+!LINE
+procedure 0212BPlusProtocol.ProcessENQ;
+
+Handle <ENQ> characters received while in terminal mode.
+
+See also:  0221ProcessDLE
+;
+;-------------------------------------------------------------------
+!TOPIC 220 ProcessESCI
+!NOINDEX
+procedure 0210ApBPlus.ProcessESCI(P : ProtocolRecPtr; X, Y : Byte);
+!LINE
+procedure 0212BPlusProtocol.ProcessESCI(X, Y : Byte);
+
+Handle <ESC>I sequences received while in terminal mode.
+
+See also:  0221ProcessDLE
+;
+;-------------------------------------------------------------------
+!TOPIC 221 ProcessDLE
+!NOINDEX
+procedure 0210ApBPlus.ProcessDLE(P : ProtocolRecPtr;
+                             var Start, Upload : Boolean);
+!LINE
+procedure 0212BPlusProtocol.ProcessDLE(var Start, Upload : Boolean);
+
+Handle <DLE> characters received while in terminal mode.
+;
+;-------------------------------------------------------------------
+!TOPIC 222 SetHandleResumeProc
+!NOINDEX
+procedure 0210ApBPlus.SetHandleResumeProc(P : ProtocolRecPtr;
+                                      HRP : 0231HandleResumeProc);
+!LINE
+procedure 0212BPlusProtocol.SetHandleResumeProc(HRP : 0232HandleResumeProc);
+
+Specify a custom HandleResume procedure.
+;
+;-------------------------------------------------------------------
+!TOPIC 223 Load,BPlusProtocol
+!NOINDEX
+{$IFDEF UseStreams}
+!LINE
+constructor 0212BPlusProtocol.Load(var S : IdStream);
+
+Load a BPlusProtocol object from a stream.
+;
+;-------------------------------------------------------------------
+!TOPIC 224 Store,BPlusProtocol
+!NOINDEX
+{$IFDEF UseStreams}
+!LINE
+procedure 0212BPlusProtocol.Store(var S : IdStream);
+
+Store a BPlusProtocol object to a stream.
+
+See also:  0223Load                  0949XmodemProtocol.Store
+;
+;-------------------------------------------------------------------
+!TOPIC 225 BPlusOverHead
+!NOINDEX
+const
+  BPlusOverHead : Word = 20;
+
+This is an estimate of the average number of overhead bytes per packet
+(required by 0084EstimateTransferSecs to estimate the time required to transfer
+a specified number of bytes).
+;
+;-------------------------------------------------------------------
+!TOPIC 226 BPlusTurnDelay
+!NOINDEX
+const
+  BPlusTurnDelay : Word = 0;
+
+This is an estimate of the turnaround delay in a B+ protocol (required by
+0084EstimateTransferSecs to estimate the time required to transfer a specified
+number of bytes). Turnaround delay is the time, in milliseconds, required
+for the remote system to acknowledge the last block.
+;
+;-------------------------------------------------------------------
+!TOPIC 227 DQDefault
+!NOINDEX
+const
+  DQDefault : QuoteArray = ($14, $00, $D4, $00, $00, $00, $00, $00);
+
+The default QuoteArray used by B+. This quoting set should be acceptable
+for all of your B+ file transfers, however, you can change it if necessary.
+;
+;-------------------------------------------------------------------
+!TOPIC 228 ESCIResponse
+!NOINDEX
+const
+  ESCIResponse : String[80] = '#IB1,SSxx,GF,PB,DT';
+
+String transmitted by 0220ProcessESCI in response to a received <ESC>I. xx is
+replaced by the current screen width and height.
+;
+;-------------------------------------------------------------------
+!TOPIC 229 QuoteArray
+!NOINDEX
+type
+  QuoteArray = Array[0..7] of Byte;
+
+A bitmap of character values that must be quoted before being transmitted.
+The first four bytes represent the ASCII codes $00-$1F. The second four
+bytes represent the ASCII codes $80-$9F.
+;
+;-------------------------------------------------------------------
+!TOPIC 230 BPlusProtocol,ApBPlus
+!NOINDEX
+type
+  BPlusPtr = ^BPlusProtocol;
+  BPlusProtocol =
+    record
+      ...
+    end;
+
+Record and record pointer used to store data needed to implement the B+
+protocol.
+;
+;-------------------------------------------------------------------
+!TOPIC 231 HandleResumeProc,ApBPlus
+!NOINDEX
+type
+  HandleResumeProc = procedure(P : ProtocolRecPtr);
+
+A procedure called by B+ when an incoming file has the same name as an
+existing file.
+
+See also:  0222SetHandleResumeProc
+;
+;-------------------------------------------------------------------
+!TOPIC 232 HandleResumeProc,OoBPlus
+!NOINDEX
+type
+  HandleResumeProc = procedure(AP : BPlusProtocolPtr);
+
+A procedure called by B+ when an incoming file has the same name as an
+existing file.
+
+See also:  0222SetHandleResumeProc
+;
+;-------------------------------------------------------------------
+!TOPIC 233 Declarations,ApBPlus
+!NOINDEX
+0210ApBPlus declares the following types and constants:
+
+  0230BPlusProtocol                  0225BPlusOverHead
+  0226BPlusTurnDelay                 0227DQDefault
+  0228ESCIResponse                   0231HandleResumeProc
+  0229QuoteArray
+;
+;-------------------------------------------------------------------
+!TOPIC 234 Declarations,OoBPlus
+!NOINDEX
+0211OoBPlus declares the following types and constants:
+
+  0225BPlusOverHead                  0226BPlusTurnDelay
+  0227DQDefault                      0228ESCIResponse
+  0232HandleResumeProc               0229QuoteArray

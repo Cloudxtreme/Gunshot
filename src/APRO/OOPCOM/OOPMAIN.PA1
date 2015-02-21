@@ -1,0 +1,688 @@
+{*********************************************************}
+{*                  OOPMAIN.PA1 2.03                     *}
+{*       Copyright (c) TurboPower Software 1991.         *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+  function OopComDeskTop.ActivateWindow(Which : Byte; Msg : string) : Boolean;
+  begin
+    ocdtWinId := Which;
+    ActivateWindow := DeskTop.ActivateWindow(Which, Msg);
+  end;
+
+  procedure OopComDeskTop.DoHelp(CmdWinPtr : CommandWindowPtr);
+  const
+    HelpCmds : Array[1..3] of Word = (SelectSpecial, HelpWinID, ccNone);
+
+  begin
+    if CmdWinPtr = Nil then
+      ocdtHelpWin := @MainMenu
+    else
+      ocdtHelpWin := CmdWinPtr;
+    SetCommandList(HelpCmds);
+  end;
+
+  {------- generic local menu, miscellaneous --------}
+
+  procedure StatusLocalMenu;
+    {-Display the status line for a local menu}
+  const
+    StatusMsg =
+      '<Enter> Select  <F10> Main menu  <Esc>, <F9> Exit menu';
+  begin
+    Message(StatusMsg, True);
+  end;
+
+  procedure ShowStatusString(S : string; Col, Width : Byte);
+    {-Display a string on the status line}
+  {$IFDEF UseMouse}
+  var
+    SaveMouse : Boolean;
+  {$ENDIF}
+  begin
+    {$IFDEF UseMouse}
+    HideMousePrim(SaveMouse);
+    {$ENDIF}
+
+    FastWrite(Pad(S, Width), StatusRow, Col, ColorMono(StatusColor, StatusMono));
+
+    {$IFDEF UseMouse}
+    ShowMousePrim(SaveMouse);
+    {$ENDIF}
+  end;
+
+  procedure ShowStatusNumber(L : LongInt; Col, Width : Byte);
+    {-Display a number on the status line}
+  begin
+    ShowStatusString(Long2Str(L), Col, Width);
+  end;
+
+  procedure MergeString(Src : string; var Dest : string; Col : Byte);
+    {-Merge Src into Dest at Dest[Col]}
+  begin
+    Move(Src[1], Dest[Col], Length(Src));
+  end;
+
+  procedure MergeOptionsSt(Options : String; var ValidOptions : CharSet;
+                           var St : string; Col : Byte);
+    {-Merge an option string into a menu string}
+  var
+    I : Word;
+  begin
+    St[Col] := '[';
+    Inc(Col);
+    for I := 1 to Length(Options) do
+      if UpCaseMac(Options[I]) in ValidOptions then begin
+        St[Col] := UpCaseMac(Options[I]);
+        Inc(Col);
+      end;
+    St[Col] := ']';
+    Inc(Col);
+    for I := Col to Length(St) do
+      St[I] := ' ';
+  end;
+  function SearchOptionIsSet(var OptionSt : string; OCh : Char) : Boolean;
+    {-Return True if a given search option is set}
+  begin
+    SearchOptionIsSet := Pos(OCh, StUpcase(OptionSt)) <> 0;
+  end;
+
+  procedure ToggleSearchOption(var OptionSt : string; OCh : Char;
+                               var ValidOptions : CharSet);
+    {-Toggle a search option}
+  var
+    I : Word;
+
+    procedure RemoveDupes(Ch : Char; I : Word);
+    var
+      J : Word;
+    begin
+      for J := I+1 to Length(OptionSt) do
+        if UpCase(OptionSt[J]) = Ch then
+          Delete(OptionSt, J, 1);
+    end;
+
+  begin
+    {remove meaningless characters from OptionSt}
+    for I := 1 to Length(OptionSt) do
+      if not (UpCase(OptionSt[I]) in ValidOptions) then
+        Delete(OptionSt, I, 1);
+
+    {remove any duplicate characters}
+    for I := 1 to Length(OptionSt) do
+      RemoveDupes(UpCase(OptionSt[I]), I);
+
+    if SearchOptionIsSet(OptionSt, OCh) then
+      {remove the character from the string}
+      Delete(OptionSt, Pos(OCh, StUpcase(OptionSt)), 1)
+    else
+      {add the character to the string}
+      OptionSt := OptionSt+OCh;
+  end;
+
+  procedure MergeSearchSt(SearchSt : string; var St : string; Wid, Col : Byte);
+    {-Merge a search string into a menu string}
+  const
+    Ellipses : array[1..3] of Char = '...';
+  var
+    I : Word;
+    SSLen : Byte absolute SearchSt;
+  begin
+    if SSLen > Wid then begin
+      SSLen := Wid;
+      Move(Ellipses, SearchSt[Wid-2], 3);
+    end;
+    SearchSt := '['+SearchSt+']';
+    Move(SearchSt[1], St[Col], SSLen);
+    for I := Col+SSLen to Length(St) do
+      St[I] := ' ';
+  end;
+
+  function GetMarkerNumber(Jumping : Boolean; var MN : Byte) : Boolean;
+    {-Get a marker number from the user}
+  const
+    JumpSet : array[Boolean] of string[7] = ('Set', 'Jump to');
+  var
+    S : string[2];
+    I : Word;
+  begin
+    GetMarkerNumber := False;
+    S := '';
+    if not EditProc(0, JumpSet[Jumping]+' marker [0-9]: ', False, True, 1, S) then
+      Exit;
+    if (S <> '') and Str2Word(S, I) and (I <= 9) then begin
+      MN := I;
+      GetMarkerNumber := True;
+    end;
+  end;
+
+  function InitLocalMenu(var CW : CommandWindow; var Choice : Word) : Boolean;
+    {-Initialize the basic local menu}
+  begin
+    InitLocalMenu := False;
+
+    with LocalMenu do begin
+      {initialize the menu}
+      if not InitCustom(2, 2, 9, 5, TpUiMenuColors, DefWindowOptions, Vertical) then
+        Exit;
+      AddShadow(shBR, shSeeThru);
+
+      {add menu items}
+      AddItem('Close',            01, 1, hidLocalClose);
+      AddItem('Move',             02, 1, hidLocalMove);
+      AddItem('Resize',           03, 1, hidLocalResize);
+      AddItem('Zoom',             04, 1, hidLocalZoom);
+      ItemsDone;
+
+      {is window zoomable/resizeable?}
+      if not CW.wOptionsAreOn(wResizeable) then begin
+        {don't allow resize or zoom}
+        ProtectItem(hidLocalResize);
+        ProtectItem(hidLocalZoom);
+      end;
+      mnOptionsOn(mnUseItemForTopic);
+      {install error handler}
+      SetErrorProc(TpUiErrorProc);
+
+      {move the window}
+      MoveWindow(CW.wFrame.frXL, CW.wFrame.frYL);
+
+      {check for errors}
+      if ClassifyError(GetLastError) = etFatal then begin
+        Done;
+        Exit;
+      end;
+
+      {display the menu}
+      DefaultPath(Choice);
+      Draw;
+
+      {check for errors}
+      if ClassifyError(GetLastError) = etFatal then
+        Done
+      else
+        InitLocalMenu := True;
+    end;
+  end;
+
+  function GetLocalMenuCmd(var CW : CommandWindow; var Choice : Word) : Byte;
+    {-Get next menu choice; initialize and draw menu if necessary}
+  begin
+    {is the menu already on screen?}
+    if (wStack.TopWindow <> @LocalMenu) then
+      {initialize and display it}
+      if not InitLocalMenu(CW, Choice) then begin
+        InsufficientMemory;
+        GetLocalMenuCmd := ccError;
+        Exit;
+      end;
+
+    with LocalMenu do begin
+      {get the next menu command}
+      Process;
+      Choice := MenuChoice;
+      GetLocalMenuCmd := GetLastCommand;
+    end;
+  end;
+
+  procedure EraseLocalMenu;
+    {-Erase LocalMenu}
+  begin
+    LocalMenu.Erase;
+    LocalMenu.Done;
+  end;
+
+  {--------- routines for editor -----------}
+
+var
+  EditMenu         : Menu;
+const
+  EditMenuChoice   : Word = 1;
+  ValidEditorOptions : CharSet =
+    [teBlockOnly, teNoConfirm, teGlobal, teNoCase, teBackward];
+
+  procedure EditMenuCustom(var Name : String; Key : LongInt;
+                             Selected, Highlighted : Boolean;
+                             WPtr : RawWindowPtr);
+    {-String customization routine for EditMenu}
+
+    procedure MergeYesNo(YN : Boolean; Col : Byte);
+    begin
+      Move(YesNoSt[YN], Name[Col], 3);
+    end;
+
+    procedure MergeNumber(L : LongInt; Wid, Col : Byte);
+    var
+      S : string[20];
+    begin
+      MergeString(Pad(Long2Str(L), Wid), Name, Col);
+    end;
+
+  begin
+    with EditWin do
+      case Word(Key) of
+        hidELHidden : MergeYesNo(not teOptionsAreOn(teBlockOn), 14);
+        hidELLevel : MergeNumber(teBlockIndent, 2, 11);
+        hidELAutoindent : MergeYesNo(teOptionsAreOn(teIndent), 16);
+        hidELBackups : MergeYesNo(teOptionsAreOn(teMakeBackups), 16);
+        hidELDelJoins : MergeYesNo(teOptionsAreOn(teDeleteJoins), 16);
+        hidELMargin : MergeNumber(meMargin, 3, 16);
+        hidELPartialFiles : MergeYesNo(teOptionsAreOn(teAllowTrunc), 16);
+        hidELSmartTabs : MergeYesNo(teOptionsAreOn(teSmartTabs), 16);
+        hidELTabSize : MergeNumber(meTabDelta, 2, 16);
+        hidELWordWrap : MergeYesNo(teOptionsAreOn(teWordWrap), 16);
+        hidELAgain: MergeSearchSt(teSearchSt, Name, 10, 10);
+        hidELFindOptions : MergeOptionsSt(teOptionSt, ValidEditorOptions, Name, 10);
+        hidELBlockOnly : MergeYesNo(SearchOptionIsSet(teOptionSt, teBlockOnly), 14);
+        hidELConfirm : MergeYesNo(not SearchOptionIsSet(teOptionSt, teNoConfirm), 14);
+        hidELGlobal : MergeYesNo(SearchOptionIsSet(teOptionSt, teGlobal), 14);
+        hidELIgnoreCase : MergeYesNo(SearchOptionIsSet(teOptionSt, teNoCase), 14);
+        hidELReverse : MergeYesNo(SearchOptionIsSet(teOptionSt, teBackward), 14);
+        hidELReplace : MergeSearchSt(teReplaceSt, Name, 10, 10);
+        hidELMHidden : MergeYesNo(not teOptionsAreOn(teMarkersOn), 09);
+      end;
+  end;
+
+  function InitEditMenu : Boolean;
+    {-Initialize the directory window's local menu}
+  begin
+    InitEditMenu := False;
+
+    with EditMenu do begin
+      {initialize the menu}
+      if not InitCustom(2, 2, 15, 11, TpUiMenuColors, DefWindowOptions, Vertical) then
+        Exit;
+      AddShadow(shBR, shSeeThru);
+
+      {add menu items}
+      AddItem('Close',            01, 1, hidLocalClose);
+      AddItem('Move',             02, 1, hidLocalMove);
+      AddItem('Resize',           03, 1, hidLocalResize);
+      AddItem('Zoom',             04, 1, hidLocalZoom);
+      AddSeparator('Ã', 'Ä', '´', 05);
+      AddItem('Block',            06, 1, hidELBlock);
+        AddFramedSubMenu(4, 9, 20, 16, Vertical, DefWindowFrame);
+        AddShadow(shBR, shSeeThru);
+        AddItem('Begin block',    01, 1, hidELBlockBegin);
+        AddItem('End block',      02, 1, hidELBlockEnd);
+        AddItem('Change case',    03, 1, hidELCase);
+          AddFramedSubMenu(6, 11, 13, 13, Vertical, DefWindowFrame);
+          AddShadow(shBR, shSeeThru);
+          AddItem('Lower',        01, 1, hidELLower);
+          AddItem('Toggle',       02, 1, hidELToggle);
+          AddItem('Upper',        03, 1, hidELUpper);
+          ItemsDone;
+        AddItem('Hidden      Yes',04, 1, hidELHidden);
+        AddItem('Indentation',    05, 1, hidELIndentation);
+          AddFramedSubMenu(6, 13, 18, 15, Vertical, DefWindowFrame);
+          AddShadow(shBR, shSeeThru);
+          AddItem('Indent',       01, 1, hidELIndent);
+          AddItem('Unindent',     02, 1, hidELUnindent);
+          AddItem('Level    xx',  03, 1, hidELLevel);
+          ItemsDone;
+        AddItem('Print',          06, 1, hidELPrint);
+        AddItem('Read',           07, 1, hidELRead);
+        AddItem('Write',          08, 1, hidELWrite);
+        ItemsDone;
+      AddItem('File',             07, 1, hidELFile);
+        AddFramedSubMenu(4, 10, 13, 12, Vertical, DefWindowFrame);
+        AddShadow(shBR, shSeeThru);
+        AddItem('New',            01, 1, hidELNew);
+        AddItem('Save',           02, 1, hidELSave);
+        AddItem('Write as',       03, 1, hidELWriteAs);
+        ItemsDone;
+      AddItem('Options',          08, 1, hidELOptions);
+        AddFramedSubMenu(4, 11, 22, 18, Vertical, DefWindowFrame);
+        AddShadow(shBR, shSeeThru);
+        AddItem('Autoindent    Yes', 01, 1, hidELAutoindent);
+        AddItem('Backups       Yes', 02, 1, hidELBackups);
+        AddItem('Delete joins  Yes', 03, 1, hidELDelJoins);
+        AddItem('Margin        xxx', 04, 1, hidELMargin);
+        AddItem('Partial files Yes', 05, 1, hidELPartialFiles);
+        AddItem('Smart tabs    Yes', 06, 1, hidELSmartTabs);
+        AddItem('Tab size      xx',  07, 1, hidELTabSize);
+        AddItem('Word wrap     Yes', 08, 1, hidELWordWrap);
+        ItemsDone;
+      AddItem('Search',           09, 1, hidELSearch);
+        AddFramedSubMenu(4, 12, 25, 15, Vertical, DefWindowFrame);
+        AddShadow(shBR, shSeeThru);
+        AddItem('Again   [1234567...]', 01, 1, hidELAgain);
+        AddItem('Find',                 02, 1, hidELFind);
+        AddItem('Options [UBG]',        03, 1, hidELFindOptions);
+          AddFramedSubMenu(14, 15, 30, 19, Vertical, DefWindowFrame);
+          AddShadow(shBR, shSeeThru);
+          AddItem('Block only  Yes',    01, 1, hidELBlockOnly);
+          AddItem('Confirm     Yes',    02, 1, hidELConfirm);
+          AddItem('Global      Yes',    03, 1, hidELGlobal);
+          AddItem('Ignore case Yes',    04, 1, hidELIgnoreCase);
+          AddItem('Reverse     Yes',    05, 1, hidELReverse);
+          ItemsDone;
+        AddItem('Replace [1234567...]', 04, 1, hidELReplace);
+        ItemsDone;
+      AddItem('Text markers',     10, 1, hidELMarkers);
+        AddFramedSubMenu(4, 13, 15, 15, Vertical, DefWindowFrame);
+        AddShadow(shBR, shSeeThru);
+        AddItem('Hidden Yes',     01, 1, hidELMHidden);
+        AddItem('Jump',           02, 1, hidELJump);
+        AddItem('Set',            03, 1, hidELSet);
+        ItemsDone;
+      ItemsDone;
+
+      {install error handler}
+      SetErrorProc(TpUiErrorProc);
+      mnOptionsOn(mnUseItemForTopic);
+
+      {install string customization routine}
+      SetCustomStringProc(EditMenuCustom);
+
+      {move the window}
+      MoveWindow(EditWin.wFrame.frXL, EditWin.wFrame.frYL);
+
+      {check for errors}
+      if ClassifyError(GetLastError) = etFatal then begin
+        Done;
+        Exit;
+      end;
+
+      {display the menu}
+      DefaultPath(EditMenuChoice);
+      Draw;
+
+      {check for errors}
+      if ClassifyError(GetLastError) = etFatal then
+        Done
+      else
+        InitEditMenu := True;
+    end;
+  end;
+
+  function GetEditMenuCmd : Byte;
+    {-Get next menu choice; initialize and draw menu if necessary}
+  begin
+    {is the menu already on screen?}
+    if (wStack.TopWindow <> @EditMenu) then
+      {initialize and display the menu}
+      if not InitEditMenu then begin
+        InsufficientMemory;
+        GetEditMenuCmd := ccError;
+        Exit;
+      end;
+
+    with EditMenu do begin
+      {get the next menu choice}
+      Process;
+      EditMenuChoice := MenuChoice;
+      GetEditMenuCmd := GetLastCommand;
+    end;
+  end;
+
+  procedure EraseEditMenu;
+    {-Erase EditMenu}
+  begin
+    EditMenu.Erase;
+    EditMenu.Done;
+  end;
+
+  procedure EditWinStatusProc(MP : MemoPtr);
+    {-Display the status line for the text editor window}
+  const
+    StatusMsg =
+      '   <F2> Save file  <F3> New file  <F9> Menu  <Esc> Close  ³ Line ';
+  begin
+    with EditWin do begin
+      ShowStatusString(StatusMsg, 1, Length(StatusMsg));
+      ShowStatusNumber(meCurLine, 66, 6);
+      ShowStatusString('Col ', 72, 4);
+      ShowStatusNumber(meCurCol, 76, 5);
+      if teOptionsAreOn(teNewFile) then begin
+        ChangeTitle(EditWin, EditTitle+JustFileName(mfFileName));
+        teOptionsOff(teNewFile);
+      end;
+    end;
+  end;
+
+  function InitEditor(X1, Y1, X2, Y2 : Byte; Msg : string) : Boolean;
+    {-Initialize the text editor window}
+  const
+    MaxLen = SizeOf(PathStr)-1;
+    TitleSize = Length(EditTitle)+12;
+  var
+    FName : PathStr;
+    FSize : LongInt;
+  begin
+    InitEditor := False;
+
+    {get the name of the file to edit}
+    if Msg <> '' then
+      FName := Msg
+    else begin
+      FName := '';
+      if not GetFile(0, 'File to edit: ', True, True, False, False,
+                     MaxLen, EditDefExt, FName) then
+        Exit;
+    end;
+
+    with EditWin do begin
+      {initialize the editor}
+      if not Init(X1, Y1, X2, Y2, EditBufferSize) then begin
+        InsufficientMemory;
+        Exit;
+      end;
+
+      {install default error handler}
+      SetErrorProc(TpUiErrorProc);
+
+      {try to load the file}
+      ReadFile(FName, FSize);
+      if ClassifyError(GetLastError) = etFatal then begin
+        Done;
+        Exit;
+      end;
+
+      {add headers, hot spots, etc.}
+      CustomizeWindow(EditWin, EditTitle+JustFileName(FName), TitleSize);
+
+      {customize colors}
+      SetTextAttr(EditTextColor, EditTextMono);
+
+      {initialize procedure pointers}
+      SetEditProc(EditProc);
+      SetYesNoProc(YesNoQuit);
+      SetGetFileProc(GetFile);
+      SetStatusProc(EditWinStatusProc);
+
+      if ClassifyError(GetLastError) = etFatal then
+        Done
+      else
+        InitEditor := True;
+    end;
+  end;
+
+  function OkToCloseEditor : Boolean;
+    {-Return True if OK to close the text editor window}
+  var
+    Escaped : Boolean;
+  begin
+    with EditWin do
+      if not teOptionsAreOn(teModified) then
+        OkToCloseEditor := True
+      else if YesNo('Edit file modified. Save it?', 'Y', Escaped) then begin
+        SaveFile;
+        OkToCloseEditor := (GetLastError = 0);
+      end
+      else
+        OkToCloseEditor := not Escaped;
+  end;
+
+  procedure ProcessEditor(var Cmd : Word);
+    {-Process the commands for the text editor window}
+  label
+    Reevaluate;
+  var
+    FName : PathStr;
+    FSize : LongInt;
+    AllDone : Boolean;
+
+    procedure DoEditorCommand(Cmd : Word; OffScreen : Boolean);
+      {-Execute the specified editor command. If OffScreen is True, switch to
+        a virtual screen first.}
+    var
+      CmdList : array[1..2] of Byte;
+    begin
+      if OffScreen then begin
+        EditWin.SetCursor(cuHidden);
+        EditWin.ActivateWrite;
+      end
+      else
+        EraseEditMenu;
+
+      CmdList[1] := Cmd;
+      CmdList[2] := ccUser55;
+      EditWin.ProcessAutoPilot(CmdList, 2);
+
+      StatusLocalMenu;
+      if OffScreen then
+        EditWin.DeactivateWrite;
+    end;
+
+    function ProcessLocalMenu(var Cmd : Word) : Boolean;
+      {-Process local menu commands}
+    var
+      Stop : Boolean;
+      MN : Byte;
+      Ch : Char;
+      P : Pointer;
+    begin
+      StatusLocalMenu;
+
+      ProcessLocalMenu := True;
+      Stop := False;
+      with EditWin do
+        repeat
+          case GetEditMenuCmd of
+            ccSelect :
+              case EditMenuChoice of
+                hidLocalClose..hidLocalZoom :
+                  begin
+                    case EditMenuChoice of
+                      hidLocalClose : Cmd := ccQuit;
+                      hidLocalMove : Cmd := MoveWindowCmd;
+                      hidLocalResize : Cmd := ResizeWindowCmd;
+                      hidLocalZoom : Cmd := ZoomWindowCmd;
+                    end;
+                    ProcessLocalMenu := False;
+                    Stop := True;
+                  end;
+                hidELLower : DoEditorCommand(ccBlkLCase, True);
+                hidELToggle : DoEditorCommand(ccBlkTCase, True);
+                hidELUpper : DoEditorCommand(ccBlkUCase, True);
+                hidELHidden : DoEditorCommand(ccBlkToggle, True);
+                hidELIndent : DoEditorCommand(ccBlkIndent, True);
+                hidELUnindent : DoEditorCommand(ccBlkUnindent, True);
+                hidELLevel : DoEditorCommand(ccSetIndent, False);
+                hidELPrint : DoEditorCommand(ccBlkPrint, True);
+                hidELRead : DoEditorCommand(ccBlkRead, False);
+                hidELWrite : DoEditorCommand(ccBlkWrite, False);
+                hidELNew : DoEditorCommand(ccNewFile, False);
+                hidELSave : DoEditorCommand(ccSaveFile, True);
+                hidELWriteAs : DoEditorCommand(ccSaveNamed, False);
+                hidELAutoindent : meToggleOption(teIndent);
+                hidELBackups : meToggleOption(teMakeBackups);
+                hidELDelJoins : meToggleOption(teDeleteJoins);
+                hidELMargin : DoEditorCommand(ccRtMargin, False);
+                hidELPartialFiles : meToggleOption(teAllowTrunc);
+                hidELSmartTabs : meToggleOption(teSmartTabs);
+                hidELTabSize : DoEditorCommand(ccTabSize, False);
+                hidELWordWrap : meToggleOption(teWordWrap);
+                hidELAgain : if teLastSearch <> tescNone then
+                       DoEditorCommand(ccReSearch, False);
+                hidELFind : DoEditorCommand(ccSearch, False);
+                hidELBlockOnly..hidELReverse :
+                  begin
+                    case EditMenuChoice of
+                      hidELBlockOnly : Ch := teBlockOnly;
+                      hidELConfirm : Ch := teNoConfirm;
+                      hidELGlobal : Ch := teGlobal;
+                      hidELIgnoreCase : Ch := teNoCase;
+                      hidELReverse : Ch := teBackward;
+                    end;
+                    ToggleSearchOption(teOptionSt, Ch,  ValidEditorOptions);
+                    EditMenu.Redraw;
+                  end;
+                hidELBlockBegin : DoEditorCommand(ccBlkBegin, True);
+                hidELBlockEnd : DoEditorCommand(ccBlkEnd, True);
+                hidELReplace : DoEditorCommand(ccReplace, False);
+                hidELMHidden : DoEditorCommand(ccMarkToggle, True);
+                hidELJump : if GetMarkerNumber(True, MN) then
+                              DoEditorCommand(ccJmpMark0+MN, True);
+                hidELSet : if GetMarkerNumber(False, MN) then
+                             DoEditorCommand(ccSetMark0+MN, True);
+              end;
+            {$IFDEF UseMouse}
+            ccMouseSel :
+              begin
+                P := Desk.WindowClickedOn;
+                if P = @EditWin then
+                  Stop := True
+                else if P <> nil then begin
+                  Cmd := ccMouseSel;
+                  ProcessLocalMenu := False;
+                  Stop := True;
+                end;
+              end;
+            {$ENDIF}
+            MainMenuCmd :
+              begin
+                Cmd := MainMenuCmd;
+                ProcessLocalMenu := False;
+                Stop := True;
+              end;
+            LocalMenuCmd,
+            ccQuit,
+            ccError :
+              Stop := True;
+          end;
+        until Stop or (cwGetLastError <> 0);
+      EraseEditMenu;
+    end;
+
+  begin
+    AllDone := False;
+    with EditWin do
+      repeat
+        SetHelpIndex(EditWinID);
+        {edit}
+        Process;
+
+        {get the command}
+        Cmd := GetLastCommand;
+
+Reevaluate:
+        {process exit commands}
+        if not Desk.ProcessExitCommands(Cmd) then begin
+          {process any exit commands that TPUI can't handle for us}
+          case Cmd of
+            LocalMenuCmd :
+              if not ProcessLocalMenu(Cmd) then
+                goto Reevaluate;
+            NextWindowCmd..SelectWindow8,
+            MainMenuCmd, ExitProgramCmd,
+            UnloadTsrCmd,
+            ccError :
+              AllDone := True;
+            ccQuit :
+              AllDone := OkToCloseEditor;
+          end;
+        end;
+      until AllDone;
+  end;
+
+  procedure CloseEditor(EraseFirst : Boolean);
+    {-Close the text editor window}
+  begin
+    if EraseFirst then
+      EditWin.Erase;
+    EditWin.Done;
+  end;
+
+

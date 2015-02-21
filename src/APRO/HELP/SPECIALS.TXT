@@ -1,0 +1,485 @@
+;
+;===========================================================================
+!TOPIC 1 Help on Help
+!INDEX 1
+!NOSEARCH
+This pop-up reference POPHELP is a tool to help you make most effective use
+of the many capabilities in Async Professional 2.0. While it cannot be a
+complete replacement for the printed manual, it does serve as a valuable
+quick reference to the available routines and the most important data
+structures and constants.
+
+POPHELP is a memory resident program that can be activated in several ways:
+
+<LeftShiftF1>
+!LINE
+Reads a word from the screen at a location nearest to the cursor position and
+then scans the list of topics and displays the matching topic. If none is
+found, it displays the main help index. The help window is positioned away
+from the cursor position if possible.
+
+<LeftShiftF2>
+!LINE
+Redisplay the most recently selected help topic.
+
+<LeftShiftF3>
+!LINE
+Pops up the main help index, which displays the names of the Async
+Professional units and other items of interest, such as Help on Help.
+
+The following keystrokes may be used after POPHELP is popped up:
+
+<F1>
+!LINE
+Display the master topic index.
+
+<AltF1>
+!LINE
+Display the topic that was displayed just prior to the current one. The
+cursor is positioned to its last location in the help window.
+
+<F2>,<CtrlQ><F>
+!LINE
+Search for a text string. If a non-empty string is entered, POPHELP searches
+the complete help text for the string. Searching is case-insensitive.
+POPHELP searches from the position of the cursor until it finds a match or
+reaches the current topic again. If a match is found, the cursor is moved
+to the beginning of the match.
+
+<F3>
+!LINE
+Prompt for a new help file. A default extension of HLP is added to the name
+you enter. POPHELP reads any help file compiled using the MAKEHELP utility
+provided with Async Professional or Object Professional. Note that each
+help file needs memory space that is proportional to the help file's size
+and number of topics. POPHELP reserves a certain amount of memory when it
+goes resident and it cannot increase that amount later. Therefore, if you
+expect to load multiple help files during one POPHELP session, you should
+load the largest of them when POPHELP first goes resident.
+
+<F4>, <CtrlK><C>
+!LINE
+If a block is marked and visible, paste it from the help system to the
+underlying editor.
+
+<F5>, <AltZ>
+!LINE
+Toggle the zoom mode of the window.
+
+<F6>, <AltM>
+!LINE
+Enter move/resize mode. Use the cursor keys to move the window around the
+screen. This moves the window in small jumps rather than one row or column
+at a time. Use the Shift-cursor keys to resize the window one row or column
+at a time. You can also use "speed resizing" to resize the window in small
+jumps. Use <Ctrl><LeftArrow> and <Ctrl><RightArrow> for horizontal speed
+resizing; <PageUp> and <PageDown> for vertical speed resizing. The window
+cannot be resized while it is zoomed.
+
+<F7>, <CtrlK><B>
+!LINE
+Mark the beginning of a block.
+
+<F8>, <CtrlK><K>
+!LINE
+Mark the end of a block.
+
+<F9>, <CtrlL>
+!LINE
+Perform the last search again. If the last search performed was a topic
+name search (activated by a <ShiftF1> popup), this command repeats the
+topic name search. Searching starts with the next topic beyond the current
+one and is circular, wrapping from the last topic to topic 1 as many times
+as you like. This feature is especially useful when you're searching for a
+member function that has a common beginning, such as "Get".
+
+If the last search performed was a text search (activated by <F2> or
+<CtrlQ><F>), this command repeats the text search. Searching starts just
+after the last match. Previous matches are stored on the topic stack and
+can be reviewed by pressing <AltF1>. A subsequent <F9>, however, continues
+from the position of the last match rather than from the current screen.
+
+<CtrlK><H>
+!LINE
+Hide or unhide the currently marked block. <F4> pastes only if a block is
+visible.
+
+<PgUp>, <PgDn>
+!LINE
+Move to the next or previous page of the current help topic.
+
+<Left>, <Right>, <Up>, <Down>
+!LINE
+Move the cursor around the help window. Attempting to move the cursor beyond the edge of the window causes more text to scroll into the window.
+
+<Tab>
+!LINE
+Jump to the next cross reference topic, if any.
+
+<ShiftTab>
+!LINE
+Jump to the previous cross reference topic, if any.
+
+<Enter>
+!LINE
+Select the cross-reference topic at the cursor location, if any. The new
+topic is loaded into the window and the cursor is positioned on the topic's
+first character.
+
+<Esc>, <AltX>
+!LINE
+Exit POPHELP. The current topic and page are retained and can be
+redisplayed by pressing the Previous Topic hotkey, <LeftShift><F2> by
+default.
+;
+;===========================================================================
+!TOPIC 2 Defines
+!INDEX 2
+!NOSEARCH
+A number of conditional defines affect the behavior of Async
+Professional. All such defines are located in the file APDEFINE.INC, which
+is included by all units. By convention, unwanted defines are deactivated
+by placing a period immediately after the opening comment brace, e.g.:
+
+   {.$DEFINE UseOop}
+
+The following defines are contained in APDEFINE.INC. The default condition
+of the define is indicated by whether a period appears in the define.
+
+!NOWRAP
+{$DEFINE UseUart}
+{.$DEFINE UseFossil}
+{.$DEFINE UseDigi14}
+{.$DEFINE UseInt14}
+!WRAP
+  Enable one of these defines to specify which device layer will
+  be included in your Async Professional program.
+
+!NOWRAP
+{$DEFINE Standard}        {Automatic software and hardware flow control}
+{.$DEFINE StandardLogging {Standard plus EventLogging}
+{.$DEFINE Status          {Standard plus StatusBuffering}
+{.$DEFINE StatusLogging   {Status plus EventLogging}
+{.$DEFINE HWOnly          {Automatic hardware flow control only}
+{.$DEFINE SWOnly          {Automatic software flow control only}
+{.$DEFINE Basic           {No options at all (no flow, status, logging)}
+{.$DEFINE UserDefined     {User-customized options}
+!WRAP
+  Enable only one of these UART control options. This will determine what
+  options are included in APUART's interrupt handler. Enabling more
+  features means that you will have a lower top speed. In most cases, the
+  Standard option should be used.
+
+{.$DEFINE UseOOP}
+  UseOOP is not defined by default. When defined, it removes the global
+  procedure pointers required by the non-object-oriented parts of the base
+  library. Leaving this undefined won't bother the OOP routines since they
+  don't use the procedure pointers. However, if you are using the OOP
+  format of Async Professional, you can activate this define to save a few
+  hundred bytes of code.
+
+{.$DEFINE Tracing}
+  Tracing is a debugging tool built into Async Professional. It is not
+  defined by default. Activate this define and recompile Async Professional
+  whenever you need to debug your programs with Tracing. A reasonable
+  approach might be to turn it on during the early stages of development
+  (so it's always handy) and turn it off as your program nears completion.
+
+{.$DEFINE UseOPro}
+  UseOPro, which is not defined by default, assumes that you have the units
+  of TurboPower Software's Object Professional available when compiling
+  Async Professional. When defined, UseOPro causes Async Professional to
+  omit some of its general-purpose code (several thousand bytes worth) and
+  use routines from the following Object Professional units: OPCONST,
+  OPROOT, OPSTRING, OPINLINE, and OPDATE.
+
+{.$DEFINE UseTPro}
+  UseTPro, which is not defined by default, assumes that you have the units
+  of TurboPower Software's Turbo Professional available when compiling
+  Async Professional. When defined, UseTPro causes Async Professional to
+  omit some of its general purpose code (about 3000 bytes worth) and use
+  routines from the following Turbo Professional units: TPMEMCHK, TPSTRING,
+  TPINLINE, and TPDATE.
+
+{$DEFINE AutoDeviceInit}
+  AutoDeviceInit, which is defined by default, specifies that Async
+  Professional should automatically activate a device layer. Specifically,
+  it means that the initialization block of a device layer should call its
+  own ActivateXxx procedure (e.g., APUART's initialization block would
+  automatically call ActivateApUart). Under rare circumstances, very simple
+  communications applications may get smaller (by 1 or 2KB) if you don't
+  define AutoDeviceInit. Note that this means you must manually initialize
+  the global procedure pointers that you will be using. AutoDeviceInit is
+  forced off when UseOOP is defined (since the OOP interface layer doesn't
+  use the global procedure pointers).
+
+{.$DEFINE LargeComNameSet}
+  LargeComNameSet is not defined by default. Activate this define only if
+  you use a device layer, such as Digi14Port, that supports more than the
+  standard 8 com ports. Defining LargeComNameSet increases the size of
+  ComNameType (to Com1..Com36) and expands all arrays of ComNameType
+  accordingly.
+
+{.$DEFINE UsePmodeDLL}
+  This controls whether the procedural portion of Async Professional is
+  built as TPU/TPP files or as two protected mode DLLs (APCOMD for the
+  device and interface layers, and APPROTD for all protocols).
+
+{.$DEFINE BindFaxFont}
+  This controls whether APFAX.FNT, the font file used to convert ASCII
+  text files to fax binary files, is bound to the APFAXCVT/OOFAXCVT units
+  or not. Binding the font to the TPU results in fast loads from LoadFont,
+  but adds about 16KB of code.
+;------------------------------------------------------------
+!TOPIC 3 Object hierarchy
+!INDEX 3
+!NOSEARCH
+Following is the complete object hierarchy for Async Professional. Where
+applicable, the object name is a cross-reference link to its help topic:
+
+  Object                                   Unit
+  0651Root                                     APMISC
+    0320AbstractPort                           OOCOM
+      0360UartPort                             OOCOM
+      0371FossilPort                           OOCOM
+      0372Digi14Port                           OOCOM
+      0366Int14Port                            OOCOM
+    0734AbstractModem                          OOMODEM
+      0752HayesModem                           OOMODEM
+        0754CourierModem                       OOMODEM
+        0759MicrocomModem                      OOMODEM
+        0764NullModem                          OOMODEM
+    0086AbstractProtocol                       OOABSPCL
+      0945XmodemProtocol                       OOXMODEM
+        0966YmodemProtocol                     OOYMODEM
+      1050ZmodemProtocol                       OOZMODEM
+      0562KermitProtocol                       OOKERMIT
+      0212BplusProtocol                        OOBPLUS
+      0194AsciiProtocol                        OOASCII
+    0430AbstractFaxConverter                   OOFAXCVT
+      0450TextFaxConverter                     OOFAXCVT
+      0451AbstractPcxFaxConverter              OOFAXCVT
+        0452PcxFaxConverter                    OOFAXCVT
+        0453DcxFaxConverter                    OOFAXCVT
+      0454TiffFaxConverter                     OOFAXCVT
+    0455UnpackFax                              OOFAXCVT
+      0467AbstractPcxUnpack                    OOFAXCVT
+        0468UnpackToPcx                        OOFAXCVT
+        0469UnpackToDcx                        OOFAXCVT
+    0009AbstractFax                            OOABSFAX
+      0495C12AbstractFax                       OOFAX12
+        0511C12SendFax                         OOFAX12
+        0524C12ReceiveFax                      OOFAX12
+      0381CASFax                               OOFAXCAS
+    1070TerminalEmulator                       OOEMU
+      1079AnsiEmulator                         OOEMU
+    ...
+      CommandWindow*                       OPWINDOW
+        1090TerminalWindow                     TERMWIN
+          1111CaptureTerminalWindow            TERMWIN
+
+Note: An asterisk after a object's name means that the object is generally
+considered to be for internal use or that the object is not implemented in
+Async Professional.
+;------------------------------------------------------------
+!TOPIC 4 Layered architecture
+!INDEX 4
+!NOSEARCH
+The following diagram illustrates the layered architecture of the Async
+Professional library:
+
+!NOWRAP
+                             ÚÄÄÄÄÄÄÄÄÄ¿
+                             ³  APPORT ³                     abstract layer
+                             ÀÄÄÄÄÂÄÄÄÄÙ
+      ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+ÚÄÄÄÄÄÁÄÄÄÄÄ¿ ÚÄÄÄÄÄÁÄÄÄÄÄ¿ ÚÄÄÄÄÄÁÄÄÄÄÄ¿ ÚÄÄÄÄÄÁÄÄÄÄÄ¿ ÚÄÄÄÄÄÁÄÄÄÄ¿
+³  APUART   ³ ³  APFOSSIL ³ ³  APDIGI14 ³ ³  APINT14  ³ ³  (other) ³ device
+ÀÄÄÄÄÄÂÄÄÄÄÄÙ ÀÄÄÄÄÄÂÄÄÄÄÄÙ ÀÄÄÄÄÄÂÄÄÄÄÄÙ ÀÄÄÄÄÄÂÄÄÄÄÄÙ ÀÄÄÄÄÄÂÄÄÄÄÙ layer
+      ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÂÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÂÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                    ÚÄÄÄÄÄÁÄÄÄÄÄ¿   ÚÄÄÄÄÄÁÄÄÄÄÄ¿
+                    ³  APCOM    ³   ³   OOCOM   ³           interface layer
+                    ³ (non-OOP) ³   ³ (non-OOP) ³
+                    ÀÄÄÄÄÄÂÄÄÄÄÄÙ   ÀÄÄÄÄÄÂÄÄÄÄÄÙ
+     ÚÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÁÄ¿           ÚÄÁÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄ¿
+ÚÄÄÄÄÁÄÄÄÄÄ¿ ÚÄÄÄÄÁÄÄÄ¿ ÚÄÄÄÁÄÄÄ¿ ÚÄÄÄÄÄÁÄÄÄÄ¿ ÚÄÄÄÄÁÄÄÄ¿ ÚÄÄÄÁÄÄÄ¿
+³protocols ³ ³ modems ³ ³  fax  ³ ³protocols ³ ³ modems ³ ³  fax  ³ add-on
+ÀÄÄÄÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÄÙ ÀÄÄÄÄÄÄÄÙ layer
+!WRAP
+
+See also:  0887Core routines
+;
+;------------------------------------------------------------
+!TOPIC 5 UART registers
+!INDEX 5
+!NOSEARCH
+Register 0: Receiver buffer register (read)
+            Transmit holding register (write)
+            Divisor latch low (read/write)
+
+  ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄ¿
+  ³      ³      ³      ³      ³      ³      ³      ³      ³
+  ³ data ³ data ³ data ³ data ³ data ³ data ³ data ³ data ³
+  ³ bit7 ³ bit6 ³ bit5 ³ bit4 ³ bit3 ³ bit2 ³ bit1 ³ bit0 ³
+  ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÙ
+      7     6      5      4       3      2      1      0
+                   Register 0 bit definitions
+
+Register 1: Interrupt enable register (write)
+            Divisor latch high (read/write)
+
+  ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄ¿
+  ³      ³      ³      ³      ³      ³line  ³      ³      ³
+  ³  N/A ³  N/A ³  N/A ³  N/A ³modem ³error/³ xmit ³ recv ³
+  ³      ³      ³      ³      ³status³break ³ready ³ char ³
+  ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÙ
+      7     6      5      4       3      2      1      0
+               Interrupt enable bit definitions
+
+Register 2: Interrupt identification register (read)
+            FIFO control register (write)
+
+  ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄ¿
+  ³      ³      ³      ³      ³      ³      ³      ³      ³
+  ³ FIFO ³ FIFO ³  N/A ³  N/A ³     see  below     ³ int  ³
+  ³enabld³enabld³      ³      ³      ³      ³      ³ pend ³
+  ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÙ
+      7      6      5      4      3      2      1      0
+                Interrupt identification bits
+
+  bits 3-0 priority interrupt type
+  ÄÄÄÄÄÄÄÄ ÄÄÄÄÄÄÄÄ ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+  0 0 0 1  none     none
+  0 1 1 0  highest  line error or line break
+  0 1 0 0  second   received data available
+  1 1 0 0  second   received data available (FIFO timeout)
+  0 0 1 0  third    transmitter holding register empty
+  0 0 0 0  lowest   modem status change
+
+  ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄ¿
+  ³ rcvr ³ rcvr ³      ³      ³      ³      ³      ³      ³
+  ³triggr³triggr³  N/A ³  N/A ³ DMA  ³ xmit ³ rcvr ³ FIFO ³
+  ³ high ³ low  ³      ³      ³ mode ³ reset³ reset³enable³
+  ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÙ
+      7      6      5      4      3      2      1      0
+                FIFO control bit definitions
+
+Bits 6 and 7 are used to specify the receive FIFO trigger level (that level
+in the FIFO where a receive interrupt is generated). The following table
+shows the possible values and the corresponding bit values:
+
+  bit7 bit6 trigger level
+  ÄÄÄÄ ÄÄÄÄ ÄÄÄÄÄÄÄÄÄÄÄÄÄ
+   0    0        1
+   0    1        4
+   1    0        8
+   1    1       14
+
+Register 3: Line control register (write)
+
+  ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄ¿
+  ³ div  ³      ³      ³      ³      ³      ³      ³      ³
+  ³latch ³ send ³stick ³parity³enable³ stop ³    data     ³
+  ³access³ break³parity³ type ³parity³ bits ³    bits     ³
+  ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+      7     6      5      4       3      2      1      0
+                Line control bit definitions
+
+Bits 1 and 0 specify the number of data bits to use. The following table
+shows how these bits are interpreted:
+
+  bit1 bit0 data bits
+  ÄÄÄÄ ÄÄÄÄ ÄÄÄÄÄÄÄÄÄ
+   0    0      5
+   0    1      6
+   1    0      7
+   1    1      8
+
+Register 4: Modem control register (write)
+
+  ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄ¿
+  ³      ³      ³      ³      ³      ³      ³      ³      ³
+  ³  N/A ³  N/A ³  N/A ³enable³ OUT2 ³ OUT1 ³enable³enable³
+  ³      ³      ³      ³loopbk³(reqd)³ N/A  ³ RTS  ³ DTR  ³
+  ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÙ
+      7     6       5     4      3       2      1      0
+                Modem control register bit definitions
+
+Register 5: Line status register (read)
+
+  ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄ¿
+  ³      ³shift ³hold  ³      ³      ³      ³      ³      ³
+  ³ FIFO ³reg   ³reg   ³break ³frame ³parity³ data ³ char ³
+  ³error ³empty ³empty ³recd  ³error ³error ³ovrRun³ recd ³
+  ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÙ
+      7     6      5      4      3       2      1      0
+                Line status bit definitions
+
+Register 6: Modem status register (read)
+
+  ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄ¿
+  ³  DCD ³  RI  ³  DSR ³  CTS ³      ³      ³      ³      ³
+  ³ carr ³ ring ³data  ³clr to³delta ³delta ³delta ³delta ³
+  ³detect³indic ³set rd³ send ³ DCD  ³  RI  ³ DSR  ³ CTS  ³
+  ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÙ
+      7      6      5      4     3       2      1      0
+                Modem status register bit definitions
+;
+;------------------------------------------------------------
+!TOPIC 6 Serial port pin-outs
+!INDEX 6
+!NOSEARCH
+PC, AT, and PS/2 serial ports provide two different connection formats:
+9-pin and 25-pin. Typically, the documentation supplied with your serial
+port boards will describe the type of connector required and a diagram of
+the pin designations. Just so that you'll have such information handy in
+one place, we provide standard connector diagrams below:
+
+!NOWRAP
+9-Pin Connector
+
+    ÚÄÄÄÄÄÄÄÄÄÄÄ¿  1  data carrier detect (DCD)  ÚÄÄÄÄÄÄÄÄÄÄÄ¿
+    ³           ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ>³           ³
+    ³           ³  2  receive data (RD)          ³           ³
+    ³           ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ>³           ³
+    ³           ³  3  transmit data (TD)         ³           ³
+    ³           ³<ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´           ³
+    ³           ³  4  data terminal ready (DTR)  ³           ³
+    ³           ³<ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´ PC's      ³
+    ³ external  ³  5  signal ground (SG)         ³ serial    ³
+    ³ device's  ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´ connector ³
+    ³ connector ³  6  data set ready (DSR)       ³ (9-pin)   ³
+    ³           ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ>³           ³
+    ³           ³  7  request to send (RTS)      ³           ³
+    ³           ³<ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´           ³
+    ³           ³  8  clear to send (CTS)        ³           ³
+    ³           ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ>³           ³
+    ³           ³  9  ring indicator (RI)        ³           ³
+    ³           ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ>³           ³
+    ÀÄÄÄÄÄÄÄÄÄÄÄÙ                                ÀÄÄÄÄÄÄÄÄÄÄÄÙ
+
+25-Pin Connector
+(shows only those pins used by standard UARTs)
+
+    ÚÄÄÄÄÄÄÄÄÄÄÄ¿  1  ground (FG)                ÚÄÄÄÄÄÄÄÄÄÄÄ¿
+    ³           ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´           ³
+    ³           ³  2  receive data (RD)          ³           ³
+    ³           ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ>³           ³
+    ³           ³  3  transmit data (TD)         ³           ³
+    ³           ³<ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´           ³
+    ³           ³  4  request to send (RTS)      ³           ³
+    ³           ³<ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´           ³
+    ³           ³  5  clear to send (CTS)        ³ PC's      ³
+    ³ external  ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ>³ serial    ³
+    ³ device's  ³  6  data set ready (DSR)       ³ connector ³
+    ³ connector ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ>³ (25-pin)  ³
+    ³           ³  7  signal ground (SG)         ³           ³
+    ³           ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´           ³
+    ³           ³  8  data carrier detect (DCD)  ³           ³
+    ³           ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ>³           ³
+    ³           ³ 20  data terminal ready (DTR)  ³           ³
+    ³           ³<ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´           ³
+    ³           ³ 22  ring indicator (RI)        ³           ³
+    ³           ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ>³           ³
+    ÀÄÄÄÄÄÄÄÄÄÄÄÙ                                ÀÄÄÄÄÄÄÄÄÄÄÄÙ
+!WRAP

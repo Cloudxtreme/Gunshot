@@ -1,0 +1,128 @@
+const
+  RelaxedHandShakeWait = 364;    {Relaxed wait time during handshaking (20 sec)}
+  DefBlockWait = 91;             {Normal between-block wait time (5 sec)}
+  RelaxedBlockWait = 182;        {Relaxed between-block wait time (10 sec)}
+  CancelTimeout = 3;             {Drain timeout for cancel sequence}
+  MaxSkipChars = 1000;           {Maximum chars skipped while seeking Soh}
+  DrainWait = 1092;              {OutBuf drain time before error (60 sec)}
+  MaxCrcTry = 3;                 {Max tries for Crc before trying checksum}
+  CrcReq = 'C';                  {Crc mode request}
+
+  {Run-time constants}
+  DefMaxBlockErrors : Byte = 5;  {Default maximum acceptable errors per block}
+  DefFinishWait     : Word = DefBlockWait*2; {Wait GMode EOT response}
+
+  {For estimating protocol transfer times}
+  XmodemOverhead : Word = 5;     {Overhead bytes for each block}
+  XmodemTurnDelay : Word = 1000; {MSec turnaround delay for each block}
+
+type
+  {Xmodem protocol transmit states}
+  XmodemStateType = (
+    {Transmit states}
+    txInitial,              {0  Open file, log it, etc.}
+    txHandshake,            {1  Waiting for handshake}
+    txGetBlock,             {2  Get the next block to transmit}
+    txWaitFreeSpace,        {3  Wait until outbuffer has enough freespace}
+    txSendBlock,            {4  Send next protocol block}
+    txDraining,             {5  Waiting for protocol block to drain}
+    txReplyPending,         {6  Waiting for reply to last block}
+    txEndDrain,             {7  Wait for outbuf to drain before EOT}
+    txFirstEndOfTransmit,   {8  Send first EOT}
+    txRestEndOfTransmit,    {9  Send subseqent EOTs}
+    txEotReply,             {10  Waiting for EOT reply}
+    txFinished,             {11 Close file, log it, etc.}
+    txDone,                 {12 Signal end of protocol}
+
+    {Receive states}
+    rxInitial,              {13 Initialize vars, get buffers, etc.}
+    rxWaitForHSReply,       {14 Waiting for 1st reply to handshake}
+    rxWaitForBlockStart,    {15 Wait for block start}
+    rxCollectBlock,         {16 Collect data}
+    rxProcessBlock,         {17 Process block}
+    rxFinishedSkip,         {17 Close file, log as skip}
+    rxFinished,             {18 Close file, log as good/bad}
+    rxDone);                {19 Signal end of protocol}
+
+  {Xmodem protocol record}
+  XmodemPtr = ^XmodemProtocol;
+  XmodemProtocol = record
+    {General protocol data}
+    PData          : ProtocolDataPtr;   {General protocol data}
+    StartChar      : Char;              {Block start character}
+    OneKMode       : Boolean;           {True for XModem1K}
+    BlockWait      : Byte;              {Wait seconds between blocks}
+    MaxBlockErrors : Byte;              {Max number of allowed block errors}
+    FirstBlockNum  : Byte;              {First block number to use}
+    GMode          : Boolean;           {True for YmodemG}
+    TimerPending   : Boolean;           {True if waiting to start rcv timer}
+    FinishWait     : Word;              {Extra wait GMode EOT response}
+
+    {Temp vars that state machine requires to be static}
+    HandshakeChar  : Char;              {Last handshake char used}
+    NaksReceived   : Byte;              {Count naks received}
+    EotCounter     : Byte;              {Counts received EOTs}
+    CanCounter     : Byte;              {Counts received cCans}
+    ReplyTimer     : EventTimer;        {Track timeouts waiting for replies}
+    NoMoreData     : Boolean;           {Flag for tracking end-of-file}
+    DataBlock      : ^DataBlockType;    {Data block}
+    CharsLeft      : Word;              {Characters not yet xmitted}
+    OutBufPos      : Word;              {Output buffer pos for reduced blocks}
+    BlkIndex       : Word;              {Index into received chars in DataBlock}
+    OverheadLen    : Word;              {Number of overhead bytes per block}
+    LastBlockSize  : Word;              {Number of bytes last read}
+
+    {State information}
+    XmodemState    : XmodemStateType;   {Current state of Xmodem}
+  end;
+
+{$IFDEF UsePModeDLL}
+
+procedure InitXmodem(var P : ProtocolRecPtr;
+                     PortPtr : PortRecPtr;
+                     Use1K, UseGMode : Boolean); Export;
+procedure InitCustomXmodem(var P : ProtocolRecPtr;
+                           PortPtr : PortRecPtr;
+                           Use1K, UseGMode : Boolean;
+                           Options : Word); Export;
+procedure DoneXmodem(var P : ProtocolRecPtr); Export;
+procedure Set1KMode(P : ProtocolRecPtr; Enable : Boolean); Export;
+procedure SetGMode(P : ProtocolRecPtr; Enable : Boolean); Export;
+procedure SetBlockWait(P : ProtocolRecPtr; NewBlockWait : Byte); Export;
+procedure SetFinishWaitXM(P : ProtocolRecPtr; NewFinishWait : Word); Export;
+{#F+}
+procedure SendHandshakeChar(P : ProtocolRecPtr; Handshake : Char); Export;
+{#F-}
+procedure PrepareTransmitPartXM(P : ProtocolRecPtr); Export;
+function ProtocolTransmitPartXM(P : ProtocolRecPtr) : ProtocolStateType; Export;
+procedure ProtocolTransmitXM(P : ProtocolRecPtr); Export;
+procedure PrepareReceivePartXM(P : ProtocolRecPtr); Export;
+function ProtocolReceivePartXM(P : ProtocolRecPtr) : ProtocolStateType; Export;
+procedure ProtocolReceiveXM(P : ProtocolRecPtr); Export;
+
+{$ELSE}
+
+procedure InitXmodem(var P : ProtocolRecPtr;
+                     PortPtr : PortRecPtr;
+                     Use1K, UseGMode : Boolean);
+procedure InitCustomXmodem(var P : ProtocolRecPtr;
+                           PortPtr : PortRecPtr;
+                           Use1K, UseGMode : Boolean;
+                           Options : Word);
+procedure DoneXmodem(var P : ProtocolRecPtr);
+procedure Set1KMode(P : ProtocolRecPtr; Enable : Boolean);
+procedure SetGMode(P : ProtocolRecPtr; Enable : Boolean);
+procedure SetBlockWait(P : ProtocolRecPtr; NewBlockWait : Byte);
+procedure SetFinishWaitXM(P : ProtocolRecPtr; NewFinishWait : Word);
+{#F+}
+procedure SendHandshakeChar(P : ProtocolRecPtr; Handshake : Char);
+{#F-}
+procedure PrepareTransmitPartXM(P : ProtocolRecPtr);
+function ProtocolTransmitPartXM(P : ProtocolRecPtr) : ProtocolStateType;
+procedure ProtocolTransmitXM(P : ProtocolRecPtr);
+procedure PrepareReceivePartXM(P : ProtocolRecPtr);
+function ProtocolReceivePartXM(P : ProtocolRecPtr) : ProtocolStateType;
+procedure ProtocolReceiveXM(P : ProtocolRecPtr);
+
+{$ENDIF}
+

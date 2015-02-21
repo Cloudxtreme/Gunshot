@@ -1,0 +1,1946 @@
+  function ReceiveBlock(P : ProtocolRecPtr;
+                        var Block : DataBlockType;
+                        var BlockSize : Word;
+                        var Handshake : Char) : Boolean;
+    {-Get a binary data subpacket, return True when block complete (or error)}
+  var
+    ZM : ZmodemPtr absolute P;
+    C : Char;
+  begin
+    with ZM^, PData^ do begin
+      {Assume the block isn't ready}
+      ReceiveBlock := False;
+
+      while CharReady(PR) do begin
+        {Handle first pass}
+        if (DataBlockLen = 0) and (RcvBlockState = rbData) then begin
+          if UseCrc32 then
+            BlockCheck := -1
+          else
+            BlockCheck := 0;
+        end;
+
+        {Get the waiting character}
+        GetCharEscaped(P, C);
+        if EscapePending or ControlCharSkip then                       {!!.01}
+          Exit;
+        if GetAsyncStatus = ecCancelRequested then
+          Exit;
+
+        {Always update the block check}
+        UpdateBlockCheck(P, Ord(C));
+
+        case RcvBlockState of
+          rbData :
+            case GetAsyncStatus of
+              ecOk :     {Normal character}
+                begin
+                  {Check for a long block}
+                  Inc(DataBlockLen);
+                  if DataBlockLen > BlockLen then begin
+                    GotError(PR, epNonFatal+ecLongPacket);
+                    Inc(TotalErrors);
+                    Inc(BlockErrors);
+                    ReceiveBlock := True;
+                    Exit;
+                  end;
+
+                  {Store the character}
+                  Block[DataBlockLen] := C;
+                end;
+
+              ecGotCrcE,
+              ecGotCrcG,
+              ecGotCrcQ,
+              ecGotCrcW : {End of DataSubpacket - get/check CRC}
+                begin
+                  RcvBlockState := rbCrc;
+                  CrcCnt := 0;
+                  LastStatus := GetAsyncStatus;
+                end;
+              ecCancelRequested :
+                Exit;
+              else begin
+                {!!.01 new}
+                {Line error receiving char, count it anyway}
+                Inc(DataBlockLen);
+                if DataBlockLen > BlockLen then begin
+                  GotError(PR, epNonFatal+ecLongPacket);
+                  Inc(TotalErrors);
+                  Inc(BlockErrors);
+                  ReceiveBlock := True;
+                  Exit;
+                end;
+                Block[DataBlockLen] := C;
+              end;
+            end;
+
+          rbCrc :
+            begin
+              Inc(CrcCnt);
+              if (UseCrc32 and (CrcCnt = 4)) or
+                 (not UseCrc32 and (CrcCnt = 2)) then begin
+                if not VerifyBlockCheck(P) then begin
+                  Inc(BlockErrors);
+                  Inc(TotalErrors);
+                  GotError(PR, epNonFatal+ecBlockCheckError);
+                end else
+                  {Show proper status}
+                  SetAsyncStatus(LastStatus);
+
+                {Say block is ready for processing}
+                ReceiveBlock := True;
+                Exit;
+              end;
+            end;
+        end;
+      end;
+    end;
+  end;
+
+  procedure ExtractFileInfo(P : ProtocolRecPtr);
+    {-Extracts file information into fields}
+  var
+    ZM : ZmodemPtr absolute P;
+    BlockPos : Word;
+    S : String;
+    SLen : Byte absolute S;
+    I : Integer;
+    Code : Integer;
+    Dir : DirStr;
+    Name : NameStr;
+    Ext : ExtStr;
+
+  begin
+    with ZM^, PData^ do begin
+      {Extract the file name from the data block}
+      BlockPos := 1;
+      while (DataBlock^[BlockPos] <> #0) and (BlockPos < 255) do begin
+        S[BlockPos] := DataBlock^[BlockPos];
+        Inc(BlockPos);
+      end;
+      SLen := BlockPos - 1;
+
+      {Change all '/' to '\'. Change name to all upper case}
+      for I := 1 to SLen do begin
+        if S[I] = '/' then
+          S[I] := '\';
+        S[I] := Upcase(S[I]);
+      end;
+
+      {Set Pathname}
+      Pathname := S;
+
+      {Should we use its directory or ours?}
+      if not FlagIsSet(apFlags, apHonorDirectory) then begin
+        FSplit(Pathname, Dir, Name, Ext);
+        PathName := AddBackSlash(DestDir) + Name + Ext;
+      end;
+
+      {Extract the file size}
+      I := 1;
+      Inc(BlockPos);
+      while (DataBlock^[BlockPos] <> #0) and
+            (DataBlock^[BlockPos] <> ' ') and
+            (I <= 255) do begin
+        S[I] := DataBlock^[BlockPos];
+        Inc(I); Inc(BlockPos);
+      end;
+      Dec(I);
+      SLen := I;
+      if SLen = 0 then
+        SrcFileLen := 0
+      else begin
+        Val(S, SrcFileLen, Code);
+        if Code <> 0 then
+          {Invalid date format, just ignore}
+          SrcFileLen := 0;
+      end;
+      BytesRemaining := SrcFileLen;
+      BytesTransferred := 0;
+
+      {Extract the file date/time stamp}
+      I := 1;
+      Inc(BlockPos);
+      while (DataBlock^[BlockPos] <> #0) and
+            (DataBlock^[BlockPos] <> ' ') and
+            (I <= 255) do begin
+        S[I] := DataBlock^[BlockPos];
+        Inc(I);
+        Inc(BlockPos);
+      end;
+      Dec(I);
+      SLen := I;
+      S := TrimZeros(S);
+      if S = '' then
+        SrcFileDate := CurrentTimeStamp
+      else
+        SrcFileDate := OctalStr2Long(S);
+    end;
+  end;
+
+  procedure zpPrepareWriting(P : ProtocolRecPtr);
+    {-Prepare to save protocol blocks (usually opens a file)}
+  var
+    ZM : ZmodemPtr absolute P;
+    Result : Word;
+    FileExists : Boolean;
+    FileLen : LongInt;
+    FileCrc : LongInt;
+    FileDate : LongInt;
+    FileOpt : Byte;
+    FileSkip : Boolean;
+    SeekPoint : LongInt;
+    FileStartOfs : LongInt;
+  label
+    ExitPoint;
+
+  begin
+    with ZM^, PData^ do begin
+      SetAsyncStatus(ecOk);
+
+      {!!.01}
+      {Allocate a file buffer}
+      {if not GetMemCheck(FileBuffer, FileBufferSize) then begin
+        GotError(PR, ecOutOfMemory);
+        apUserStatus(P, False, False);
+        Exit;
+      end;}
+
+      {Set file mgmt options}
+      FileSkip := (FileMgmtOpts and FileSkipMask) = FileSkipMask;
+      FileOpt := FileMgmtOpts and FileMgmtMask;
+
+      {Check for a local request for file recovery}
+      if ReceiverRecover then
+        ConvertOpts := ConvertOpts or FileRecover;
+
+      {Does the file exist already?}
+      SaveMode := FileMode;                                            {!!.02}
+      FileMode := GetAproFileMode;                              {!!.02}{!!.03}
+      Assign(WorkFile, PathName);
+      Reset(WorkFile, 1);
+      FileMode := SaveMode;                                            {!!.02}
+      Result := IOResult;
+
+      {Exit on errors other than FileNotFound}
+      if (Result <> 0) and (Result <> 2) then begin
+        GotError(PR, epFatal+Result);
+        goto ExitPoint;
+      end;
+
+      {Note if file exists, its size and timestamp}
+      FileExists := (Result = 0);
+      if FileExists then begin
+        FileLen := FileSize(WorkFile);
+        GetFTime(WorkFile, FileDate);
+        FileDate := PackToYMTimeStamp(FileDate);
+      end;
+      Close(WorkFile);
+      if IOResult = 0 then ;
+
+      {If recovering, skip all file managment checks and go append file}
+      if FileExists and
+         (SrcFileLen > FileLen) and
+         ((ConvertOpts and FileRecover) = FileRecover) then begin
+        SeekPoint := FileLen;
+        FileStartOfs := FileLen;
+        InitFilePos := FileLen;
+      end else begin
+        {Tell status we're not recovering}
+        InitFilePos := 0;
+
+        {Check for skip condition}
+        if FileSkip and not FileExists then begin
+          SetAsyncStatus(ecFileDoesntExist);
+          goto ExitPoint;
+        end;
+
+        {Process the file management options}
+        SeekPoint := 0;
+        FileStartOfs := 0;
+        case FileOpt of
+          WriteNewerLonger : {Transfer only if new, newer or longer}
+            if FileExists then
+              if (SrcFileDate <= FileDate) and
+                 (SrcFileLen <= FileLen) then begin
+                SetAsyncStatus(ecCantWriteFile);
+                goto ExitPoint;
+            end;
+          WriteAppend :      {Transfer regardless, append if exists}
+            if FileExists then
+              SeekPoint := FileLen;
+          WriteClobber :     {Transfer regardless, overwrite} ;
+            {Nothing to do, this is the normal behavior}
+          WriteDifferent :   {Transfer only if new, size diff, or dates diff}
+            if FileExists then
+              if (SrcFileDate = FileDate) and
+                 (SrcFileLen = FileLen) then begin
+                SetAsyncStatus(ecCantWriteFile);
+                goto ExitPoint;
+              end;
+          WriteProtect :     {Transfer only if dest file doesn't exist}
+            if FileExists then begin
+              SetAsyncStatus(ecCantWriteFile);
+              goto ExitPoint;
+            end;
+          WriteCrc,          {Not supported, treat as WriteNewer}
+          WriteNewer :       {Transfer only if new or newer}
+            if FileExists then
+              if SrcFileDate <= FileDate then begin
+                SetAsyncStatus(ecCantWriteFile);
+                goto ExitPoint;
+              end;
+        end;
+      end;
+
+      {Rewrite or append to file}
+      Assign(WorkFile, Pathname);
+      if SeekPoint = 0 then begin
+        {New or overwriting destination file}
+        Rewrite(WorkFile, 1);
+      end else begin
+        {Appending to file}
+        Reset(WorkFile, 1);
+        Seek(WorkFile, SeekPoint);
+      end;
+      Result := IOResult;
+      if Result <> 0 then begin
+        GotError(PR, epFatal+Result);
+        goto ExitPoint;
+      end;
+
+      {Initialized the buffer management vars}
+      FileOfs := FileStartOfs;
+      StartOfs := FileStartOfs;
+      LastOfs := FileStartOfs;
+      EndOfs := StartOfs + FileBufferSize;
+      FileOpen := True;
+      Exit;
+
+  ExitPoint:
+      Close(WorkFile);
+      if IOResult <> 0 then ;
+      {FreeMemCheck(FileBuffer, FileBufferSize);}                      {!!.01}
+    end;
+  end;
+
+  procedure zpFinishWriting(P : ProtocolRecPtr);
+    {-Cleans up after saving all protocol blocks}
+  var
+    ZM : ZmodemPtr absolute P;
+    BytesToWrite : Word;
+    BytesWritten : Word;
+    Result : Word;
+    PackTime : LongInt;
+  begin
+    with ZM^, PData^ do begin
+      if FileOpen then begin
+        {Error or end-of-file, commit buffer}
+        BytesToWrite := FileOfs - StartOfs;
+        BlockWrite(WorkFile, FileBuffer^, BytesToWrite, BytesWritten);
+        Result := IOResult;
+        if (Result <> 0) or (BytesToWrite <> BytesWritten) then
+          GotError(PR, epFatal+Result);
+
+        {Set the timestamp to that of the source file}
+        PackTime := YMTimeStampToPack(SrcFileDate);
+        SetFTime(WorkFile, PackTime);
+
+        {Clean up}
+        Close(WorkFile);
+        if IOResult <> 0 then ;
+        {FreeMemCheck(FileBuffer, FileBufferSize);}                    {!!.01}
+        FileOpen := False;
+      end;
+    end;
+  end;
+
+  procedure WriteDataBlock(P : ProtocolRecPtr);
+    {-Call WriteProtocolBlock for the last received DataBlock}
+  var
+    ZM : ZmodemPtr absolute P;
+    SaveStatus : Word;
+    Failed : Boolean;
+  begin
+    with ZM^, PData^ do begin
+      {Call the method to write this block}
+      Failed := WriteProtocolBlock(P, DataBlock^, DataBlockLen);
+
+      {Process result}
+      if Failed then begin
+        SaveStatus := GetAsyncStatus;
+        Cancel(P);
+        SetAsyncStatus(SaveStatus);
+      end else begin
+        Inc(FileOfs, DataBlockLen);
+        Dec(BytesRemaining, DataBlockLen);
+        Inc(BytesTransferred, DataBlockLen);
+        ElapsedTics := ElapsedTime(Timer);
+      end;
+    end;
+  end;
+
+  procedure PrepareReceivePartZM(P : ProtocolRecPtr);
+    {-Prepare to receive Zmodem parts}
+  var
+    ZM : ZmodemPtr absolute P;
+  begin
+    with ZM^, PData^ do begin
+      {Do parent inits}
+      PR^.ProtocolActive := True;
+      GotOneFile := False;
+
+      {Init the status stuff}
+      ResetStatus(P);
+      ShowFirstStatus(P);
+      NewTimer(StatusTimer, StatusInterval);
+
+      {Flush input buffer}
+      FlushInBuffer(PR);
+
+      HeaderType := ZrInit;
+      ZmodemState := rzRqstFile;
+      HeaderState := hsNone;
+      SaveStatus := ecOk;
+      SetAsyncStatus(ecOk);
+    end;
+  end;
+
+  function ProtocolReceivePartZM(P : ProtocolRecPtr) : ProtocolStateType;
+    {-Receive multiple Zmodem files}
+  label
+    ExitPoint;
+  var
+    ZM : ZmodemPtr absolute P;
+    BlockSize : Word;
+    Handshake : Char;
+    C : Char;
+  begin
+    with ZM^, PData^ do begin
+
+      {Restore previous AsyncStatus}
+      SetAsyncStatus(SaveStatus);
+
+      {Check for user abort}
+      if SaveStatus <> ecCancelRequested then
+        if HandleAbort(P) then begin
+          SetAsyncStatus(ecCancelRequested);
+          ZmodemState := rzError;
+        end;
+
+      {Handle status updates}
+      {Show status at requested intervals and after significant events}
+      if ForceStatus or TimerExpired(StatusTimer) then begin
+        apUserStatus(P, False, False);
+        NewTimer(StatusTimer, StatusInterval);
+        ForceStatus := False;
+      end;
+
+      {Preprocess header requirements}
+      case ZmodemState of
+        rzWaitFile,
+        rzStartData,
+        rzWaitEof :
+          {Header might be present, try to get one}
+          if CharReady(PR) then begin
+            CheckForHeader(P);
+            if GetAsyncStatus = ecCancelRequested then
+              ZmodemState := rzError;
+          end else if TimerExpired(ReplyTimer) then
+            SetAsyncStatus(ecTimeout)
+          else
+            SetAsyncStatus(ecNoHeader);
+      end;
+
+      {Main state processor}
+      case ZmodemState of
+        rzRqstFile :
+          begin
+            CanCount := 0;
+
+            {Init pos/flag bytes to zero}
+            LongInt(TransHeader) := 0;
+
+            {Set our receive options}
+            TransHeader[ZF0] := CanFdx or     {Full duplex}
+                                CanOvIO or    {Overlap I/O}
+                                CanFc32 or    {Use Crc32 on frames}
+                                CanBrk;       {Can send break}
+
+            {Testing shows that Telix needs a delay here}
+            NewTimer(ReplyTimer, TelixDelay);
+            ZmodemState := rzDelay;
+          end;
+
+        rzDelay :
+          if TimerExpired(ReplyTimer) then begin
+            {Send the header}
+            PutHexHeader(P, HeaderType);
+
+            ZmodemState := rzWaitFile;
+            HeaderState := hsNone;
+            NewTimer(ReplyTimer, HandshakeWait);
+          end;
+
+        {!!.03 new}
+        rzSendBlockPrep :
+          if CharReady(PR) then begin
+            {Discard the first two chars}
+            GetChar(PR, C);
+            Inc(DiscardCnt);
+            if DiscardCnt = 2 then
+              ZmodemState := rzSendBlock;
+          end else if TimerExpired(ReplyTimer) then begin
+            Inc(BlockErrors);
+            Inc(TotalErrors);
+            if TotalErrors < HandshakeRetry then
+              ZmodemState := rzRqstFile
+            else
+              ZmodemState := rzCleanup;
+          end;
+
+        rzSendBlock :
+          if CharReady(PR) then begin
+            {Collect the data subpacket}
+            if ReceiveBlock(P, DataBlock^, BlockSize, Handshake) then
+              if GetAsyncStatus = ecBlockCheckError then
+                {Error receiving block, go try again}
+                ZmodemState := rzRqstFile
+              else
+                {Got block OK, go process}
+                ZmodemState := rzSendInit
+            else if GetAsyncStatus = ecCancelRequested then
+              ZmodemState := rzError;
+          end else if TimerExpired(ReplyTimer) then begin
+            Inc(BlockErrors);
+            if BlockErrors < HandshakeRetry then begin
+              PutHexHeader(P, ZNak);
+              NewTimer(ReplyTimer, HandshakeWait);
+              ZmodemState := rzWaitFile;
+              HeaderState := hsNone;
+            end else
+              ZmodemState := rzCleanup;
+          end;
+
+        rzSendInit :
+          begin
+            {Save attention string}
+            Move(DataBlock^, AttentionStr, MaxAttentionLen);
+
+            {Turn on escaping if transmitter requests it}              {!!.02}
+            EscapeAll := (RcvHeader[ZF0] and TEscAll) = TEscAll;       {!!.02}
+
+            {Needs an acknowledge}
+            PutHexHeader(P, ZAck);
+            {Go wait for ZFile packet}
+            ZmodemState := rzWaitFile;
+            NewTimer(ReplyTimer, HandshakeWait);
+          end;
+
+        rzWaitFile :
+          case GetAsyncStatus of
+            ecGotHeader :
+              begin
+                case RcvFrame of
+                  ZrQInit : {Go send ZrInit again}
+                    ZmodemState := rzRqstFile;
+                  ZFile : {Beginning of file transfer attempt}
+                    begin
+                      {Save conversion and transport options}
+                      ConvertOpts := RcvHeader[ZF0];
+                      TransportOpts := RcvHeader[ZF2];
+
+                      {Save file mgmt options (if not overridden)}
+                      if not FileMgmtOverride then
+                        FileMgmtOpts := RcvHeader[ZF1];
+
+                      {Set file mgmt default if none specified}
+                      if FileMgmtOpts = 0 then
+                        FileMgmtOpts := WriteNewer;
+
+                      {Start collecting the ZFile's data subpacket}
+                      ZmodemState := rzCollectFile;
+                      BlockErrors := 0;
+                      DataBlockLen := 0;
+                      RcvBlockState := rbData;
+                      NewTimer(ReplyTimer, HandshakeWait);
+                    end;
+
+                  ZSInit :  {Sender's transmission options}
+                    begin
+                      {Start collecting ZSInit's data subpacket}
+                      BlockErrors := 0;
+                      DataBlockLen := 0;
+                      RcvBlockState := rbData;
+                      NewTimer(ReplyTimer, HandshakeWait);
+                      if WasHex then begin                             {!!.03}
+                        ZmodemState := rzSendBlockPrep;                {!!.03}
+                        DiscardCnt := 0;                               {!!.03}
+                      end else                                         {!!.03}
+                        ZmodemState := rzSendBlock;
+                    end;
+
+                  ZFreeCnt : {Sender is requesting a count of our freespace}
+                    begin
+                      LongInt(TransHeader) := DiskFree(0);
+                      PutHexHeader(P, ZAck);
+                    end;
+
+                  ZCommand : {Commands not implemented}
+                    begin
+                      PutHexHeader(P, ZNak);
+                    end;
+
+                  ZCompl,
+                  ZFin:      {Finished}
+                    begin
+                      ZmodemState := rzSendFinish;
+                      BlockErrors := 0;
+                    end;
+                end;
+                NewTimer(ReplyTimer, HandshakeWait);
+              end;
+            ecNoHeader :
+              {Keep waiting for a header} ;
+            ecBlockCheckError,
+            ecTimeout :
+              begin
+                Inc(BlockErrors);
+                if BlockErrors < HandshakeRetry then
+                  ZmodemState := rzRqstFile
+                else begin
+                  {Failed to handsake}
+                  GotError(PR, epNonFatal+ecFailedToHandshake);
+                  ZmodemState := rzCleanup;
+                end;
+              end;
+          end;
+
+        rzCollectFile :
+          if CharReady(PR) then begin
+            {Collect the data subpacket}
+            if ReceiveBlock(P, DataBlock^, BlockSize, Handshake) then
+              if GetAsyncStatus = ecBlockCheckError then
+                {Error getting block, go try again}
+                ZmodemState := rzRqstFile
+              else
+                {Got block OK, go extract file info}
+                ZmodemState := rzStartFile
+            else if GetAsyncStatus = ecCancelRequested then
+              ZmodemState := rzError;
+          end else if TimerExpired(ReplyTimer) then begin
+            Inc(BlockErrors);
+            if BlockErrors < HandshakeRetry then begin
+              PutHexHeader(P, ZNak);
+              NewTimer(ReplyTimer, HandshakeWait);
+            end else
+              ZmodemState := rzCleanup;
+          end;
+
+        rzStartFile :
+          begin
+            {Got the data subpacket to the ZFile, extract the file information}
+            ExtractFileInfo(P);
+
+            {Call user's LogFile function}
+            LogFile(P, lfReceiveStart);
+
+            {Accept this file}
+            if not AcceptFile(P) then begin
+              HeaderType := ZSkip;
+              LogFile(P, lfReceiveSkip);
+              ZmodemState := rzRqstFile;
+              SetAsyncStatus(ecCantWriteFile);
+              ForceStatus := True;
+              goto ExitPoint;
+            end;
+
+            {Prepare to write this file}
+            PrepareWriting(P);
+            case GetAsyncStatus mod 10000 of
+              0 :                 {Fall thru} ;
+              ecCantWriteFile,
+              ecFileDoesntExist : {Skip this file}
+                begin
+                  HeaderType := ZSkip;
+                  LogFile(P, lfReceiveSkip);
+                  ZmodemState := rzRqstFile;
+                  ForceStatus := True;
+                  goto ExitPoint;
+                end;
+              else begin          {Fatal error opening file}
+                SaveStatus := GetAsyncStatus;
+                Cancel(P);
+                SetAsyncStatus(SaveStatus);
+                ZModemState := rzError;
+                goto ExitPoint;
+              end;
+            end;
+
+            {Go send the initial ZrPos}
+            ZmodemState := rzSync;
+            ForceStatus := True;
+            TimerPending := True;
+          end;
+
+        rzSync :
+          begin
+            {Don't care what's in the buffer now so get rid of it}
+            FlushInBuffer(PR);
+
+            {Start a new reply timer}
+            NewTimer(ReplyTimer, HandshakeWait);
+
+            {Insert file size into header and send to remote}
+            LongInt(TransHeader) := FileOfs;
+            PutHexHeader(P, ZrPos);
+            {Set status info}
+            BytesRemaining := SrcFileLen - FileOfs;
+            BytesTransferred := FileOfs;
+
+            {Start protocol timer now}
+            if TimerPending then begin
+              TimerPending := False;
+              NewTimer(Timer, 1);
+            end;
+
+            ZmodemState := rzStartData;
+            HeaderState := hsNone;
+          end;
+
+        rzStartData :
+          case GetAsyncStatus of
+            ecGotHeader :
+              case RcvFrame of
+                ZData :  {One or more data subpackets follow}
+                  begin
+                    if FileOfs <> LastFileOfs then begin
+                      Inc(BlockErrors);
+                      Inc(TotalErrors);
+                      if BlockErrors > MaxBadBlocks then begin
+                        Cancel(P);
+                        GotError(PR, epFatal+ecTooManyErrors);
+                        ZmodemState := rzError;
+                        goto ExitPoint;
+                      end;
+                      PutAttentionString(P);
+                      ZmodemState := rzSync;
+                    end else begin
+                      BlockErrors := 0;
+                      ZmodemState := rzCollectData;
+                      DataBlockLen := 0;
+                      RcvBlockState := rbData;
+                      NewTimer(ReplyTimer, HandshakeWait);
+                   end;
+                 end;
+                ZNak : {Nak received}
+                  begin
+                    ElapsedTics := ElapsedTime(Timer);
+                    Inc(TotalErrors);
+                    Inc(BlockErrors);
+                    if BlockErrors > MaxBadBlocks then begin
+                      Cancel(P);
+                      GotError(PR, epFatal+ecTooManyErrors);
+                      ZmodemState := rzError;
+                    end else
+                      {Resend ZrPos}
+                      ZmodemState := rzSync;
+                  end;
+                ZFile : {File frame}
+                  {Already got a File frame, just go send ZrPos again}
+                  ZmodemState := rzSync;
+                ZEof : {End of current file}
+                  begin
+                    PData^.GotOneFile := True;
+                    ElapsedTics := ElapsedTime(Timer);
+                    SetAsyncStatus(ecEndFile);
+                    ZmodemState := rzEndOfFile;
+                  end;
+                else begin
+                  {Error during GetHeader}
+                  Inc(TotalErrors);
+                  Inc(BlockErrors);
+                  if BlockErrors > MaxBadBlocks then begin
+                    Cancel(P);
+                    GotError(PR, epFatal+ecTooManyErrors);
+                    ZmodemState := rzError;
+                    goto ExitPoint;
+                  end;
+                  PutAttentionString(P);
+                  ZmodemState := rzSync;
+                end;
+              end;
+            ecNoHeader :
+              {Just keep waiting for header} ;
+            ecBlockCheckError,
+            ecTimeout :
+              begin
+                Inc(BlockErrors);
+                Inc(TotalErrors);
+                if BlockErrors > HandshakeRetry then begin
+                  {Never got ZData header}
+                  GotError(PR, epFatal+ecFailedToHandshake);
+                  ZmodemState := rzError;
+                end else
+                  {Timeout out waiting for ZData, go send ZrPos}
+                  ZmodemState := rzSync;
+              end;
+          end;
+
+        rzCollectData :
+          if CharReady(PR) then begin
+            NewTimer(ReplyTimer, HandshakeWait);
+            {Collect the data subpacket}
+            if ReceiveBlock(P, DataBlock^, BlockSize, Handshake) then begin
+              {Got a block or an error -- process it}
+              SaveStatus := GetAsyncStatus;
+              case GetAsyncStatus of
+                ecCancelRequested : {Cancel requested}
+                  ZmodemState := rzError;
+                ecGotCrcW : {Send requests a wait}
+                  begin
+                    {Write this block}
+                    WriteDataBlock(P);
+                    if GetAsyncStatus = ecOk then begin
+                      {Acknowledge with the current file position}
+                      LongInt(TransHeader) := FileOfs;
+                      PutHexHeader(P, ZAck);
+                      ZmodemState := rzStartData;
+                      HeaderState := hsNone;
+                    end else
+                      ZmodemState := rzError;
+                  end;
+                ecGotCrcQ : {Zack requested}
+                  begin
+                    {Write this block}
+                    WriteDataBlock(P);
+                    if GetAsyncStatus = ecOk then begin
+                      LongInt(TransHeader) := FileOfs;
+                      PutHexHeader(P, ZAck);
+                      {Don't change state - will get next data subpacket}
+                    end else
+                      ZmodemState := rzError;
+                  end;
+                ecGotCrcG : {Normal subpacket - no response necessary}
+                  begin
+                    {Write this block}
+                    WriteDataBlock(P);
+                    if GetAsyncStatus <> ecOk then
+                      ZmodemState := rzError;
+                  end;
+                ecGotCrcE : {Last data subpacket}
+                  begin
+                    {Write this block}
+                    WriteDataBlock(P);
+                    if GetAsyncStatus = ecOk then begin
+                      ZmodemState := rzWaitEof;
+                      HeaderState := hsNone;
+                      BlockErrors := 0;
+                    end else
+                      ZmodemState := rzError;
+                  end;
+                else begin {Error during ReceiveBlock}
+                  if BlockErrors < MaxBadBlocks then begin
+                    PutAttentionString(P);
+                    ZmodemState := rzSync;
+                  end else begin
+                    GotError(PR, epFatal + ecGarbage);
+                    ZmodemState := rzError;
+                  end;
+                end;
+              end;
+
+              {Restore AsyncStatus so user status routine can see it}
+              if GetAsyncStatus <> ecOk then
+                SetAsyncStatus(SaveStatus);
+
+              {Prepare to collect next block}
+              ForceStatus := True;
+              DataBlockLen := 0;
+              RcvBlockState := rbData;
+            end else if GetAsyncStatus = ecCancelRequested then
+              ZmodemState := rzError
+          end else if TimerExpired(ReplyTimer) then begin
+            Inc(BlockErrors);
+            if BlockErrors < MaxBadBlocks then begin
+              PutAttentionString(P);
+              Inc(TotalErrors);
+              Inc(BlockErrors);
+              ZmodemState := rzSync;
+            end else
+              ZmodemState := rzError;
+          end;
+
+        rzWaitEof :
+          case GetAsyncStatus of
+            ecGotHeader :
+              case RcvFrame of
+                ZEof : {End of current file}
+                  begin
+                    PData^.GotOneFile := True;
+                    ElapsedTics := ElapsedTime(Timer);
+                    SetAsyncStatus(ecEndFile);
+                    apUserStatus(P, False, False);
+                    SaveStatus := GetAsyncStatus;
+                    FinishWriting(P);
+                    SetAsyncStatus(SaveStatus);
+                    if GetAsyncStatus = ecEndFile then
+                      LogFile(P, lfReceiveOk)
+                    else
+                      LogFile(P, lfReceiveFail);
+
+                    {Go get the next file}
+                    ZmodemState := rzRqstFile;
+                  end;
+                else begin
+                  {Error during GetHeader}
+                  Inc(TotalErrors);
+                  Inc(BlockErrors);
+                  if BlockErrors > MaxBadBlocks then begin
+                    Cancel(P);
+                    GotError(PR, epFatal+ecTooManyErrors);
+                    ZmodemState := rzError;
+                    goto ExitPoint;
+                  end;
+                  PutAttentionString(P);
+                  ZmodemState := rzSync;
+                end;
+              end;
+            ecNoHeader :
+              {Just keep waiting for header} ;
+            ecBlockCheckError,
+            ecTimeout :
+              begin
+                Inc(BlockErrors);
+                Inc(TotalErrors);
+                if BlockErrors > HandshakeRetry then begin
+                  {Never got ZData header}
+                  GotError(PR, epFatal+ecFailedToHandshake);
+                  ZmodemState := rzError;
+                end else
+                  {Timeout out waiting for ZData, go send ZrPos}
+                  ZmodemState := rzSync;
+              end;
+          end;
+
+        rzEndOfFile :
+          if FileOfs = LastFileOfs then begin
+            FinishWriting(P);
+            SetAsyncStatus(SaveStatus);
+
+            {Send Proper status to user logging routine}
+            if GetAsyncStatus = ecEndFile then
+              LogFile(P, lfReceiveOk)
+            else
+              LogFile(P, lfReceiveFail);
+
+            ZmodemState := rzRqstFile;
+          end else
+            ZmodemState := rzSync;
+
+        rzSendFinish :
+          begin
+            {Insert file position into header}
+            LongInt(TransHeader) := FileOfs;
+            PutHexHeader(P, ZFin);
+            ZmodemState := rzCollectFinish;
+            NewTimer(ReplyTimer, FinishWait);
+            OCnt := 0;
+          end;
+
+        rzCollectFinish :
+          begin
+            if CharReady(PR) then begin
+              GetChar(PR, C);
+              if C = 'O' then begin
+                Inc(OCnt);
+                if OCnt = 2 then
+                  ZmodemState := rzCleanup;
+              end;
+            end else if TimerExpired(ReplyTimer) then begin
+              {Retry 3 times only (same as DSZ)}
+              Inc(BlockErrors);
+              if BlockErrors < FinishRetry then
+                {Go send ZFin again}
+                ZmodemState := rzSendFinish
+              else
+                {Cleanup anyway}
+                ZmodemState := rzCleanup;
+            end;
+          end;
+
+        rzError :
+          begin
+            if FileOpen then begin
+              SaveStatus := GetAsyncStatus;
+              FinishWriting(P);                                        {!!.01}
+              SetAsyncStatus(SaveStatus);
+              LogFile(P, lfReceiveFail);
+            end;
+            ZmodemState := rzCleanup;
+
+            {Wait for cancel to go out}
+            if OutBuffUsed(PR) > 0 then begin
+              NewTimer(ReplyTimer, TransTimeout);
+              ZModemState := rzWaitCancel;
+            end else
+              ZModemState := rzCleanup;
+          end;
+
+        rzWaitCancel :
+          if (OutBuffUsed(PR) = 0) or TimerExpired(ReplyTimer) then
+            ZmodemState := rzCleanup;
+
+        rzCleanup :
+          begin
+            ShowLastStatus(P);
+            FlushInBuffer(PR);
+            PR^.ProtocolActive := False;
+            ZmodemState := rzDone;
+          end;
+      end;
+
+ExitPoint:
+      {Set function result}
+      case ZmodemState of
+        rzRqstFile,
+        rzSendInit,
+        rzSendBlock,
+        rzSendBlockPrep,                                               {!!.03}
+        rzSync,
+        rzStartFile,
+        rzGotData,
+        rzEndOfFile,
+        rzSendFinish,
+        rzError,
+        rzCleanup :              ProtocolReceivePartZM := psReady;
+
+        rzCollectFinish,                                               {!!.01}
+        rzDelay,
+        rzWaitCancel,
+        rzWaitFile,
+        rzCollectFile,
+        rzStartData,
+        rzCollectData,
+        rzWaitEof :              ProtocolReceivePartZM := psWaiting;
+
+        rzDone :                 ProtocolReceivePartZM := psFinished;
+      end;
+
+      {Clear header state if we just processed a header}
+      if (GetAsyncStatus = ecGotHeader) or (GetAsyncStatus = ecNoHeader) then
+        SetAsyncStatus(ecOk);
+      if HeaderState = hsGotHeader then
+        HeaderState := hsNone;
+
+      {Store AsyncStatus}
+      SaveStatus := GetAsyncStatus;
+    end;
+  end;
+
+  procedure ProtocolReceiveZM(P : ProtocolRecPtr);
+    {-Receive multiple Zmodem files}
+  var
+    ZM : ZmodemPtr absolute P;
+    State : ProtocolStateType;
+  begin
+    with ZM^, PData^ do begin
+      PrepareReceivePartZM(P);
+      if GetAsyncStatus <> ecOk then
+        Exit;
+
+      {Get file in parts}
+      repeat
+        State := ProtocolReceivePartZM(P);
+        if State = psWaiting then
+          UserBack(P);
+      until State = psFinished;
+    end;
+  end;
+
+  procedure PutCharEscaped(P : ProtocolRecPtr; C : Char);
+    {-Transmit with C with escaping as required}
+  var
+    ZM : ZmodemPtr absolute P;
+    C1 : Char;
+    C2 : Char;
+  begin
+    with ZM^, PData^ do begin
+      {Check for chars to escape}
+      if EscapeAll and ((Byte(C) and $60) = 0) then begin              {!!.02}
+        {Definitely needs escaping}                                    {!!.02}
+        PutChar(PR, ZDle);                                             {!!.02}
+        LastChar := Char(Byte(C) xor $40);                             {!!.02}
+      end else if (Byte(C) and $11) = 0 then                           {!!.02}
+        {No escaping, just send it}
+        LastChar := C
+      else begin
+        {Might need escaping}
+        C1 := Char(Byte(C) and $7F);
+        C2 := Char(Byte(LastChar) and $7F);
+        case C of
+          cXon, cXoff, cDle,        {Escaped control chars}
+          cXonHi, cXoffHi, cDleHi,  {Escaped hibit control chars}
+          ZDle :                    {Escape the escape char}
+            begin
+              PutChar(PR, ZDle);
+              LastChar := Char(Byte(C) xor $40);
+            end;
+          else
+            if ((C1 = cCR) and (C2 = #$40)) then begin
+              PutChar(PR, ZDle);
+              LastChar := Char(Byte(C) xor $40);
+            end else
+              LastChar := C;
+        end;
+      end;
+      PutChar(PR, LastChar);
+    end;
+  end;
+
+  procedure PutBinaryHeader(P : ProtocolRecPtr; FrameType : Char);
+    {-Sends a binary header (Crc16 or Crc32)}
+  var
+    ZM : ZmodemPtr absolute P;
+    I : Integer;
+  begin
+    with ZM^, PData^ do begin
+      UseCrc32 := CanCrc32;
+
+      {Send '*'<DLE>}
+      PutChar(PR, ZPad);
+      PutChar(PR, ZDle);
+
+      {Send frame identifier}
+      if UseCrc32 then begin
+        PutCharEscaped(P, ZBin32);                                     {!!.02}
+        BlockCheck := -1;
+      end else begin
+        PutCharEscaped(P, ZBin);                                       {!!.02}
+        BlockCheck := 0;
+      end;
+
+      {Send frame type}
+      PutCharEscaped(P, FrameType);
+      UpdateBlockCheck(P, Ord(FrameType));
+
+      {Put the position/flags data bytes}
+      for I := 0 to 3 do begin
+        PutCharEscaped(P, Char(TransHeader[I]));
+        UpdateBlockCheck(P, Ord(TransHeader[I]));
+      end;
+
+      {Put the Crc bytes}
+      SendBlockCheck(P);
+
+      {Note frame type for status}
+      LastFrame := FrameType;
+    end;
+  end;
+
+  function EscapeChar(P : ProtocolRecPtr; C : Char) : Str2;
+    {-Transmit with C with escaping as required}
+  var
+    ZM : ZmodemPtr absolute P;
+    C1 : Char;
+    C2 : Char;
+  begin
+    with ZM^, PData^ do begin
+      {Check for chars to escape}
+      if EscapeAll and ((Byte(C) and $60) = 0) then begin              {!!.02}
+        {Definitely needs escaping}                                    {!!.02}
+        EscapeChar := ZDle + Char(Byte(C) xor $40);                    {!!.02}
+        Exit;                                                          {!!.02}
+      end else if ((Byte(C) and $11) = 0) then                         {!!.02}
+        {No escaping, just send it}
+        LastChar := C
+      else begin
+        {Might need escaping}
+        C1 := Char(Byte(C) and $7F);
+        C2 := Char(Byte(LastChar) and $7F);
+        case C of
+          cXon, cXoff, cDle,        {Escaped control chars}
+          cXonHi, cXoffHi, cDleHi,  {Escaped hibit control chars}
+          ZDle :                    {Escape the escape char}
+            begin
+              LastChar := Char(Byte(C) xor $40);
+              EscapeChar := ZDle + LastChar;
+              Exit;
+            end;
+          else
+            if ((C1 = cCR) and (C2 = #$40)) then begin
+              LastChar := Char(Byte(C) xor $40);
+              EscapeChar := ZDle + LastChar;
+              Exit;
+            end else
+              LastChar := C;
+        end;
+      end;
+      EscapeChar := LastChar;
+    end;
+  end;
+
+  procedure EscapeBlock(P : ProtocolRecPtr;
+                        var Block : DataBlockType;
+                        BLen : Word);
+    {-Escape data from Block into WorkBlock}
+  var
+    ZM : ZmodemPtr absolute P;
+    I : Word;
+    S2 : String[2];
+
+  begin
+    with ZM^, PData^ do begin
+      {Initialize BlockCheck}
+      if CanCrc32 then begin
+        UseCrc32 := True;
+        BlockCheck := -1;
+      end else begin
+        UseCrc32 := False;
+        BlockCheck := 0;
+      end;
+
+      {Escape the data into WorkBlock}
+      if BLen > 0 then begin
+        {Escape the entire block}
+        WorkSize := 1;
+        I := 1;
+        repeat
+          S2 := EscapeChar(P, Block[I]);
+          UpdateBlockCheck(P, Byte(Block[I]));
+          Move(S2[1], WorkBlock^[WorkSize], Length(S2));
+          Inc(I);
+          Inc(WorkSize, Length(S2));
+        until I > BLen;
+        Dec(WorkSize);
+      end else
+        {Handle empty blocks}
+        WorkSize := 0;
+    end;
+  end;
+
+  procedure TransmitBlock(P : ProtocolRecPtr);
+      {-Transmits one data subpacket from Block}
+  var
+    ZM : ZmodemPtr absolute P;
+    BytesWritten : Word;
+  begin
+    with ZM^, PData^ do begin
+      if WorkSize <> 0 then {begin}
+        PutBlockDirect(PR, WorkBlock^, WorkSize, BytesWritten);
+
+      {Send the frame type}
+      UpdateBlockCheck(P, Byte(Terminator));
+      PutChar(PR, ZDle);
+      PutChar(PR, Terminator);
+
+      {Send the block check characters}
+      SendBlockCheck(P);
+
+      {Follow CrcW subpackets with an Xon}
+      if Terminator = ZCrcW then
+        PutChar(PR, cXon);
+
+      {Update status vars}
+      Inc(FileOfs, DataBlockLen);
+      Inc(BytesTransferred, DataBlockLen);
+      Dec(BytesRemaining, DataBlockLen);
+      ForceStatus := True;
+      {end;}
+    end;
+  end;
+
+  procedure ExtractReceiverInfo(P : ProtocolRecPtr);
+    {-Extract receiver info from last ZrInit header}
+  var
+    ZM : ZmodemPtr absolute P;
+  begin
+    with ZM^, PData^ do begin
+      {Extract info from received ZrInit}
+      RcvBuffLen := RcvHeader[ZP0] + ((RcvHeader[ZP1]) shl 8);
+      CanCrc32 := (RcvHeader[ZF0] and CanFC32) = CanFC32;
+      if CanCrc32 then
+        CheckType := bcCrc32
+      else
+        CheckType := bcCrc16;
+
+      EscapeAll := (RcvHeader[ZF0] and EscAll) = EscAll;               {!!.02}
+    end;
+  end;
+
+  procedure InsertFileInfo(P : ProtocolRecPtr);
+    {-Build a ZFile data subpacket}
+  var
+    ZM : ZmodemPtr absolute P;
+    I : Word;
+    Dir : DirStr;
+    Name : NameStr;
+    Ext : ExtStr;
+    S : String;
+    Len : Byte;
+  begin
+    with ZM^, PData^ do begin
+      {Make a file header record}
+      FillChar(DataBlock^, SizeOf(DataBlockType) , 0);
+
+      {Fill in the file name}
+      Pathname := StUpcase(Pathname);
+      FSplit(Pathname, Dir, Name, Ext);
+      if FlagIsSet(apFlags, apIncludeDirectory) then
+        S := Pathname
+      else
+        S := Name+Ext;
+
+      {Change name to lower case, change '\' to '/'}
+      Len := Length(S);
+      for I := 1 to Len do begin
+        S[I] := LoCaseMac(S[I]);
+        if S[I] = '\' then
+          S[I] := '/';
+      end;
+      Move(S[1], DataBlock^, Len);
+
+      {Fill in file size}
+      Str(SrcFileLen, S);
+      Move(S[1], DataBlock^[Len+2], Length(S));
+      Inc(Len, Length(S)+1);
+
+      {Convert time stamp to Ymodem format and stuff in DataBlock}
+      if SrcFileDate <> 0 then begin
+        S := ' ' + OctalStr(PackToYMTimeStamp(SrcFileDate));
+        Move(S[1], DataBlock^[Len+1], Length(S));
+        Len := Len + Length(S) + 1;
+      end;
+
+      {Save the length of the file info string for the ZFile header}
+      DataBlockLen := Len;
+
+      {Take care of status information}
+      BytesRemaining := SrcFileLen;
+      BytesTransferred := 0;
+      ForceStatus := True;
+    end;
+  end;
+
+  procedure PrepareTransmitPartZM(P : ProtocolRecPtr);
+    {-Transmit all files that fit the Mask}
+  var
+    ZM : ZmodemPtr absolute P;
+  begin
+    with ZM^, PData^ do begin
+      {Do parent inits}
+      FindingFirst := True;
+      FileListIndex := 0;
+      PR^.ProtocolActive := True;
+      HeaderState := hsNone;
+
+      {Reset status vars}
+      ResetStatus(P);
+      ShowFirstStatus(P);
+      NewTimer(StatusTimer, StatusInterval);
+      ForceStatus := False;
+      TimerStarted := False;
+      ZmodemState := tzInitial;
+      FilesSent := False;
+      SaveStatus := ecOk;
+      SetAsyncStatus(ecOk);
+    end;
+  end;
+
+  function ProtocolTransmitPartZM(P : ProtocolRecPtr) : ProtocolStateType;
+    {-Transmit all files that fit the Mask}
+  label
+    ExitPoint;
+  const
+    RZcommand : array[1..4] of Char = 'rz'+cCr+#0;
+    FreeMargin = 30;
+  var
+    ZM : ZmodemPtr absolute P;
+    Crc32 : LongInt;
+    NewInterval : Word;
+  begin
+    with ZM^, PData^ do begin
+
+      {Always restore AsyncStatus}
+      SetAsyncStatus(SaveStatus);
+
+      {Check for user abort (but not twice)}
+      if GetAsyncStatus <> ecCancelRequested then
+        if HandleAbort(P) then begin
+          SetAsyncStatus(ecCancelRequested);
+          ZmodemState := tzError;
+        end;
+
+      {Show status at requested intervals and after significant events}
+      if ForceStatus or TimerExpired(StatusTimer) then begin
+        if TimerStarted then
+          ElapsedTics := ElapsedTime(Timer);
+        apUserStatus(P, False, False);
+
+        {Use user-specified status interval unless draining eof}
+        if ZmodemState = tzDrainEof then
+          NewInterval := DrainingStatusInterval
+        else
+          NewInterval := StatusInterval;
+        NewTimer(StatusTimer, NewInterval);
+        ForceStatus := False;
+      end;
+
+      {Preprocess header requirements}
+      case ZmodemState of
+        tzHandshake,
+        tzCheckFile,
+        tzCheckEOF,
+        tzCheckFinish,
+        tzSendData,
+        tzWaitAck :
+          {Header might be present, try to get one}
+          if CharReady(PR) then begin
+            CheckForHeader(P);
+            if GetAsyncStatus = ecCancelRequested then
+              ZmodemState := tzError;
+          end else if TimerExpired(ReplyTimer) then
+            SetAsyncStatus(ecTimeout)
+          else
+            SetAsyncStatus(ecNoHeader);
+      end;
+
+      {Process the current state}
+      case ZmodemState of
+        tzInitial :
+          begin
+            CanCount := 0;
+
+            {Send RZ command (via the attention string)}
+            Move(RZcommand, AttentionStr, SizeOf(RZcommand));
+            PutAttentionString(P);
+            FillChar(AttentionStr, SizeOf(AttentionStr), 0);
+
+            {Send ZrQinit header (requests receiver's ZrInit)}
+            LongInt(TransHeader) := 0;
+            PutHexHeader(P, ZrQInit);
+
+            BlockErrors := 0;
+            NewTimer(ReplyTimer, HandshakeWait);
+            ZmodemState := tzHandshake;
+            HeaderState := hsNone;
+          end;
+
+        tzHandshake :
+          case GetAsyncStatus of
+            ecGotHeader :
+              case RcvFrame of
+                ZrInit :     {Got ZrInit, extract info}
+                  begin
+                    ExtractReceiverInfo(P);
+                    ZmodemState := tzGetFile;
+                  end;
+                ZChallenge : {Receiver is challenging, respond with same number}
+                  begin
+                    TransHeader := RcvHeader;
+                    PutHexHeader(P, ZAck);
+                  end;
+                ZCommand :   {Commands not supported}
+                  PutHexHeader(P, ZNak);
+                ZrQInit :    {Remote is trying to transmit also, do nothing}
+                  ;
+                else         {Unexpected reply, nak it}
+                  PutHexHeader(P, ZNak);
+              end;
+            ecNoHeader :
+              {Keep waiting for header} ;
+            ecBlockCheckError,
+            ecTimeout  : {Send another ZrQinit}
+              begin
+                Inc(BlockErrors);
+                Inc(TotalErrors);
+                if BlockErrors > HandshakeRetry then begin
+                  {Never got ZrInit}
+                  GotError(PR, epFatal+ecFailedToHandshake);
+                  ZmodemState := tzError;
+                end else begin
+                  PutHexHeader(P, ZrQInit);
+                  NewTimer(ReplyTimer, HandshakeWait);
+                end;
+              end;
+            end;
+
+        tzGetFile :
+          begin
+            {Get the next file to send}
+            if not NextFile(P, Pathname) then begin
+              ZmodemState := tzSendFinish;
+              goto ExitPoint;
+            end else
+              FilesSent := True;
+
+            {Let all hooks see an upper case pathname}
+            Pathname := StUpcase(Pathname);
+
+            {Show file name to user logging routine}
+            LogFile(P, lfTransmitStart);
+
+            {Prepare to read file blocks}
+            PrepareReading(P);
+            if GetAsyncStatus <> ecOk then begin
+              Cancel(P);
+              ZmodemState := tzError;
+              goto ExitPoint;
+            end;
+
+            {Start protocol timer now}
+            NewTimer(Timer, 1);
+            TimerStarted := True;
+
+            {Build the header data area}
+            LongInt(TransHeader) := 0;
+            TransHeader[ZF1] := FileMgmtOpts;
+            if ReceiverRecover then
+              TransHeader[ZF0] := FileRecover;
+
+            {Insert file information into header}
+            InsertFileInfo(P);
+            ForceStatus := True;
+            ZmodemState := tzSendFile;
+          end;
+
+        tzSendFile :
+          begin
+            {Send the ZFile header and data subpacket with file info}
+            PutBinaryHeader(P, ZFile);
+            Terminator := ZCrcW;
+            EscapeBlock(P, DataBlock^, DataBlockLen);
+            TransmitBlock(P);
+
+            {Clear status vars that zpTransmitBlock changed}
+            BytesTransferred := 0;
+            BytesRemaining := 0;
+
+            {Go wait for response}
+            BlockErrors := 0;
+            NewTimer(ReplyTimer, HandshakeWait);
+            ZmodemState := tzCheckFile;
+            HeaderState := hsNone;
+          end;
+
+        tzCheckFile :
+          case GetAsyncStatus of
+            ecGotHeader :
+              case RcvFrame of
+                ZrInit : {Got an extra ZrInit, ignore it}
+                  ;
+                ZCrc :   {Receiver is asking for Crc32 of the file, send it}
+                  begin
+                    Crc32 := Crc32OfFile(P, PathName, 0);
+                    if GetAsyncStatus = ecOk then begin
+                      LongInt(TransHeader) := Crc32;
+                      PutHexHeader(P, ZCrc);
+                    end else
+                      ZModemState := tzError;
+                  end;
+                ZSkip :  {Receiver wants to skip this file}
+                  begin
+                    SetAsyncStatus(ecSkipFile);
+                    apUserStatus(P, False, False);
+                    SetAsyncStatus(ecOk);
+
+                    {Close file and log skip}
+                    apFinishReading(P);
+                    LogFile(P, lfTransmitSkip);
+
+                    {Go look for another file}
+                    ZmodemState := tzGetFile;
+                  end;
+                ZrPos :  {Receiver tells us where to seek in our file}
+                  begin
+                    {Get file offset}
+                    FileOfs := LongInt(RcvHeader);
+                    BytesTransferred := FileOfs;
+                    InitFilePos := FileOfs;
+                    BytesRemaining := SrcFileLen - BytesTransferred;
+
+                    {Go send the data subpackets}
+                    ZModemState := tzStartData;
+                  end;
+              end;
+            ecNoHeader : {Keep waiting for header}
+              ;
+            ecBlockCheckError,
+            ecTimeout :  {Timeout waiting for response to ZFile}
+              begin
+                Inc(BlockErrors);
+                Inc(TotalErrors);
+                if BlockErrors > HandshakeRetry then begin
+                  {Never got response to ZFile}
+                  GotError(PR, epFatal+ecTimeout);
+                  ZmodemState := tzError;
+                end else begin
+                  {Resend ZFile}
+                  PutBinaryHeader(P, ZFile);
+                  TransmitBlock(P);
+                  NewTimer(ReplyTimer, HandshakeWait);
+                end;
+              end;
+          end;
+
+        tzStartData :
+          begin
+            {Get ready}
+            DataInTransit := 0;
+            BlockErrors := 0;
+
+            {Send ZData header}
+            LongInt(TransHeader) := FileOfs;
+            PutBinaryHeader(P, ZData);
+
+            ZmodemState := tzEscapeData;
+          end;
+
+        tzEscapeData :
+          begin
+            {Get a block to send}
+            if TookHit then begin
+              Inc(GoodAfterBad);
+              if GoodAfterBad > 4 then begin
+                TookHit := False;
+                if BlockLen < ZMaxBlk[Use8KBlocks] then
+                  BlockLen := ZMaxBlk[Use8KBlocks];
+              end;
+            end;
+            DataBlockLen := BlockLen;
+            LastBlock := ReadProtocolBlock(P, DataBlock^, DataBlockLen);
+            if GetAsyncStatus <> ecOk then begin
+              SaveStatus := GetAsyncStatus;
+              Cancel(P);
+              SetAsyncStatus(SaveStatus);
+              ZmodemState := tzError;
+              goto ExitPoint;
+            end;
+
+            {Show the new data on the way}
+            if RcvBuffLen <> 0 then
+              Inc(DataInTransit, DataBlockLen);
+
+            {Set the terminator}
+            if LastBlock then
+              {Tell receiver its the last subpacket}
+              Terminator := ZCrcE
+            else if (RcvBuffLen <> 0) and (DataInTransit >= RcvBuffLen) then begin
+              {Receiver's buffer is nearly full, wait for acknowledge}
+              Terminator := ZCrcW;
+            end else
+              {Normal data subpacket, no special action}
+              Terminator := ZCrcG;
+
+            {Escape this data into WorkBlock}
+            EscapeBlock(P, DataBlock^, DataBlockLen);
+
+            ZmodemState := tzSendData;
+            NewTimer(ReplyTimer, Transtimeout);
+            BlockErrors := 0;
+          end;
+
+        tzSendData :
+          case GetAsyncStatus of
+            ecNoHeader : {Nothing from receiver, keep going}
+              begin
+                {Wait for buffer free space}
+                if OutBuffFree(PR) > WorkSize + FreeMargin then begin
+                  TransmitBlock(P);
+                  if LastBlock then begin
+                    ZmodemState := tzSendEof;
+                    BlockErrors := 0;
+                  end else if Terminator = ZCrcW then begin
+                    NewTimer(ReplyTimer, TransTimeout);
+                    ZmodemState := tzWaitAck;
+                  end else
+                    ZmodemState := tzEscapeData;
+                  ForceStatus := True;
+                end else
+                  {Timeout handled at top of state machine}
+              end;
+
+            ecGotHeader : {Got a header from the receiver, process it}
+              begin
+                case RcvFrame of
+                  ZCan, ZAbort : {Receiver says quit}
+                    begin
+                      GotError(PR, epFatal+ecCancelRequested);
+                      ZmodemState := tzError;
+                    end;
+                  ZrPos :        {Receiver is sending its desired file position}
+                    begin
+                      Inc(TotalErrors);
+                      FileOfs := LongInt(RcvHeader);
+                      BytesTransferred := FileOfs;
+                      BytesRemaining := SrcFileLen - BytesTransferred;
+
+                      {We got a hit, reduce block size by 1/2}
+                      if BlockLen > 256 then
+                        BlockLen := BlockLen shr 1;
+                      TookHit := True;
+                       GoodAfterBad := 0;
+                      FlushOutBuffer(PR);
+                      ZModemState := tzStartData;
+                    end;
+                  ZAck :         {Response to last CrcW data subpacket}
+                    ;
+                  ZSkip, ZrInit : {Finished with this file}
+                    ;
+                  else begin
+                    {Garbage, send Nak}
+                    PutBinaryHeader(P, ZNak);
+                  end;
+                end;
+              end;
+
+            ecBlockCheckError :
+              PutBinaryHeader(P, ZNak);
+
+            ecTimeout :
+              if TimerExpired(ReplyTimer) then begin
+                GotError(PR, epFatal+ecBufferIsFull);
+                ZmodemState := tzError;
+              end;
+          end;
+
+      tzWaitAck :
+        case GetAsyncStatus of
+          ecGotHeader :
+            case RcvFrame of
+              ZCan, ZAbort : {Receiver says quit}
+                begin
+                  GotError(PR, epFatal+ecCancelRequested);
+                  ZmodemState := tzError;
+                end;
+              ZAck :
+                ZmodemState := tzStartData;
+              ZrPos :        {Receiver is sending its desired file position}
+                begin
+                  FileOfs := LongInt(RcvHeader);
+                  BytesTransferred := FileOfs;
+                  BytesRemaining := SrcFileLen - BytesTransferred;
+                  Inc(TotalErrors);
+                  if BlockLen > 256 then
+                    BlockLen := BlockLen shr 1;
+                  TookHit := True;
+                  GoodAfterBad := 0;
+                  FlushOutBuffer(PR);
+                  ZmodemState := tzStartData;
+                end;
+              else begin
+                {Garbage, send Nak}
+                PutBinaryHeader(P, ZNak);
+              end;
+            end;
+          ecBlockCheckError,
+          ecTimeout :
+            begin
+              Inc(TotalErrors);
+              if BlockErrors > MaxBadBlocks then
+                ZmodemState := tzError
+              else
+                ZmodemState := tzStartData;
+            end;
+        end;
+
+        tzSendEof :
+          begin
+            {Send the eof}
+            LongInt(TransHeader) := FileOfs;
+            PutBinaryHeader(P, ZEof);
+            NewTimer(ReplyTimer, TransTimeout);
+            ZModemState := tzDrainEof;
+            NewTimer(StatusTimer, DrainingStatusInterval);
+          end;
+
+        tzDrainEof :
+          {Dawdle until output buffer is empty}
+          if OutBuffUsed(PR) = 0 then begin
+            ZmodemState := tzCheckEof;
+            HeaderState := hsNone;
+            NewTimer(ReplyTimer, FinishWait);
+          end else if TimerExpired(ReplyTimer) then begin
+            SetAsyncStatus(ecTimeout);
+            ZmodemState := tzError;
+          end;
+
+        tzCheckEof :
+          case GetAsyncStatus of
+            ecGotHeader :
+              begin
+                case RcvFrame of
+                  ZCan, ZAbort : {Receiver says quit}
+                    begin
+                      GotError(PR, epFatal+ecCancelRequested);
+                      ZmodemState := tzError;
+                    end;
+                  ZrPos :        {Receiver is sending its desired file position}
+                    begin
+                      FileOfs := LongInt(RcvHeader);
+                      BytesTransferred := FileOfs;
+                      BytesRemaining := SrcFileLen - BytesTransferred;
+
+                      {We got a hit, reduce block size by 1/2}
+                      if BlockLen > 256 then
+                        BlockLen := BlockLen shr 1;
+                      TookHit := True;
+                      GoodAfterBad := 0;
+                      FlushOutBuffer(PR);
+                      ZModemState := tzStartData;
+                    end;
+                  ZAck :         {Response to last CrcW data subpacket}
+                    ;
+                  ZSkip, ZrInit : {Finished with this file}
+                    begin
+                      {Close file and log success}
+                      apFinishReading(P);
+                      SetAsyncStatus(ecOk);
+                      LogFile(P, lfTransmitOk);
+
+                      {Go look for another file}
+                      ZmodemState := tzGetFile;
+                    end;
+                  else begin
+                    {Garbage, send Nak}
+                    PutBinaryHeader(P, ZNak);
+                  end;
+                end;
+              end;
+            ecNoHeader :
+              {Keep waiting for header} ;
+            ecBlockCheckError,
+            ecTimeout :
+              begin
+                Inc(BlockErrors);
+                Inc(TotalErrors);
+                if BlockErrors > MaxBadBlocks then
+                  ZmodemState := tzError
+                else
+                  ZmodemState := tzSendEof;
+              end;
+          end;
+
+        tzSendFinish :
+          begin
+            LongInt(TransHeader) := FileOfs;
+            PutHexHeader(P, ZFin);
+            NewTimer(ReplyTimer, FinishWait);
+            BlockErrors := 0;
+            ZmodemState := tzCheckFinish;
+            HeaderState := hsNone;
+          end;
+
+        tzCheckFinish :
+          case GetAsyncStatus of
+            ecGotHeader :
+              case RcvFrame of
+                ZFin :
+                  begin
+                    PutChar(PR, 'O');
+                    PutChar(PR, 'O');
+                    ZmodemState := tzCleanup;
+                  end;
+                else begin
+                  SetAsyncStatus(ecOk);
+                  ZmodemState := tzCleanup;
+                end;
+              end;
+            ecNoHeader :
+              {Keep waiting for header} ;
+            ecBlockCheckError,
+            ecTimeout :
+              begin
+                {Just give up}
+                ZmodemState := tzCleanup;
+                SetAsyncStatus(ecOk);
+              end;
+          end;
+
+        tzError :
+          begin
+            {Cleanup on aborted or canceled protocol}
+            if FilesSent then begin
+              apFinishReading(P);
+              LogFile(P, lfTransmitFail);
+            end;
+            ZmodemState := tzCleanup;
+            FlushOutBuffer(PR);
+          end;
+
+        tzCleanup:
+          begin
+            {Flush last few chars from last received header}
+            FlushInBuffer(PR);
+
+            ShowLastStatus(P);
+            PR^.ProtocolActive := False;
+            ZmodemState := tzDone;
+
+            {Restore "no files" error code if we got that error earlier}
+            if (GetAsyncStatus = ecOk) and not FilesSent then
+              SetAsyncStatus(ecNoMatchingFiles);
+
+            {Reset timer boolean for next transfer}
+            TimerStarted := False;
+          end;
+      end;
+
+ExitPoint:
+      {Set function result}
+      case ZmodemState of
+        tzHandshake,
+        tzCheckFile,
+        tzEscapeData,
+        tzSendData,
+        tzWaitAck,
+        tzDrainEof,
+        tzCheckEof,
+        tzCheckFinish   : ProtocolTransmitPartZM := psWaiting;
+
+        tzInitial,
+        tzGetFile,
+        tzSendFile,
+        tzStartData,
+        tzSendEof,
+        tzSendFinish,
+        tzError,
+        tzCleanup       : ProtocolTransmitPartZM := psReady;
+
+        tzDone          : ProtocolTransmitPartZM := psFinished;
+      end;
+
+      {Clear header state if we just processed a header}
+      if (GetAsyncStatus = ecGotHeader) or (GetAsyncStatus = ecNoHeader) then
+        SetAsyncStatus(ecOk);
+      if HeaderState = hsGotHeader then
+        HeaderState := hsNone;
+
+      {Store AsyncStatus}
+      SaveStatus := GetAsyncStatus;
+    end;
+  end;
+
+  procedure ProtocolTransmitZM(P : ProtocolRecPtr);
+    {-Transmit all files that fit the Mask}
+  const
+    RZcommand : array[1..4] of Char = 'rz'+cCr+#0;
+  var
+    ZM : ZmodemPtr absolute P;
+
+  begin
+    with ZM^, PData^ do begin
+      PrepareTransmitPartZM(P);
+      if GetAsyncStatus <> ecOk then
+        Exit;
+
+      ZmodemState := tzInitial;
+      repeat
+        UserBack(P);
+      until ProtocolTransmitPartZM(P) = psFinished;
+
+      ShowLastStatus(P);
+      PR^.ProtocolActive := False;
+    end;
+  end;

@@ -1,0 +1,308 @@
+const
+  {.Z+}
+  MaxModIndex = 6;
+  PhysicalTopMargin : Word = 8;   {Phsyical top margin in raster lines}
+  MaxSendCount : Word      = 25;  {Max blocks/lines per FaxTransmitPart}
+  BufferMinimum : Word     = 500; {Minimum buffer quantity before yield}
+  {.Z-}
+
+type
+  C12AbsDataPtr = ^C12AbsData;
+  C12AbsData = record
+    ForceStatus  : Boolean;            {True to force special status}
+    Critical     : Boolean;            {True if critical period}
+    MorePages    : Boolean;            {True if more fax pages to receive}
+    SessionRes   : Boolean;            {Remote/session resolution}
+    SessionWid   : Boolean;            {Remove/session high width}     {!!.03}
+    SessionECM   : Boolean;            {Remote/session ECM}
+    CanDoHighRes : Boolean;            {True if capable of high res}   {!!.03}
+    CanDoHighWid : Boolean;            {True if capable of high width} {!!.03}
+    LastFrame    : Boolean;            {True if last Class 1 frame}
+    ToneDial     : Boolean;            {True to use tone dialing}
+    LastPageOk   : Boolean;            {True if last page received OK}
+    UseLengthWord: Boolean;            {True if file has length words}
+    CollectResponse : Boolean;         {True for data, False for OK}
+    CoverIsAPF   : Boolean;            {True if cover page is apf file}
+    InitSent     : Boolean;            {True if modem/def init sent once}
+    SlowBaud     : Boolean;            {True if using slow baud rate}  {!!.01}
+    GotCFR       : Boolean;            {True if got CFR after training}{!!.02}
+    CheckChar    : Char;               {ECM character}
+    ResC         : Char;               {Resolution character}
+    FaxAndData   : Char;               {'0' = fax, '1' = fax and data}
+    SessionScan  : Byte;               {Remote/session scantime}
+    ReceivedFrame: Byte;               {last received HDLC frame type}
+    CRLFIndex    : Byte;               {Index for CRLF checking}
+    ETXIndex     : Byte;               {Index for DLE/ETX checking}
+    ReplyWait    : Word;               {Ticks to wait for a modem reply}
+    TransWait    : Word;               {Ticks to wait for outbuf space}
+    StatusWait   : Word;               {Ticks between status updates}
+    MaxFaxBPS    : Word;               {Max fax BPS for this modem}
+    BPSIndex     : Word;               {Last Class 1BPS index}
+    MinBytes     : Word;               {Minimum raster line length}
+    HangupCode   : Word;               {Last FHNG code}
+    CurrOfs      : Word;               {curr offset in DataBuffer}
+    BytesRead    : Word;               {Bytes to be transmitted}
+    BadData      : Word;               {Bad bytes during train}
+    Retry        : Word;               {General retry counter}
+    DialWait     : Integer;            {ticks timeout for dialing}
+    AnswerOnRing : Integer;            {ring on which to answer phone}
+    RingCounter  : Integer;            {count of rings seen}
+    SessionBPS   : LongInt;            {Remote/session BPS}
+    NormalBaud   : LongInt;            {Normal baud rate}              {!!.01}
+    InitBaud     : LongInt;            {Initialization baud rate}      {!!.01}
+    DataBuffer   : PByteBuffer;        {buffer for received data}
+    CPort        : PortRecPtr;         {com port object to use}
+
+    InFile       : File;               {received data file}
+    Response     : String;             {Current modem response}
+    ModCode      : String[3];          {modulation code}
+    FaxHeader    : FaxHeaderRec;       {fax file header block}
+    PageHeader   : PageHeaderRec;      {fax file page header block}
+    InFileName   : PathStr;            {name of current file}
+    ModemInit    : String[40];         {modem init string}
+    DialPrefix   : String[40];         {dialing prefix}
+    ReplyTimer   : EventTimer;         {Timer for all replies}
+    LocalMods    : array[1..MaxModIndex] of Boolean; {Local Class 1 mods}
+    RmtMods      : array[1..MaxModIndex] of Boolean; {Remote Class 1 mods}
+  end;
+
+  C12FaxRecPtr = ^C12FaxRec;
+  C12FaxRec = record
+    PData        : FaxDataPtr;
+    CData        : C12AbsDataPtr;
+  end;
+
+type
+  C12SendFaxPtr = ^C12SendFax;
+  C12SendFax = record
+    PData        : FaxDataPtr;
+    CData        : C12AbsDataPtr;      {Pointer to C12 abstract data}
+    MCFConnect   : Boolean;            {True if CONNNECT waiting for MCF}
+    Retries      : Integer;            {Count of retries on failed page send}
+    MaxRetries   : Integer;            {Max times to retry failed send}
+    Converter    : FaxConverterPtr;    {fax converter for header lines}
+    State        : SendStates;         {Current state of machine}
+    HeaderLine   : String;             {Header line for each page}
+    CvrF         : Text;               {File for cover page}
+    CvrOpen      : Boolean;            {True if cover opened}          {!!.02}
+    RetryPage    : Boolean;            {True to retry page}            {!!.02}
+  end;
+
+type
+  C12ReceiveFaxPtr = ^C12ReceiveFax;
+  C12ReceiveFax = record
+    PData        : FaxDataPtr;
+    CData        : C12AbsDataPtr;      {Pointer to C12 abstract data}
+    OneFax       : Boolean;            {True if only receiving one fax}
+    ShowStatus   : Boolean;            {True if status window opened}
+    Last         : Char;               {Last received data char}
+    PageStatus   : ReceivePageStatus;  {Status of most-recent page}
+    State        : ReceiveStates;      {Current state of StateMachine}
+    FirstState   : ReceiveStates;      {State in 1st call to FaxReceivePart}
+  end;
+
+{$IFDEF UsePModeDLL}
+
+{.Z+}
+{C12AbsData}
+procedure InitC12AbsData(var DP : C12AbsDataPtr; ComPort : PortRecPtr); Export;
+  {-Allocate and initialize a C12AbsData record}
+procedure DoneC12AbsData(var DP : C12AbsDataPtr); Export;
+  {-Dispose of a C12AbsData record}
+{.Z-}
+
+{User Control}
+procedure SetFaxPort(FP : FaxRecPtr; ComPort : PortRecPtr); Export;
+  {-Select the commport to use}
+procedure SetModemInit(FP : FaxRecPtr; MIS : String); Export;
+  {-Define the modem init string}
+function SetClassType(FP : FaxRecPtr; CT : ClassType) : ClassType; Export;
+  {-Set type of modem, return detected or set type}
+procedure SetInitBaudRate(FP : FaxRecptr;                              {!!.01}
+                          InitRate, NormalRate : LongInt); Export;     {!!.01}
+  {-Set baud rate to use when initializing modem}                      {!!.01}
+function GetModemClassSupport(FP : FaxRecPtr;
+                              var Class1, Class2 : Boolean;
+                              Reset : Boolean) : Boolean; Export;
+  {-Find out which classes the modem supports}
+function GetModemInfo(FP : FaxRecPtr; var Class : Char;
+                      var Model, Chip, Rev : String;
+                      Reset : Boolean) : Boolean; Export;
+  {-Get specific data from modem}
+procedure GetModemFeatures(FP : FaxRecPtr; var BPS : LongInt;
+                           var Correction : Char); Export;
+  {-Return highest possible codes}
+procedure SetModemFeatures(FP : FaxRecPtr; BPS : LongInt;
+                           Correction : Char); Export;
+  {-Set modem features for this session}
+function GetLastPageStatus(FP : FaxRecPtr) : Boolean; Export;
+  {-Return True if last page received OK, false otherwise}
+function GetRemoteID(FP : FaxRecPtr) : Str20; Export;
+  {-Return remote station ID}
+procedure GetSessionParams(FP : FaxRecPtr;
+                           var BPS : LongInt;
+                           var Resolution : Boolean;
+                           var Correction : Boolean); Export;
+  {-Return remote/session parameters}
+function GetHangupResult(FP : FaxRecPtr) : Word; Export;
+  {-Return last hangup result, class 2 only}
+procedure GetPageInfoC12(FP : FaxRecPtr;
+                         var Pages : Word;
+                         var Page : Word;
+                         var BytesTransferred : LongInt;
+                         var PageLength : LongInt); Export;
+
+{C12Send init/destroy routines}
+procedure InitC12SendFax(var FP : FaxRecPtr; ID : Str20;
+                           ComPort : PortRecPtr); Export;
+  {-Allocate and initialize a send fax record}
+procedure DoneC12SendFax(var FP : FaxRecPtr); Export;
+  {-Dispose of a send fax record}
+
+{User control}
+procedure SetToneDial(FP : FaxRecPtr; Tone : Boolean); Export;
+  {-Select tone or pulse dial (send only)}
+procedure SetDialPrefix(FP : FaxRecPtr; P : String); Export;
+  {-Set the dial prefix string}
+procedure SetDialTime(FP : FaxRecPtr; DT : Integer); Export;
+  {-Set the dialing timeout}
+procedure SetHeaderText(FP : FaxRecPtr; S : String); Export;
+  {-Set HeaderLine to S}
+procedure SetMaxRetries(FP : FaxRecPtr; MR : Integer); Export;
+  {-Set MaxRetries to MR}
+function FaxTransmitPartC12(FP : FaxRecPtr) : FaxStateType; Export;
+  {-Perform one increment of a fax transmit}
+procedure PrepareFaxTransmitPartC12(FP : FaxRecPtr); Export;
+  {-Prepare to transmit in increments}
+procedure FaxTransmitC12(FP : FaxRecPtr); Export;
+  {-Call FaxTransmitPart until fax is sent}
+
+{C12Receive init/destroy routines}
+procedure InitC12ReceiveFax(var FP : FaxRecPtr; ID : Str20;
+                            ComPort : PortRecPtr); Export;
+  {-Allocate and initialize a receive fax record}
+procedure DoneC12ReceiveFax(var FP : FaxRecPtr); Export;
+  {-Dispose of a receive fax record}
+
+{User control}
+function InitModemForFaxReceive(FP : FaxRecPtr) : Boolean; Export;
+  {-Send nessessary commands to initialize modem for fax receive}
+procedure SetAnswerOnRing(FP : FaxRecPtr; AOR : Integer); Export;
+  {-set to answer call on AOR'th ring}
+procedure SetFaxAndData(FP : FaxRecPtr; OnOff : Boolean); Export;
+  {-True for fax to answer either fax or data, False for fax only}
+procedure SetConnectState(FP : FaxRecPtr); Export;
+  {-Force the receiver to pick up a connection in progress}
+procedure SetOneFax(FP : FaxRecPtr; OnOff : Boolean); Export;
+  {-Set "one fax" receive behavior on/off}
+procedure PrepareFaxReceivePartC12(FP : FaxRecPtr); Export;
+  {-Prepare for first call to FaxReceivePartC12}
+function FaxReceivePartC12(FP : FaxRecPtr) : FaxStateType; Export;
+  {-State machine for receiving FAX}
+procedure FaxReceiveC12(FP : FaxRecPtr); Export;
+  {-Wrapper routine to wait for a call and receive a FAX}
+
+{$ELSE}
+
+{.Z+}
+{C12AbsData}
+procedure InitC12AbsData(var DP : C12AbsDataPtr; ComPort : PortRecPtr);
+  {-Allocate and initialize a C12AbsData record}
+procedure DoneC12AbsData(var DP : C12AbsDataPtr);
+  {-Dispose of a C12AbsData record}
+{.Z-}
+
+{User Control}
+procedure SetFaxPort(FP : FaxRecPtr; ComPort : PortRecPtr);
+  {-Select the commport to use}
+procedure SetModemInit(FP : FaxRecPtr; MIS : String);
+  {-Define the modem init string}
+function SetClassType(FP : FaxRecPtr; CT : ClassType) : ClassType;
+  {-Set type of modem, return detected or set type}
+procedure SetInitBaudRate(FP : FaxRecPtr;                              {!!.01}
+                          InitRate, NormalRate : LongInt);             {!!.01}
+  {-Set baud rate to use when initializing modem}                      {!!.01}
+function GetModemClassSupport(FP : FaxRecPtr;
+                              var Class1, Class2 : Boolean;
+                              Reset : Boolean) : Boolean;
+  {-Find out which classes the modem supports}
+function GetModemInfo(FP : FaxRecPtr; var Class : Char;
+                      var Model, Chip, Rev : String;
+                      Reset : Boolean) : Boolean;
+  {-Get specific data from modem}
+procedure GetModemFeatures(FP : FaxRecPtr; var BPS : LongInt;
+                           var Correction : Char);
+  {-Return highest possible codes}
+procedure SetModemFeatures(FP : FaxRecPtr; BPS : LongInt;
+                           Correction : Char);
+  {-Set modem features for this session}
+function GetLastPageStatus(FP : FaxRecPtr) : Boolean;
+  {-Return True if last page received OK, false otherwise}
+function GetRemoteID(FP : FaxRecPtr) : Str20;
+  {-Return remote station ID}
+procedure GetSessionParams(FP : FaxRecPtr;
+                           var BPS : LongInt;
+                           var Resolution : Boolean;
+                           var Correction : Boolean);
+  {-Return remote/session parameters}
+function GetHangupResult(FP : FaxRecPtr) : Word;
+  {-Return last hangup result, class 2 only}
+procedure GetPageInfoC12(FP : FaxRecPtr;
+                         var Pages : Word;
+                         var Page : Word;
+                         var BytesTransferred : LongInt;
+                         var PageLength : LongInt);
+
+
+{C12Send init/destroy routines}
+procedure InitC12SendFax(var FP : FaxRecPtr; ID : Str20;
+                           ComPort : PortRecPtr);
+  {-Allocate and initialize a send fax record}
+procedure DoneC12SendFax(var FP : FaxRecPtr);
+  {-Dispose of a send fax record}
+
+{User control}
+procedure SetToneDial(FP : FaxRecPtr; Tone : Boolean);
+  {-Select tone or pulse dial (send only)}
+procedure SetDialPrefix(FP : FaxRecPtr; P : String);
+  {-Set the dial prefix string}
+procedure SetDialTime(FP : FaxRecPtr; DT : Integer);
+  {-Set the dialing timeout}
+procedure SetHeaderText(FP : FaxRecPtr; S : String);
+  {-Set HeaderLine to S}
+procedure SetMaxRetries(FP : FaxRecPtr; MR : Integer);
+  {-Set MaxRetries to MR}
+function FaxTransmitPartC12(FP : FaxRecPtr) : FaxStateType;
+  {-Perform one increment of a fax transmit}
+procedure PrepareFaxTransmitPartC12(FP : FaxRecPtr);
+  {-Prepare to transmit in increments}
+procedure FaxTransmitC12(FP : FaxRecPtr);
+  {-Call FaxTransmitPart until fax is sent}
+
+{C12Receive init/destroy routines}
+procedure InitC12ReceiveFax(var FP : FaxRecPtr; ID : Str20;
+                            ComPort : PortRecPtr);
+  {-Allocate and initialize a receive fax record}
+procedure DoneC12ReceiveFax(var FP : FaxRecPtr);
+  {-Dispose of a receive fax record}
+
+{User control}
+function InitModemForFaxReceive(FP : FaxRecPtr) : Boolean;
+  {-Send nessessary commands to initialize modem for fax receive}
+procedure SetAnswerOnRing(FP : FaxRecPtr; AOR : Integer);
+  {-set to answer call on AOR'th ring}
+procedure SetFaxAndData(FP : FaxRecPtr; OnOff : Boolean);
+  {-True for fax to answer either fax or data, False for fax only}
+procedure SetConnectState(FP : FaxRecPtr);
+  {-Force the receiver to pick up a connection in progress}
+procedure SetOneFax(FP : FaxRecPtr; OnOff : Boolean);
+  {-Set "one fax" receive behavior on/off}
+procedure PrepareFaxReceivePartC12(FP : FaxRecPtr);
+  {-Prepare for first call to FaxReceivePartC12}
+function FaxReceivePartC12(FP : FaxRecPtr) : FaxStateType;
+  {-State machine for receiving FAX}
+procedure FaxReceiveC12(FP : FaxRecPtr);
+  {-Wrapper routine to wait for a call and receive a FAX}
+
+{$ENDIF}
+

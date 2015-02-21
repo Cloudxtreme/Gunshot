@@ -1,0 +1,273 @@
+;-------------------------------------------------------------------
+!TOPIC 937 ApXModem
+ApXModem builds upon the services of ApAbsPcl to provide the ubiquitous
+Xmodem protocol. It implements the following routines:
+
+  0958Declarations                   0940DoneXmodem
+  0939InitCustomXmodem               0938InitXmodem
+  0129PrepareReceivePartXM           0127PrepareTransmitPartXM
+  0130ProtocolReceivePartXM          0090ProtocolReceiveXM
+  0128ProtocolTransmitPartXM         0089ProtocolTransmitXM
+  0941Set1KMode                      0943SetBlockWait
+  0960SetFinishWaitXM                0942SetGMode
+;
+;-------------------------------------------------------------------
+!TOPIC 938 InitXmodem
+!NOINDEX
+procedure 0937ApXModem.InitXmodem(var P : ProtocolRecPtr;
+                              PortPtr : PortRecPtr;
+                              Use1K, UseGMode : Boolean);
+
+Allocate and initialize a protocol control block.
+
+See also:  0940DoneXmodem            0939InitCustomXmodem
+;
+;-------------------------------------------------------------------
+!TOPIC 939 InitCustomXmodem
+!NOINDEX
+procedure 0937ApXModem.InitCustomXmodem(var P : ProtocolRecPtr;
+                                    PortPtr : PortRecPtr;
+                                    Use1K, UseGMode : Boolean;
+                                    Options : Word);
+
+Allocate and initialize a protocol control block with the specified options.
+
+See also:  0940DoneXmodem            0938InitXmodem
+;
+;-------------------------------------------------------------------
+!TOPIC 940 DoneXmodem
+!NOINDEX
+procedure 0937ApXModem.DoneXmodem(var P : ProtocolRecPtr);
+
+Dispose of a protocol record.
+
+See also:  0939InitCustomXmodem      0938InitXmodem
+;
+;-------------------------------------------------------------------
+!TOPIC 941 Set1KMode
+!NOINDEX
+procedure 0937ApXModem.Set1KMode(P : ProtocolRecPtr; Enable : Boolean);
+!LINE
+procedure 0945XmodemProtocol.Set1KMode(Enable : Boolean);
+
+Enable/disable Xmodem 1K.
+
+See also:  0947InitCustom            0939InitCustomXmodem
+           0942SetGMode
+;
+;-------------------------------------------------------------------
+!TOPIC 942 SetGMode
+!NOINDEX
+procedure 0937ApXModem.SetGMode(P : ProtocolRecPtr; Enable : Boolean);
+!LINE
+procedure 0945XmodemProtocol.SetGMode(Enable : Boolean);
+
+Enable or disable streaming (Xmodem 1KG).
+
+See also:  0947InitCustom            0939InitCustomXmodem
+           0941Set1KMode
+;
+;-------------------------------------------------------------------
+!TOPIC 943 SetBlockWait
+!NOINDEX
+procedure 0937ApXModem.SetBlockWait(P : ProtocolRecPtr; NewBlockWait : Byte);
+!LINE
+procedure 0945XmodemProtocol.SetBlockWait(NewBlockWait : Byte);
+
+Set the interblock wait time.
+
+See also:  0950DefBlockWait          0953RelaxedBlockWait
+           0062SetHandshakeWait
+;
+;-------------------------------------------------------------------
+!TOPIC 944 OoXmodem
+OoXmodem provides the XmodemProtocol object, which implements the Xmodem
+protocol and its variants (relaxed Xmodem, Xmodem CRC, Xmodem 1K, and
+Xmodem 1KG). Its place in the hierarchy of protocol objects is shown in the
+following diagram:
+
+  [0086AbstractProtocol]
+    0945XmodemProtocol
+      [0966YmodemProtocol]
+;
+;-------------------------------------------------------------------
+!TOPIC 945 XmodemProtocol,OoXModem
+!NOINDEX
+XmodemProtocolPtr = ^XmodemProtocol;
+!LINE
+XmodemProtocol = object(0086AbstractProtocol)
+
+This object defines the data fields and methods needed to implement the
+Xmodem protocol and its variants (relaxed Xmodem, Xmodem CRC, Xmodem 1K,
+and Xmodem 1KG). It provides the following methods:
+
+  0959Declarations                   0946Init
+  0947InitCustom                     0948Load
+  0129PrepareReceivePart             0127PrepareTransmitPart
+  0090ProtocolReceive                0130ProtocolReceivePart
+  0089ProtocolTransmit               0128ProtocolTransmitPart
+  0941Set1KMode                      0943SetBlockWait
+  0960SetFinishWait                  0942SetGMode
+  0949Store
+;
+;-------------------------------------------------------------------
+!TOPIC 946 Init,XmodemProtocol
+!NOINDEX
+constructor 0945XmodemProtocol.Init(APPtr : AbstractPortPtr;
+                                Use1K, UseGMode : Boolean);
+
+Allocate and initialize a protocol control block.
+
+See also:  0088AbstractProtocol.Done  0947InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 947 InitCustom,XmodemProtocol
+!NOINDEX
+constructor 0945XmodemProtocol.InitCustom(APPtr : AbstractPortPtr;
+                                      Use1K, UseGMode : Boolean;
+                                      Options : Word);
+
+Allocate and initialize a protocol control block with the specified options.
+
+See also:  0946Init                  0088AbstractProtocol.Done
+;
+;-------------------------------------------------------------------
+!TOPIC 948 Load,XmodemProtocol
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 0945XmodemProtocol.Load(var S : IdStream);
+!WRAP
+
+Load an XmodemProtocol object from a stream. The stream registration
+routine for an XmodemProtocol object is XmodemProtocolStream.
+
+See also:  0949Store
+;
+;-------------------------------------------------------------------
+!TOPIC 949 Store,XmodemProtocol
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+procedure 0945XmodemProtocol.Store(var S : IdStream);
+!WRAP
+
+Store an XmodemProtocol object to a stream. The stream registration routine
+for an XmodemProtocol object is XmodemProtocolStream.
+
+See also:  0948Load
+;
+;-------------------------------------------------------------------
+!TOPIC 950 DefBlockWait
+!NOINDEX
+const
+  DefBlockWait = 91;
+
+Default length of time (in clock ticks) to wait between blocks for a
+response from the remote (91 clock ticks = 5 seconds). See the entry for
+0943SetBlockWait.
+;
+;-------------------------------------------------------------------
+!TOPIC 951 DefFinishWait,APXModem/OoXModem
+!NOINDEX
+const
+  DefFinishWait : Word = DefBlockWait*2;
+
+Default length of time (in clock ticks) to wait after an <EOT> for a
+response from the remote.
+;
+;-------------------------------------------------------------------
+!TOPIC 952 DefMaxBlockErrors
+!NOINDEX
+const
+  DefMaxBlockErrors : Byte = 5;
+
+Default number of errors that can occur for a single block before the file
+transfer is aborted automatically.
+;
+;-------------------------------------------------------------------
+!TOPIC 953 RelaxedBlockWait
+!NOINDEX
+const
+  RelaxedBlockWait = 182;
+
+This parameter is passed to 0943SetBlockWait when "relaxed Xmodem" is desired
+(182 clock ticks = 10 seconds).
+
+See also:  0950DefBlockWait
+;
+;-------------------------------------------------------------------
+!TOPIC 954 RelaxedHandShakeWait
+!NOINDEX
+const
+  RelaxedHandShakeWait = 364;
+
+This parameter is passed to 0062SetHandshakeWait when "relaxed Xmodem" is
+desired (364 clock ticks = 20 seconds).
+;
+;-------------------------------------------------------------------
+!TOPIC 955 XmodemOverhead
+!NOINDEX
+const
+  XmodemOverhead : Word = 5;
+
+When estimating transfer times, 0084EstimateTransferSecs assumes that there are
+5 overhead bytes for each data block. See 0065SetEfficiencyParms for more
+information.
+;
+;-------------------------------------------------------------------
+!TOPIC 956 XmodemTurnDelay
+!NOINDEX
+const
+  XmodemTurnDelay : Word = 1000;
+
+When estimating transfer times, 0084EstimateTransferSecs assumes that there
+will be a 1000 millisecond (1 second) delay from the time it sends a block
+until it receives an acknowledgment. See 0065SetEfficiencyParms for more
+information.
+;
+;-------------------------------------------------------------------
+!TOPIC 957 XmodemProtocol,ApXModem
+!NOINDEX
+type
+  XmodemPtr = ^XmodemProtocol;
+  XmodemProtocol =
+    record
+      ...
+    end;
+
+Record used to store data needed by the various routines in ApXmodem to
+implement the Xmodem protocol and its variants (relaxed Xmodem, Xmodem CRC,
+Xmodem 1K, and Xmodem 1KG).
+;
+;-------------------------------------------------------------------
+!TOPIC 958 Declarations,ApXModem
+!NOINDEX
+!NOSEARCH
+ApXmodem declares the following types and constants:
+
+  0950DefBlockWait                   0951DefFinishWait
+  0952DefMaxBlockErrors              0953RelaxedBlockWait
+  0954RelaxedHandShakeWait           0955XmodemOverhead
+  0957XmodemProtocol                 0956XmodemTurnDelay
+;
+;-------------------------------------------------------------------
+!TOPIC 959 Declarations,OoXModem
+!NOINDEX
+!NOSEARCH
+OoXmodem declares the following constants:
+
+  0950DefBlockWait                   0951DefFinishWait
+  0952DefMaxBlockErrors              0953RelaxedBlockWait
+  0954RelaxedHandShakeWait           0955XmodemOverhead
+  0956XmodemTurnDelay
+;
+;-------------------------------------------------------------------
+!TOPIC 960 SetFinishWait,ApXModem/OoXModem
+!NOINDEX
+procedure 0937ApXModem.SetFinishWaitXM(P : ProtocolRecPtr;
+                                   NewFinishWait : Word);
+!LINE
+procedure 0945XmodemProtocol.SetFinishWait(NewFinishWait : Word);
+
+Change the finish wait time (time to wait for the response to an <EOT>).

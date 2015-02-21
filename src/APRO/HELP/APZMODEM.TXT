@@ -1,0 +1,331 @@
+;-------------------------------------------------------------------
+!TOPIC 1042 ApZmodem
+ApZmodem builds on ApAbsPcl to implement the Zmodem protocol. It provides
+the following routines:
+
+  1066Declarations                   1045DoneZmodem
+  1044InitCustomZmodem               1043InitZmodem
+  0129PrepareReceivePartZM           0127PrepareTransmitPartZM
+  0130ProtocolReceivePartZM          0090ProtocolReceiveZM
+  0128ProtocolTransmitPartZM         0089ProtocolTransmitZM
+  1068SetBigSubpacketOption          1046SetFileMgmtOptions
+  1048SetFinishWait                  1047SetRecoverOption
+;
+;-------------------------------------------------------------------
+!TOPIC 1043 InitZmodem
+!NOINDEX
+procedure 1042ApZmodem.InitZmodem(var P : ProtocolRecPtr;
+                              PortPtr : PortRecPtr);
+
+Allocate and initialize a protocol control block.
+
+See also:  1045DoneZmodem            1044InitCustomZmodem
+;
+;-------------------------------------------------------------------
+!TOPIC 1044 InitCustomZmodem
+!NOINDEX
+procedure 1042ApZmodem.InitCustomZmodem(var P : ProtocolRecPtr;
+                                    PortPtr : PortRecPtr;
+                                    Options : Word);
+
+Allocate and initialize a protocol control block with the specified options.
+
+See also:  1045DoneZmodem            1043InitZmodem
+           0091Protocol options
+;
+;-------------------------------------------------------------------
+!TOPIC 1045 DoneZmodem
+!NOINDEX
+procedure 1042ApZmodem.DoneZmodem(var P : ProtocolRecPtr);
+
+Dispose of the protocol record.
+
+See also:  1044InitCustomZmodem      1043InitZmodem
+;
+;-------------------------------------------------------------------
+!TOPIC 1046 SetFileMgmtOptions
+!NOINDEX
+procedure 1042ApZmodem.SetFileMgmtOptions(P : ProtocolRecPtr;
+                                      Override, SkipNoFile : Boolean;
+                                      FOpt : Byte);
+!LINE
+procedure 1050ZmodemProtocol.SetFileMgmtOptions(Override, SkipNoFile : Boolean;
+                                            FOpt : Byte);
+
+Set file management options.
+
+See also:  1059File management options  0061SetAcceptFileFunc
+           0063SetOverwriteOption
+;
+;-------------------------------------------------------------------
+!TOPIC 1047 SetRecoverOption
+!NOINDEX
+procedure 1042ApZmodem.SetRecoverOption(P : ProtocolRecPtr; OnOff : Boolean);
+!LINE
+procedure 1050ZmodemProtocol.SetRecoverOption(OnOff : Boolean);
+
+Enable or disable file recovery.
+;
+;-------------------------------------------------------------------
+!TOPIC 1048 SetFinishWait,ApZModem/OoZModem
+!NOINDEX
+!NOWRAP
+procedure 1042ApZmodem.SetFinishWaitZM(P : ProtocolRecPtr; NewWait : Word;
+                                 NewRetry : Byte);
+procedure 1050ZmodemProtocol.SetFinishWait(NewWait : Word;
+                                        NewRetry : Byte);
+!WRAP
+
+Set new finish wait and retry values.
+;
+;-------------------------------------------------------------------
+!TOPIC 1049 OoZmodem
+OoZmodem provides the ZmodemProtocol object, which implements the Zmodem
+file transfer protocol:
+
+  [0086AbstractProtocol]
+    1050ZmodemProtocol
+;
+;-------------------------------------------------------------------
+!TOPIC 1050 ZmodemProtocol,OoZModem
+!NOINDEX
+ZmodemProtocolPtr = ^ZmodemProtocol;
+!LINE
+ZmodemProtocol = object(0086AbstractProtocol)
+
+Object that defines the data fields and methods needed to implement the
+Zmodem protocol. It provides the following methods:
+
+  1067Declarations                   1053Done
+  1051Init                           1052InitCustom
+  1054Load                           0129PrepareReceivePart
+  0127PrepareTransmitPart            0090ProtocolReceive
+  0130ProtocolReceivePart            0089ProtocolTransmit
+  0128ProtocolTransmitPart           1068SetBigSubpacketOption
+  1046SetFileMgmtOptions             1048SetFinishWait
+  1047SetRecoverOption               1055Store
+;
+;-------------------------------------------------------------------
+!TOPIC 1051 Init,ZmodemProtocol
+!NOINDEX
+constructor 1050ZmodemProtocol.Init(APPtr : AbstractPortPtr);
+
+Allocate and initialize a protocol control block.
+
+See also:  1053Done                  1052InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1052 InitCustom,ZmodemProtocol
+!NOINDEX
+constructor 1050ZmodemProtocol.InitCustom(APPtr : AbstractPortPtr;
+                                      Options : Word);
+
+Allocate and initialize a protocol control block with the specified options.
+
+See also:  1053Done                  1051Init
+           0091Protocol options
+;
+;-------------------------------------------------------------------
+!TOPIC 1053 Done,ZmodemProtocol
+!NOINDEX
+destructor 1050ZmodemProtocol.Done; virtual;
+
+Dispose of the protocol record.
+
+See also:  1051Init                  1052InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 1054 Load,ZmodemProtocol
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 1050ZmodemProtocol.Load(var S : IdStream);
+!WRAP
+
+Load a ZmodemProtocol object from a stream. The stream registration routine
+for a ZmodemProtocol object is ZmodemProtocolStream.
+
+See also:  1055Store
+;
+;-------------------------------------------------------------------
+!TOPIC 1055 Store,ZmodemProtocol
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+procedure 1050ZmodemProtocol.Store(var S : IdStream);
+!WRAP
+
+Store a ZmodemProtocol object to a stream. The stream registration routine
+for a ZmodemProtocol object is ZmodemProtocolStream.
+
+See also:  1054Load
+;
+;-------------------------------------------------------------------
+!TOPIC 1056 DefFinishWait,ApZModem/OoZModem
+!NOINDEX
+const
+  DefFinishWait : Word = 364;
+
+Default length of time (in clock ticks) to wait after a ZFin packet for a
+response from the remote. The procedural version of this constant has the
+name DefFinishWaitZM.
+;
+;-------------------------------------------------------------------
+!TOPIC 1057 DefFinishRetry
+!NOINDEX
+const
+  DefFinishRetry : Word = 3;
+
+Default number of times to resend the ZFin if no response is received from
+the remote. This is used only when receiving. The procedural version of
+this constant has the name DefFinishRetryZM.
+;
+;-------------------------------------------------------------------
+!TOPIC 1058 DrainingStatusInterval
+!NOINDEX
+const
+  DrainingStatusInternal : Word = 18;
+
+Interval between calls to the 0114ShowStatusProc. This is used only while the
+output buffer is draining at the end of a file transmit (18 ticks = 1 second).
+;
+;-------------------------------------------------------------------
+!TOPIC 1059 File management options
+!NOINDEX
+const
+  WriteNewerLonger = 1; {Transfer if new, newer or longer}
+  WriteCrc         = 2; {Not supported, same as WriteNewer}
+  WriteAppend      = 3; {Transfer if new, append if exists}
+  WriteClobber     = 4; {Transfer regardless}
+  WriteNewer       = 5; {Transfer if new or newer}
+  WriteDifferent   = 6; {Transfer if new or different dates/lengths}
+  WriteProtect     = 7; {Transfer only if new}
+
+These constants are used to specify the desired file management options
+governing received files. The default setting is WriteNewer. See 1046SetFileMgmtOptions.
+;
+;-------------------------------------------------------------------
+!TOPIC 1060 HandshakeWait
+!NOINDEX
+const
+  HandshakeWait = 1092;
+
+Default time to wait (in clock ticks) for a response (1092 clock
+ticks = 60 seconds). See the entry for 0062SetHandshakeWait. The procedural version of this constant has the name HandshakeWaitZM.
+;
+;-------------------------------------------------------------------
+!TOPIC 1061 MaxBadBlocks
+!NOINDEX
+const
+  MaxBadBlocks = 20;
+
+If this many consecutive errors are received, the protocol is aborted.
+;
+;-------------------------------------------------------------------
+!TOPIC 1062 ZmodemOverHead
+!NOINDEX
+const
+  ZmodemOverHead : Word = 20;
+
+This is an estimate of the average number of overhead bytes per data
+subpacket (required by 0084EstimateTransferSecs to estimate the time required
+to transfer a specified number of bytes). Because Zmodem escapes various
+control characters, the actual overhead will vary between data subpackets.
+Twenty is a reasonably accurate estimate. However, you can change this value
+if you know that your data will have different overhead.
+
+See also:  0065SetEfficiencyParms
+;
+;-------------------------------------------------------------------
+!TOPIC 1063 ZmodemTurnDelay
+!NOINDEX
+const
+  ZmodemTurnDelay : Word = 0;
+
+This is an estimate of the turnaround delay in a Zmodem protocol (required
+by 0084EstimateTransferSecs to estimate the time required to transfer a
+specified number of bytes). Turnaround delay is the time, in milliseconds,
+required for the remote system to acknowledge the last block. Generally,
+Zmodem doesn't have any turnaround delay at all, since its data subpackets
+do not require an acknowledgment. However, some Zmodem implementations may
+request such acknowledgments. You may need to increase ZmodemTurnDelay
+when connecting to such systems.
+
+See also:  0065SetEfficiencyParms
+;
+;-------------------------------------------------------------------
+!TOPIC 1064 Frame types
+!NOINDEX
+const
+  ZrQinit    = #0;  {Request init (to receiver)}
+  ZrInit     = #1;  {Init (to sender)}
+  ZsInit     = #2;  {Init (to receiver) (optional)}
+  ZAck       = #3;  {Acknowledge last frame}
+  ZFile      = #4;  {File info frame (to receiver)}
+  ZSkip      = #5;  {Skip to next file (to receiver)}
+  ZNak       = #6;  {Error receiving last data subpacket}
+  ZAbort     = #7;  {Abort protocol}
+  ZFin       = #8;  {Finished protocol}
+  ZRpos      = #9;  {Resume from this file position}
+  ZData      = #10; {Data subpacket(s) follows}
+  ZEof       = #11; {End of current file}
+  ZFerr      = #12; {Error reading or writing file}
+  ZCrc       = #13; {Request for file CRC (to receiver)}
+  ZChallenge = #14; {Challenge the sender}
+  ZCompl     = #15; {Complete}
+  ZCan       = #16; {Cancel requested (to either)}
+  ZFreeCnt   = #17; {Request diskfree}
+  ZCommand   = #18; {Execute this command (to receiver)}
+
+The various frame types used by Zmodem.
+;
+;-------------------------------------------------------------------
+!TOPIC 1065 ZmodemProtocol,ApZModem
+!NOINDEX
+type
+  ZmodemPtr = ^ZmodemProtocol;
+  ZmodemProtocol =
+    record
+      ...
+    end;
+
+Record used to store data needed by the various routines in ApZmodem to
+implement the Zmodem protocol.
+
+See also:  1044InitCustomZmodem
+;
+;-------------------------------------------------------------------
+!TOPIC 1066 Declarations,ApZModem
+!NOINDEX
+!NOSEARCH
+ApZmodem declares the following types and constants:
+
+  1057DefFinishRetry                 1056DefFinishWait
+  1058DrainingStatusInterval         1059File management options
+  1064Frame types                    1060HandshakeWait
+  1061MaxBadBlocks                   1062ZmodemOverHead
+  1065ZmodemProtocol                 1063ZmodemTurnDelay
+;
+;-------------------------------------------------------------------
+!TOPIC 1067 Declarations,OoZModem
+!NOINDEX
+!NOSEARCH
+OoZmodem declares the following constants:
+
+  1057DefFinishRetry                 1056DefFinishWait
+  1058DrainingStatusInterval         1059File management options
+  1064Frame types                    1060HandshakeWait
+  1061MaxBadBlocks                   1062ZmodemOverHead
+  1063ZmodemTurnDelay
+;
+;-------------------------------------------------------------------
+!TOPIC 1068 SetBigSubpacketOption
+!NOINDEX
+procedure 1042ApZmodem.SetBigSubpacketOption(AP : ProtocolRecPtr;
+                                          UseBig : Boolean);
+!LINE
+procedure 1050ZmodemProtocol.SetBigSubpacketOption(UseBig : Boolean);
+
+Activate 8K Zmodem.
+
+See also:  0091Protocol options

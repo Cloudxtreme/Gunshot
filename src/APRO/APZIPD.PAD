@@ -1,0 +1,119 @@
+{$S-,R-,V-,I-}
+
+{$I APDEFINE.INC}
+
+{$IFNDEF UsePModeDLL}
+  !! STOP COMPILE - UsePModeDLL must be defined to compile this library
+{$ENDIF}
+
+{*********************************************************}
+{*                   APZIPD.PAD 2.03                     *}
+{*          Copyright (c) TurboPower Software.           *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+library ApZipD;
+
+uses
+  ApMisc,
+  ApArchiv,
+  ApZip;
+
+Exports
+  {from APMISC}
+  StatusStr                  index indexAPMISC + 1,
+  UpdateChecksum             index indexAPMISC + 2,
+  UpdateCrc                  index indexAPMISC + 3,
+  UpdateCrcKermit            index indexAPMISC + 4,
+  GlobalAllocCheck           index indexAPMISC + 5,
+  GlobalFreeCheck            index indexAPMISC + 6,
+  GetMemCheck                index indexAPMISC + 7,
+  FreeMemCheck               index indexAPMISC + 8,
+  IsLeapYear                 index indexAPMISC + 9,
+  DaysInMonth                index indexAPMISC + 10,
+  ValidDate                  index indexAPMISC + 11,
+  DMYtoDate                  index indexAPMISC + 12,
+  DateToDMY                  index indexAPMISC + 13,
+  DateTimeDiff               index indexAPMISC + 14,
+  TimeToHMS                  index indexAPMISC + 15,
+  HMStoTime                  index indexAPMISC + 16,
+  IncDateTime                index indexAPMISC + 17,
+  StUpcase                   index indexAPMISC + 18,
+  PadCh                      index indexAPMISC + 19,
+  Search                     index indexAPMISC + 20,
+  AddBackSlash               index indexAPMISC + 21,
+  JustPathname               index indexAPMISC + 22,
+  DefaultExtension           index indexAPMISC + 23,
+  HexW                       index indexAPMISC + 24,
+  HexL                       index indexAPMISC + 25,
+  JustFilename               index indexAPMISC + 26,
+  ExistFile                  index indexAPMISC + 27,
+  StringToHeap               index indexAPMISC + 28,
+  DisposeString              index indexAPMISC + 29,
+  CheckRange                 index indexAPMISC + 30,
+  GetAsyncStatus             index indexAPMISC + 31,
+  SetAsyncStatus             index indexAPMISC + 32,
+  GetArchiveStatus           index indexAPMISC + 33,
+  SetArchiveStatus           index indexAPMISC + 34,
+  GetAproFileMode            index indexAPMISC + 35,                   {!!.03}
+  SetAproFileMode            index indexAPMISC + 36,                   {!!.03}
+  ExtractWord                index indexAPMISC + 37,                   {!!.03}
+  WordPosition               index indexAPMISC + 38,                   {!!.03}
+
+  {from APARCHIV}
+  InitFileMaskList           index indexAPARCHIV + 1,
+  DoneFileMaskList           index indexAPARCHIV + 2,
+  AppendFileMask             index indexAPARCHIV + 3,
+  MatchFileMask              index indexAPARCHIV + 4,
+  SortFileMaskList           index indexAPARCHIV + 5,
+  ExpandFileMaskList         index indexAPARCHIV + 6,
+  arOptionsOn                index indexAPARCHIV + 7,
+  arOptionsOff               index indexAPARCHIV + 8,
+  arOptionsAreOn             index indexAPARCHIV + 9,
+  SetOutputPath              index indexAPARCHIV + 10,
+  CreateOutputFile           index indexAPARCHIV + 11,
+  Percentage                 index indexAPARCHIV + 12,                 {!!.01}
+
+  {from APZIP}
+  InitZipFile                index indexAPZIP + 1,
+  CreateZipFile              index indexAPZIP + 2,
+  DoneZipFile                index indexAPZIP + 3,
+  ExtractFileMaskListZip     index indexAPZIP + 4,
+  ExtractZip                 index indexAPZIP + 5,
+  CompressFileMaskListZip    index indexAPZIP + 6,
+  CompressZip                index indexAPZIP + 7,
+  FreshenArchiveZip          index indexAPZIP + 8,
+  DeleteFileMaskListZip      index indexAPZIP + 9,
+  DeleteFilesZip             index indexAPZIP + 10,
+  SetZipComment              index indexAPZIP + 11,
+  UpdateCommentsFileMaskList index indexAPZIP + 12,
+  InitZipFileList            index indexAPZIP + 13,
+  BuildZipFileList           index indexAPZIP + 14,
+  DeleteZipFileListNode      index indexAPZIP + 15,
+  ExtractZipFileList         index indexAPZIP + 16,
+  DoneZipFileList            index indexAPZIP + 17,
+  SetOkToWriteFuncZip        index indexAPZIP + 18,
+  SetShowCommentsProcZip     index indexAPZIP + 19,
+  SetShowMethodProcZip       index indexAPZIP + 20,
+  SetExtractSuccessFuncZip   index indexAPZIP + 21,
+  SetShowProgressFuncZip     index indexAPZIP + 22,
+  SetOkToCompressFuncZip     index indexAPZIP + 23,
+  SetCompressSuccessFuncZip  index indexAPZIP + 24,
+  SetFileCommentFuncZip      index indexAPZIP + 25,
+  SetCompressionModeZip      index indexAPZIP + 26,
+  SetImplodeFactors          index indexAPZIP + 27,
+  DefShowMethodProcZip       index indexAPZIP + 28,
+  DefExtractSuccessFuncZip   index indexAPZIP + 29,
+  DefOkToWriteFuncZip        index indexAPZIP + 30,
+  DefShowCommentsProcZip     index indexAPZIP + 31,
+  DefShowProgressFuncZip     index indexAPZIP + 32,
+  DefCompressSuccessFuncZip  index indexAPZIP + 33,
+  DefOkToCompressFuncZip     index indexAPZIP + 34,
+  DefFileCommentFuncZip      index indexAPZIP + 35,
+  ImplodeFile                index indexAPZIP + 36,
+  DeflateFile                index indexAPZIP + 37,                    {!!.01}
+  InflateFile                index indexAPZIP + 38,                    {!!.01}
+  SetDeflateLevel            index indexAPZIP + 39;                    {!!.01}
+
+begin
+end.

@@ -1,0 +1,1377 @@
+  function ToChar(C : Char) : Char;
+    {-Returns C+$20}
+    inline(
+      $58/              {POP     AX           ;AX = C}
+      $05/$20/$00);     {ADD     AX,$20       ;AX = C + $20}
+
+  function UnChar(C : Char) : Char;
+    {-Returns C-$20}
+    inline(
+      $58/              {POP     AX           ;AX = C}
+      $2D/$20/$00);     {SUB     AX,$20       ;AX = C - $20}
+
+  function Ctl(C : Char) : Char;
+    {-Returns C xor $40}
+    inline(
+      $58/              {POP     AX           ;AX = C}
+      $35/$40/$00);     {XOR     AX,$40       ;Toggle bit 6}
+
+  function Inc64(W : Word) : Word;
+    {-Returns (W+1) mod 64}
+    inline(
+      $58/              {POP     AX           ;AX = W}
+      $40/              {INC     AX           ;Inc(AX)}
+      $25/$3F/$00);     {AND     AX,$3F       ;AX mod 64}
+
+  function Dec64(W : Word) : Word;
+    {-Returns (W-1) or 63 if W=0}
+  inline(
+    $58/                {POP     AX           ;AX = W}
+    $48/                {DEC     AX           ;Dec(AX)}
+    $79/$03/            {JNS     Done         ;Done if sign didn't change}
+    $B8/$3F/$00);       {MOV     AX,63        ;else AX := 63}
+                        {Done:}
+
+  function IsCtl(C : Char) : Boolean;
+  Inline(
+    $58/                   {      POP   AX          ;AX = C}
+    $25/$7F/$00/           {      AND   AX, $07F    ;Low 7 bits only}
+    $3D/$20/$00/           {      CMP   AX, $020    ;In 0-31 range?}
+    $7D/$06/               {      JGE   No1         ;No, continue}
+    $B8/$01/$00/           {      MOV   AX,1        ;It's a ctl char}
+    $E9/$0E/$00/           {      JMP   Done        ;Leave}
+                           {      No1:}
+    $3D/$7F/$00/           {      CMP   AX, $07F    ;= 127?}
+    $75/$06/               {      JNE   No2         ;No, continue}
+    $B8/$01/$00/           {      MOV   AX,1        ;It's a ctl char}
+    $E9/$03/$00/           {      JMP   Done        ;Leave}
+                           {      No2:              ;Not a ctl char}
+    $B8/$00/$00);          {      MOV   AX,0        ;}
+                           {      Done:}
+
+  function IsHiBit(C : Char) : Boolean;
+  Inline(
+  $58/                   {POP   AX        ;AX = C}
+  $A9/$80/$00/           {TEST  AX,$80    ;In 0-127 range?}            {!!.01}
+  $75/$06/               {JNZ   No1       ;No, continue}               {!!.01}
+  $B8/$00/$00/           {MOV   AX,0      ;It's a low-bit char}
+  $E9/$03/$00/           {JMP   Done      ;Leave}
+                         {No1:}
+  $B8/$01/$00);          {MOV   AX,1      ;}
+                         {Done:}
+
+  function HiBit(C : Char) : Char;
+  Inline(
+    $58/                   {      POP   AX}
+    $0D/$80/$00);          {      OR    AX, $80}
+
+  function AllocateWindowTable(P : ProtocolRecPtr) : Boolean;
+    {-Allocate the window table}
+  begin
+    with KermitPtr(P)^, PData^ do
+      {Allocate sliding window data table}
+      AllocateWindowTable := GetMemCheck(DataTable, TableSize*BlockLen);
+  end;
+
+  procedure DeallocateWindowTable(P : ProtocolRecPtr);
+    {-Deallocate current window table}
+  begin
+    with KermitPtr(P)^, PData^ do
+      FreeMemCheck(DataTable, TableSize*BlockLen);
+  end;
+
+  procedure RawInit(P : ProtocolRecPtr);
+    {-Do low-level initializations}
+  var
+    KM : KermitPtr absolute P;
+  begin
+    with KM^, PData^ do begin
+      ProtType := Kermit;
+      FileOfs := 0;
+      BlockLen := DefKermitOptions.MaxPacketLen;
+      FileOpen := False;
+      UsingHibit := False;
+      UsingRepeat := False;
+      KermitOptions := DefKermitOptions;
+      PacketType := ' ';
+      MinRepeatCnt := DefMinRepeatCnt;
+      BatchProtocol := True;
+      LPInUse := False;
+      Overhead := KermitOverhead;
+      TurnDelay := KermitTurnDelay;
+    end;
+  end;
+
+  procedure InitKermit(var P : ProtocolRecPtr; PortPtr : PortRecPtr);
+    {-Allocates and initializes a protocol control block}
+  begin
+    InitCustomKermit(P, PortPtr, DefKermitOptions, DefProtocolOptions);
+  end;
+
+  procedure InitCustomKermit(var P : ProtocolRecPtr;
+                             PortPtr : PortRecPtr;
+                             KOptions : KermitOptionRec;
+                             Options : Word);
+    {-Allocates and initializes a protocol control block with options}
+  label
+    ErrorExit;
+  var
+    KM : KermitPtr absolute P;
+    Temp : ProtocolDataPtr;
+  begin
+    SetAsyncStatus(ecOk);
+    P := nil;
+
+    {Allocate the protocol data record}
+    InitProtocolData(Temp, PortPtr, Options);
+    if GetAsyncStatus <> ecOk then
+      Exit;
+
+    {Allocate the Kermit record}
+    if not GetMemCheck(KM, SizeOf(KermitProtocol)) then begin
+      GotError(PortPtr, epFatal+ecOutOfMemory);
+      DoneProtocolData(Temp);
+      Exit;
+    end;
+
+    with KM^ do begin
+      DataBlock := nil;
+      WorkBlock := nil;
+      DataTable := nil;
+    end;
+
+    KM^.PData := Temp;
+    with KM^, PData^ do begin
+      {Init fields}
+      RawInit(P);
+      FinishWriting := kpFinishWriting;
+      KermitOptions := KOptions;
+      with KOptions do begin
+        if MaxLongPacketLen = 0 then
+          BlockLen := MaxPacketLen
+        else
+          BlockLen := MaxLongPacketLen;
+        if WindowSize = 0 then
+          TableSize := 1
+        else
+          TableSize := WindowSize;
+        CheckType := CheckVal[Byte(Check)-$30];
+      end;
+
+      {Allocate data and work blocks}
+      if not GetMemCheck(DataBlock, SizeOf(DataBlockType)) or
+         not GetMemCheck(WorkBlock, SizeOf(DataBlockType)) then begin
+        GotError(PortPtr, epFatal+ecOutOfMemory);
+        goto ErrorExit;
+      end;
+
+      {Allocate table for data blocks}
+      if not AllocateWindowTable(P) then begin
+        GotError(PortPtr, epFatal+ecOutOfMemory);
+        goto ErrorExit;
+      end;
+    end;
+
+    Exit;
+
+ErrorExit:
+    DoneKermit(P);
+  end;
+
+  procedure DoneKermit(var P : ProtocolRecPtr);
+    {-Disposes of Kermit protocol record}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      DeallocateWindowTable(P);
+      DoneProtocolData(PData);
+      FreeMemCheck(DataBlock, SizeOf(DataBlockType));
+      FreeMemCheck(WorkBlock, SizeOf(DataBlockType));
+      FreeMemCheck(P, SizeOf(KermitProtocol));
+    end;
+  end;
+
+  procedure SetKermitOptions(P : ProtocolRecPtr; KOptions : KermitOptionRec);
+    {-Update the KermitProtocol object to use KOptions}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      KermitOptions := KOptions;
+      CheckType := CheckVal[Byte(KermitOptions.Check)-$30];
+    end;
+  end;
+
+  procedure SetMaxPacketLen(P : ProtocolRecPtr; MaxLen : Byte);
+    {-Set the maximum packet length}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      if MaxLen > 92 then
+        GotError(PR, epNonFatal+ecInvalidArgument)
+      else
+        KermitOptions.MaxPacketLen := MaxLen;
+    end;
+  end;
+
+  procedure SetMaxLongPacketLen(P : ProtocolRecPtr; MaxLen : Word);
+    {-Set the maximum packet length}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      if MaxLen > 1024 then begin
+        GotError(PR, epNonFatal+ecInvalidArgument);
+        Exit;
+      end;
+
+      {Deallocate current table}
+      DeallocateWindowTable(P);
+
+      if MaxLen > 0 then begin
+        SetFlag(apFlags, apKermitLongPackets);
+        with KermitOptions do begin
+          CapabilitiesMask := CapabilitiesMask or LongPackets;
+          MaxLongPacketLen := MaxLen;
+          BlockLen := MaxLen;
+        end;
+      end else begin
+        ClearFlag(apFlags, apKermitLongPackets);
+        with KermitOptions do
+          CapabilitiesMask := CapabilitiesMask and not LongPackets;
+        BlockLen := 80;
+      end;
+
+      {Reallocate table}
+      if not AllocateWindowTable(P) then
+        GotError(PR, epFatal+ecOutOfMemory);
+    end;
+  end;
+
+  procedure SetMaxWindows(P : ProtocolRecPtr; MaxNum : Byte);
+    {-Set the number of windows for SWC}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      if MaxNum > MaxWindowSlots then begin
+        GotError(PR, epNonFatal+ecInvalidArgument);
+        Exit;
+      end;
+
+      {Deallocate current table}
+      DeallocateWindowTable(P);
+
+      if MaxNum > 0 then begin
+        SetFlag(apFlags, apKermitSWC);
+        with KermitOptions do begin
+          CapabilitiesMask := CapabilitiesMask or SlidingWindows;
+          WindowSize := MaxNum and $1F;
+          TableSize := WindowSize;
+        end;
+      end else begin
+        ClearFlag(apFlags, apKermitSWC);
+        with KermitOptions do
+          CapabilitiesMask := CapabilitiesMask and not SlidingWindows;
+        TableSize := 1;
+      end;
+
+      {Reallocate current table}
+      if not AllocateWindowTable(P) then
+        GotError(PR, epFatal+ecOutOfMemory);
+    end;
+  end;
+
+  procedure SetSWCTurnDelay(P : ProtocolRecPtr; TrnDelay : Word);
+  begin
+    SWCKermitTurnDelay := TrnDelay;
+  end;
+
+  function GetSwcSize(P : ProtocolRecPtr) : Byte;
+    {-Return size of current window (0 if not in use)}
+  begin
+    with KermitPtr(P)^ do
+      GetSwcSize := KermitOptions.WindowSize;
+  end;
+
+  procedure GetLPStatus(P : ProtocolRecPtr;
+                        var InUse : Boolean;
+                        var PacketSize : Word);
+    {-Return status of long packet feature}
+  begin
+    with KermitPtr(P)^ do begin
+      InUse := LPInUse;
+      if InUse then
+        PacketSize := KermitOptions.MaxLongPacketLen
+      else
+        PacketSize := 0;
+    end;
+  end;
+
+  procedure SetMaxTimeoutSecs(P : ProtocolRecPtr; MaxTimeout : Byte);
+    {-Set the maximum time to wait for a packet}
+  begin
+    with KermitPtr(P)^ do begin
+      KermitOptions.MaxTimeout := MaxTimeout;
+    end;
+  end;
+
+  procedure SetPacketPadding(P : ProtocolRecPtr; C : Char; Count : Byte);
+    {-Set the pad character and count}
+  begin
+    with KermitPtr(P)^.KermitOptions do begin
+      PadChar := C;
+      PadCount := Count;
+    end;
+  end;
+
+  procedure SetTerminator(P : ProtocolRecPtr; C : Char);
+    {-Set the packet terminator}
+  begin
+    KermitPtr(P)^.KermitOptions.Terminator := C;
+  end;
+
+  procedure SetCtlPrefix(P : ProtocolRecPtr; C : Char);
+    {-Set the control character quote prefix}
+  begin
+    KermitPtr(P)^.KermitOptions.CtlPrefix := C;
+  end;
+
+  procedure SetHibitPrefix(P : ProtocolRecPtr; C : Char);
+    {-Set the hibit quote prefix}
+  begin
+    KermitPtr(P)^.KermitOptions.HibitPrefix := C;
+  end;
+
+  procedure SetRepeatPrefix(P : ProtocolRecPtr; C : Char);
+    {-Set the repeat quote prefix}
+  begin
+    KermitPtr(P)^.KermitOptions.RepeatPrefix := C;
+  end;
+
+  procedure SetKermitCheck(P : ProtocolRecPtr; CType : Byte);
+    {-Set the block check type (bcCheckSum1 (default), bcCheckSum2, bcCrcK)}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      with KermitOptions do begin
+        case CType of
+          bcCheckSum1 : Check := '1';
+          bcCheckSum2 : Check := '2';
+          bcCrcK      : Check := '3';
+          else
+            begin
+              GotError(PR, epNonFatal+ecInvalidArgument);
+              Check := '1';
+            end;
+        end;
+      end;
+      CheckType := CheckVal[Byte(KermitOptions.Check)-$30];
+    end;
+  end;
+
+  procedure UpdateBlockCheck(P : ProtocolRecPtr; CurByte: Byte);
+    {-Updates the block check character (whatever it is)}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Do checksums if requested or check type not known}
+      if not CheckKnown or
+         (KermitOptions.Check = '1') or
+         (KermitOptions.Check = '2') then
+        BlockCheck := UpdateCheckSum(CurByte, BlockCheck);
+
+      {Do crc if requested or check type not known}
+      if not CheckKnown or (KermitOptions.Check = '3') then
+        BlockCheck2 := UpdateCrcKermit(CurByte, BlockCheck2);
+    end;
+  end;
+
+  procedure SendBlockCheck(P : ProtocolRecPtr);
+    {-Makes final adjustment and sends the BlockCheck character}
+  var
+    Check : Word;
+    C : Char;
+    TempCheck : Char;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      if CheckKnown then
+        TempCheck := KermitOptions.Check
+      else
+        TempCheck := '1';
+
+      case TempCheck of
+        '1' : {Standard 1 byte checksum}
+          begin
+            {Add bits 6,7 into 0-5}
+            Check := Lo(BlockCheck);
+            C := ToChar(Char((Check + (Check shr 6)) and $3F));
+            PutChar(PR, C);
+          end;
+        '2' : {2 byte checksum}
+          begin
+            {1st byte has bits 11-6, second has bits 5-0}
+            Check := BlockCheck;
+            C := ToChar(Char((Check shr 6) and $3F));
+            PutChar(PR, C);
+            C := ToChar(Char(Check and $3F));
+            PutChar(PR, C);
+          end;
+        '3' : {2 byte CRC}
+          begin
+            Check := BlockCheck2;
+            C := ToChar(Char((Check shr 12) and $0F));
+            PutChar(PR, C);
+            C := ToChar(Char((Check shr 6) and $3F));
+            PutChar(PR, C);;
+            C := ToChar(Char(Check and $3F));
+            PutChar(PR, C);
+          end;
+      end;
+    end;
+  end;
+
+  procedure PutToChar(P : ProtocolRecPtr; C : Char);
+    {-Put a promoted character}
+  begin
+    with P^, PData^ do
+      PutChar(PR, ToChar(C));
+  end;
+  procedure PutHeader(P : ProtocolRecPtr; HType : Char; Len : Word);
+    {-Start a header}
+  var
+    I : Byte;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Init the block check character}
+      BlockCheck := 0;
+      BlockCheck2 := 0;
+
+      {Send the Mark, Len, Seq and Type fields}
+      PutChar(PR, cSoh);
+      if Len <= 96 then begin
+        PutToChar(P, Char(Len));
+        PutToChar(P, Char(BlockNum));
+        PutChar(PR, HType);
+        UpdateBlockCheck(P, Byte(ToChar(Char(Len))));
+        UpdateBlockCheck(P, Byte(ToChar(Char(BlockNum))));
+        UpdateBlockCheck(P, Byte(HType));
+      end else begin
+        {Adjust Len to long packet specification}
+        Dec(Len, 2);
+
+        {Send Len, Seq and Type fields}
+        PutToChar(P, #0);
+        PutToChar(P, Char(BlockNum));
+        PutChar(PR, HType);
+
+        {Update header check}
+        I := 32;
+        Inc(I, Ord(ToChar(Char(BlockNum))));
+        Inc(I, Ord(HType));
+
+        {Send Lenx1 and Lenx2, update header checksum}
+        PutToChar(P, Char(Len div 95));
+        Inc(I, Ord(ToChar(Char(Len div 95))));
+        PutToChar(P, Char(Len mod 95));
+        Inc(I, Ord(ToChar(Char(Len mod 95))));
+        I := (I + (I shr 6)) and $3F;
+
+        {Send the header checksum}
+        PutToChar(P, Char(I));
+
+        {Update regular block check}
+        UpdateBlockCheck(P, Byte(ToChar(#0)));
+        UpdateBlockCheck(P, Byte(ToChar(Char(BlockNum))));
+        UpdateBlockCheck(P, Byte(HType));
+        UpdateBlockCheck(P, Byte(ToChar(Char(Len div 95))));
+        UpdateBlockCheck(P, Byte(ToChar(Char(Len mod 95))));
+        UpdateBlockCheck(P, Byte(ToChar(Char(I))));
+      end;
+
+      {Note what block number needs an Ack}
+      ExpectedAck := BlockNum;
+    end;
+  end;
+
+  procedure TransmitBlock(P : ProtocolRecPtr;
+                          var Block : DataBlockType;
+                          BLen : Word;
+                          BType : Char);
+      {-Transmits one data subpacket from Block}
+  var
+    BytesWritten : Word;
+    I : Word;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      if BLen = 0 then
+        Exit;
+
+      {Send the data field}
+      PutBlockDirect(PR, Block, BLen, BytesWritten);
+      if (GetAsyncStatus <> ecOk) or (BytesWritten <> BLen) then begin
+        GotError(PR, epNonFatal+ecBufferIsFull);
+        Exit;
+      end;
+
+      for I := 1 to BLen do
+        UpdateBlockCheck(P, Byte(Block[I]));
+    end;
+  end;
+
+  procedure SendTerminator(P : ProtocolRecPtr);
+    {-Send the terminator and padding chars}
+  begin
+    with KermitPtr(P)^, PData^ do
+      PutChar(PR, KermitOptions.Terminator);
+  end;
+
+  procedure SendPacket(P : ProtocolRecPtr; PT : Char);
+    {-Send a packet of type PT}
+  const
+    CheckLen : array[1..3] of Byte = (3, 4, 5);
+  var
+    TotalLen : Word;
+    I : Byte;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Put required padding}
+      with KermitOptions do
+        for I := 1 to PadCount do
+          PutChar(PR, PadChar);
+
+      {Calc total length}
+      TotalLen := DataLen + CheckLen[(Byte(KermitOptions.Check)-$30)];
+
+      {Send the header...}
+      PutHeader(P, PT, TotalLen);
+
+      {Send the data field}
+      TransmitBlock(P, DataBlock^, DataLen, PT);
+
+      {Finish up}
+      SendBlockCheck(P);
+      SendTerminator(P);
+    end;
+  end;
+
+  procedure SendError(P : ProtocolRecPtr; Msg : String);
+    {-Send error packet}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      BlockNum := Inc64(BlockNum);
+      DataLen := Length(Msg);
+      Move(Msg[1], DataBlock^[1], DataLen);
+      SendPacket(P, KError);
+    end;
+  end;
+
+  procedure Cancel(P : ProtocolRecPtr);
+    {-Sends the cancel string}
+  const
+    AckLen : array[1..3] of Byte = (3, 4, 5);
+  var
+    B : Byte;
+    Save : Byte;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      if FastAbort then
+        {Abort by sending error packet (old method)}
+        SendError(P, eCancel)
+
+      else if ReceiveInProgress then begin
+        {Abort by sending 'Z' in data field of Ack packet (new method)}
+        B := AckLen[Byte(KermitOptions.Check)-$30];
+        DataBlock^[1] := 'Z';
+        PutHeader(P, KAck, B+1);
+        TransmitBlock(P, DataBlock^, 1, KAck);
+        SendBlockCheck(P);
+        SendTerminator(P);
+
+      end else begin
+        {Abort by sending EOF packet with 'D' in data field (new method)}
+        DataLen := 1;
+        DataBlock^[1] := DiscardChar;
+        BlockNum := Inc64(BlockNum);
+        SendPacket(P, KEndOfFile);
+      end;
+    end;
+  end;
+
+  procedure AbortProtocol(P : ProtocolRecPtr);
+    {-Aborts the protocol}
+  var
+    SaveStatus : Word;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      Cancel(P);
+      GotError(PR, epFatal+ecCancelRequested);
+    end;
+  end;
+
+  function HandleAbort(P : ProtocolRecPtr) : Boolean;
+    {-Call user abort function, abort protocol and return True if user aborts}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      if PR^.UserAbort then begin
+        AbortProtocol(P);
+        HandleAbort := True;
+      end else
+        HandleAbort := False;
+    end;
+  end;
+
+  procedure ResetStatus(P : ProtocolRecPtr);
+    {-Typical reset but BlockNum must _not_ be reset during protocol}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      if InProgress = 0 then begin
+        {New protocol, reset status vars}
+        BytesRemaining := 0;
+        BlockNum := 0;
+      end;
+      SrcFileLen := 0;
+      BytesTransferred := 0;
+      ElapsedTics := 0;
+      BlockErrors := 0;
+      TotalErrors := 0;
+    end;
+  end;
+
+  procedure GetDataChar(P : ProtocolRecPtr;
+                        var C : Char;
+                        var TableIndex : Word;
+                        var RepeatCnt : Word);
+    {-Get C from DataTable handling all prefixing}
+  var
+    Finished : Boolean;
+    CtlChar : Boolean;
+    HibitChar : Boolean;
+    Repeating : Boolean;
+  begin
+    with KermitPtr(P)^ do begin
+      Finished := False;
+      CtlChar := False;
+      HibitChar := False;
+      Repeating := False;
+      RepeatCnt := 1;
+
+      with KermitOptions do
+        repeat
+          C := DataTable^[TableIndex];
+          Inc(TableIndex);
+
+          {Set flags according to the char received}
+          if (C = HibitPrefix) and (UsingHibit) and (not HibitChar) then begin
+            if (CtlChar) then
+              Exit;
+            HibitChar := True;
+          end else if C = CtlPrefix then begin
+            if CtlChar then begin
+              if HibitChar then
+                C := Chr(Byte(C) or $80);
+              Exit;
+            end else
+              {Note that the next char is Ctl escaped}
+              CtlChar := True;
+          end else if (C = RepeatPrefix) and (UsingRepeat and not Repeating) then begin
+            if CtlChar then begin
+              {process as ctl char}
+              if HibitChar then
+                C := Chr(Byte(C) or $80);
+              Exit;
+            end else begin
+              {Repeat flag set, get the count}
+              C := DataTable^[TableIndex];
+              Inc(TableIndex);
+              Repeating := True;
+              RepeatCnt := Byte(UnChar(C));
+            end;
+          end else begin
+            {Normal character}
+            Finished := True;
+
+            if (HibitChar and UsingHibit) then
+              C := Char(Byte(C) or $80);
+
+            if CtlChar then
+              {Don't escape normal or hibit Prefix characters}
+              if (C = Char(Byte(CtlPrefix) or $80)) or
+                 (UsingRepeat and (C = Char(Byte(RepeatPrefix) or $80))) or
+                 (UsingHibit and (C = Char(Byte(HibitPrefix) or $80))) or
+                 (C = RepeatPrefix) then
+                {do nothing}
+              else
+                {Ok to Ctl it}
+                C := Ctl(C);
+          end;
+        until Finished;
+    end;
+  end;
+
+
+  procedure CheckForHeader(P : ProtocolRecPtr);
+    {-Checks for a header}
+  const
+    CheckLen : array[1..3] of Byte = (3, 4, 5);
+  var
+    C : Char;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Assume no header ready}
+      SetAsyncStatus(ecNoHeader);
+
+      {If continuing a previous header we need to restore BlockCheck}
+      if HeaderState <> khsNone then begin
+        BlockCheck := SaveCheck;
+        BlockCheck2 := SaveCheck2;
+      end;
+
+      {Process potential header characters}
+      while CharReady(PR) and (HeaderState <> khsDone) do begin
+        GetChar(PR, C);
+        if GetAsyncStatus <> ecOk then
+          Exit;
+
+        case HeaderState of
+          khsNone :
+            if C = cSoh then begin
+              HeaderState := khsGotMark;
+              BlockCheck := 0;
+              BlockCheck2 := 0;
+              LongCheck := 32;
+            end;
+          khsGotMark :
+            begin
+              HeaderState := khsGotLen;
+              UpdateBlockCheck(P, Byte(C));
+              C := UnChar(C);
+              GetLong := (C = #0);
+              RecDataLen := Ord(C);
+            end;
+          khsGotLen :
+            begin
+              HeaderState := khsGotSeq;
+              UpdateBlockCheck(P, Byte(C));
+              Inc(LongCheck, Byte(C));
+              C := UnChar(C);
+              RecBlockNum := Ord(C);
+            end;
+          khsGotSeq :
+            begin
+              PacketType := C;
+              UpdateBlockCheck(P, Byte(C));
+              Inc(LongCheck, Byte(C));
+              if GetLong then
+                HeaderState := khsGotType
+              else
+                HeaderState := khsDone;
+            end;
+          khsGotType :
+            begin
+              HeaderState := khsGotLong1;
+              UpdateBlockCheck(P, Byte(C));
+              Inc(LongCheck, Byte(C));
+              C := UnChar(C);
+              RecDataLen := Word(C)*95;
+            end;
+          khsGotLong1 :
+            begin
+              HeaderState := khsGotLong2;
+              UpdateBlockCheck(P, Byte(C));
+              Inc(LongCheck, Byte(C));
+              C := UnChar(C);
+              Inc(RecDataLen, Byte(C));
+            end;
+          khsGotLong2 :
+            begin
+              HeaderState := khsDone;
+              LongCheck := (LongCheck + (LongCheck shr 6)) and $3F;
+              UpdateBlockCheck(P, Byte(C));
+              C := UnChar(C);
+              if C <> Char(LongCheck) then                             {!!.03}
+                GotError(PR, epNonFatal+ecBlockCheckError);
+              Inc(RecDataLen, 2);
+            end;
+        end;
+      end;
+
+      if HeaderState = khsDone then begin
+        {Say we got a header}
+        SetAsyncStatus(ecGotHeader);
+
+        {Account for other extra bytes in length}
+        if CheckKnown then
+          Dec(RecDataLen, (CheckLen[Byte(KermitOptions.Check)-$30]))
+        else
+          Dec(RecDataLen, (CheckLen[1]));
+        if Integer(RecDataLen) < 0 then
+          RecDataLen := 0;
+      end else begin
+        {Say no header ready}
+        SetAsyncStatus(ecNoHeader);
+        SaveCheck := BlockCheck;
+        SaveCheck2 := BlockCheck2;
+      end;
+    end;
+  end;
+
+  function NextSeq(P : ProtocolRecPtr; I : Integer) : Integer;
+    {-Increment I to next slot, accounting for current table size}
+  begin
+    with KermitPtr(P)^ do begin
+      Inc(I);
+      if I > TableSize then
+        I := 1;
+      NextSeq := I;
+    end;
+  end;
+
+  function PrevSeq(P : ProtocolRecPtr; I : Integer) : Integer;
+    {-Decrement I to previous slot, accounting for current table size}
+  begin
+    with KermitPtr(P)^ do begin
+      Dec(I);
+      if I = 0 then
+        I := TableSize;
+      PrevSeq := I;
+    end;
+  end;
+
+  function TableFull(P : ProtocolRecPtr) : Boolean;
+    {-Returns True if the send table is full}
+  var
+    I : Integer;
+  begin
+    with KermitPtr(P)^ do
+      TableFull := InfoTable[NextSeq(P, TableHead)].InUse;
+  end;
+
+  function PacketsOutstanding(P : ProtocolRecPtr) : Boolean;
+    {-True if there are unacked packets in the table}
+  var
+    I : Integer;
+  begin
+    with KermitPtr(P)^ do begin
+      PacketsOutstanding := True;
+      for I := 1 to TableSize do
+        if InfoTable[I].InUse then
+          Exit;
+      PacketsOutstanding := False;
+    end;
+  end;
+
+  function SeqInTable(P : ProtocolRecPtr; SeqNum : Integer) : Integer;
+    {-Return the position in the table of SeqNum, or -1 of not found}
+  var
+    I : Integer;
+  begin
+    with KermitPtr(P)^ do begin
+      SeqInTable := -1;
+      for I := 1 to TableSize do
+        if InfoTable[I].Seq = SeqNum then begin
+          SeqInTable := I;
+          Exit;
+        end;
+    end;
+  end;
+
+  procedure GotAck(P : ProtocolRecPtr; SeqNum : Word);
+    {-Note ACK for block number SeqNum}
+  var
+    I : Integer;
+  begin
+    with KermitPtr(P)^ do begin
+      I := SeqInTable(P, SeqNum);
+      if I <> - 1 then
+        InfoTable[I].InUse := False;
+    end;
+  end;
+
+  function WindowsUsed(P : ProtocolRecPtr) : Word;
+    {-Return number of window slots in use}
+  var
+    I : Integer;
+    Cnt : Word;
+  begin
+    with KermitPtr(P)^ do begin
+      WindowsUsed := 1;
+      if not PacketsOutstanding(P) then
+        Exit;
+
+      Cnt := 0;
+      for I := 1 to TableSize do
+        if InfoTable[I].InUse then
+          Inc(Cnt);
+
+      WindowsUsed := Cnt;
+    end;
+  end;
+
+  procedure WritePacket(P : ProtocolRecPtr; Index : Byte);
+    {-Expand and write the packet from table slot Index}
+  var
+    TIndex : Word;
+    WIndex : Word;
+    LastIndex : Word;
+    RepeatCnt : Word;
+    Free : Word;
+    Left : Word;
+    C : Char;
+    Failed : Boolean;
+
+    procedure WriteBlock;
+    begin
+      with KermitPtr(P)^, PData^ do begin
+        Failed := WriteProtocolBlock(P, WorkBlock^, SizeOf(WorkBlock^));
+        Inc(FileOfs, SizeOf(WorkBlock^));
+        WIndex := 1;
+        Free := SizeOf(WorkBlock^);
+      end;
+    end;
+
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Set starting indexes}
+      TIndex := (Index-1)*BlockLen;
+      LastIndex := TIndex+InfoTable[Index].Len;
+      WIndex := 1;
+
+      {Loop through this block in DataTable...}
+      Failed := False;
+      repeat
+        {Get a character with escaping already translated}
+        GetDataChar(P, C, TIndex, RepeatCnt);
+
+        if RepeatCnt = 1 then begin
+          {Single char, just add it to WorkBlock}
+          WorkBlock^[WIndex] := C;
+          Inc(WIndex);
+        end else begin
+          {Repeating char, start filling DataBlock(s)}
+          Free := SizeOf(WorkBlock^)-(WIndex-1);
+          Left := RepeatCnt;
+          repeat
+            if Free >= Left then begin
+              FillChar(WorkBlock^[WIndex], Left, C);
+              Inc(WIndex, Left);
+              Left := 0;
+            end else begin
+              FillChar(WorkBlock^[WIndex], Free, C);
+              Inc(WIndex, Free);
+              Dec(Left, Free);
+            end;
+
+            {Flush WorkBlock if it fills}
+            if WIndex = SizeOf(WorkBlock^)+1 then
+              WriteBlock;
+          until (Left = 0) or Failed;
+        end;
+
+        {Flush WorkBlock if it fills}
+        if WIndex = SizeOf(WorkBlock^)+1 then
+          WriteBlock;
+
+      until (TIndex = LastIndex) or Failed;
+
+      {Commit last, or only, block}
+      if WIndex <> 1 then begin
+        Failed := WriteProtocolBlock(P, WorkBlock^, WIndex-1);
+        Inc(FileOfs, WIndex-1);
+      end;
+    end;
+  end;
+
+  function SeqGreater(P : ProtocolRecPtr; Seq1, Seq2 : Byte) : Boolean;
+    {-Return True if Seq is greater than Seq2, accounting for wrap at 64}
+  var
+    I : Integer;
+  begin
+    with KermitPtr(P)^ do begin
+      I := Seq1 - Seq2;
+      if I > 0 then
+        SeqGreater := (I < 32)
+      else
+        SeqGreater := (Abs(I) > 32);
+    end;
+  end;
+
+  function LoSeq(P : ProtocolRecPtr) : Byte;
+    {-Return sequence number of oldest possible sequence number}
+    {-Current Seq - (TableSize)}
+  begin
+    with KermitPtr(P)^ do begin
+      {Handle case of no windows}
+      if TableSize = 1 then begin
+        LoSeq := RecBlockNum;
+        Exit;
+      end;
+
+      LoSeq := InfoTable[TableTail].Seq;
+    end;
+  end;
+
+  function HiSeq(P : ProtocolRecPtr) : Byte;
+    {-Return sequence number of highest acceptable sequence number}
+  var
+    I, Free : Byte;
+    Count : Byte;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Handle case of no windows}
+      if TableSize = 1 then begin
+        HiSeq := RecBlockNum;
+        Exit;
+      end;
+
+      {Search backwards counting free (acked) slots}
+      I := PrevSeq(P, TableHead);
+      Count := 0;
+      repeat
+        with InfoTable[I] do
+          if Acked or not InUse then
+            Inc(Count);
+        I := PrevSeq(P, I);
+      until (I = TableHead);
+
+      {HiSeq is current sequence number + Count}
+      Inc(Count, RecBlockNum);
+      if Count > 64 then
+        Dec(Count, 64);
+      HiSeq := Count;
+    end;
+  end;
+
+  function SeqDiff(P : ProtocolRecPtr; Seq1, Seq2 : Byte) : Byte;
+    {-Assuming Seq1 > Seq2, return the difference}
+  begin
+    with KermitPtr(P)^ do begin
+      if Seq1 > Seq2 then
+        SeqDiff := Seq1-Seq2
+      else
+        SeqDiff := (Seq1+64)-Seq2;
+    end;
+  end;
+
+  procedure AddToTable(P : ProtocolRecPtr; Seq : Byte);
+    {-Add Seq to proper location in table}
+  var
+    CurSeq : Byte;
+    HeadSeq : Byte;
+    I : Word;
+    Diff : Word;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Calculate TableHead value for Seq (range known to be OK)}
+      HeadSeq := InfoTable[TableHead].Seq;
+
+      if SeqGreater(P, Seq, HeadSeq) then begin
+        {Incoming packet is new, rotate table, writing old slots as required}
+        Diff := SeqDiff(P, Seq, HeadSeq);
+        for I := 1 to Diff do begin
+          TableHead := NextSeq(P, TableHead);
+          if TableHead = TableTail then begin
+            if InfoTable[TableTail].InUse then begin
+              WritePacket(P, TableTail);
+              InfoTable[TableTail].InUse := False;
+              InfoTable[TableTail].Acked := False;
+            end;
+            TableTail := NextSeq(P, TableTail);
+          end;
+        end;
+        I := TableHead;
+
+      end else begin
+        {Incoming packet is a retransmitted packet, find associated table index}
+        CurSeq := HeadSeq;
+        I := TableHead;
+        while CurSeq <> Seq do begin
+          CurSeq := Dec64(CurSeq);
+          I := PrevSeq(P, I);
+        end;
+      end;
+
+      {Stuff info table}
+      InfoTable[I].Seq   := Seq;
+      InfoTable[I].Acked := True;
+      InfoTable[I].Len   := RecDataLen;
+      InfoTable[I].InUse := True;
+
+      {Stuff data table}
+      Move(DataBlock^, DataTable^[(I-1)*BlockLen], RecDataLen);
+    end;
+  end;
+
+  procedure SendNak(P : ProtocolRecPtr);
+    {-Send an nak packet for packet Seq}
+  const
+    NakLen = 3;
+  begin
+    with KermitPtr(P)^ do begin
+      PutHeader(P, KNak, NakLen);
+
+      {Put checksum}
+      SendBlockCheck(P);
+
+      {Put terminator}
+      SendTerminator(P);
+    end;
+  end;
+
+  procedure SendAck(P : ProtocolRecPtr; Seq : Byte);
+    {-Send an acknowledge packet for packet Seq}
+  const
+    AckLen : array[1..3] of Byte = (3, 4, 5);
+  var
+    B : Byte;
+    Save : Byte;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      B := AckLen[Byte(KermitOptions.Check)-$30];
+
+      {kpPutHeader uses BlockNum so we'll need to change it temporarily}
+      Save := BlockNum;
+      BlockNum := Seq;
+
+      PutHeader(P, KAck, B);
+
+      {Put checksum}
+      SendBlockCheck(P);
+
+      {Put terminator}
+      SendTerminator(P);
+
+      BlockNum := Save;
+    end;
+  end;
+
+  function DataCount(P : ProtocolRecPtr; Index : Byte) : Word;
+    {-Count actual data characters in slot Index}
+  var
+    TIndex : Word;
+    DIndex : Word;
+    LastIndex : Word;
+    RepeatCnt : Word;
+    C : Char;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Set starting indexes}
+      TIndex := (Index-1)*BlockLen;
+      LastIndex := TIndex+InfoTable[Index].Len;
+      DIndex := 1;
+
+      {Loop through this block in DataTable...}
+      repeat
+        {Get a character with escaping already translated}
+        GetDataChar(P, C, TIndex, RepeatCnt);
+        Inc(DIndex, RepeatCnt);
+      until (TIndex = LastIndex);
+
+      {Commit last, or only, block}
+      DataCount := DIndex-1;
+    end;
+  end;
+
+  procedure ProcessDataPacket(P : ProtocolRecPtr);
+    {-Process received data packet}
+  var
+    I : Word;
+    Count : Word;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      SetAsyncStatus(ecOk);
+
+      if (SeqGreater(P, RecBlockNum, LoSeq(P)) or (RecBlockNum = LoSeq(P))) and
+         (SeqGreater(P, HiSeq(P), RecBlockNum) or (RecBlockNum = HiSeq(P))) then begin
+
+        {Acceptable data packet}
+        AddToTable(P, RecBlockNum);
+
+        {Exit on errors, will be handled by state machine}
+        if GetAsyncStatus <> ecOk then
+          Exit;
+
+        {Nak missing packets}
+        if SeqGreater(P, RecBlockNum, BlockNum) then begin
+          I := BlockNum;
+          repeat
+            SendNak(P);
+            I := Inc64(I);
+          until I = RecBlockNum;
+        end else if RecBlockNum = BlockNum then begin
+          {Adjust status variables}
+          Count := DataCount(P, TableHead);
+          Inc(BytesTransferred, Count);
+          Dec(BytesRemaining, Count);
+          ElapsedTics := ElapsedTime(Timer);
+        end;
+
+        {Ack the packet we got}
+        SendAck(P, RecBlockNum);
+
+        {Expect next highest sequence beyond highest table entry}
+        BlockNum := Inc64(InfoTable[TableHead].Seq);
+
+      end else begin
+        {Unacceptable block number, ignore it}
+        blocknum := blocknum;
+      end;
+    end;
+  end;
+
+  function IncTableIndex(P : ProtocolRecPtr; Index, Increment : Byte) : Byte;
+    {-Increment table index, wrap at table size}
+  begin
+    with KermitPtr(P)^ do begin
+      Inc(Index, Increment);
+      if Index > TableSize then
+        Dec(Index, TableSize);
+      IncTableIndex := Index;
+    end;
+  end;
+
+  procedure FlushTableToDisk(P : ProtocolRecPtr);
+    {-Write all outstanding packets to disk}
+  var
+    Last, I : Word;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      Last := IncTableIndex(P, TableHead, 1);
+      I := Last;
+      repeat
+        with InfoTable[I] do begin
+          if InUse then
+            if Acked then
+              WritePacket(P, I)
+            else begin
+              SetAsyncStatus(ecTableFull);
+              GotError(PR, epFatal+ecTableFull);
+              Exit;
+            end;
+        end;
+        I := IncTableIndex(P, I, 1);
+      until (I = Last);
+    end;
+  end;
+
+  procedure kpFinishWriting(P : ProtocolRecPtr);
+    {-Handle "discard" option}
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      if FileOpen then begin
+        {Let parent close file}
+        apFinishWriting(P);
+
+        {Discard the file if asked to do so}
+        if (ActualDataLen >= 1) and (DataBlock^[1] = DiscardChar) then begin
+          Erase(WorkFile);
+          if IOResult = 0 then ;
+        end;
+      end;
+    end;
+  end;
+
+  procedure ReceiveBlock(P : ProtocolRecPtr);
+    {-Get the datafield of a Kermit packet}
+  var
+    C : Char;
+    Handshake : Char;
+    Check1 : Word;
+    Check2 : Word;
+    Check3 : Word;
+  label
+    ExitPoint;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      {Get the data block}
+      if RecDataLen > 1024 then
+        RecDataLen := 1024;
+      ActualDataLen := RecDataLen;
+
+      {If continuing a previous block we need to restore BlockCheck}
+      if BlockIndex <> 1 then begin
+        BlockCheck := SaveCheck;
+        BlockCheck2 := SaveCheck2;
+      end;
+
+      {Set desired check type}
+      if CheckKnown then
+        TempCheck := KermitOptions.Check
+      else
+        TempCheck := '1';
+
+      while CharReady(PR) do begin
+        GetChar(PR, C);
+        case DataState of
+          dsData :
+            begin
+              DataBlock^[BlockIndex] := C;
+              UpdateBlockCheck(P, Byte(C));
+              Inc(BlockIndex);
+              if BlockIndex > RecDataLen then begin
+                DataState := dsCheck1;
+              end;
+            end;
+          dsCheck1 :
+            begin
+              C1 := UnChar(C);
+              if TempCheck = '1' then begin
+                Check1 := Lo(BlockCheck);
+                Check1 := (Check1 + (Check1 shr 6)) and $3F;
+                if Check1 <> Byte(C1) then
+                  GotError(PR, ecBlockCheckError)
+                else
+                  SetAsyncStatus(ecGotData);
+                Exit;
+              end else
+                DataState := dsCheck2;
+            end;
+          dsCheck2 :
+            begin
+              C2 := UnChar(C);
+              if TempCheck = '2' then begin
+                {1st byte has bits 11-6}
+                Check1 := (BlockCheck shr 6) and $3F;
+                {Second byte has bits 5-0}
+                Check2 := BlockCheck and $3F;
+                if (Check1 <> Byte(C1)) or (Check2 <> Byte(C2)) then
+                  GotError(PR, ecBlockCheckError)
+                else
+                  SetAsyncStatus(ecGotData);
+                Exit;
+              end else
+                DataState := dsCheck3;
+            end;
+          dsCheck3 :
+            begin
+              C3 := UnChar(C);
+              Check1 := (BlockCheck2 shr 12) and $0F;
+              Check2 := (BlockCheck2 shr 6) and $3F;
+              Check3 := BlockCheck2 and $3F;
+              if (Check1 <> Byte(C1)) or (Check2 <> Byte(C2)) or (Check3 <> Byte(C3)) then
+                GotError(PR, ecBlockCheckError)
+              else
+                SetAsyncStatus(ecGotData);
+              Exit;
+            end;
+        end;
+      end;
+
+      {If we exit this way we don't have a data block yet}
+      SetAsyncStatus(ecNoData);
+      SaveCheck := BlockCheck;
+      SaveCheck2 := BlockCheck2;
+    end;
+  end;
+
+  procedure ExtractFileInfo(P : ProtocolRecPtr);
+    {-Extracts the file name from the datablock}
+  var
+    Dir : DirStr;
+    Name : NameStr;
+    Ext : ExtStr;
+  begin
+    with KermitPtr(P)^, PData^ do begin
+      Move(DataBlock^[1], Pathname[1], ActualDataLen);
+      Pathname[0] := Char(ActualDataLen);
+
+      {Should we use its directory or ours?}
+      if not FlagIsSet(apFlags, apHonorDirectory) then begin
+        FSplit(Pathname, Dir, Name, Ext);
+        PathName := AddBackSlash(DestDir) + Name + Ext;
+        PathName := StUpcase(PathName);
+      end;
+    end;
+  end;
+
+

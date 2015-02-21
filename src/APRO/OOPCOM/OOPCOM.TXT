@@ -1,0 +1,1738 @@
+; Set width of help screen
+!WIDTH 74
+;------------------------------------------------------------------------
+;
+; Generic local menu topics
+;
+;------------------------------------------------------------------------
+!TOPIC 133 Close
+!NOINDEX
+This local menu item closes the current window.
+
+See also:  0134Move  0135Resize  0136Zoom
+;------------------------------------------------------------------------
+!TOPIC 134 Move
+!NOINDEX
+This local menu item moves the current window.
+
+See also:  0133Close  0135Resize  0136Zoom
+;------------------------------------------------------------------------
+!TOPIC 135 Resize
+!NOINDEX
+This local menu item resizes the current window.
+
+See also:  0133Close  0134Move  0136Zoom
+;------------------------------------------------------------------------
+!TOPIC 136 Zoom
+!NOINDEX
+This local menu item zooms the current window.
+
+See also:  0133Close  0134Move  0135Resize
+;------------------------------------------------------------------------
+;
+; Browser specific topics
+;
+;------------------------------------------------------------------------
+!TOPIC 137 Block
+!NOINDEX
+This local menu item brings up a submenu of commands that act on
+the currently highlighted block of text.
+
+See also:
+  0138Hidden                         0139Print
+  0140Write                          0003Browser
+;------------------------------------------------------------------------
+!TOPIC 138 Hidden
+!NOINDEX
+This local menu item hides the marked block if it is currently
+shown, or shows it if it is currently hidden.
+
+See also:
+  0137Block                          0139Print
+  0140Write                          0003Browser
+;------------------------------------------------------------------------
+!TOPIC 139 Print
+!NOINDEX
+This local menu item prints the currently highlighted block.
+
+See also:
+  0137Block                          0138Hidden
+  0140Write                          0003Browser
+;------------------------------------------------------------------------
+!TOPIC 140 Write
+!NOINDEX
+This local menu item writes the currently highlighted block to a file.
+
+See also:
+  0137Block                          0138Hidden
+  0139Print                          0003Browser
+;------------------------------------------------------------------------
+!TOPIC 9 Options
+!NOINDEX
+This local menu item brings up a submenu of Browser options.
+
+See also:
+  0010Expand tabs                    0011High bits
+  0012Mode                           0003Browser
+;------------------------------------------------------------------------
+!TOPIC 10 Expand
+!NOINDEX
+This local menu item toggles the tab expansion option; if it is on, tab
+characters are converted to spaces.
+
+See also:
+  0009Options                        0011High bits
+  0012Mode                           0003Browser
+;------------------------------------------------------------------------
+!TOPIC 11 High bits
+!NOINDEX
+This local menu item toggles the high bit stripping option; if it is on,
+the high bits of all characters are stripped. The option is generally
+useful only when viewing WordStar files.
+
+See also:
+  0009Options                        0010Expand
+  0012Mode                           0003Browser
+;------------------------------------------------------------------------
+!TOPIC 12 Mode
+!NOINDEX
+This local menu item toggles the display between ASCII and hex modes.
+
+See also:
+  0009Options                        0010Expand
+  0011High bits                      0003Browser
+;------------------------------------------------------------------------
+!TOPIC 13 Search
+!NOINDEX
+This local menu item brings up a submenu of search options.
+
+See also:
+  0014Again                          0015Find
+  0016Find options                   0003Browser
+;------------------------------------------------------------------------
+!TOPIC 14 Again
+!NOINDEX
+This local menu item will cause the last 0013Search to be repeated.
+
+See also:  0015Find  0016Find options  0003Browser
+;------------------------------------------------------------------------
+!TOPIC 15 Find
+!NOINDEX
+This local menu item prompts you for a string to find.
+
+See also:  0013Search  0016Find options  0003Browser
+;------------------------------------------------------------------------
+!TOPIC 16 Find options
+!NOINDEX
+This local menu item brings up a submenu of find options.
+
+See also:
+  0013Search                         0015Find
+  0017Global                         0018Ignore case
+  0019Reverse                        0003Browser
+;------------------------------------------------------------------------
+!TOPIC 17 Global
+!NOINDEX
+If this option is on, searches will start at the beginning or end (if
+searching backward) of the file rather than at the current position of the
+cursor.
+
+See also:
+  0013Search                         0015Find
+  0016Find options                   0018Ignore case
+  0019Reverse                        0003Browser
+;------------------------------------------------------------------------
+!TOPIC 18 Ignore case
+!NOINDEX
+If this option is on, searches will be conducted in a case-insensitive
+fashion (e.g., 'this' will match 'This' and 'THIS').
+
+See also:
+  0013Search                         0015Find
+  0016Find options                   0017Global
+  0019Reverse                        0003Browser
+;------------------------------------------------------------------------
+!TOPIC 19 Reverse
+!NOINDEX
+If this option is on, searches will go backward toward the beginning of
+the file rather than forward.
+
+See also:
+  0013Search                         0015Find
+  0016Find options                   0018Ignore case
+  0017Global                         0003Browser
+;------------------------------------------------------------------------
+!TOPIC 20 Markers
+!NOINDEX
+This local menu item brings up a submenu of options related to text
+markers.
+
+See also:  0021Jump  0022Set  0003Browser
+;------------------------------------------------------------------------
+!TOPIC 21 Jump
+!NOINDEX
+This local menu item allows you to jump to a previously 0022Set marker.
+
+See also:  0020Markers  0022Set  0003Browser
+;------------------------------------------------------------------------
+!TOPIC 22 Set
+!NOINDEX
+This local menu item lets you set the position of a text marker.
+
+See also:  0020Markers  0021Jump  0003Browser
+;------------------------------------------------------------------------
+!TOPIC 3 Browser
+The Browser is a tool that allows you to view a file of any size.
+
+It is possible to browse files while communications are going on in the
+Terminal window. You cannot browse files while a protocol is in progress,
+however.
+
+See also:
+  0137Block                          0009Options
+  0013Search                         0020Markers
+  0112Browser commands
+;------------------------------------------------------------------------
+!TOPIC 112 Browser commands
+!NOINDEX
+When the Browser window is active, the status line will look something
+like this:
+
+<F3> New file <F9> Menu <AltH> Hex/Ascii <Esc> Close | Line 1331 Col 1
+
+The numbers on the right indicate the number of the line at the top of the
+window, and the column for the character displayed at the left edge of the
+window. When the Browser is reading from the disk or searching, a
+"Working..." message will be displayed in their place.
+
+If you want to browse a different file, press <F3> and enter the name of
+the file you wish to browse. To choose the file from a directory listing,
+enter the appropriate file mask--e.g., 'C:\DOCS\*.DOC'--and press
+<Enter>.
+
+The following is a summary of keystrokes understood by the browser:
+
+Cursor Movement
+
+Left          <Left>, <CtrlS>
+!LINE
+Scroll window left 1 column.
+
+Right         <Right>, <CtrlD>
+!LINE
+Scroll window right 1 column.
+
+Word left     <CtrlLeft>, <CtrlA>
+!LINE
+Scroll window left 10 columns.
+
+Word right    <CtrlRight>, <CtrlF>
+!LINE
+Scroll window right 10 columns.
+
+Start of line <Home>, <CtrlQ><S>
+!LINE
+Scroll window to column 1.
+
+End of line   <End>, <CtrlQ><D>
+!LINE
+Scroll window to leftmost column, so that the end of the longest line
+on the screen is displayed.
+
+Up            <Up>, <CtrlE>, <CtrlW>
+!LINE
+Scroll window up one line.
+
+Down          <Down>, <CtrlX>, <CtrlZ>
+!LINE
+Scroll window down one line.
+
+Page up       <PgUp>, <CtrlR>
+!LINE
+Scroll window up one page.
+
+Page down     <PgDn>, <CtrlC>
+!LINE
+Scroll window down one page.
+
+Top of file   <CtrlPgUp>, <CtrlQ><R>
+!LINE
+Scroll to beginning of file.
+
+End of file   <CtrlPgDn>, <CtrlQ><C>
+!LINE
+Scroll to end of file.
+
+Jump to line  <CtrlJ><L>
+!LINE
+Prompts the user for a line number, then scrolls the window such that
+the specified line is at the top of the window. If the line number
+specified is greater than the number of lines in the file, the window
+will be scrolled to the end of the file.
+
+File Commands
+
+New file      <F3>, <CtrlK><N>
+!LINE
+Load a new file into the browser.
+
+Block Commands
+
+Begin block   <F7>, <CtrlK><B>
+!LINE
+Marks the line at the top of the window as the start of a block. Note
+that the browser allows only whole lines to be part of a block.
+
+Block end     <F8>, <CtrlK><K>
+!LINE
+Marks the line at the top of the window as the end of a block.
+
+Block bottom  <CtrlB><K>
+!LINE
+Marks the line at the bottom of the window as the end of a block.
+
+Jump begin    <CtrlQ><B>
+!LINE
+Jump to the beginning of the currently marked block.
+
+Jump end      <CtrlQ><K>
+!LINE
+Jump to the end of the currently marked block.
+
+Block toggle  <CtrlK><H>
+!LINE
+Toggle the display of marked blocks. Note that the ccBlkWrite and
+ccBlkPrint commands both generate errors if a marked block is not
+displayed.
+
+Block write   <CtrlK><W>
+!LINE
+Writes the currently marked and displayed block to a file. Note that this
+command writes the actual contents of the file being browsed, not the
+image of it that is being displayed on the screen. The command does the
+same thing whether in ASCII or hex mode.
+
+Block print   <CtrlK><P>
+!LINE
+Writes the currently marked and displayed block to the printer. As with
+the Block write command, this option writes the actual contents of the
+file being browsed to the printer. This command directs its output to
+LPT1.
+
+Search
+
+Search        <CtrlQ><F>
+!LINE
+Allows the user to search for any string of up to 30 characters. After
+entering a search string, the user is prompted for search options, which
+are handled in the same fashion as the Borland editors. Valid search
+options are 'B' (search Backwards), 'G' (search Globally), and 'U' (ignore
+case). If the search string is found, the line where the text is found
+will be highlighted until another search operation is performed or the
+mode is toggled between hex and ASCII.
+
+Repeat search <CtrlL>
+!LINE
+Repeat the last search operation. The string used in the last search
+operation will be used again, as will the previous search options. If no
+search operation has yet been performed, this command does nothing.
+
+Text Markers
+
+Set marker    <CtrlK><0>..<CtrlK><3>
+!LINE
+Sets one of the ten text markers at the start of the line at the top of
+the window. <CtrlK><0> sets marker 0, <CtrlK><1> sets marker 1, etc.
+Supports 4 text markers, 0..3.
+
+Jump marker   <CtrlQ><0>..<CtrlQ><3>
+!LINE
+Scrolls the window such that the line associated with the specified text
+marker is at the top of the window. <CtrlQ><0> jumps to marker 0,
+<CtrlQ><1> jumps to marker 1, etc.
+
+Mode Toggles
+
+Hex mode      <CtrlH>
+!LINE
+Toggles between ASCII mode (the default) and hex mode. In hex mode, either
+8 or 16 characters are displayed per line, depending on the width of the
+window. (If the inner portion of the window is <= 50 columns 8 characters
+are displayed per line). The leftmost column displays the offset within
+the file (in hex) for the first character in the "line," the middle
+columns display the contents of the line in hex, and the rightmost column
+displays the contents of the line in ASCII.
+
+Strip high    <CtrlQ><H>
+!LINE
+Activates or deactivates the option to suppress (strip) the eighth (high)
+bit for each character in the file. In ASCII mode, this option affects
+only characters with an ordinal value of 128 or higher (10000000 in
+binary), causing #228, for example, to be displayed as #100 ('d'). In hex
+mode, it affects control characters as well, causing them to be
+represented as periods ('.'). The hex values in the middle columns are not
+affected by this option.
+
+Tab expand    <CtrlQ><T>
+!LINE
+Enables or disables tab expansion. When this option is on, tab characters
+(^I) are expanded to spaces, aligning the text that follows at the next
+tab stop. (Tab stops occur every 8 columns: 1, 9, 17, etc.) This option
+does nothing in hex mode.
+
+Other
+
+Quit          <Esc>, <ClickRight>
+!LINE
+Quit browsing.
+
+Help          <F1>, <ClickBoth>
+!LINE
+Help. Brings up context sensitive help system.
+
+If use of the mouse is enabled, you may use the mouse to scroll vertically
+and horizontally by moving the scroll bars.
+
+See also: 0003Browser                0111Global commands
+;------------------------------------------------------------------------
+;
+; Editor specific topics
+;
+;------------------------------------------------------------------------
+!TOPIC 4 Editor
+The Editor is a tool that allows you to edit files up to 64K in size.
+The size of the largest file that the editor can handle may be adjusted
+downward using the OOPINST installation program.
+
+It is possible to edit files while communications are going on in the
+Terminal window. You cannot edit files while a protocol is in progress,
+however.
+
+See also:
+  0059Block                          0062File
+  0036Options                        0045Search
+  0055Text markers                   0113Editor commands
+;------------------------------------------------------------------------
+!TOPIC 113 Editor commands
+!NOINDEX
+OOPCOM's Editor offers an extensive set of text editing commands,
+arranged by category in the list below.
+
+Cursor Movement
+
+Left          <Left>, <CtrlS>
+!LINE
+Cursor left one character. Wraps to previous line if the WrapAtLeft
+option is in effect.
+
+Right         <Right>, <CtrlD>
+!LINE
+Cursor right one character.
+
+Word left     <CtrlLeft>, <CtrlA>
+!LINE
+Cursor left one word. Wraps to end of previous line.
+
+Word right    <CtrlRight>, <CtrlF>
+!LINE
+Cursor right one word. Wraps to beginning of following line.
+
+Start of line <Home>, <CtrlQ><S>
+!LINE
+Cursor to beginning of line.
+
+End of line   <End>, <CtrlQ><D>
+!LINE
+Cursor to end of line.
+
+Up            <Up>, <CtrlE>
+!LINE
+Cursor up one line.
+
+Down          <Down>, <CtrlX>
+!LINE
+Cursor down one line.
+
+Scroll up     <CtrlW>
+!LINE
+Scroll display up one line.
+
+Scroll down   <CtrlZ>
+!LINE
+Scroll display down one line.
+
+Page up       <PgUp>, <CtrlR>
+!LINE
+Scroll display up one page.
+
+Page down     <PgDn>, <CtrlC>
+!LINE
+Scroll display down one page.
+
+Screen top    <CtrlHome>, <CtrlQ><E>
+!LINE
+Move cursor to top of edit window.
+
+Screen bottom <CtrlEnd>, <CtrlQ><X>
+!LINE
+Move cursor to bottom of edit window.
+
+Top of file   <CtrlPgUp>, <CtrlQ><R>
+!LINE
+Move cursor to beginning of file.
+
+End of file   <CtrlPgDn>, <CtrlQ><C>
+!LINE
+Move cursor to end of file.
+
+Jump line     <CtrlJ><L>
+!LINE
+Prompts the user for a line number, then moves the cursor to the specified
+line.
+
+Insertion and Deletion
+
+Delete        <Del>, <CtrlG>
+!LINE
+Delete character at cursor.
+
+Backspace     <Bksp>, <CtrlH>, <CtrlBksp>
+!LINE
+Delete character to left of cursor. If the cursor is at the beginning of
+a line, it will be joined with the previous line.
+
+Delete line   <CtrlY>
+!LINE
+Delete current line.
+
+Delete to EOL <CtrlQ><Y>
+!LINE
+Delete from cursor to end of line.
+
+Del word      <CtrlT>
+!LINE
+Delete word to right of cursor. If the cursor is at end of line, the
+following line is joined with the current line.
+
+New line      <Enter>, <CtrlM>
+!LINE
+Start a new line.
+
+Insert line   <CtrlN>
+!LINE
+Insert a new line at the position of the cursor.
+
+Tab           <Tab>, <CtrlI>
+!LINE
+Move the cursor to the next tab stop. If insert mode is on, any text to
+the right of the cursor is shifted to the right. When fixed tabs are in
+effect, tab stops occur at 8-column intervals (by default). When smart
+tabs are in effect, tab stops are determined by the locations of the words
+on the previous line.
+
+Control char  <CtrlP>
+!LINE
+Insert control character.
+
+File Commands
+
+Save file     <F2>, <CtrlK><S>
+!LINE
+Save the current file and continue editing.
+
+New file      <F3>
+!LINE
+Load a new file. If changes have been made to the current file, you
+will be prompted to save it.
+
+Abandon file  <CtrlK><Q>
+!LINE
+Quit editing; ignore any changes made to the text.
+
+Save switch   <CtrlK><D>
+!LINE
+Save the current file and load a new one.
+
+Save named    <CtrlK><N>
+!LINE
+Save the current file under a new name.
+
+Save and exit <CtrlK><X>
+!LINE
+Save the current file and exit.
+
+Block Commands
+
+Begin block   <F7>, <CtrlK><B>
+!LINE
+Mark the beginning of a block.
+
+End block     <F8>, <CtrlK><K>
+!LINE
+Mark the end of a block.
+
+Block word    <CtrlK><T>
+!LINE
+Mark the current word as a block.
+
+Jump begin    <CtrlQ><B>
+!LINE
+Jump to the beginning of the currently marked block.
+
+Jump end      <CtrlQ><K>
+!LINE
+Jump to the end of the block.
+
+Block toggle  <CtrlK><H>
+!LINE
+Toggle the display of blocks.
+
+Block copy    <CtrlK><C>
+!LINE
+Copy the currently displayed block to the position of the cursor. The
+block markers are placed around the new copy of the block.
+
+Block move    <CtrlK><V>
+!LINE
+Move the currently displayed block to the position of the cursor.
+
+Block delete  <CtrlK><Y>
+!LINE
+Delete the currently displayed block. Warning: there is no way to undo a
+delete block command.
+
+Block indent  <CtrlK><I>
+!LINE
+Indent the currently displayed block by a fixed number of spaces (defaults
+to 2). Does nothing if the cursor is not within the block.
+
+Block unindent<CtrlK><U>
+!LINE
+Unindent the block.
+
+Toggle case   <CtrlO><O>
+!LINE
+Toggle the case of all characters in the currently displayed block, or of
+the character at the cursor if not within a visible block.
+
+Upper case    <CtrlO><U>
+!LINE
+Like Toggle case, but converts characters to upper case.
+
+Lower case    <CtrlO><V>
+!LINE
+Like Upper case, but converts characters to lower case.
+
+Block read    <CtrlK><R>
+!LINE
+Reads a file into the text buffer at the current position of the cursor
+and marks it as a block. If the entire contents of the file will not fit
+into the buffer, no data will be read in.
+
+Block write   <CtrlK><W>
+!LINE
+Writes the currently marked and displayed block to a file.
+
+Block print   <CtrlK><P>
+!LINE
+Writes the currently marked and displayed block to LPT1.
+
+Search and Replace
+
+Search        <CtrlQ><F>
+!LINE
+Allows the user to search for any string of up to 30 characters. After
+entering a search string, the user is prompted for search options, which
+include 'B' (search Backwards), 'G' (search Globally), 'L' (search
+Locally, within marked block), and 'U' (ignore case).
+
+Replace       <CtrlQ><A>
+!LINE
+Works like Search, except that the user is asked for a replacement string
+of up to 30 characters. In addition to the search options available for
+Search, 'N' may be used to indicate that replacements are to be made
+without asking for confirmation. If 'N' is not selected, each replacement
+must be confirmed: yes (make the replacement), no (don't make it), all
+(make this replacement and continue making replacements without further
+confirmation), and quit (stop the whole operation).
+
+Again         <CtrlL>
+!LINE
+Repeat the last search or replace operation.
+
+Text Markers
+
+Set marker    <CtrlK><0>..<CtrlK><3>
+!LINE
+Sets one of the ten text markers at the position of the cursor. There are
+4 markers available: 0..3.
+
+Jump marker   <CtrlQ><0>..<CtrlQ><3>
+!LINE
+Moves the cursor to a text marker. If no such marker has been set, this
+command does nothing.
+
+Mark toggle   <CtrlK><M>
+!LINE
+Toggle the display of text markers.
+
+Prev position <CtrlQ><P>
+!LINE
+Jump to the last cursor position before the cursor was moved to the
+current line.
+
+Text Formatting
+
+Para reformat <CtrlB>
+!LINE
+Reformat the current paragraph. Does nothing if word wrap is off.
+
+Reformat glob <CtrlK><G>
+!LINE
+Reformat the entire text buffer. Use with caution!
+
+Center line   <CtrlO><C>
+!LINE
+Center the current line between column 1 and the right margin.
+
+Mode Toggles and Option Settings
+
+Insert        <Ins>, <CtrlV>
+!LINE
+Toggle insert mode on or off. A fat cursor indicates insert mode; a thin
+cursor indicates overtype mode.
+
+Indent        <CtrlO><I>
+!LINE
+Toggle auto-indent mode on or off. In auto-indent mode, pressing <Enter>
+will cause the new line to have the same indentation as the previous line.
+
+Word wrap     <CtrlO><W>
+!LINE
+Toggle word wrap on or off.
+
+Tab toggle    <CtrlO><F>
+!LINE
+Toggle the tab mode between smart tabs and fixed tabs.
+
+Tab size      <CtrlO><T>
+!LINE
+Prompts the user for the number of columns between tab stops (1-10).
+
+Right margin  <CtrlO><R>
+!LINE
+Prompts the user for a new right margin.
+
+Indent level  <CtrlO><B>
+!LINE
+Prompts the user for the number of spaces to indent/unindent marked
+blocks. The default value is 2.
+
+Other
+
+Restore line  <CtrlQ><L>
+!LINE
+Restore original contents of the current line.
+
+Help          <F1>, <ClickBoth>
+!LINE
+Request help.
+
+If use of the mouse is enabled, you may use the mouse to scroll vertically
+and horizontally by moving the scroll bars. If you click the left mouse
+button somewhere in the text displayed in the editor window, the cursor
+will be moved there.
+
+See also: 0004Editor                0111Global commands
+;------------------------------------------------------------------------
+!TOPIC 59 Block
+!NOINDEX
+This local menu item brings up a submenu of commands that act on the
+currently highlighted block of text.
+
+See also:
+  0060Change case                    0026Hidden
+  0061Indentation                    0030Print
+  0031Read                           0032Write
+  0003Browser
+;------------------------------------------------------------------------
+!TOPIC 60 Change case
+!NOINDEX
+This local menu item brings up a submenu of commands related to a
+character or block of text's case.
+
+See also:  0023Lower case  0024Toggle  0025Upper
+;------------------------------------------------------------------------
+!TOPIC 23 Lower case
+!NOINDEX
+This local menu option converts the characters in the currently marked
+block (or the character at the cursor if no block is marked) to lower
+case.
+
+See also:
+  0059Block                          0060Change case
+  0024Toggle case                    0025Upper case
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 24 Toggle case
+!NOINDEX
+This local menu option toggles the case of all characters in the currently
+marked block, or of the character at the cursor if no block is marked.
+
+See also:
+  0060Change case                    0023Lower case
+  0025Upper case                     0004Editor
+;------------------------------------------------------------------------
+!TOPIC 25 Upper case
+!NOINDEX
+This local menu option converts the characters in the currently marked
+block (or the character at the cursor if no block is marked) to upper
+case.
+
+See also:
+  0060Change case                    0023Lower case
+  0024Toggle                         0004Editor
+;------------------------------------------------------------------------
+!TOPIC 26 Hidden
+!NOINDEX
+This local menu item hides the marked block if it is currently shown, or
+shows it if it is currently hidden.
+
+See also:  0059Block  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 61 Indentation
+!NOINDEX
+This local menu item brings up a submenu of options related to
+indentation.
+
+See also:
+  0027Indent                         0028Unindent
+  0029Indentation level              0059Block
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 27 Indent
+!NOINDEX
+This local menu item indents the currently marked block of text by the
+number of characters specified by 0029Indentation level.
+
+See also:
+  0028Unindent                       0029Indentation level
+  0059Block                          0004Editor
+;------------------------------------------------------------------------
+!TOPIC 28 Unindent
+!NOINDEX
+This local menu item unindents the currently marked block of text by the
+number of characters specified by 0029Indentation level.
+
+See also:
+  0027Indent                         0029Indentation level
+  0059Block                          0004Editor
+;------------------------------------------------------------------------
+!TOPIC 29 Indentation level
+!NOINDEX
+This local menu item sets the indentation level for the 0027Indent and
+0028Unindent commands.
+
+See also:
+  0027Indent                         0028Unindent
+  0059Block                          0004Editor
+;------------------------------------------------------------------------
+!TOPIC 30 Print
+!NOINDEX
+This local menu item prints the currently marked block of text.
+
+See also:
+  0059Block                          0031Read
+  0032Write                          0004Editor
+;------------------------------------------------------------------------
+!TOPIC 31 Read
+!NOINDEX
+This local menu item reads the contents of a specified text file into the
+text buffer at the current position of the cursor.
+
+See also:
+  0059Block                          0030Print
+  0032Write                          0004Editor
+;------------------------------------------------------------------------
+!TOPIC 32 Write
+!NOINDEX
+This local menu item writes the currently marked block of text to a file.
+
+See also:
+  0059Block                          0030Print
+  0031Read                           0004Editor
+;------------------------------------------------------------------------
+!TOPIC 62 File
+!NOINDEX
+This local menu item brings up a submenu of file related choices.
+
+See also:
+  0033New                            0034Save
+  0035Write as                       0004Editor
+;------------------------------------------------------------------------
+!TOPIC 33 New
+!NOINDEX
+This local menu item opens a new file. If the currently loaded file has
+been modified, you will be asked whether or not to save it. If you specify
+a wildcard character when prompted for a file name (e.g., '*.PAS'), a
+list of matching files will be displayed for you to choose from.
+
+See also:
+  0062File                           0034Save
+  0035Write as                       0004Editor
+;------------------------------------------------------------------------
+!TOPIC 34 Save
+!NOINDEX
+This local menu item saves the current file to disk.
+
+See also:
+  0062File                           0033New
+  0035Write as                       0004Editor
+;------------------------------------------------------------------------
+!TOPIC 35 Write as
+!NOINDEX
+This local menu item saves the current file to disk under a name you
+provide. If you specify a wildcard charcter when prompted for a file name,
+a directory pick list will be displayed. You will always be prompted
+before being allowed to overwrite existing files.
+
+See also:
+  0062File                           0033New
+  0034Save                           0004Editor
+;------------------------------------------------------------------------
+!TOPIC 36 Options
+!NOINDEX
+This local menu item brings up a submenu of editor options.
+
+See also:
+  0037Auto indent                    0038Backups
+  0039Delete joins                   0040Margin
+  0041Partial files                  0042Smart tabs
+  0043Tab size                       0044Word wrap
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 37 Auto indent
+!NOINDEX
+This local menu item toggles the state of the editor's autoindent option.
+
+See also:
+  0036Options                        0038Backups
+  0039Delete joins                   0040Margin
+  0041Partial files                  0042Smart tabs
+  0043Tab size                       0044Word wrap
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 38 Backups
+!NOINDEX
+This local menu item toggles the option to create backup (BAK) files when
+overwriting an existing file.
+
+See also:
+  0036Options                        0037Auto indent
+  0039Delete joins                   0040Margin
+  0041Partial files                  0042Smart tabs
+  0043Tab size                       0044Word wrap
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 39 Delete joins
+!NOINDEX
+This local menu item toggles the option that determines whether or not
+the delete command should join adjacent lines when the cursor is beyond
+the end of the current line.
+
+See also:
+  0036Options                        0037Auto indent
+  0038Backups                        0040Margin
+  0041Partial files                  0042Smart tabs
+  0043Tab size                       0044Word wrap
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 40 Margin
+!NOINDEX
+This local menu item prompts you to enter the value used for the right
+margin.
+
+See also:
+  0036Options                        0037Auto indent
+  0038Backups                        0039Delete joins
+  0041Partial files                  0042Smart tabs
+  0043Tab size                       0044Word wrap
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 41 Partial files
+!NOINDEX
+This local menu item toggles the option that determines whether or not
+partial files should be read in if the file is too big to fit into the
+editor's text buffer.
+
+See also:
+  0036Options                        0037Auto indent
+  0038Backups                        0039Delete joins
+  0040Margin                         0042Smart tabs
+  0043Tab size                       0044Word wrap
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 42 Smart tabs
+!NOINDEX
+This local menu item toggles the state of the smart tabs option.
+
+See also:
+  0036Options                        0037Auto indent
+  0038Backups                        0039Delete joins
+  0040Margin                         0041Partial files
+  0043Tab size                       0044Word wrap
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 43 Tab size
+!NOINDEX
+This local menu item prompts you for the number of characters between tab
+stops.
+
+See also:
+  0036Options                        0037Auto indent
+  0038Backups                        0039Delete joins
+  0040Margin                         0041Partial files
+  0042Smart tabs                     0044Word wrap
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 44 Word wrap
+!NOINDEX
+This local menu item toggles the state of the word wrap option.
+
+See also:
+  0036Options                        0037Auto indent
+  0038Backups                        0039Delete joins
+  0040Margin                         0041Partial files
+  0042Smart tabs                     0043Tab size
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 45 Search
+!NOINDEX
+This local menu item brings up a submenu of searching options.
+
+See also:
+  0046Again                          0047Find
+  0048Find options                   0054Replace
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 46 Again
+!NOINDEX
+This local menu item will cause the last 0047Find or 0054Replace
+operation to be repeated.
+
+See also:
+  0045Search                         0047Find
+  0048Find options                   0054Replace
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 47 Find
+!NOINDEX
+This local menu item will prompt you for a string to find.
+
+See also:
+  0045Search                         0046Again
+  0048Find options                   0054Replace
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 48 Find options
+!NOINDEX
+This local menu item will bring up a submenu of find options.
+
+See also:
+  0047Find                           0054Replace
+  0049Block only                     0050Confirm
+  0051Global                         0052Ignore case
+  0053Reverse                        0004Editor
+;------------------------------------------------------------------------
+!TOPIC 49 Block only
+!NOINDEX
+If this option is on, a search or replace operation will be restricted to
+the current block.
+
+See also:
+  0047Find                           0054Replace
+  0048Find options                   0050Confirm
+  0051Global                         0052Ignore case
+  0053Reverse                        0004Editor
+;------------------------------------------------------------------------
+!TOPIC 50 Confirm
+!NOINDEX
+If this option is on, the editor will prompt for confirmation before
+replacing text.
+
+See also:
+  0054Replace                        0048Find options
+  0049Block only                     0051Global
+  0052Ignore case                    0053Reverse
+  0004Editor
+;------------------------------------------------------------------------
+!TOPIC 51 Global
+!NOINDEX
+If this option is on, searches will start at the beginning or end (if
+searching backward) of the file rather than at the current position of the
+cursor.
+
+See also:
+  0047Find                           0054Replace
+  0048Find options                   0049Block only
+  0050Confirm                        0052Ignore case
+  0053Reverse                        0004Editor
+;------------------------------------------------------------------------
+!TOPIC 52 Ignore case
+!NOINDEX
+If this option is on, searches will be conducted in a case-insensitive
+fashion (e.g., 'this' will match 'This' and 'THIS').
+
+See also:
+  0047Find                           0054Replace
+  0048Find options                   0049Block only
+  0050Confirm                        0051Global
+  0053Reverse                        0004Editor
+;------------------------------------------------------------------------
+!TOPIC 53 Reverse
+!NOINDEX
+If this option is on, searches will go backward toward the beginning of
+the file rather than forward.
+
+See also:
+  0047Find                           0054Replace
+  0048Find options                   0049Block only
+  0050Confirm                        0051Global
+  0052Ignore case                    0004Editor
+;------------------------------------------------------------------------
+!TOPIC 54 Replace
+!NOINDEX
+This options prompts you for a string to find, a string to replace, and
+the options to apply to the search.  This is the same as the keyboard
+command <^Q><A>.
+
+See also:
+  0047Find                           0053Reverse
+  0048Find options                   0049Block only
+  0050Confirm                        0051Global
+  0052Ignore case                    0004Editor
+
+;------------------------------------------------------------------------
+!TOPIC 55 Text markers
+!NOINDEX
+This local menu item will bring up a submenu of options relating to text
+markers.
+
+See also:
+  0056Hidden                         0057Jump
+  0058Set                            0004Editor
+;------------------------------------------------------------------------
+!TOPIC 56 Hidden
+!NOINDEX
+This local menu item toggles the option to hide text markers.
+
+See also:
+  0055Text markers                   0057Jump
+  0058Set                            0004Editor
+;------------------------------------------------------------------------
+!TOPIC 57 Jump
+!NOINDEX
+This local menu item prompts you for the number of a text marker to jump
+to.
+
+See also:
+  0055Text markers                   0056Hidden
+  0058Set                            0004Editor
+;------------------------------------------------------------------------
+!TOPIC 58 Set
+!NOINDEX
+This local menu item allows you to set a text marker at the current
+location of the cursor.
+
+See also:
+  0055Text markers                   0056Hidden
+  0057Jump                           0004Editor
+;------------------------------------------------------------------------
+;
+; Terminal window specific topics
+;
+;------------------------------------------------------------------------
+!TOPIC 2 Terminal window
+The Terminal window is a moveable, resizeable window that displays
+incoming and outgoing characters. The terminal window supports a scroll
+back buffer of 0-400 lines (configured by OOPINST). The terminal also
+provides options to capture incoming characters and to log the contents of
+the scroll back buffer to a file.
+
+See also:  0110Terminal commands
+;------------------------------------------------------------------------
+!TOPIC 110 Terminal commands
+!NOINDEX
+The following commands are available while in the Terminal window:
+
+<F1>        <Click both>
+!LINE
+Displays help for the Terminal window.
+
+<Home>
+!LINE
+Scroll window to column 1.
+
+<End>
+!LINE
+Scroll window to leftmost column, so that the end of the longest line
+on the screen is displayed.
+
+<AltF3>     <Click right>
+!LINE
+Close the Terminal window.
+
+<^PgUp>
+!LINE
+Go to the top of the file.
+
+<^PgDn>
+!LINE
+Go to the bottom of the file.
+
+<Up>
+!LINE
+Move cursor up one line (scrolling window if necessary).
+
+<Down>
+!LINE
+Move the cursor down one line (scrolling window if necessary).
+
+<Left>
+!LINE
+Move the cursor left one column (scrolling window if necessary).
+
+<Right>
+!LINE
+Move the cursor right one column (scrolling window if necessary).
+
+<PgDn>
+!LINE
+Scroll window down one page.
+
+<PgUp>
+!LINE
+Scroll window up one page.
+
+<F9>
+!LINE
+Bring up local menu. Local menu options include protocol upload and
+download, communications options, save and restore communication
+parameters, hangup modem, and close, resize, move, or zoom the window.
+
+See also:  0002Terminal window
+
+;------------------------------------------------------------------------
+!TOPIC 65 Upload
+!NOINDEX
+This local menu item brings up an entry screen that allows to select a
+file transfer protocol when uploading a file.
+
+See also:  0066Download  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 66 Download
+!NOINDEX
+This local menu item brings up an entry screen that allows to select a
+file transfer protocol when downloading a file.
+
+See also:  0065Upload  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 67 Hangup modem
+!NOINDEX
+This local menu item hangs up the modem.
+
+See also:  0002Terminal window  0001Dialer
+;------------------------------------------------------------------------
+!TOPIC 68 Options
+!NOINDEX
+This local menu item brings up an entry screen of Terminal window
+options.
+
+See also:
+  0069Save options                   0070Load options
+  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 69 Save options
+!NOINDEX
+This local menu item saves the current configuration of OOPCOM to a
+file.
+
+See also:
+  0068Options                        0070Load options
+  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 70 Load options
+!NOINDEX
+This local menu item loads the configuration from a previously saved
+file.
+
+See also:
+  0068Options                        0069Save options
+  0002Terminal window
+;------------------------------------------------------------------------
+;
+; Options entry screen specific topics
+;
+;------------------------------------------------------------------------
+!TOPIC 75 Baud
+!NOINDEX
+This multiple choice entry field allows you to select the baud rate. Use
+<Space> to switch between available choices.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 76 Parity
+!NOINDEX
+This multiple choice entry field allows you to select the parity type.
+Use <Space> to switch between available choices.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 77 Data bits
+!NOINDEX
+This multiple choice entry field allows you to select the number of data
+bits (5..8). Use <Space> to switch between available choices.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 78 Stop bits
+!NOINDEX
+This multiple choice entry field allows you to select the number of stop
+bits (1..2). Use <Space> to switch between available choices.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 79 Duplex
+!NOINDEX
+This multiple choice entry field allows you to select between half and
+full duplex. Use <Space> to switch between available choices.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 80 ANSI emulation
+!NOINDEX
+This yes/no entry field allows you to specify whether ANSI emulation
+should be used or not. Enter Y to use ANSI, N not to.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 81 COM port
+!NOINDEX
+This multiple choice entry field allows you to select the COM port to be
+used by OOPCOM. Use <Space> to switch between available choices.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 82 Dial prefix
+!NOINDEX
+This entry field allows you to enter a command to be sent prior to dialing
+the modem. This field is usually left blank.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 83 Tone/Pulse
+!NOINDEX
+This multiple choice entry field allows you to switch between dialing by
+tone or pulse. Use <Space> to switch between available choices.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 84 Dial timeout
+!NOINDEX
+This entry field specifies the timeout value (in clock ticks) for a
+dialing command (i.e., how long to wait for the command to be processed).
+There are approximately 18.2 clock ticks per second.
+
+See also:
+  0085Modem timeout                  0086Delay factor
+  0068Options                        0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 85 Modem timeout
+!NOINDEX
+This entry field specifies the timeout value (in clock ticks) for a
+non-dialing command (i.e., how long to wait for the command to be
+processed). There are approximately 18.2 clock ticks per second.
+
+See also:
+  0084Dial timeout                   0086Delay factor
+  0068Options                        0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 86 Delay factor
+!NOINDEX
+This entry field specifies the amount of time (in clock ticks) to delay
+between modem commands. There are approximately 18.2 clock ticks per
+second.
+
+See also:
+  0084Dial timeout                   0085Modem timeout
+  0068Options                        0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 87 Words/Codes
+!NOINDEX
+This multiple choice entry field toggles between modem word or code
+responses. Use <Space> to switch between available choices.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 88 Hardware flow
+!NOINDEX
+This yes/no entry field toggles hardware flow control on or off.
+
+See also:  0089Software flow  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 89 Software flow
+!NOINDEX
+This yes/no entry field toggles software flow control on or off.
+
+See also:  0088Hardware flow  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 90 Modem type
+!NOINDEX
+This entry field brings up a list of modem types to select from.
+
+See also:  0068Options  0002Terminal window
+;------------------------------------------------------------------------
+;
+; Protocol entry screen specific topics
+;
+!TOPIC 91 Protocol type
+!NOINDEX
+This multiple choice entry field allows selection of the default file
+transfer protocol. Use <Space> to switch between available choices.
+
+See also:  0066Download  0065Upload  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 92 File mask
+!NOINDEX
+This entry field lets you specify the name of the file to be transferred
+via a protocol. When downloading, the file name is required only for
+Xmodem and ASCII protocols. If a protocol supports batch transfers, then
+this field may contain wildcard characters.
+
+See also:  0066Download  0065Upload  0002Terminal window
+;------------------------------------------------------------------------
+;
+; Phone entry screen specific topics
+;
+;------------------------------------------------------------------------
+!TOPIC 95 Name
+!NOINDEX
+This entry field lets you specify the name for this phone book entry.
+
+See also:  0001Dialer  0096Phone number
+;------------------------------------------------------------------------
+!TOPIC 96 Phone number
+!NOINDEX
+This entry field lets you specify the phone number for this phone book
+entry.
+
+See also:  0001Dialer  0095Name
+;------------------------------------------------------------------------
+!TOPIC 97 Baud
+!NOINDEX
+This multiple choice entry field allows you to select the baud rate to be
+used when dialing this number. Use <Space> to switch between available
+choices.
+
+See also:
+  0001Dialer                         0098Parity
+  0099Data bits                      0100Stop bits
+  0101Duplex                         0102ANSI emulation
+;------------------------------------------------------------------------
+!TOPIC 98 Parity
+!NOINDEX
+This multiple choice entry field allows you to select the parity type to
+be used when dialing this number. Use <Space> to switch between available
+choices.
+
+See also:
+  0001Dialer                         0097Baud
+  0099Data bits                      0100Stop bits
+  0101Duplex                         0102ANSI emulation
+;------------------------------------------------------------------------
+!TOPIC 99 Data bits
+!NOINDEX
+This multiple choice entry field allows you to select the number of data
+bits (5..8) to be used when dialing this number. Use <Space> to switch
+between available choices.
+
+See also:
+  0001Dialer                         0097Baud
+  0098Parity                         0100Stop bits
+  0101Duplex                         0102ANSI emulation
+;------------------------------------------------------------------------
+!TOPIC 100 Stop bits
+!NOINDEX
+This multiple choice entry field allows you to select the number of stop
+bits (1..2) to be used when dialing this number. Use <Space> to switch
+between available choices.
+
+See also:
+  0001Dialer                         0097Baud
+  0098Parity                         0099Data bits
+  0101Duplex                         0102ANSI emulation
+;------------------------------------------------------------------------
+!TOPIC 101 Duplex
+!NOINDEX
+This multiple choice entry field allows you to select whether half or full
+duplex is to be used when dialing this number. Use <Space> to switch
+between available choices.
+
+See also:
+  0001Dialer                         0097Baud
+  0098Parity                         0099Data bits
+  0100Stop bits                      0102ANSI emulation
+;------------------------------------------------------------------------
+!TOPIC 102 ANSI emulation
+!NOINDEX
+This yes/no entry field allows you to specify whether ANSI emulation
+should be used when dialing this number. Enter Y to use ANSI, N not to.
+
+See also:
+  0001Dialer                         0097Baud
+  0098Parity                         0099Data bits
+  0100Stop bits                      0101Duplex
+;------------------------------------------------------------------------
+!TOPIC 103 Notes
+!NOINDEX
+This memo field allows you to enter up to 4 lines of notes for a given
+phone book entry.
+
+See also:  0001Dialer
+;------------------------------------------------------------------------
+!TOPIC 1 Dialer
+Phone book viewer and editor. Lets you dial a number in the phone book
+at the touch of a key.
+
+The Dialer window is used to display and edit phone books--data files
+that store phone numbers and communications parameters--and to dial
+numbers stored in phone books for you.
+
+See also:  0114Dialer commands  0002Terminal window
+;------------------------------------------------------------------------
+!TOPIC 114 Dialer commands
+!NOINDEX
+To edit an existing phone book entry, move the highlight bar over it and
+press <Enter>. The same data entry screen is used to edit entries that
+is used to create them. To delete a phone book entry, move the highlight
+bar over it and press <CtrlY>.
+
+To dial a phone number, move the highlight bar over the number and press
+<AltD>. The Dialer will then try to dial the selected number using the
+communications parameters specified in the selected phone book entry. If
+a successful connection is made, the Dialer window will close itself
+automatically and either open the Terminal window or make it the current
+window, as appropriate.
+
+See also:  0001Dialer           0111Global commands
+;------------------------------------------------------------------------
+;
+; Miscellaneous
+;
+;------------------------------------------------------------------------
+!TOPIC 111 Global commands
+The following commands are applicable from most places within OOPCOM:
+
+<AltF3>, <ClkRight>
+!LINE
+Closes the current window.
+
+<F9>
+!LINE
+Invokes the current window's local menu (if one exists).
+
+<F10>
+!LINE
+Invokes the main menu. Note that this command has no effect within the
+About box, the protocol window, the help window, or a local menu.
+
+<AltS>
+!LINE
+Shows available memory.
+
+<F5>, <AltZ>
+!LINE
+Toggles the zoom mode of the window.
+
+<AltM>
+!LINE
+Enters move mode--you can use the cursor keys to move the window
+around the screen.
+
+<AltR>
+!LINE
+Enters resize mode--you can use the cursor keys to resize the window.
+Note that the window cannot be resized while it is zoomed.
+
+<F6>
+!LINE
+Switch to the next window.
+
+<^F6>
+!LINE
+Switch to the previous window.
+
+<Alt1>..<Alt6>
+!LINE
+Select window 1..6.
+;------------------------------------------------------------------------
+;
+; About box help
+;
+;------------------------------------------------------------------------
+!TOPIC 120 About
+This popup window displays title and copyright information.
+;------------------------------------------------------------------------
+;
+; Help on help
+;
+;------------------------------------------------------------------------
+!TOPIC 131 Help on help
+!INDEX 1
+!NOSEARCH
+This help system provides context sensitive help on a number of topics
+relating to OOPCOM. Pressing <F1> from almost anywhere will bring up a
+help screen with information on the current window, menu item, or entry
+screen field.
+
+The following commands are available within the help system:
+
+<F1>
+!LINE
+Displays the main topic index again.
+
+<AltF1>
+!LINE
+Displays the topic that was displayed prior to the current one.
+
+<F5>, <AltZ>
+!LINE
+Toggles the zoom mode of the window.
+
+<AltM>
+!LINE
+Enters move/resize mode--you can use the cursor keys to move the window
+around the screen, or the Shift-cursor keys to resize the window. <PgUp>
+and <PgDn> change the height of the window in increments of 4. <CtrlLeft>
+and <CtrlRight> change the width in increments of 10. Note that the window
+cannot be resized while it is zoomed.
+
+<CtrlL>
+!LINE
+Continues the last topic name search, using the search string obtained
+with the <ShiftF1> hotkey. Searching is circular.
+
+<PgUp>, <PgDn>
+!LINE
+Moves to the next or previous page of the current help topic.
+
+<Left>, <Right>, <Up>, <Down>
+!LINE
+Moves the cursor around the help window. Positioning the cursor over a
+cross-reference link and pressing <Enter> will load and display the
+associated help topic.
+
+<Tab>
+!LINE
+Jumps to the next cross reference topic, if any.
+
+<ShiftTab>
+!LINE
+Jumps to the previous cross reference topic, if any.
+
+<Enter>
+!LINE
+Selects the currently highlighted cross-reference topic.
+
+<Esc>, <AltX>
+!LINE
+Exits help system. The current topic and page are retained and may be
+redisplayed by selecting the Help menu item for previous topic.
+;------------------------------------------------------------------------
+;
+; Status window
+;
+;------------------------------------------------------------------------
+!TOPIC 5 Status window
+This window shows the current communications parameters. Included are
+baud, data and stop bits, parity, and the state of hardware and software
+flow control.
+;------------------------------------------------------------------------
+;
+; Dos Shell
+;
+;------------------------------------------------------------------------
+!TOPIC 123 Dos shell
+Selecting this menu option causes OOPCOM to execute a second copy of
+COMMAND.COM, giving you an opportunity to run other programs or execute
+DOS commands.
+
+This facility may be used even if a communications session is in progress.
+If you have the Terminal window open and you shell to DOS, when you return
+to the program the Terminal window will display the characters that were
+received while you were shelled out. Be aware, however, that characters
+can be lost if OOPCOM's 2K buffer for incoming characters becomes full
+and the software flow control option is not enabled.
+;------------------------------------------------------------------------
+;
+; Quit
+;
+;------------------------------------------------------------------------
+!TOPIC 124 Quit
+Selecting this option will quit the program. You will be asked if you
+really want to quit before OOPCOM terminates. Pressing <Esc> at the
+main menu, or <AltX> from anywhere except the protocol window will
+also quit the program.
+
+See also:  0142Files
+;------------------------------------------------------------------------
+;
+; Files
+;
+;------------------------------------------------------------------------
+!TOPIC 142 Files
+This main menu item brings up a submenu of options.
+
+See also:
+  0003Browser                        0004Editor
+  0123Dos shell                      0124Quit
+;------------------------------------------------------------------------
+;
+; Help
+;
+;------------------------------------------------------------------------
+!TOPIC 128 Help
+This main menu item brings up a submenu of options relating to the help
+system.
+
+See also:
+  0129Index of topics                0130Previous topic
+  0131Help on help
+;------------------------------------------------------------------------
+!TOPIC 129 Index of topics
+!NOINDEX
+Selecting this help submenu item will display an index of help topics.
+While in the help system, pressing <F1> will also display an index of
+topics.
+
+See also:
+  0128Help                           0130Previous topic
+  0131Help on help
+;------------------------------------------------------------------------
+!TOPIC 130 Previous topic
+!NOINDEX
+Selecting this help submenu item will display the help screen for the
+last help topic accessed.
+
+See also:
+  0128Help                           0129Index of topics
+  0131Help on help
+;------------------------------------------------------------------------
+!TOPIC 132 Directory
+!NOINDEX
+Select a file from the directory pick list. Use the <Left>, <Right>,
+<Up> and <Down> arrows to move the highlight bar. To select the
+file that is highlighted, press <Enter>. You may also use a mouse to
+select a file name. If you press <ESC> or click the right mouse
+button, the operation will be cancelled.
+

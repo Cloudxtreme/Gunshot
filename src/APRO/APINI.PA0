@@ -1,0 +1,116 @@
+type
+  StrPtr = ^String;
+  IniLinePtr = ^IniLine;
+  IniLine = record
+    PL : StrPtr;
+    dlNext : IniLinePtr;
+    dlPrev : IniLinePtr;
+  end;
+
+  IniMgrRecPtr = ^IniMgrRec;
+  IniMgrRec = record
+    dlHead : IniLinePtr;
+    dlTail : IniLinePtr;
+    IniName   : String;
+    IniF      : Text;
+    NeedUpd   : Boolean;
+    AlwaysUpd : Boolean;
+    IsSparse  : Boolean;
+  end;
+{$IFDEF UsePModeDLL}
+  procedure InitIniMgr(var I : IniMgrRecPtr; FN : String; Sparse : Boolean); Export;
+  procedure DoneIniMgr(I : IniMgrRecPtr); Export;
+  procedure FlushFile(I : IniMgrRecPtr); Export;
+  procedure SetFlushMode(I : IniMgrRecPtr; Always : Boolean); Export;
+  procedure ChangeFileName(I : IniMgrRecPtr; NewIniName : String); Export;
+  function GetFileName(I : IniMgrRecPtr) : String; Export;
+  procedure ForceUpd(I : IniMgrRecPtr); Export;
+  function GetProfileString(I : IniMgrRecPtr; Title, Group, Default : String) : String; Export;
+  function GetProfileBool(I : IniMgrRecPtr; Title, Group : String; Default : Boolean) : Boolean; Export;
+  function GetProfileByte(I : IniMgrRecPtr; Title, Group : String; Default : Byte) : Byte; Export;
+  function GetProfileInt(I : IniMgrRecPtr; Title, Group : String; Default : Integer) : Integer; Export;
+  function GetProfileWord(I : IniMgrRecPtr; Title, Group : String; Default : Word) : Word; Export;
+  function GetProfileLong(I : IniMgrRecPtr; Title, Group : String; Default : LongInt) : LongInt; Export;
+  procedure SetProfileString(I : IniMgrRecPtr; Title, Group, NewVal : String); Export;
+  procedure AddProfileString(I : IniMgrRecPtr; Title, Group, NewVal : String); Export;
+  procedure EnumGroups(I : IniMgrRecPtr; var P : IniLinePtr); Export;
+  procedure EnumGroupItems(I : IniMgrRecPtr; var P : IniLinePtr; Group : String; Verbose : Boolean); Export;
+  procedure DeleteProfileString(I : IniMgrRecPtr; Title, Group : String); Export;
+  procedure DeleteProfileGroup(I : IniMgrRecPtr; Group: String); Export;
+  function Modified(I : IniMgrRecPtr) : Boolean; Export;
+  procedure InitIniLinePtr(var L : IniLinePtr; S : String); Export;
+  procedure DoneIniLinePtr(var L : IniLinePtr); Export;
+
+{$ELSE}
+  procedure InitIniMgr(var I : IniMgrRecPtr; FN : String; Sparse : Boolean);
+    {-Allocates memory for our IniMgrRecPtr record.  if Sparse=True, load only "active"
+      lines (file is considered read-only.)  if Sparse=False, File always
+      updates on changes; use SetFlushMode to control.}
+
+  procedure DoneIniMgr(I : IniMgrRecPtr);
+    {-Deallocates memory of IniMgrRecPtr when done}
+
+  procedure FlushFile(I : IniMgrRecPtr);
+    {-Force an update of the physical file from the current list}
+
+  procedure SetFlushMode(I : IniMgrRecPtr; Always : Boolean);
+    {-Turn off/on auto-updating of file when an item is modified}
+
+  procedure ChangeFileName(I : IniMgrRecPtr; NewIniName : String);
+    {-Associates database now with file NewIniName}
+
+  function GetFileName(I : IniMgrRecPtr) : String;
+    {-Returns String file name associated with the database}
+
+  procedure ForceUpd(I : IniMgrRecPtr);
+    {-Writes data to disk even if changes haven't been made.}
+
+  function GetProfileString(I : IniMgrRecPtr; Title, Group, Default : String) : String;
+    {-Return String item "Title" in "[Group]", or default if not found}
+
+  function GetProfileBool(I : IniMgrRecPtr; Title, Group : String; Default : Boolean) : Boolean;
+    {-Return boolean item "Title" in "[Group]", or default if not found}
+
+  function GetProfileByte(I : IniMgrRecPtr; Title, Group : String; Default : Byte) : Byte;
+    {-Return byte item "Title" in "[Group]", or default if not found}
+
+  function GetProfileInt(I : IniMgrRecPtr; Title, Group : String; Default : Integer) : Integer;
+    {-Return integer item "Title" in "[Group]", or default if not found}
+
+  function GetProfileWord(I : IniMgrRecPtr; Title, Group : String; Default : Word) : Word;
+    {-Return word item "Title" in "[Group]", or default if not found}
+
+  function GetProfileLong(I : IniMgrRecPtr; Title, Group : String; Default : LongInt) : LongInt;
+    {-Return longint item "Title" in "[Group]", or default if not found}
+
+  procedure SetProfileString(I : IniMgrRecPtr; Title, Group, NewVal : String);
+    {-Change existing item "Title" in "[Group]" to "NewVal"}
+
+  procedure AddProfileString(I : IniMgrRecPtr; Title, Group, NewVal : String);
+    {-Add new item "Title=NewVal" to "[Group]".  Creates [Group] if not
+      found, else adds "Title=NewVal" as last item in [Group]}
+
+  procedure EnumGroups(I : IniMgrRecPtr; var P : IniLinePtr);
+    {-Returns P, which is a pointer to the head of a list of the names of
+      all groups in the file.}
+
+  procedure EnumGroupItems(I : IniMgrRecPtr; var P : IniLinePtr; Group : String;
+                           Verbose : Boolean);
+    {-Returns P, which is a pointer to the head of a list loaded with all
+      of the items in group [Group].}
+
+  procedure DeleteProfileString(I : IniMgrRecPtr; Title, Group : String);
+    {-Deletes the item "Title" in "[Group]"}
+
+  procedure DeleteProfileGroup(I : IniMgrRecPtr; Group: String);
+    {-Deletes all the items in "[Group]"}
+
+  function Modified(I : IniMgrRecPtr) : Boolean;
+    {-Returns value of NeedUpd}
+
+  procedure InitIniLinePtr(var L : IniLinePtr; S : String);
+    {-Allocates memory for a IniLinePtr and initializes it.}
+
+  procedure DoneIniLinePtr(var L : IniLinePtr);
+    {-Disposes of a IniLinePtr}
+{$ENDIF}

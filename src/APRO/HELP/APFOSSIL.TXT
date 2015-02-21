@@ -1,0 +1,120 @@
+;-------------------------------------------------------------------
+!TOPIC 538 ApFossil
+ApFossil provides the connection between your application and a FOSSIL
+driver.
+
+ApFossil interfaces the following routines:
+
+  0539ActivateApFossil
+  0540Declarations
+;
+;-------------------------------------------------------------------
+!TOPIC 539 ActivateApFossil
+!NOINDEX
+procedure 0538ApFossil.ActivateApFossil;
+
+Register APFOSSIL as the active device layer.
+
+See also:  0375ActivateApDigi14      0546ActivateApInt14
+           0919ActivateApUart        0887Core routines
+           0004Layered architecture
+;
+;-------------------------------------------------------------------
+!TOPIC 540 Declarations,ApFossil
+!NOINDEX
+!NOSEARCH
+ApFossil declares the following types and constants:
+
+  0542DefFossilOptions               0541Fossil port options
+  0543ValidLineStatus                0544ValidModemStatus
+;
+;-------------------------------------------------------------------
+!TOPIC 541 Fossil port options
+!NOINDEX
+!NOWRAP
+const
+  ptHandleFossilBug = $8000;
+  ptTrueOutBuffFree = $4000;
+  ptPutCharWait     = $2000;
+!WRAP
+
+Port options that are used for Fossil ports only. See 0843Port Options in
+APPORT for descriptions of the port options that are used for all device
+layers.
+
+Some FOSSIL drivers have a bug where 0268OutBuffUsed sometimes does not drop to
+zero when the output buffer is empty (the driver information field diOutUsed
+is one when it should be zero). When ptHandleFossilBug is set, APFOSSIL
+automatically sets OutBuffUsed to zero whenever it returns one. You should
+be aware of this behavior whenever checking for empty output buffer values
+in your program. Note that X00 has the bug, BNU does not. ptHandleFossilBug
+is on by default since this behavior is not harmful, even with a driver that
+does not have the bug.
+
+ptTrueOutBuffFree tells the FOSSIL device layer whether the function
+0269OutBuffFree should return the actual amount of free space in the output
+buffer, or an indication of whether more data should be sent to the FOSSIL
+driver. If ptTrueOutBuffFree is on, OutBuffFree returns the actual amount of
+free space in the FOSSIL output buffer. If ptTrueOutBuffFree is off (as it
+is by default), OutBuffFree returns either 0 (if the output buffer is less
+than 90% free, meaning don't send any more data to the FOSSIL driver) or
+65535 (if the output buffer is at least 90% free, meaning it is OK to send
+more data to the FOSSIL driver).
+
+ptTrueOutBuffFree is off by default because most FOSSIL users tend to use
+small (256 or 512 byte) FOSSIL buffers. These small buffers can cause a
+problem because the Async Professional file transfer protocols wait until
+OutBuffFree returns a value large enough to hold an entire block. Since a
+block could be as large as 2078 bytes, the protocol might wait forever. You
+can turn ptTrueOutBuffFree on if you use FOSSIL buffers of 2078 or greater.
+Then the actual amount of free space will eventually get large enough for
+the largest possible block.
+
+ptPutCharWait tells the FOSSIL device layer to use "wait" transmits when
+transmitting data. This option is on by default since most FOSSIL users use
+small FOSSIL buffers (256 or 512 bytes) and it is possible for file transfer
+protocols to overflow such small buffers. If you are using large FOSSIL
+buffers, you can turn this option off and ptTrueOutBuffFree on.
+
+Note that using the default options (ptTrueOutBuffFree not set,
+ptPutCharWait set) may cause problems when trying to use the file
+transfer protocols in background mode since the FOSSIL driver will
+sometimes wait to transmit a block of data. If you want to use background
+file transfers, you *must* provide a FOSSIL output buffer of at least 2078
+bytes and you must turn off ptPutCharWait.
+;
+;-------------------------------------------------------------------
+!TOPIC 542 DefFossilOptions
+!NOINDEX
+const
+  DefFossilOptionsSimple  = ptHandleFossilBug + ptPutCharWait;
+  DefFossilOptions : Word = DefFossilOptionsSimple;
+
+The default FOSSIL device layer options.
+;
+;-------------------------------------------------------------------
+!TOPIC 543 ValidLineStatus
+!NOINDEX
+const
+  ValidLineStatus : Byte = $03;
+
+Mask for valid line status bits. Most FOSSIL drivers return only bit 0 (data
+ready) and bit 1 (overrun). Due to this shortcoming, the following interface
+layer routines are not accurate for the APFOSSIL device layer:
+CheckLineError, CheckLineBreak, CheckTE, CheckTHRE, and CheckFIFOError. If
+you are confident that your FOSSIL driver reliably returns other line status
+bits, you can adjust ValidLineStatus to account for those bits.
+;
+;-------------------------------------------------------------------
+!TOPIC 544 ValidModemStatus
+!NOINDEX
+const
+  ValidModemStatus : Byte = $80;
+
+Mask for valid modem status bits. Most FOSSIL drivers return only bit 7
+(Data Carrier Detect). Due to this shortcoming, the following interface
+layer routines are not accurate for the APFOSSIL device layer: CheckCTS,
+CheckDSR, CheckRI, CheckDeltaCTS, CheckDeltaDSR, CheckDeltaRI, and
+CheckDeltaDCD. If you are confident that your FOSSIL driver reliably returns
+other line status bits, you can adjust ValidModemStatus to account for those
+bits.

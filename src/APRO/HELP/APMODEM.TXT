@@ -1,0 +1,1644 @@
+;-------------------------------------------------------------------
+!TOPIC 681 ApModem
+ApModem builds on the core and interface layers to provide easy-to-use
+modem control routines. That is, you'll call routines like DialModem and
+SetErrorControl rather then transmitting raw 'AT' commands and deciphering
+the responses yourself.
+
+ApModem provides routines in the following categories:
+
+  0811Declarations                   0685Dialing & answering
+  0682General                        0683Modem commands
+  0686Modem configuration            0684Modem responses
+  0687Modem status
+;
+;-------------------------------------------------------------------
+!TOPIC 682 General,ApModem
+!NOINDEX
+!NOSEARCH
+The following general purpose routines are provided for working with
+modems:
+
+  0689DoneModem                      0720HangupModem
+  0688InitModem                      0731ResetModem
+  0704SetHandleResponses             0703SetModemDelay
+  0709SetModemPort                   0708SetModemTimeouts
+;
+;-------------------------------------------------------------------
+!TOPIC 683 Modem commands,ApModem
+!NOINDEX
+!NOSEARCH
+The following routines are provided relating to modem commands:
+
+  0690AddModemCommand                0692ExecuteModemCommand
+  0698PutModemCommand                0691RemoveModemCommand
+  0715RepeatModemCommand             0711SetModemCmdTable
+;
+;-------------------------------------------------------------------
+!TOPIC 684 Modem responses,ApModem
+!NOINDEX
+!NOSEARCH
+The following routines are provided relating to modem responses:
+
+  0695AddModemCode                   0693AddModemResponse
+  0696RemoveModemCode                0694RemoveModemResponse
+  0713SetModemCodeTable              0710SetModemErrorString
+  0712SetModemRespTable              0729SetModemResults
+;
+;-------------------------------------------------------------------
+!TOPIC 685 Dialing & answering,ApModem
+!NOINDEX
+!NOSEARCH
+The following routines are provided relating to dialing and answering:
+
+  0714AnswerModem                    0813AutoAnswerModem
+  0717DialModem                      0705SetDialPrefix
+  0724SetDialPulse                   0725SetDialTone
+;
+;-------------------------------------------------------------------
+!TOPIC 686 Modem configuration,ApModem
+!NOINDEX
+!NOSEARCH
+The following routines are provided relating to modem configuration:
+
+  0728GetModemRegister               0716SetCarrierTrans
+  0706SetDCDControl                  0707SetDTRControl
+  0723SetModemCmdMode                0730SetModemCodeSet
+  0718SetModemEcho                   0722SetModemOnline
+  0719SetModemOnlineEcho             0726SetModemQuiet
+  0727SetModemRegister               0721SetModemSpeaker
+  0732SetModemVolume
+;
+;-------------------------------------------------------------------
+!TOPIC 687 Modem status,ApModem
+!NOINDEX
+!NOSEARCH
+The following routines are provided to obtain the status of the modem:
+
+  0701GetConnectSpeed                0700GetLastCode
+  0702GetLastErrorMode               0699GetLastText
+  0697GetModemResponse
+;
+;-------------------------------------------------------------------
+!TOPIC 688 InitModem
+!NOINDEX
+procedure 0681ApModem.InitModem(var M : ModemRecPtr; P : PortRecPtr);
+
+Allocate and initialize a Modem.
+
+See also:  0689DoneModem
+;
+;-------------------------------------------------------------------
+!TOPIC 689 DoneModem
+!NOINDEX
+procedure 0681ApModem.DoneModem(M : ModemRecPtr);
+
+Dispose of this modem.
+
+See also:  0688InitModem
+;
+;-------------------------------------------------------------------
+!TOPIC 690 AddModemCommand
+!NOINDEX
+procedure 0681ApModem.AddModemCommand(M : ModemRecPtr; S : String;
+                                  Cmd : Word; Flags : Word);
+!LINE
+procedure 0734AbstractModem.AddModemCommand(S : String;
+                                        Cmd : Word; Flags : Word);
+
+Add or change a modem command in the modem command table.
+
+See also:  0692ExecuteModemCommand   0794Modem command options
+           0691RemoveModemCommand
+;
+;-------------------------------------------------------------------
+!TOPIC 691 RemoveModemCommand
+!NOINDEX
+procedure 0681ApModem.RemoveModemCommand(M : ModemRecPtr; Cmd : Word);
+!LINE
+procedure 0734AbstractModem.RemoveModemCommand(Cmd : Word);
+
+Remove a modem command from the modem command table.
+
+See also:  0690AddModemCommand       0694RemoveModemResponse
+;
+;-------------------------------------------------------------------
+!TOPIC 692 ExecuteModemCommand
+!NOINDEX
+procedure 0681ApModem.ExecuteModemCommand(M : ModemRecPtr; Cmd : Word;
+                                      CmdVal : Integer);
+!LINE
+procedure 0734AbstractModem.ExecuteModemCommand(Cmd : Word;
+                                             CmdVal : Integer); virtual;
+
+Execute a modem command.
+
+See also:  0698PutModemCommand       0704SetHandleResponses
+;
+;-------------------------------------------------------------------
+!TOPIC 693 AddModemResponse
+!NOINDEX
+procedure 0681ApModem.AddModemResponse(M : ModemRecPtr; S : String;
+                                   Code : Word);
+!LINE
+procedure 0734AbstractModem.AddModemResponse(S : String;
+                                          Code : Word);
+
+Insert a new response in the modem response table.
+
+See also:  0694RemoveModemResponse
+;
+;-------------------------------------------------------------------
+!TOPIC 694 RemoveModemResponse
+!NOINDEX
+procedure 0681ApModem.RemoveModemResponse(M : ModemRecPtr; S : String);
+!LINE
+procedure 0734AbstractModem.RemoveModemResponse(S : String);
+
+Remove a modem response from the modem response table.
+
+See also:  0693AddModemResponse      0691RemoveModemCommand
+;
+;-------------------------------------------------------------------
+!TOPIC 695 AddModemCode
+!NOINDEX
+procedure 0681ApModem.AddModemCode(M : ModemRecPtr; NC, Code : Byte;
+                               Options : Word);
+!LINE
+procedure 0734AbstractModem.AddModemCode(NC, Code : Byte;
+                                      Options : Word);
+
+Add a numeric response to the numeric code response table.
+
+See also:  0793Numeric response options  0696RemoveModemCode
+;
+;-------------------------------------------------------------------
+!TOPIC 696 RemoveModemCode
+!NOINDEX
+procedure 0681ApModem.RemoveModemCode(M : ModemRecPtr; NC : Byte);
+!LINE
+procedure 0734AbstractModem.RemoveModemCode(NC : Byte);
+
+Remove a modem numeric response from the response table.
+
+See also:  0695AddModemCode          0693AddModemResponse
+           0694RemoveModemResponse
+;
+;-------------------------------------------------------------------
+!TOPIC 697 GetModemResponse,ApModem/OoModem
+!NOINDEX
+procedure 0681ApModem.GetModemResponse(M : ModemRecPtr; CurTimeout : Integer);
+!LINE
+procedure 0734AbstractModem.GetModemResponse(CurTimeout : Integer); virtual;
+
+Wait for the result from the last modem command.
+
+See also:  0700GetLastCode           0699GetLastText
+           0704SetHandleResponses    0729SetModemResults
+           0708SetModemTimeouts
+;
+;-------------------------------------------------------------------
+!TOPIC 698 PutModemCommand,ApModem/OoModem
+!NOINDEX
+procedure 0681ApModem.PutModemCommand(M : ModemRecPtr; Cmd : String);
+!LINE
+procedure 0734AbstractModem.PutModemCommand(Cmd : String); virtual;
+
+Send a command string directly to the modem.
+
+See also:  0692ExecuteModemCommand
+;
+;-------------------------------------------------------------------
+!TOPIC 699 GetLastText
+!NOINDEX
+function 0681ApModem.GetLastText(M : ModemRecPtr) : String;
+!LINE
+function 0734AbstractModem.GetLastText : String;
+
+Return the text of the last verbal modem response.
+
+See also:  0700GetLastCode           0697GetModemResponse
+           0704SetHandleResponses    0729SetModemResults
+;
+;-------------------------------------------------------------------
+!TOPIC 700 GetLastCode
+!NOINDEX
+function 0681ApModem.GetLastCode(M : ModemRecPtr) : Integer;
+!LINE
+function 0734AbstractModem.GetLastCode : Integer;
+
+Return the code of the last modem response.
+
+See also:  0699GetLastText           0697GetModemResponse
+           0704SetHandleResponses    0729SetModemResults
+;
+;-------------------------------------------------------------------
+!TOPIC 701 GetConnectSpeed
+!NOINDEX
+function 0681ApModem.GetConnectSpeed(M : ModemRecPtr) : LongInt;
+!LINE
+function 0734AbstractModem.GetConnectSpeed : LongInt;
+
+Return the current connect speed of the modem.
+
+See also:  0717DialModem             0704SetHandleResponses
+;
+;-------------------------------------------------------------------
+!TOPIC 702 GetLastErrorMode
+!NOINDEX
+function 0681ApModem.GetLastErrorMode(M : ModemRecPtr) : Boolean;
+!LINE
+function 0734AbstractModem.GetLastErrorMode : Boolean;
+
+Return True if the last connection was an error correcting one.
+
+See also:  0700GetLastCode           0699GetLastText
+;
+;-------------------------------------------------------------------
+!TOPIC 703 SetModemDelay
+!NOINDEX
+procedure 0681ApModem.SetModemDelay(M : ModemRecPtr; DF : Word);
+!LINE
+procedure 0734AbstractModem.SetModemDelay(DF : Word);
+
+Specify the time (in ticks) to delay before sending a modem command.
+
+See also:  0773DefDelayFactor
+;
+;-------------------------------------------------------------------
+!TOPIC 704 SetHandleResponses
+!NOINDEX
+procedure 0681ApModem.SetHandleResponses(M : ModemRecPtr; State : Boolean);
+!LINE
+procedure 0734AbstractModem.SetHandleResponses(State : Boolean);
+
+Turn automatic response handling on or off.
+
+See also:  0692ExecuteModemCommand   0697GetModemResponse
+           0698PutModemCommand
+;
+;-------------------------------------------------------------------
+!TOPIC 705 SetDialPrefix,ApModem/OoModem
+!NOINDEX
+procedure 0681ApModem.SetDialPrefix(M : ModemRecPtr; Prefix : 0805PrefixStr);
+!LINE
+procedure 0734AbstractModem.SetDialPrefix(Prefix : 0805PrefixStr);
+
+Set a dialing prefix (do not include ATD).
+
+See also:  0717DialModem
+;
+;-------------------------------------------------------------------
+!TOPIC 706 SetDCDControl
+!NOINDEX
+procedure 0681ApModem.SetDCDControl(M : ModemRecPtr; Opt : Integer);
+!LINE
+procedure 0734AbstractModem.SetDCDControl(Opt : Integer);
+
+Set Data Carrier Detect behavior.
+
+See also:  0293CheckDCD              0808SetDCDControl codes
+           0707SetDTRControl
+;
+;-------------------------------------------------------------------
+!TOPIC 707 SetDTRControl
+!NOINDEX
+procedure 0681ApModem.SetDTRControl(M : ModemRecPtr; Opt : Integer);
+!LINE
+procedure 0734AbstractModem.SetDTRControl(Opt : Integer);
+
+Set Data Terminal Ready behavior.
+
+See also:  0706SetDCDControl         0286SetDTR
+           0809SetDTRControl codes
+;
+;-------------------------------------------------------------------
+!TOPIC 708 SetModemTimeouts
+!NOINDEX
+procedure 0681ApModem.SetModemTimeouts(M : ModemRecPtr;
+                                   Normal, Dialing : Integer);
+!LINE
+procedure 0734AbstractModem.SetModemTimeouts(Normal, Dialing : Integer);
+
+Set the timeout values for normal commands and dialing.
+
+See also:  0774DefDialTimeout        0776DefTimeout
+           0697GetModemResponse
+;
+;-------------------------------------------------------------------
+!TOPIC 709 SetModemPort
+!NOINDEX
+procedure 0681ApModem.SetModemPort(M : ModemRecPtr; P : PortRecPtr);
+!LINE
+procedure 0734AbstractModem.SetModemPort(AP : AbstractPortPtr);
+
+Change the modem to use the specified port.
+;
+;-------------------------------------------------------------------
+!TOPIC 710 SetModemErrorString
+!NOINDEX
+procedure 0681ApModem.SetModemErrorString(M : ModemRecPtr;
+                                      EC : ModemErrorString);
+!LINE
+procedure 0734AbstractModem.SetModemErrorString(EC : ModemErrorString);
+
+Change the modem error string.
+;
+;-------------------------------------------------------------------
+!TOPIC 711 SetModemCmdTable
+!NOINDEX
+procedure 0681ApModem.SetModemCmdTable(M : ModemRecPtr; P : Pointer;
+                                   Max : Word);
+!LINE
+procedure 0734AbstractModem.SetModemCmdTable(P : Pointer;
+                                          Max : Word);
+
+Change the modem to use the specified command table.
+
+See also:  0801ModemCommandTable
+;
+;-------------------------------------------------------------------
+!TOPIC 712 SetModemRespTable
+!NOINDEX
+procedure 0681ApModem.SetModemRespTable(M : ModemRecPtr; P : Pointer;
+                                    Max : Word);
+!LINE
+procedure 0734AbstractModem.SetModemRespTable(P : Pointer;
+                                           Max : Word);
+
+Change the modem to use a different word response table.
+;
+;-------------------------------------------------------------------
+!TOPIC 713 SetModemCodeTable
+!NOINDEX
+procedure 0681ApModem.SetModemCodeTable(M : ModemRecPtr; P : Pointer;
+                                    Max : Word);
+!LINE
+procedure 0734AbstractModem.SetModemCodeTable(P : Pointer;
+                                           Max : Word);
+
+Change the modem to use the specified numeric code response table.
+
+See also:  0800ModemCodeTable        0711SetModemCmdTable
+           0729SetModemResults
+;
+;-------------------------------------------------------------------
+!TOPIC 714 AnswerModem
+!NOINDEX
+procedure 0681ApModem.AnswerModem(M : ModemRecPtr);
+!LINE
+procedure 0734AbstractModem.AnswerModem;
+
+Tell the modem to answer immediately.
+
+See also:  0813AutoAnswerModem       0296CheckDeltaRI
+           0727SetModemRegister
+;
+;-------------------------------------------------------------------
+!TOPIC 715 RepeatModemCommand
+!NOINDEX
+procedure 0681ApModem.RepeatModemCommand(M : ModemRecPtr);
+!LINE
+procedure 0734AbstractModem.RepeatModemCommand;
+
+Repeat the last modem command.
+
+See also:  0717DialModem
+;
+;-------------------------------------------------------------------
+!TOPIC 716 SetCarrierTrans
+!NOINDEX
+procedure 0681ApModem.SetCarrierTrans(M : ModemRecPtr; Opt : Word);
+!LINE
+procedure 0734AbstractModem.SetCarrierTrans(Opt : Word);
+
+Turn carrier transmitter on/off.
+
+See also:  0797SetCarrierTrans codes
+;
+;-------------------------------------------------------------------
+!TOPIC 717 DialModem,ApModem/OoModem
+!NOINDEX
+procedure 0681ApModem.DialModem(M : ModemRecPtr; TelNo : 0804NumberStr);
+!LINE
+procedure 0734AbstractModem.DialModem(TelNo : 0804NumberStr); virtual;
+
+Dial the specified telephone number.
+
+See also:  0701GetConnectSpeed       0702GetLastErrorMode
+           0705SetDialPrefix
+;
+;-------------------------------------------------------------------
+!TOPIC 718 SetModemEcho
+!NOINDEX
+procedure 0681ApModem.SetModemEcho(M : ModemRecPtr; Opt : Word);
+!LINE
+procedure 0734AbstractModem.SetModemEcho(Opt : Word);
+
+Turn modem echoing on or off.
+
+See also:  0788SetModemEcho codes    0719SetModemOnlineEcho
+;
+;-------------------------------------------------------------------
+!TOPIC 719 SetModemOnlineEcho
+!NOINDEX
+procedure 0681ApModem.SetModemOnlineEcho(M : ModemRecPtr; Opt : Word);
+!LINE
+procedure 0734AbstractModem.SetModemOnlineEcho(Opt : Word);
+
+Turn modem remote echoing on or off.
+
+See also:  0718SetModemEcho
+;
+;-------------------------------------------------------------------
+!TOPIC 720 HangupModem
+!NOINDEX
+procedure 0681ApModem.HangupModem(M : ModemRecPtr; Opt : Word;
+                              DropDTR : Boolean);
+!LINE
+procedure 0734AbstractModem.HangupModem(Opt : Integer; DropDTR : Boolean);
+
+Hangup the modem by sending the hangup string or dropping DTR.
+
+See also:  0286SetDtr
+;
+;-------------------------------------------------------------------
+!TOPIC 721 SetModemSpeaker
+!NOINDEX
+procedure 0681ApModem.SetModemSpeaker(M : ModemRecPtr; Opt : Word);
+!LINE
+procedure 0734AbstractModem.SetModemSpeaker(Opt : Word);
+
+Set the speaker mode.
+
+See also:  0796SetModemSpeaker codes  0732SetModemVolume
+;
+;-------------------------------------------------------------------
+!TOPIC 722 SetModemOnline
+!NOINDEX
+procedure 0681ApModem.SetModemOnline(M : ModemRecPtr);
+!LINE
+procedure 0734AbstractModem.SetModemOnline;
+
+Switch the modem from command mode to terminal mode.
+
+See also:  0723SetModemCmdMode
+;
+;-------------------------------------------------------------------
+!TOPIC 723 SetModemCmdMode
+!NOINDEX
+procedure 0681ApModem.SetModemCmdMode(M : ModemRecPtr);
+!LINE
+procedure 0734AbstractModem.SetModemCmdMode;
+
+Switch modem from terminal mode to command mode.
+
+See also:  0722SetModemOnline
+;
+;-------------------------------------------------------------------
+!TOPIC 724 SetDialPulse
+!NOINDEX
+procedure 0681ApModem.SetDialPulse(M : ModemRecPtr);
+!LINE
+procedure 0734AbstractModem.SetDialPulse;
+
+Set the dial mode to pulse.
+
+See also:  0725SetDialTone
+;
+;-------------------------------------------------------------------
+!TOPIC 725 SetDialTone
+!NOINDEX
+procedure 0681ApModem.SetDialTone(M : ModemRecPtr);
+!LINE
+procedure 0734AbstractModem.SetDialTone;
+
+Set the dial mode to tone.
+
+See also:  0724SetDialPulse
+;
+;-------------------------------------------------------------------
+!TOPIC 726 SetModemQuiet
+!NOINDEX
+procedure 0681ApModem.SetModemQuiet(M : ModemRecPtr; Opt : Word);
+!LINE
+procedure 0734AbstractModem.SetModemQuiet(Opt : Word);
+
+Set the modem response mode (quiet/normal).
+
+See also:  0704SetHandleResponses
+;
+;-------------------------------------------------------------------
+!TOPIC 727 SetModemRegister
+!NOINDEX
+procedure 0681ApModem.SetModemRegister(M : ModemRecPtr; Reg, Value : Integer);
+!LINE
+procedure 0734AbstractModem.SetModemRegister(Reg, Value : Integer);
+
+Set the specified modem's S-register.
+
+See also:  0728GetModemRegister
+;
+;-------------------------------------------------------------------
+!TOPIC 728 GetModemRegister
+!NOINDEX
+function 0681ApModem.GetModemRegister(M : ModemRecPtr; Reg : Integer) : Byte;
+!LINE
+function 0734AbstractModem.GetModemRegister(Reg : Integer) : Byte;
+
+Return the value stored in the specified S-register.
+
+See also:  0727SetModemRegister
+;
+;-------------------------------------------------------------------
+!TOPIC 729 SetModemResults
+!NOINDEX
+procedure 0681ApModem.SetModemResults(M : ModemRecPtr; Opt : Word);
+!LINE
+procedure 0734AbstractModem.SetModemResults(Opt : Word);
+
+Set results to words or codes.
+
+See also:  0700GetLastCode           0699GetLastText
+;
+;-------------------------------------------------------------------
+!TOPIC 730 SetModemCodeSet
+!NOINDEX
+procedure 0681ApModem.SetModemCodeSet(M : ModemRecPtr; Opt : Word);
+!LINE
+procedure 0734AbstractModem.SetModemCodeSet(Opt : Word);
+
+Set the modem response code set.
+
+See also:  0789SetModemCodeSet codes
+;
+;-------------------------------------------------------------------
+!TOPIC 731 ResetModem
+!NOINDEX
+procedure 0681ApModem.ResetModem(M : ModemRecPtr);
+!LINE
+procedure 0734AbstractModem.ResetModem;
+
+Reset the modem to the power-on defaults.
+;
+;-------------------------------------------------------------------
+!TOPIC 732 SetModemVolume
+!NOINDEX
+procedure 0681ApModem.SetModemVolume(M : ModemRecPtr; Opt : Word);
+!LINE
+procedure 0734AbstractModem.SetModemVolume(Opt : Word);
+
+Set the speaker volume.
+
+See also:  0721SetModemSpeaker       0791SetModemVolume codes
+;
+;-------------------------------------------------------------------
+!TOPIC 733 OoModem
+OoModem builds upon the core and interface layers to provide easy-to-use
+modem control objects. The objects it implements are shown in the following
+hierarchy diagram:
+
+  0734AbstractModem
+    0752HayesModem
+      0754CourierModem
+      0759MicrocomModem
+      0764NullModem
+
+See also:  0812Declarations
+;
+;-------------------------------------------------------------------
+!TOPIC 734 AbstractModem
+!NOINDEX
+AbstractModemPtr = ^AbstractModem;
+!LINE
+AbstractModem = object(0651Root)
+
+Abstract object that defines the data fields and methods to be shared in
+common by higher-level modem objects. It provides methods in the following
+categories:
+
+  0741Advanced features              0812Declarations
+  0738Dialing & answering            0735General
+  0736Modem commands                 0739Modem configuration
+  0737Modem responses                0740Modem status
+;
+;-------------------------------------------------------------------
+!TOPIC 735 General,OoModem
+!NOINDEX
+!NOSEARCH
+The following general purpose methods are provided for working with
+modems:
+
+  0743Done                           0720HangupModem
+  0742Init                           0750Load
+  0731ResetModem                     0704SetHandleResponses
+  0703SetModemDelay                  0709SetModemPort
+  0708SetModemTimeouts               0751Store
+;
+;-------------------------------------------------------------------
+!TOPIC 736 Modem commands,OoModem
+!NOINDEX
+!NOSEARCH
+The following methods are provided relating to modem commands:
+
+  0690AddModemCommand                0692ExecuteModemCommand
+  0698PutModemCommand                0691RemoveModemCommand
+  0715RepeatModemCommand             0711SetModemCmdTable
+;
+;-------------------------------------------------------------------
+!TOPIC 737 Modem responses,OoModem
+!NOINDEX
+!NOSEARCH
+The following methods are provided relating to modem responses:
+
+  0695AddModemCode                   0693AddModemResponse
+  0696RemoveModemCode                0694RemoveModemResponse
+  0713SetModemCodeTable              0710SetModemErrorString
+  0712SetModemRespTable              0729SetModemResults
+;
+;-------------------------------------------------------------------
+!TOPIC 738 Dialing & answering,OoModem
+!NOINDEX
+!NOSEARCH
+The following methods are provided relating to dialing and answering:
+
+  0714AnswerModem                    0717DialModem
+  0705SetDialPrefix                  0724SetDialPulse
+  0725SetDialTone
+;
+;-------------------------------------------------------------------
+!TOPIC 739 Modem configuration,OoModem
+!NOINDEX
+!NOSEARCH
+The following methods are provided relating to modem configuration:
+
+  0728GetModemRegister               0716SetCarrierTrans
+  0706SetDCDControl                  0707SetDTRControl
+  0723SetModemCmdMode                0730SetModemCodeSet
+  0718SetModemEcho                   0722SetModemOnline
+  0719SetModemOnlineEcho             0726SetModemQuiet
+  0727SetModemRegister               0721SetModemSpeaker
+  0732SetModemVolume
+;
+;-------------------------------------------------------------------
+!TOPIC 740 Modem status,OoModem
+!NOINDEX
+!NOSEARCH
+The following methods are provided to obtain the status of the modem:
+
+  0701GetConnectSpeed                0700GetLastCode
+  0702GetLastErrorMode               0699GetLastText
+  0697GetModemResponse
+;
+;-------------------------------------------------------------------
+!TOPIC 741 Advanced features
+!NOINDEX
+!NOSEARCH
+The following methods are provided to support advanced features of certain
+modems:
+
+  0749SetDataCompression             0745SetErrorControl
+  0744SetFlowControl                 0746SetLinkLocked
+  0747SetModemSpeed                  0748SetSpeedMatching
+;
+;-------------------------------------------------------------------
+!TOPIC 742 Init,AbstractModem
+!NOINDEX
+constructor 0734AbstractModem.Init(AP : AbstractPortPtr);
+
+Allocates and initializes a modem object.
+
+See also:  0743Done
+;
+;-------------------------------------------------------------------
+!TOPIC 743 Done,AbstractModem
+!NOINDEX
+destructor 0734AbstractModem.Done; virtual;
+
+Dispose of this object.
+
+See also:  0742Init
+;
+;-------------------------------------------------------------------
+!TOPIC 744 SetFlowControl,AbstractModem
+!NOINDEX
+procedure 0734AbstractModem.SetFlowControl(FlowOpts : Word); virtual;
+
+Set flow control options.
+
+See also:  0778Flow control options
+;
+;-------------------------------------------------------------------
+!TOPIC 745 SetErrorControl
+!NOINDEX
+procedure 0734AbstractModem.SetErrorControl(ErrorOpt : 0799ErrorStates); virtual;
+!LINE
+procedure 0768ApCour.SetErrorControl(M : ModemRecPtr; ErrorOpt : 0799ErrorStates);
+!LINE
+procedure 0770ApMCom.SetErrorControl(M : ModemRecPtr; ErrorOpt : 0799ErrorStates);
+
+Turn error control on or off.
+;
+;-------------------------------------------------------------------
+!TOPIC 746 SetLinkLocked
+!NOINDEX
+procedure 0734AbstractModem.SetLinkLocked(Locked : Boolean); virtual;
+!LINE
+procedure 0768ApCour.SetLinkLocked(M : ModemRecPtr; Locked : Boolean);
+!LINE
+procedure 0770ApMCom.SetLinkLocked(M : ModemRecPtr; Locked : Boolean);
+
+Lock the link at the current rate or follow the connection rate.
+
+See also:  0747SetModemSpeed
+;
+;-------------------------------------------------------------------
+!TOPIC 747 SetModemSpeed
+!NOINDEX
+procedure 0734AbstractModem.SetModemSpeed(BPS : LongInt); virtual;
+
+Set the DCE/DCE data rate.
+
+See also:  0746SetLinkLocked         0748SetSpeedMatching
+;
+;-------------------------------------------------------------------
+!TOPIC 748 SetSpeedMatching
+!NOINDEX
+procedure 0734AbstractModem.SetSpeedMatching; virtual;
+
+Answering DCE matches speed with originating DCE.
+
+See also:  0747SetModemSpeed
+;
+;-------------------------------------------------------------------
+!TOPIC 749 SetDataCompression
+!NOINDEX
+procedure 0734AbstractModem.SetDataCompression(State : Boolean); virtual;
+!LINE
+procedure 0768ApCour.SetDataCompression(M : ModemRecPtr; State : Boolean);
+!LINE
+procedure 0770ApMCom.SetDataCompression(M : ModemRecPtr; State : Boolean);
+
+Turn data compression on or off.
+;
+;-------------------------------------------------------------------
+!TOPIC 750 Load,AbstractModem
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 0734AbstractModem.Load(var S : IdStream);
+!WRAP
+
+Load a modem object from a stream. The stream registration routine for an
+AbstractModem object is AbstractModemStream. The registration routine for a
+HayesModem is HayesModemStream. The registration routine for a CourierModem is
+CourierModemStream. The registration routine for a MicrocomModem is
+MicrocomModemStream. The registration routine for a NullModem is
+NullModemStream. To register all modem types, call AllModemStream.
+
+See also:  0751Store
+;
+;-------------------------------------------------------------------
+!TOPIC 751 Store,AbstractModem
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+procedure 0734AbstractModem.Store(var S : IdStream);
+!WRAP
+
+Store a modem object to a stream. The stream registration routine for an
+AbstractModem object is AbstractModemStream. The registration routine for a
+HayesModem is HayesModemStream. The registration routine for a CourierModem is
+CourierModemStream. The registration routine for a MicrocomModem is
+MicrocomModemStream. The registration routine for a NullModem is
+NullModemStream. To register all modem types, call AllModemStream.
+
+See also:  0750Load
+;
+;-------------------------------------------------------------------
+!TOPIC 752 HayesModem
+!NOINDEX
+HayesModemPtr = ^HayesModem;
+!LINE
+HayesModem = object(0734AbstractModem)
+
+Object used when working with most Hayes-compatible modems. It provides a
+single method, in addition to those it inherits from AbstractModem:
+
+  0753Init
+;
+;-------------------------------------------------------------------
+!TOPIC 753 Init,HayesModem
+!NOINDEX
+constructor 0752HayesModem.Init(AP : AbstractPortPtr);
+
+Allocate and initialize a modem object.
+
+See also:  0743Done
+;
+;-------------------------------------------------------------------
+!TOPIC 754 CourierModem
+!NOINDEX
+CourierModemPtr = ^CourierModem;
+!LINE
+CourierModem = object(0752HayesModem)
+
+Object used when working with a U.S. Robotics Courier modem. It provides
+the following methods:
+
+  0755Init                           0756SetFlowControl
+  0757SetModemSpeed                  0758SetSpeedMatching
+
+See also:  0768ApCour
+;
+;-------------------------------------------------------------------
+!TOPIC 755 Init,CourierModem
+!NOINDEX
+constructor 0754CourierModem.Init(AP : AbstractPortPtr);
+
+Allocate and initialize a modem object.
+
+See also:  0753HayesModem.Init
+;
+;-------------------------------------------------------------------
+!TOPIC 756 SetFlowControl,ApCour/OoModem
+!NOINDEX
+procedure 0754CourierModem.SetFlowControl(FlowOpts : Word); virtual;
+!LINE
+procedure 0768ApCour.SetFlowControl(M : ModemRecPtr; FlowOpts : Word);
+
+Set flow control options.
+
+See also:  0744AbstractModem.SetFlowControl  0778Flow control options
+;
+;-------------------------------------------------------------------
+!TOPIC 757 SetModemSpeed,ApCour/OoModem
+!NOINDEX
+procedure 0754CourierModem.SetModemSpeed(BPS : LongInt); virtual;
+!LINE
+procedure 0768ApCour.SetModemSpeed(M : ModemRecPtr; Baud : LongInt);
+
+Set the DCE/DCE data rate.
+
+See also:  0747AbstractModem.SetModemSpeed  0758SetSpeedMatching
+;
+;-------------------------------------------------------------------
+!TOPIC 758 SetSpeedMatching,ApCour/OoModem
+!NOINDEX
+procedure 0754CourierModem.SetSpeedMatching;
+!LINE
+procedure 0768ApCour.SetSpeedMatching(M : ModemRecPtr);
+
+Answering DCE matches speed with originating DCE.
+
+See also:  0748AbstractModem.SetSpeedMatching  0757SetModemSpeed
+;
+;-------------------------------------------------------------------
+!TOPIC 759 MicrocomModem
+!NOINDEX
+!NOWRAP
+MicrocomModemPtr = ^MicrocomModem;
+MicrocomModem = object(0752HayesModem)
+!WRAP
+
+Object used when working with a Microcom modem that implements the MNP error
+correcting protocol. It provides the following methods:
+
+  0760Init                           0761SetFlowControl
+  0762SetModemSpeed                  0763SetSpeedMatching
+
+See also:  0770ApMCom
+;
+;-------------------------------------------------------------------
+!TOPIC 760 Init,MicrocomModem
+!NOINDEX
+constructor 0759MicrocomModem.Init(AP : AbstractPortPtr);
+
+Allocate and initialize a modem object.
+
+See also:  0753HayesModem.Init
+;
+;-------------------------------------------------------------------
+!TOPIC 761 SetFlowControl,ApMCom/OoModem
+!NOINDEX
+procedure 0759MicrocomModem.SetFlowControl(FlowOpts : Word); virtual;
+!LINE
+procedure 0770ApMCom.SetFlowControl(M : ModemRecPtr; FlowOpts : Word);
+
+Set flow control options.
+
+See also:  0744AbstractModem.SetFlowControl  0778Flow control options
+;
+;-------------------------------------------------------------------
+!TOPIC 762 SetModemSpeed,ApMCom/OoModem
+!NOINDEX
+procedure 0759MicrocomModem.SetModemSpeed(BPS : LongInt); virtual;
+!LINE
+procedure 0770ApMCom.SetModemSpeed(M : ModemRecPtr; Baud : LongInt);
+
+Set the DCE/DCE data rate.
+
+See also:  0747AbstractModem.SetModemSpeed  0763SetSpeedMatching
+;
+;-------------------------------------------------------------------
+!TOPIC 763 SetSpeedMatching,ApMCom/OoModem
+!NOINDEX
+procedure 0759MicrocomModem.SetSpeedMatching;
+!LINE
+procedure 0770ApMCom.SetSpeedMatching(M : ModemRecPtr);
+
+Answering DCE matches speed with originating DCE.
+
+See also:  0748AbstractModem.SetSpeedMatching  0762SetModemSpeed
+;
+;-------------------------------------------------------------------
+!TOPIC 764 NullModem
+!NOINDEX
+NullModemPtr = ^NullModem;
+!LINE
+NullModem = object(0752HayesModem)
+
+Object used when working with a null modem cable between two directly connected PCs. It overrides the following methods:
+
+  0765DialModem                      0766GetModemResponse
+  0767PutModemCommand
+;
+;-------------------------------------------------------------------
+!TOPIC 765 DialModem,NullModem
+!NOINDEX
+procedure 0764NullModem.DialModem(TelNo : 0804NumberStr); virtual;
+
+Dials TelNo (prefixes 'ATD' + DialPrefixStr). (Simulates a successful
+connection to a remote modem.)
+
+See also:  0717AbstractModem.DialModem
+;
+;-------------------------------------------------------------------
+!TOPIC 766 GetModemResponse,NullModem
+!NOINDEX
+procedure 0764NullModem.GetModemResponse(CurTimeout : Integer); virtual;
+
+Wait for the result code from the last modem command. (Always returns
+with AsyncStatus = ecOk.)
+
+See also:  0697AbstractModem.GetModemResponse
+;
+;-------------------------------------------------------------------
+!TOPIC 767 PutModemCommand,NullModem
+!NOINDEX
+procedure 0764NullModem.PutModemCommand(Cmd : String); virtual;
+
+Sends Cmd string to the modem and handles the response. (Does nothing.
+Always returns with AsyncStatus = ecOk.)
+
+See also: 0698AbstractModem.PutModemCommand
+;
+;-------------------------------------------------------------------
+!TOPIC 768 ApCour
+ApCour is required only if you are using the non-OOP calling format and
+are using a U.S. Robotics Courier 9600 BPS modem. Its sole purpose is to
+provide the command and response tables for that modem and the few extended
+procedures that can't be handled through the tables.
+
+It provides the following routines:
+
+  0769InitModemCourier               0749SetDataCompression
+  0745SetErrorControl                0756SetFlowControl
+  0746SetLinkLocked                  0757SetModemSpeed
+  0758SetSpeedMatching
+
+See also:  0754CourierModem
+;
+;-------------------------------------------------------------------
+!TOPIC 769 InitModemCourier
+!NOINDEX
+procedure 0768ApCour.InitModemCourier(var M : ModemRecPtr; P : PortRecPtr);
+
+Allocate and initialize a Courier 9600 BPS modem.
+
+See also:  0688InitModem
+;
+;-------------------------------------------------------------------
+!TOPIC 770 ApMCom
+ApMCom is required only if you are using the non-OOP calling format and
+are using a MicroCom QX/3296c 9600 BPS modem. Its sole purpose is to
+provide the command and response tables for that modem and the few extended
+procedures that can't be handled through the tables.
+
+It provides the following routines:
+
+  0771InitModemMcom                  0749SetDataCompression
+  0745SetErrorControl                0761SetFlowControl
+  0746SetLinkLocked                  0762SetModemSpeed
+  0763SetSpeedMatching
+
+See also:  0759MicrocomModem
+;
+;-------------------------------------------------------------------
+!TOPIC 771 InitModemMcom
+!NOINDEX
+procedure 0770ApMCom.InitModemMcom(var M : ModemRecPtr; P : PortRecPtr);
+
+Allocate and initialize a Microcom modem.
+
+See also:  0688InitModem
+;
+;-------------------------------------------------------------------
+!TOPIC 772 Character constants,ApModem/OoModem
+!NOINDEX
+const
+  cA = $41;
+  cB = $42;
+  cC = $43;
+  cD = $44;
+  cE = $45;
+  cF = $46;
+  cG = $47;
+  cH = $48;
+  cI = $49;
+  cJ = $4A;
+  cK = $4B;
+  cL = $4C;
+  cM = $4D;
+  cN = $4E;
+  cO = $4F;
+  cP = $50;
+  cQ = $51;
+  cR = $52;
+  cS = $53;
+  cT = $54;
+  cU = $55;
+  cV = $56;
+  cW = $57;
+  cX = $58;
+  cY = $59;
+  cZ = $5A;
+  c_ = $20; {' '}
+
+Convenient constants for building response strings in a modem response
+table. Intended primarily for internal use.
+
+See also:  0803ModemResponseTable
+;
+;-------------------------------------------------------------------
+!TOPIC 773 DefDelayFactor
+!NOINDEX
+const
+  DefDelayFactor : Byte = 2;
+
+Default time (in clock ticks) to delay between modem commands. The delay is
+used to avoid problems involving slow modems on fast machines. Some modems
+need a very brief recovery period between replying to the last command and
+accepting a new command. If a very fast machine is sending out modem
+commands back-to-back, it might send out the next command before the modem
+is ready. The default delay of 2 clock tics is adequate for most machine/
+modem configurations.
+
+See also:  0703SetModemDelay
+;
+;-------------------------------------------------------------------
+!TOPIC 774 DefDialTimeout
+!NOINDEX
+const
+  DefDialTimeout : Word = 1092;
+
+Default time (in clock ticks) to wait for a response to an mcDial or
+mcAnswer command (1092 ticks = 60 seconds).
+
+See also:  0708SetModemTimeouts
+;
+;-------------------------------------------------------------------
+!TOPIC 775 DefSepChar
+!NOINDEX
+const
+  DefSepChar : Char = '/';
+
+Default separator character in modem response strings. This character is
+used internally when interpreting response strings returned by certain
+modems (e.g., the Courier modem, which returns strings like 'CONNECT
+9600/ARQ' rather than 'CONNECT 9600').
+
+See also: 0710SetModemErrorString
+;
+;-------------------------------------------------------------------
+!TOPIC 776 DefTimeout
+!NOINDEX
+const
+  DefTimeout : Word = 182;
+
+Default time (in clock ticks) to wait for a response to a modem command other
+than mcDial and mcAnswer (182 ticks = 10 secs).
+
+See also:  0708SetModemTimeouts
+;
+;-------------------------------------------------------------------
+!TOPIC 777 DTRDropHold
+!NOINDEX
+const
+  DTRDropHold : Word = 8;
+
+The number of ticks that 0720HangupModem holds the DTR line low. This value
+should be sufficient for most modems in their normal configuration. If your
+modem doesn't hang up using this value, you should increase DTRDropHold.
+
+See also:  0708SetModemTimeouts
+;
+;-------------------------------------------------------------------
+!TOPIC 778 Flow control options
+!NOINDEX
+const
+  fSWTrans = $0001; {Software transmit flow}
+  fSWRec   = $0002; {Software receive flow}
+  fHWTrans = $0004; {Hardware transmit flow}
+  fHWRec   = $0008; {Hardware receive flow}
+  fRmtXoff = $0010; {Pass Xon/Xoff to remote}
+
+Flow control option flags. See the entry for 0744SetFlowControl for details.
+;
+;-------------------------------------------------------------------
+!TOPIC 779 HayesCodeSet
+!NOINDEX
+const
+  HayesCodeMax = 60;
+  HayesCodeID : String[11] = 'hayes codes';
+  HayesCodeSet : array[0..HayesCodeMax] of Byte = (...);
+
+HayesCodeSet is a table used to translate numeric responses returned by
+Hayes-compatible modems into ApModem/OoModem response codes. HayesCodeMax is
+the last valid index into the table. HayesCodeID is an ID string used to
+mark the beginning of the table. (Note that OOMODEM/APCOUR/APMCOM provide
+similar tables, CourierCodeSet and MicrocomCodeSet, for U.S.
+Robotics Courier and Microcom 9600 BPS modems.)
+;
+;-------------------------------------------------------------------
+!TOPIC 780 Hayes commands
+!NOINDEX
+const
+  HayesCommandMax = 110;
+  HayesCommandID : String[14] = 'hayes commands';
+  HayesCommandSet : array[0..HayesCommandMax] of Byte = (...);
+
+HayesCommandSet is a table used to translate ApModem/OoModem command
+codes into Hayes-compatible command strings. HayesCommandMax is the last
+valid index into the table. HayesCommandID is an ID string used to mark the
+beginning of the table. (Note that OOMODEM/APCOUR/APMCOM provide similar
+tables, CourierCommandSet and MicrocomCommandSet, for U.S. Robotics Courier
+and Microcom 9600 BPS modems.)
+;
+;-------------------------------------------------------------------
+!TOPIC 781 Hayes responses
+!NOINDEX
+const
+  HayesResponseMax = 120;
+  HayesResponseID : String[15] = 'hayes responses';
+  HayesResponseSet : array[0..HayesResponseMax] of Byte = (...);
+
+HayesResponseSet is a table used to translate response strings returned by
+Hayes-compatible modems into ApModem/OoModem response codes.
+HayesResponseMax is the last valid index into the table. HayesResponseID is
+an ID string used to mark the beginning of the table. (Note that
+OOMODEM/APCOUR/APMCOM provide similar tables, CourierResponseSet and
+MicrocomResponseSet, for U.S. Robotics Courier and Microcom 9600 BPS
+modems.)
+;
+;-------------------------------------------------------------------
+!TOPIC 782 MaxDialStr
+!NOINDEX
+const
+  MaxDialStr = 30;
+
+Maximum length of prefix for dial string. See 0805PrefixStr type and
+0705SetDialPrefix.
+;
+;-------------------------------------------------------------------
+!TOPIC 783 MaxSRegs
+!NOINDEX
+const
+  MaxSRegs = 40;
+
+Maximum number of S-registers supported.
+
+See also:  0784MaxStdSRegs
+;
+;-------------------------------------------------------------------
+!TOPIC 784 MaxStdSRegs
+!NOINDEX
+const
+  MaxStdSRegs = 12;
+
+Highest standard S-register number on a Hayes-compatible modem.
+
+See also:  0783MaxSRegs              0807SRegSet
+;
+;-------------------------------------------------------------------
+!TOPIC 785 MaxWordLen
+!NOINDEX
+const
+  MaxWordLen = 30;
+
+Maximum length for a modem response string (a word rather than a number).
+;
+;-------------------------------------------------------------------
+!TOPIC 786 Modem commands,ApModem/OoModem
+!NOINDEX
+const
+  mcNone             = 0;   {Null command}
+  mcAnswer           = 1;   {A    - answer phone immediately}
+  mcRepeat           = 2;   {A/   - repeat last command}
+  mcSetCarrierTrans  = 3;   {Cn   - carrier transmitter on/off}
+  mcDial             = 4;   {Ds   - dial number string}
+  mcEcho             = 5;   {En   - set offline echo on/off}
+  mcOnlineEcho       = 6;   {Fn   - set online echo on/off}
+  mcHook             = 7;   {Hn   - set hook mode on/off/special}
+  mcSpeaker          = 8;   {Mn   - set speaker off/on until CD/always on}
+  mcOnline           = 9;   {O    - go online}
+  mcQuiet            = 10;  {Q    - set result mode quiet/normal}
+  mcSetRegister      = 11;  {Sn=x - set an S register}
+  mcReadRegister     = 12;  {Sn=  - return an S register}
+  mcPulse            = 13;  {P    - pulse dialing}
+  mcResultCodes      = 14;  {Vn   - set results codes or verbal}
+  mcCodeSet          = 15;  {Xn   - set result code set}
+  mcReset            = 16;  {Z    - reset modem}
+  mcTone             = 17;  {T    - tone dialing}
+  mcVolume           = 18;  {L    - volume control, non-standard, common}
+  mcDCDControl       = 19;  {&C   - DCD always on/follow connect}
+  mcDTRControl       = 20;  {&D   - DTR override/terminate call}
+  mcCmdMode          = 21;  {+++  - escape to command mode}
+  mcDataCompression  = 22;  {varies with modem}
+  mcErrorControlOff  = 23;  {varies with modem}
+  mcErrorControlOn   = 24;  {varies with modem}
+  mcErrorControlAuto = 25;  {varies with modem}
+  mcLinkLockedOn     = 26;  {varies with modem}
+  mcLinkLockedOff    = 27;  {varies with modem}
+  mcUser0            = 100; {...user added commands...}
+  mcUser1            = 101;
+  ...
+  mcUser9            = 109;
+
+Codes for standard and user-defined modem commands. mcAnswer through mcTone
+correspond to the standard Hayes command set. mcVolume is a command
+available on many, but not all Hayes-compatible modems. mcDECControl
+through mcLinkLockedOff are used only for Courier and Microcom modems.
+mcUser0 through mcUser9 are codes reserved for user-defined commands. See
+the entry for 0690AddModemCommand.
+;
+;-------------------------------------------------------------------
+!TOPIC 787 SetModemResults codes
+!NOINDEX
+const
+  mCodesResults = 0;
+  mWordResults  = 1;
+
+Function codes passed to 0729SetModemResults.
+;
+;-------------------------------------------------------------------
+!TOPIC 788 SetModemEcho codes
+!NOINDEX
+const
+  mEchoOff = 0;
+  mEchoOn  = 1;
+
+Function codes passed to 0718SetModemEcho and 0719SetModemOnlineEcho.
+;
+;-------------------------------------------------------------------
+!TOPIC 789 SetModemCodeSet codes
+!NOINDEX
+const
+  mExtSet0 = 0;
+  mExtSet1 = 1;
+  mExtSet2 = 2;
+  mExtSet3 = 3;
+  mExtSet4 = 4;
+  mExtSet5 = 5;
+  mExtSet6 = 6;
+  mExtSet7 = 7;
+
+Function codes passed to 0730SetModemCodeSet.
+;
+;-------------------------------------------------------------------
+!TOPIC 790 HangupModem codes
+!NOINDEX
+const
+  mHangup  = 0;
+  mOnHook  = 0;
+  mOffHook = 1;
+
+Function codes passed to 0720HangupModem.
+;
+;-------------------------------------------------------------------
+!TOPIC 791 SetModemVolume codes
+!NOINDEX
+const
+  mLow    = 0;
+  mMedium = 1;
+  mHigh   = 2;
+
+Function codes passed to 0732SetModemVolume.
+;
+;-------------------------------------------------------------------
+!TOPIC 792 SetModemQuiet codes
+!NOINDEX
+const
+  mNormalResp = 0;
+  mQuietResp  = 1;
+
+Function codes passed to 0726SetModemQuiet.
+;
+;-------------------------------------------------------------------
+!TOPIC 793 Numeric response options
+!NOINDEX
+const
+  mnErrorControl = $0001; {An error correcting connection was made}
+  mnOtherBPS     = $0002; {Other BPS connection}
+  mn600BPS       = $0004; {600 BPS connection}
+  mn1200BPS      = $0008; {1200 BPS connection}
+  mn2400BPS      = $0010; {2400 BPS connection}
+  mn4800BPS      = $0020; {4800 BPS connection}
+  mn7200BPS      = $0040; {7200 BPS connection}
+  mn9600BPS      = $0080; {9600 BPS connection}
+  mn12000BPS     = $0100; {1200 BPS connection}
+  mn14400BPS     = $0200; {11400 BPS connection}
+
+Modem numeric response options. mnErrorControl means the associated numeric
+response indicates an error control connection. mnOtherBPS indicates a
+connection of an unknown BPS rate. mn600BPS through mn14400BPS indicate a
+connection of the specified BPS rate.
+
+See also:  0695AddModemCode
+;
+;-------------------------------------------------------------------
+!TOPIC 794 Modem command options
+!NOINDEX
+const
+  moUsePrefix   = $0001; {Attach CmdPrefix 'AT' to front of command string}
+  moUseSuffix   = $0002; {Append CmdSuffix <CR> to end of command}
+  moDialTimeout = $0004; {Use dial timeout value}
+
+Modem command options. moUsePrefix indicates that the command should be
+preceded by the standard prefix (this defaults to the string AT, but can be
+changed by directly modifying the string field CmdPrefix). moUseSuffix
+indicates that the command should be followed by a suffix (this defaults to
+a carriage return, but can be changed by directly modifying the character
+field CmdSuffix). moDialTimeout indicates that, when waiting for a response
+from the modem, the dial timeout value (default = 60 seconds) should be
+used, rather than the shorter command timeout value (default = 10 seconds).
+See the entry for 0690AddModemCommand.
+;
+;-------------------------------------------------------------------
+!TOPIC 795 Modem responses,ApModem/OoModem
+!NOINDEX
+const
+  mrOk         = 0;  {OK}
+  mrConnect    = 1;  {CONNECT, CONNECT 1200, CONNECT 2400, etc.}
+  mrRing       = 2;  {RING, RINGING}
+  mrNoCarrier  = 3;  {NO CARRIER}
+  mrError      = 4;  {ERROR}
+  mrNoDialtone = 6;  {NO DIALTONE, NO DIAL TONE, NO TONE}
+  mrBusy       = 7;  {BUSY}
+  mrNoAnswer   = 8;  {NO ANSWER}
+  mrVoice      = 9;  {VOICE}
+  mrNone       = 99;
+
+Codes for standard responses from a Hayes-compatible modem.
+;
+;-------------------------------------------------------------------
+!TOPIC 796 SetModemSpeaker codes
+!NOINDEX
+const
+  mSpeakerOff       = 0;
+  mSpeakerOnDial    = 1;
+  mSpeakerOn        = 2;
+  mSpeakerOnConnect = 3;
+
+Function codes passed to 0721SetModemSpeaker.
+;
+;-------------------------------------------------------------------
+!TOPIC 797 SetCarrierTrans codes
+!NOINDEX
+const
+  mTransOff = 0;
+  mTransOn  = 1;
+
+Function codes passed to 0716SetCarrierTrans.
+;
+;-------------------------------------------------------------------
+!TOPIC 798 SRegsInit
+!NOINDEX
+const
+  SRegsInit : 0807SRegSet = (
+    (Lo:0; Hi:255; Def:0),   {0  Rings to answer}
+    (Lo:0; Hi:255; Def:0),   {1  Ring counter}
+    (Lo:0; Hi:127; Def:43),  {2  Escape code (ASCII 0-127)}
+    (Lo:0; Hi:127; Def:13),  {3  Carriage return (ASCII 0-127)}
+    (Lo:0; Hi:127; Def:10),  {4  Line feed (ASCII 0-127)}
+    (Lo:0; Hi:32;  Def:8),   {5  Backspace (ASCII 0-33)}
+    (Lo:0; Hi:255; Def:2),   {6  Wait period for dialtone}
+    (Lo:1; Hi:255; Def:30),  {7  Wait for ring-back/carrier}
+    (Lo:0; Hi:255; Def:2),   {8  Comma pause time}
+    (Lo:1; Hi:255; Def:6),   {9  Carrier recognize wait}
+    (Lo:1; Hi:255; Def:7),   {10 Carrier loss wait}
+    (Lo:1; Hi:255; Def:70),  {11 Reserved}
+    (Lo:20;Hi:255; Def:50)); {12 Escape code guard time}
+
+Table containing the range of legal values for the 13 standard S-registers,
+and the defaults. This table can be used when calling 0727SetModemRegister
+to reset a register to its default value.
+;
+;-------------------------------------------------------------------
+!TOPIC 799 ErrorStates
+!NOINDEX
+type
+  ErrorStates = (eCheckOff, eCheckOn, eCheckAuto);
+
+Error checking options. See the entry for 0745SetErrorControl.
+;
+;-------------------------------------------------------------------
+!TOPIC 800 ModemCodeTable
+!NOINDEX
+type
+  ModemCodeTable = array[0..65534] of Byte;
+  ModemCodePtr = ^ModemCodeTable;
+
+A table of modem numeric code responses.
+
+See also:  0713SetModemCodeTable
+;
+;-------------------------------------------------------------------
+!TOPIC 801 ModemCommandTable
+!NOINDEX
+type
+  ModemCommandTable = array[0..65534] of Byte;
+  ModemCommandPtr = ^ModemCommandTable;
+
+A table of modem commands.
+
+See also:  0711SetModemCmdTable
+;
+;-------------------------------------------------------------------
+!TOPIC 802 ModemRegType
+!NOINDEX
+type
+  ModemRegType =
+    record
+      Lo  : byte;
+      Hi  : byte;
+      Def : byte;
+    end;
+
+Defines a single S-register. Lo and Hi represent the range of values that the
+register may contain. Def is the default value for the register.
+
+See also:  0807SRegSet
+;
+;-------------------------------------------------------------------
+!TOPIC 803 ModemResponseTable
+!NOINDEX
+type
+  ModemResponseTable = array[0..65534] of Byte;
+  ModemResponsePtr = ^ModemResponseTable;
+
+A table of modem response strings.
+
+See also:  0712SetModemRespTable
+;
+;-------------------------------------------------------------------
+!TOPIC 804 NumberStr
+!NOINDEX
+type
+  NumberStr = String[20];
+
+Maximum length of a telephone number passed to 0717DialModem.
+;
+;-------------------------------------------------------------------
+!TOPIC 805 PrefixStr
+!NOINDEX
+type
+  PrefixStr = String[MaxDialStr];
+
+A string added to the modem dial command ('ATD') before the phone number.
+See the entry for 0705SetDialPrefix.
+;
+;-------------------------------------------------------------------
+!TOPIC 806 ResponseType
+!NOINDEX
+type
+  ResponseType = (NumericCodes, WordCodes);
+
+Type of an internal variable used to indicate whether the modem in use is
+configured to supply responses in the form of numbers or words.
+;
+;-------------------------------------------------------------------
+!TOPIC 807 SRegSet
+!NOINDEX
+type
+  SRegSet = array[0..MaxStdSRegs] of 0802ModemRegType;
+
+A table describing the legal and default values for the standard S-registers.
+
+See also:  0784MaxStdSRegs
+;
+;-------------------------------------------------------------------
+!TOPIC 808 SetDCDControl codes
+!NOINDEX
+const
+  mDCDAlwaysOn      = 0;
+  mDCDFollowConnect = 1;
+
+Function codes passed to 0706SetDCDControl.
+;
+;-------------------------------------------------------------------
+!TOPIC 809 SetDTRControl codes
+!NOINDEX
+const
+  mDTRAlwaysOn      = 0;
+  mDTRTerminateCall = 1;
+
+Options passed to 0707SetDTRControl.
+;
+;-------------------------------------------------------------------
+!TOPIC 810 ModemRec
+!NOINDEX
+type
+  ModemRecPtr = ^ModemRec;
+  ModemRec =
+    record
+      ...
+    end;
+
+A record structure used internally to store information about a modem.
+An application program generally works only with ModemRecPtrs.
+
+See also:  0688InitModem
+;
+;-------------------------------------------------------------------
+!TOPIC 811 Declarations,ApModem
+!NOINDEX
+!NOSEARCH
+ApModem declares the following types and constants:
+
+  0772Character constants            0773DefDelayFactor
+  0774DefDialTimeout                 0775DefSepChar
+  0776DefTimeout                     0777DTRDropHold
+  0799ErrorStates                    0778Flow control options
+  0790HangupModem codes              0780Hayes commands
+  0779HayesCodeSet                   0781Hayes responses
+  0782MaxDialStr                     0783MaxSRegs
+  0784MaxStdSRegs                    0785MaxWordLen
+  0814ModemCharDelay                 0794Modem command options
+  0786Modem commands                 0795Modem responses
+  0800ModemCodeTable                 0801ModemCommandTable
+  0810ModemRec                       0802ModemRegType
+  0803ModemResponseTable             0804NumberStr
+  0793Numeric response options       0805PrefixStr
+  0806ResponseType                   0797SetCarrierTrans codes
+  0808SetDCDControl codes            0809SetDTRControl codes
+  0789SetModemCodeSet codes          0788SetModemEcho codes
+  0792SetModemQuiet codes            0787SetModemResults codes
+  0796SetModemSpeaker codes          0791SetModemVolume codes
+  0807SRegSet                        0798SRegsInit
+;
+;-------------------------------------------------------------------
+!TOPIC 812 Declarations,OoModem
+!NOINDEX
+!NOSEARCH
+OoModem declares the following types and constants:
+
+  0772Character constants            0773DefDelayFactor
+  0774DefDialTimeout                 0775DefSepChar
+  0776DefTimeout                     0777DTRDropHold
+  0799ErrorStates                    0778Flow control options
+  0790HangupModem codes              0780Hayes commands
+  0779HayesCodeSet                   0781Hayes responses
+  0782MaxDialStr                     0783MaxSRegs
+  0784MaxStdSRegs                    0785MaxWordLen
+  0814ModemCharDelay                 0794Modem command options
+  0786Modem commands                 0795Modem responses
+  0800ModemCodeTable                 0801ModemCommandTable
+  0802ModemRegType                   0803ModemResponseTable
+  0804NumberStr                      0793Numeric response options
+  0805PrefixStr                      0806ResponseType
+  0797SetCarrierTrans codes          0808SetDCDControl codes
+  0809SetDTRControl codes            0789SetModemCodeSet codes
+  0788SetModemEcho codes             0792SetModemQuiet codes
+  0787SetModemResults codes          0796SetModemSpeaker codes
+  0791SetModemVolume codes           0807SRegSet
+  0798SRegsInit
+;
+;-------------------------------------------------------------------
+!TOPIC 813 AutoAnswerModem
+!NOINDEX
+procedure 0681ApModem.AutoAnswerModem(M : ModemRecPtr);
+!LINE
+procedure 0734AbstractModem.AutoAnswerModem;
+
+Wait for an answer from a modem in auto-answer mode.
+
+See also:  0714AnswerModem
+;
+;-------------------------------------------------------------------
+!TOPIC 814 ModemCharDelay
+!NOINDEX
+const
+  ModemCharDelay : Word = 10;
+
+Milliseconds between outgoing cmd characters.

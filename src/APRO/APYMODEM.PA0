@@ -1,0 +1,107 @@
+type
+  {Ymodem protocol transmit states}
+  YmodemStateType = (
+    {Transmit states}
+    tyInitial,              {0  Get next file}
+    tyHandshake,            {1  Waiting for handshake}
+    tyGetFileName,          {2  Get the next file to transmit}
+    tySendFileName,         {3  Format and send file name block}
+    tyDraining,             {4  Waiting for protocol block to drain}
+    tyReplyPending,         {5  Waiting for reply to name block}
+    tyPrepXmodem,           {6  Prepare to enter Xmodem state table}
+    tySendXmodem,           {7  Calling Xmodem state table}
+    tyFinished,             {8  Send EOT}
+    tyFinishDrain,          {9  Wait for last block to go out}
+    tyFinishAck,            {10 Wait for ACK to last block}
+    tyDone,                 {11 Signal end of protocol}
+
+    {Receive states}
+    ryInitial,              {12 Initialize vars, get buffers, etc.}
+    ryDelay,                {13 Delay the handshake for Telix}
+    ryWaitForHSReply,       {14 Waiting for 1st reply to handshake}
+    ryWaitForBlockStart,    {15 Wait for block start}
+    ryCollectBlock,         {16 Collect received chars into DataBlock}
+    ryProcessBlock,         {17 Process complete DataBlock}
+    ryOpenFile,             {18 Extract file info}
+    ryPrepXmodem,           {19 Prepare to enter Xmodem state}
+    ryReceiveXmodem,        {20 Calling Xmodem state table}
+    ryFinished,             {21 Clean up}
+    ryDone);                {22 Signal end of protocol}
+
+  {Define a Ymodem alias over Xmodem}
+  YmodemPtr = ^YmodemProtocol;
+  YmodemProtocol = record
+    {vvvvv must be same as XmodemProtocolRec vvvvv}
+    PData          : ProtocolDataPtr;   {General protocol data}
+    StartChar      : Char;              {Block start character}
+    OneKMode       : Boolean;           {True for XModem1K}
+    BlockWait      : Byte;              {Wait seconds between blocks}
+    MaxBlockErrors : Byte;              {Max number of allowed block errors}
+    FirstBlockNum  : Byte;              {First block number to use}
+    GMode          : Boolean;           {True for YmodemG}
+    TimerPending   : Boolean;           {True if waiting to start timer}
+    FinishWait     : Word;              {Extra wait GMode EOT response}
+
+    {Temp vars that state machine requires to be static}
+    HandshakeChar  : Char;              {Last handshake char used}
+    NaksReceived   : Byte;              {Count naks received}
+    EotCounter     : Byte;              {Counts received EOTs}
+    CanCounter     : Byte;              {Counts received cCans}
+    ReplyTimer     : EventTimer;        {Track timeouts waiting for replies}
+    NoMoreData     : Boolean;           {Flag for tracking end-of-file}
+    DataBlock      : ^DataBlockType;    {Data block}
+    CharsLeft      : Word;              {Characters not yet xmitted}
+    OutBufPos      : Word;              {Output buffer pos for reduced blocks}
+    BlkIndex       : Word;              {Index into received chars in DataBlock}
+    OverheadLen    : Word;              {Number of overhead bytes per block}
+    LastBlockSize  : Word;              {Number of bytes last read}
+
+    {State information}
+    XmodemState    : XmodemStateType;   {Current state of Xmodem}
+    {^^^^^ must be same as XmodemProtocolRec ^^^^^}
+
+    {Unique Ymodem fields}
+    YmodemState    : YmodemStateType;   {Current Ymodem state}
+    SaveName       : PathStr;           {Saved file name}
+    SaveLen        : LongInt;           {Saved file length}
+    FilesSent      : Boolean;           {True if we actually sent a file}
+    FileHeader     : ^DataBlockType;    {Needed for file name block}
+    NewDT          : Longint;           {New date/time stamp}
+  end;
+
+{$IFDEF UsePModeDLL}
+
+procedure InitYmodem(var P : ProtocolRecPtr;
+                     PortPtr : PortRecPtr;
+                     Use1K, UseGMode : Boolean); Export;
+procedure InitCustomYmodem(var P : ProtocolRecPtr;
+                           PortPtr : PortRecPtr;
+                           Use1K, UseGMode : Boolean;
+                           Options : Word); Export;
+procedure DoneYmodem(var P : ProtocolRecPtr); Export;
+procedure ProtocolTransmitYM(P : ProtocolRecPtr); Export;
+procedure PrepareTransmitPartYM(P : ProtocolRecPtr); Export;
+function ProtocolTransmitPartYM(P : ProtocolRecPtr) : ProtocolStateType; Export;
+procedure ProtocolReceiveYM(P : ProtocolRecPtr); Export;
+procedure PrepareReceivePartYM(P : ProtocolRecPtr); Export;
+function ProtocolReceivePartYM(P : ProtocolRecPtr) : ProtocolStateType; Export;
+
+{$ELSE}
+
+procedure InitYmodem(var P : ProtocolRecPtr;
+                     PortPtr : PortRecPtr;
+                     Use1K, UseGMode : Boolean);
+procedure InitCustomYmodem(var P : ProtocolRecPtr;
+                           PortPtr : PortRecPtr;
+                           Use1K, UseGMode : Boolean;
+                           Options : Word);
+procedure DoneYmodem(var P : ProtocolRecPtr);
+procedure ProtocolTransmitYM(P : ProtocolRecPtr);
+procedure PrepareTransmitPartYM(P : ProtocolRecPtr);
+function ProtocolTransmitPartYM(P : ProtocolRecPtr) : ProtocolStateType;
+procedure ProtocolReceiveYM(P : ProtocolRecPtr);
+procedure PrepareReceivePartYM(P : ProtocolRecPtr);
+function ProtocolReceivePartYM(P : ProtocolRecPtr) : ProtocolStateType;
+
+{$ENDIF}
+

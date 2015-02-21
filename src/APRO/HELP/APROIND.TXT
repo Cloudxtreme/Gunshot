@@ -1,0 +1,1009 @@
+AbortCurrentEvent  596
+AbortFunc  106
+AbortTracing  111
+AbstractFax  548
+AbstractFaxConverter  511
+AbstractModem  255
+AbstractPcxFaxConverter READ.1ST
+AbstractPcxUnpack READ.1ST
+AbstractPort  187
+AbstractProtocol  319
+AcceptFaxFunc (ApAbsFax)  547
+AcceptFaxFunc (OoAbsFax)  548
+AcceptFileFunc (ApAbsPcl)  319
+AcceptFileFunc (OoAbsPcl)  320
+ActivateApDigi14  139
+ActivateApFossil  136
+ActivateApInt14  141
+ActivateApUart  126
+ActivatePort  110, 143
+ActivatePortProc  106
+ActiveComPort  110
+AddFaxEntry  549
+AddFileToList  321
+AddModemCode  256
+AddModemCommand  257
+AddModemResponse  258
+AddTraceEntry  111
+afOptionsAreOn  550
+afOptionsOff  550
+afOptionsOn  550
+ANSI#escape#sequences  448
+AnsiEmulator  458
+AnswerModem  259
+apOptionsAreOn  321
+apOptionsOff  321
+apOptionsOn  322
+Append (FileMaskList)  637
+Append (LzhFileList)  658
+Append (ZipFileList)  697
+AppendFileMask  637
+AproFontName  509
+apSuppressCtrlZ  426
+Archive  636
+Archive#options 634
+ArchiveStatus  168
+arOptionsAreOn  637
+arOptionsOff  638
+arOptionsOn  638
+arOutPath  635
+AsciiProtocol (ApAscii)  427
+AsciiProtocol (OoAscii)  427
+AssignPortDev  444
+AsyncErrorProc  106
+AsyncStatus  168
+AutoAnswerModem  260
+BadArchiveOptions  635
+BadFaxCvtOptions  509
+BadFaxOptions  547
+BadPortOptions  102
+BadProtocolOptions  317
+BadTerminalWinOptions  473
+BadUnpackOptions  509
+BlockFillChar  317
+BlockReady  188
+BPlusOverHead  413
+BPlusProtocol (ApBPlus)  414
+BPlusProtocol (OoBPlus)  414
+BPlusTurnDelay  413
+BPtr  106
+BufferFlush  110, 143
+BufferFlushProc  106
+BufferStatus  110, 144
+BufferStatusProc  106
+BuildLzhFileList  658
+BuildZipFileList  697
+C12AbstractFax  562
+C12ReceiveFax  562
+C12SendFax  562
+CalibrateDelay  89
+Capture  487
+CaptureIsOn  487
+CaptureTerminalWindow  474
+CASFax  595
+CASInstalled (ApFaxCas)  596
+CASInstalled (OoFaxCas)  596
+ccIncomingChar  473
+CentralDirHead  691
+CentralDirTail  692
+ChangeBaud  188
+ChangeBufferSizes  189
+ChangeDataBits  189
+ChangeParity  190
+ChangeStopBits  190
+Character#constants,ApModem/OoModem  250
+Character#constants,ApPort  102
+CharArray  106
+CharReady  110, 144
+CharReadyFunc  106
+CharSet  106
+CheckCTS  191
+CheckDataReady  191
+CheckDCD  192
+CheckDeltaCTS  192
+CheckDeltaDCD  193
+CheckDeltaDSR  193
+CheckDeltaRI  194
+CheckDSR  194
+CheckFifoError  195
+CheckForString  112
+CheckLineBreak  196
+CheckLineError  196
+CheckRI  197
+Checksum#type#strings  317
+Checksum#types  317
+CheckTE  197
+CheckTHRE  197
+ClassifyUart  126
+ClearFaxEntries  551
+ClearFlag  162
+ClearScreenProc  451
+ClearTracing  113
+CloseFile  596
+CommandRecord  458
+Commands,TermWin  472
+CommentPtr  692
+ComNameString  113
+ComNameType  106
+Compress (ApLzh/OoLzh)  659
+Compress (ApZip/OoZip)  697
+CompressFileMaskList (ApLzh/OoLzh)  659
+CompressFileMaskList (ApZip/OoZip)  698
+Compression#method#codes,ApLzh/OoLzh  653
+Compression#method#codes,ApZip/OoZip  691
+CompressionMode (ApLzh)  654
+CompressionMode (ApZip)  693
+CompressSuccessFunc (ApLzh)  654
+CompressSuccessFunc (ApZip)  693
+CompressSuccessFunc (OoLzh)  654
+CompressSuccessFunc (OoZip)  693
+Configuration#data  473
+Control#register#bit#masks  105
+ControlFileRecord  594
+ConvertFax 513
+CopyVirtToFile  476
+Core#routines  110
+CountsPerMs  88
+CourierModem  255
+Crc (ApLzh)  655
+Crc (ApZip)  694
+Create (Lzh)  660
+Create (Zip)  698
+CreateLzhFile  661
+CreateOutputFile  638
+CreateZipFile  699
+CurrentAnsiPort  451
+DataBitType  106
+DataBlockType  318
+DcxFaxConverter READ.1ST
+DeactivatePort  110, 145
+DefArchiveOptions  635
+DefAsciiOptions  427
+DefaultLineOptions  103
+DefaultXonChar  103
+DefBaseAddr  125
+DefBlockLen  426
+DefBlockWait  351
+DefCaptureBufferSize  473
+DefCaptureFileName  473
+DefComVector  125
+DefDelayFactor  250
+DefDialTimeout  250
+DefDigi14Options  138
+DefEOLChar  426
+DefFaxCvtOptions  509
+DefFaxOptions  547
+DefFinishRetry  372
+DefFinishWait (APXModem/OoXModem)  351
+DefFinishWait (ApZmodem/OoZModem)  372
+DefFossilOptions  134
+DefHandshakeRetry  317
+DefHandshakeWait  317
+DefHibitPrefix  388
+Defines 10
+DefInit  547
+DefInterCharDelay  427
+DefInterLineDelay  427
+DefIrqNumber  125
+DefKermitOptions  388
+DefMaxBlockErrors  351
+DefMinRepeatCnt  388
+DefPortOptions  103
+DefProtocolOptions  317
+DefRcvTimeout  427
+DefScrollBackCols  473
+DefScrollBackRows  473
+DefSepChar  251
+DefSig  159
+DefStatusInterval  317
+DefTerminalWinOptions  473
+DefTimeout  251
+DefTransTimeout  318
+DefUnpackOptions  509
+Delay  89
+DelayTics  89
+Delete (Lzh)  662
+Delete (LzhFileList) 661
+Delete (ZipFileList)  699
+DeleteAllFiles  597
+DeleteFile  597
+DeleteFileMaskList (ApLzh/OoLzh)  662
+DeleteFileMaskList (ApZip/OoZip)  700
+DeleteFilesLzh  662
+DeleteFilesZip  700
+DeleteLzhFileListNode  663
+DeleteZipFileListNode  701
+Device#layer#types  104
+DialModem (ApModem/OoModem)  261
+DialModem (NullModem)  261
+Digi14#Port#options  138
+Digi14Port  187
+DisableStatusBuffer  198
+DisposeFileList  322
+Done (AbstractFax)  551
+Done (AbstractModem)  262
+Done (AbstractPort)  145
+Done (AbstractProtocol)  322
+Done (AnsiEmulator)  462
+Done (ApFaxCvt/OoFaxCvt-Conversion)  551
+Done (ApFaxCvt/OoFaxCvt-Unpacking)  523
+Done (Archive)  639
+Done (AsciiProtocol)  429
+Done (BPlusProtocol)  416
+Done (C12AbstractFax)  563
+Done (C12ReceiveFax)  563
+Done (C12SendFax)  563
+Done (CaptureTerminalWindow)  487
+Done (CASFax)  598
+Done (FileMaskList)  639
+Done (FileMaskNode)  639
+Done (KermitProtocol)  391
+Done (LzhFileList)  663
+Done (LzhNode)  663
+Done (TerminalEmulator)  459
+Done (TerminalWindow)  476
+Done (YmodemProtocol)  364
+Done (ZipFileList)  701
+Done (ZipNode)  701
+Done (ZmodemProtocol)  375
+DoneAscii  429
+DoneBPlus  416
+DoneC12ReceiveFax  564
+DoneC12SendFax  564
+DoneCASFax  598
+DoneFileMaskList  639
+DoneKermit  391
+DoneLzhFile  664
+DoneLzhFileList  664
+DoneModem  262
+DonePortProc  106
+DoneXmodem  353
+DoneYmodem  364
+DoneZipFile  702
+DoneZipFileList  702
+DoneZmodem  375
+DQDefault  414
+DrainingStatusInterval  372
+DrainOutBuffer  199
+DTRDropHold  251
+DumpEvents  127
+DumpTrace  114
+DumpTraceHex  114
+ElapsedTime  90
+ElapsedTimeInMSecs  90
+ElapsedTimeInSecs  91
+Emulator#commands  457
+Emulator#options  458
+EnableStatusBuffer  200
+Error#class#prefixes  168
+Error#classes  168
+Error#codes  739
+ErrorStates  254
+ESCIResponse  414
+EstimateTransferSecs  323
+EventTimer  88
+ExecuteModemCommand  263
+ExpandFileMaskList  640
+ExternalDataBlock  594
+Extract (ApLzh/OoLzh)  665
+Extract (ApZip/OoZip)  702
+ExtractFileMaskList (ApLzh/OoLzh)  665
+ExtractFileMaskList (ApZip/OoZip)  703
+ExtractLzhFileList  666
+ExtractSuccessFunc (ApLzh)  654
+ExtractSuccessFunc (ApZip)  693
+ExtractSuccessFunc (OoLzh)  654
+ExtractSuccessFunc (OoZip)  693
+ExtractZipFileList  703
+FastAbort  388
+Fax#conversion#options 509
+Fax#page#header#options  510
+Fax#pixel#widths  510
+Fax#send/receive#options  546
+Fax#unpack#options  510
+FaxConverter  511
+FaxCvtStatusFunc (ApFaxCvt)  511
+FaxCvtStatusFunc (OoFaxCvt)  511
+FaxFileExt  159
+FaxHeaderRec  510
+FaxInProgress  200
+FaxLogProc (ApAbsFax)  548
+FaxLogProc (OoAbsFax)  548
+FaxNameFunc (ApAbsFax)  548
+FaxNameFunc (OoAbsFax)  548
+FaxRec  548
+FaxReceive (ApFax12/OoFax12)  565
+FaxReceive (ApFaxCas/OoCasFax)  599
+FaxReceivePart (ApFax12/OoFax12)  566
+FaxReceivePart (ApFaxCas/OoFaxCas)  600
+FaxStateType  547
+FaxStatusProc (ApAbsFax) 548
+FaxStatusProc (OoAbsFax) 548
+FaxTransmit (ApFax12/OoFax12)  567
+FaxTransmit (ApFaxCas/OoCasFax)  601
+FaxTransmitPart (ApFax12/OoFax12)  568
+FaxTransmitPart (ApFaxCas/OoCasFax)  602
+fcOptionsAreOn  515
+fcOptionsOff  515
+fcOptionsOn  515
+FifoStatus  127
+File#management#options  372
+FileBufferArray  318
+FileBufferSize  318
+FileCommentFunc (ApZip)  693
+FileCommentFunc (OoZip)  694
+FileListType  318
+FileMaskList (ApArchiv)  635
+FileMaskList (OoArchiv)  636
+FileMaskNode (ApArchiv)  635
+FileMaskNode (OoArchiv)  636
+FileTransferRecord  594
+FindFirstCAS  603
+FindNextCAS  603
+FlagIsSet  162
+Flow#control#options  251
+FlowCtlProc  107
+FlowGetFunc  107
+FlowSetProc  107
+FlowState  107
+FlushInBuffer  201
+FlushOutBuffer  201
+Font#handles  510
+ForceBufferLimits  202
+Fossil#port#options  134
+FossilPort  187
+Frame#types  373
+FreeMemCheck  163
+FreshenArchive (ApLzh/OoLzh)  666
+FreshenArchive (ApZip/OoZip)  704
+GetAllStatus  604
+GetArchiveStatus  169
+GetAsyncStatus  169
+GetBaseAddr  202
+GetBlock  203
+GetBlockDirect  204
+GetBlockErrors  323
+GetBlockNum  324
+GetBlockSize  324
+GetBlockTimeout  204
+GetBytesRemaining  325
+GetBytesTransferred  325
+GetCaptureFileName  488
+GetChar  110, 146
+GetCharProc  107
+GetCharTimeout  205
+GetCheckType  326
+GetComName  205
+GetConnectSpeed  263
+GetCurrentBlockNum  326
+GetDelimLoc  206
+GetElapsedTics  327
+GetEventDate  605
+GetEventStatus  605
+GetEventTime  606
+GetExternalDataBlock  606
+GetFaxHeader  524
+GetFaxName  552
+GetFaxProgress  553
+GetFileName (ApAbsPcl/OoAbsPcl)  327
+GetFileName (ApFaxCvt/OoFaxCvt)  516
+GetFileName (Archive)  640
+GetFileSize  328
+GetHangupResult  569
+GetHardwareStatus  607
+GetIncomingChar (TerminalWindow) 477
+;duplicate entry required here
+GetIncomingChar (TerminalWindow) 477
+GetInitialFilePos  328
+GetLastCode  264
+GetLastError  640
+GetLastErrorMode  264
+GetLastPageStatus  571
+GetLastText  265
+GetLine  110, 146
+GetLineControl  206
+GetLineError  207
+GetLineNumber  429
+GetLineProc  107
+GetLineStatus  207
+GetLPStatus  392
+GetMemCheck  163
+GetModem  110, 147
+GetModemClassSupport  572
+GetModemControl  208
+GetModemFeatures  573
+GetModemInfo  574
+GetModemProc  107
+GetModemRegister  265
+GetModemResponse (ApModem/OoModem)  266
+GetModemResponse (NullModem)  266
+GetModemStatus  208
+GetPageHeader  524
+GetPageInfo (ApFax12/OoFax12)  575
+GetPageInfo (ApFaxCas/OoCasFax)  607
+GetPathname  329
+GetPortDevPtr  445
+GetProtocol  330
+GetQueueStatus  608
+GetRemoteID  575
+GetSessionParams  576
+GetSetAutoReceive  608
+GetStatusInfo  516
+GetString  209
+GetStringTimeout  210
+GetSwcSize  392
+GetTerminalWinEmulator  477
+GetTerminalWinPort  478
+GetTotalErrors  330
+GmtHourOffset  318
+GotError  110, 147
+GotErrorProc  107
+HandleResumeProc (ApBPlus)  414
+HandleResumeProc (OoBPlus)  414
+HandshakeWait  372
+HangupModem  267
+HangupModem#codes  253
+Hardware#flow#options  104
+Hayes#commands  251
+Hayes#responses  251
+HayesCodeSet  251
+HayesModem  255
+HWFlowDisable  210
+HWFlowEnable  211
+HWFlowGet  110, 148
+HWFlowSet  110, 148
+HWFlowState  212
+InBuffFree  213
+InBuffUsed  213
+InhibitAutoLF  451
+InhibitModeChange  451
+Init (AbstractFax)  553
+Init (AbstractModem)  267
+Init (AbstractPort)  149
+Init (AnsiEmulator)  462
+Init (ApFaxCvt/OoFaxCvt-Conversion) 517
+Init (ApFaxCvt/OoFaxCvt-Unpacking)  525
+Init (Archive)  641
+Init (AsciiProtocol)  430
+Init (BPlusProtocol)  416
+Init (C12AbstractFax)  577
+Init (C12ReceiveFax)  577
+Init (C12SendFax)  577
+Init (CaptureTerminalWindow)  488
+Init (CASFax)  609
+Init (CourierModem)  267
+Init (FileMaskList)  641
+Init (FileMaskNode)  641
+Init (HayesModem)  267
+Init (KermitProtocol)  393
+Init (Lzh)  667
+Init (LzhFileList)  667
+Init (LzhNode)  667
+Init (MicrocomModem)  267
+Init (TerminalEmulator)  459
+Init (TerminalWindow)  478
+Init (UnLzh)  668
+Init (UnZip)  704
+Init (XModemProtocol)  353
+Init (YModemProtocol)  365
+Init (ZipFileList)  705
+Init (ZipNode)  705
+Init (ZmodemProtocol)  376
+InitAscii  430
+InitBPlus  417
+InitC12ReceiveFax  578
+InitC12SendFax  578
+InitCASFax  609
+InitCustom (AbstractProtocol)  331
+InitCustom (AsciiProtocol)  431
+InitCustom (BPlusProtocol)  417
+InitCustom (CaptureTerminalWindow)  489
+InitCustom (KermitProtocol)  393
+InitCustom (TerminalWindow)  479
+InitCustom (UartPort)  149
+InitCustom (XModemProtocol)  354
+InitCustom (YModemProtocol)  365
+InitCustom (ZmodemProtocol)  376
+InitCustomAscii  431
+InitCustomBPlus  418
+InitCustomKermit  394
+InitCustomXmodem  355
+InitCustomYmodem  366
+InitCustomZmodem  377
+InitEventLogging  128
+InitFast  214
+InitFileMaskList  641
+InitKeep  150
+InitKermit  394
+InitLzhFile  668
+InitLzhFileList  669
+InitModem  268
+InitModemCourier (APCOUR)  293
+InitModemForFaxReceive  579
+InitModemMcom (APMCOM)  294
+InitPortFast  214
+InitPortKeepProc  107
+InitPortProc  107
+InitTracing  115
+InitXmodem  355
+InitYmodem  366
+InitZipFile  706
+InitZipFileList  707
+InitZmodem  377
+Int14Port  187
+Interrupt#enable#register#bit#masks  105
+IsPS2  117
+KermitOptionRec  389
+KermitOverhead  388
+KermitProtocol (ApKermit)  389
+KermitProtocol (OoKermit)  390
+KermitTurnDelay  389
+LH  161
+Line#status#register#bit#masks  103
+LineOptionRecord  107
+Load (AbstractModem)  269
+Load (AbstractPort)  215
+Load (AnsiEmulator)  463
+Load (AsciiProtocol)  432
+Load (BPlusProtocol)  419
+Load (CaptureTerminalWindow)  490
+Load (KermitProtocol)  395
+Load (OoCom_objects)  215
+Load (TerminalEmulator)  459
+Load (TerminalWindow)  480
+Load (XModemProtocol)  356
+Load (YModemProtocol)  367
+Load (ZmodemProtocol)  378
+LoadFont  518
+LoadHPFont  519
+LocalHeader  692
+LogFileProc (ApAbsPcl)  319
+LogFileProc (OoAbsPcl)  320
+LogFileType  318
+Lzh  656
+LzhFileList (ApLzh)  654
+LzhFileList (OoLzh)  656
+LzhHeader  654
+LzhNode (ApLzh) 655
+LzhNode (OoLzh) 656
+MakeFileList  331
+MaskBlinkOnInverse  451
+Match (FileMaskList)  642
+Match (FileMaskNode)  642
+MatchFileMask  643
+MaxActivePort  104
+MaxBadBlocks  372
+MaxCoverData  594
+MaxDialStr  251
+MaxSRegs  251
+MaxStdSRegs  251
+MaxWindowSlots  389
+MaxWordLen  251
+MicrocomModem  255
+MinCaptureBufferSize  473
+MinInBuff  104
+ModemCharDelay  READ.1ST
+Modem#command#options  253
+Modem#commands,ApModem/OoModem  252
+Modem#control#register#bit#masks  104
+Modem#responses,ApModem/OoModem  253
+Modem#status#register#bit#masks  104
+ModemCodeTable  254
+ModemCommandTable  254
+ModemRec  255
+ModemRegType  254
+ModemResponseTable  254
+MoveReceivedFile  610
+NewTimer  91
+NewTimerSecs  92
+NextDisplayInc  653
+NextFaxFunc (ApAbsFax)  548
+NextFaxFunc (OoAbsFax)  548
+NextFileFunc (ApAbsPcl)  319
+NextFileFunc (OoAbsPcl)  320
+NullModem  255
+NumberStr  254
+Numeric#response#options  253
+Object#type#codes  159
+Object#version#codes  160
+OkToCompressFunc (ApLzh)  655
+OkToCompressFunc (ApZip)  693
+OkToCompressFunc (OoLzh)  656
+OkToCompressFunc (OoZip)  694
+OkToWriteFunc (ApLzh)  655
+OkToWriteFunc (ApZip)  693
+OkToWriteFunc (OoLzh)  656
+OkToWriteFunc (OoZip)  694
+OpenFile  610
+Options,TermWin  473
+OutBuffFree  218
+OutBuffUsed  218
+OutputLineFunc  511
+Packet#types  388
+PageHeaderRec  510
+ParityString  104
+ParityType  107
+Parser#characters  458
+PcxFaxConverter  512
+PeekChar  110, 150
+PeekCharProc  108
+PeekCharTimeout  219
+Pointer#codes  160
+Port#options  104
+PortRec  108
+PortSaveRec  109
+PrefixStr  254
+PrepareFaxReceivePart (ApFax12/OoFax12)  580
+PrepareFaxReceivePart (ApFaxCas/OoCasFax)  611
+PrepareFaxTransmitPart (ApFax12/OoFax12)  580
+PrepareFaxTransmitPart (ApFaxCas/OoCasFax)  611
+PrepareReceivePart (AbstractProtocol)  332
+PrepareTransmitPart (AbstractProtocol)  333
+ProcessChar (AnsiEmulator)  464
+ProcessChar (TerminalEmulator)  460
+ProcessDLE  420
+ProcessENQ  421
+ProcessESCI  422
+ProcessSelf (TerminalWindow)  481
+;duplicate entry required here
+ProcessSelf (TerminalWindow)  481
+Protocol#options  316
+Protocol#types  318
+ProtocolData  319
+ProtocolInProgress  219
+ProtocolRec  319
+ProtocolReceive (AbstractProtocol)  334
+ProtocolReceivePart (AbstractProtocol)  335
+ProtocolStateType  319
+ProtocolTransmit (AbstractProtocol)  336
+ProtocolTransmitPart (AbstractProtocol)  337
+ProtocolTypeString  318
+PS2DetectMode  104
+PS2Mode  109
+ptOptionsAreOn  220
+ptOptionsOff  220
+ptOptionsOn  220
+PutBlock  221
+PutBlockDirect  221
+PutBlockTimeout  222
+PutChar  110, 151
+PutCharProc  109
+PutCharTimeout  222
+PutModemCommand (ApModem/OoModem)  270
+PutModemCommand (NullModem)  270
+PutString  223
+PutStringTimeout  223
+QueueType  595
+QuoteArray  414
+RelaxedBlockWait  351
+RelaxedHandshakeWait  351
+RemainingTime  92
+RemainingTimeInMSecs  93
+RemainingTimeInSecs  93
+RemoveModemCode  271
+RemoveModemCommand  271
+RemoveModemResponse  272
+RepeatModemCommand  272
+ResetModem  273
+ResponseType  254
+RestorePort  110, 152
+RestoreUartState  129
+ResWidths  510
+Root  161
+RotateIrqPriority  118
+RunDiagnostics  612
+SavePort  110, 152
+SavePortProc  109
+SaveUartState  129
+Secs2Tics  94
+SecsPerDay  88
+SendBreak  110, 153
+SendBreakProc  109
+SendLongBreak  130
+SendOutgoingChar  481
+Set1KMode  357
+SetAbortFunc  224
+SetAcceptFaxFunc  554
+SetAcceptFileFunc  338
+SetActualBPS  339
+SetAnswerOnRing  581
+SetArchiveStatus  170
+SetAsyncStatus  170
+SetBackgroundProc  340
+SetBigSubpacketOption  379
+SetBlockWait  357
+SetCaptureFileName  491
+SetCarrierTrans  273
+SetCarrierTrans#codes  253
+SetCASAbortFunc  613
+SetCASResolution  613
+SetClassType  581
+SetClearScreenProc  452
+SetCompressionMode (ApLzh/OoLzh)  669
+SetCompressionMode (ApZip/OoZip)  707
+SetCompressSuccessFunc (ApLzh/OoLzh)  670
+SetCompressSuccessFunc (ApZip/OoZip)  708
+SetConnectAttempts  554
+SetConnectState  582
+SetCtlPrefix  396
+SetCurrentAnsiPort  453
+SetDataCompression  274
+SetDCDControl  274
+SetDCDControl#codes  254
+SetDelays  433
+SetDestinationDir  READ.1ST
+SetDestinationDirectory  340
+SetDialPrefix (ApFax12/OoFax12)  582
+SetDialPrefix (ApModem/OoModem)  275
+SetDialPulse  275
+SetDialTime  582
+SetDialTone  276
+SetDTR  225
+SetDTRControl  276
+SetDTRControl#codes  254
+SetEfficiencyParms  341
+SetEOLChar  433
+SetErrorControl  277
+SetErrorProc  226
+SetExtractSuccessFunc (ApLzh/OoLzh)  671
+SetExtractSuccessFunc (ApZip/OoZip)  709
+SetFaxAndData  583
+SetFaxLogProc  555
+SetFaxNameFunc  555
+SetFaxPath  520
+SetFaxPort  584
+SetFaxStatusProc  556
+SetFifoBuffering  130
+SetFileCommentFunc  710
+SetFileList  342
+SetFileMask  343
+SetFileMgmtOptions  380
+SetFinishWait (ApXModem/OoXModem)  358
+SetFinishWait (ApZModem/OoZModem)  381
+SetFlag  163
+SetFlowControl,AbstractModem  278
+SetFlowControl,ApCour/OoModem 293
+SetFlowControl,ApMCom/OoModem 294
+SetGMode  358
+SetHandleResponses  279
+SetHandleResumeProc  423
+SetHandshakeWait  343
+SetHeaderText  585
+SetHibitPrefix  396
+SetImplodeFactors  711
+SetKermitCheck  397
+SetKermitOptions  398
+SetLine  110, 153
+SetLineProc  109
+SetLinkLocked  280
+SetLogFileProc  344
+SetLogoFile  614
+SetMargins READ.1ST
+SetMaxLongPacketLen  399
+SetMaxPacketLen  399
+SetMaxRetries  586
+SetMaxTimeoutSecs  400
+SetMaxWindows  400
+SetModem  110, 154
+SetModemCmdMode  281
+SetModemCmdTable  281
+SetModemCodeSet  282
+SetModemCodeSet#codes  252
+SetModemCodeTable  283
+SetModemDelay  283
+SetModemEcho  284
+SetModemEcho#codes  252
+SetModemErrorString  284
+SetModemFeatures  587
+SetModemInit  587
+SetModemOnline  285
+SetModemOnlineEcho  285
+SetModemPort  286
+SetModemProc  109
+SetModemQuiet  286
+SetModemQuiet#codes  253
+SetModemRegister  287
+SetModemRespTable  288
+SetModemResults  289
+SetModemResults#codes  252
+SetModemSpeaker  289
+SetModemSpeaker#codes  253
+SetModemSpeed  290
+SetModemSpeed (ApCour/OoModem)  293
+SetModemSpeed (ApMCom/OoModem)  294
+SetModemTimeouts  290
+SetModemVolume  291
+SetModemVolume#codes  253
+SetNextFaxFunc  556
+SetNextFileFunc  345
+SetOkToCompressFunc (ApLzh/OoLzh)  672
+SetOkToCompressFunc (ApZip/OoZip)  712
+SetOkToWriteFunc (ApLzh/OoLzh)  674
+SetOkToWriteFunc (ApZip/OoZip)  714
+SetOneFax  588
+SetOutputLineFunc  526
+SetOutputPath  643
+SetOverwriteOption  346
+SetPacketPadding  401
+SetPageSize (ApFaxCvt/OoFaxCvt)  520
+SetPageSize (TerminalWindow)  482
+SetProgressWidth  675
+SetProtocolPort  346
+SetPS2DetectMode  119
+SetReceiveFilename  347
+SetRecipientName  557
+SetRecoverOption  381
+SetRepeatPrefix  401
+SetResolutionMode  520
+SetResolutionWidth  521
+SetRTS  227
+SetSenderName  557
+SetShowCommentsProc  715
+SetShowMethodProc (ApLzh/OoLzh)  676
+SetShowMethodProc (ApZip/OoZip)  716
+SetShowNameProc  677
+SetShowProgressFunc (ApLzh/OOLzh)  678
+SetShowProgressFunc (ApZip/OoZip)  717
+SetShowStatusProc  347
+SetSoundBellProc  453
+SetSpeedMatching (ApCour/OoModem)  293
+SetSpeedMatching (ApMCom/OoModem)  294
+SetSpeedMatching 291
+SetStationID (ApAbsFax/OoAbsFax)  558
+SetStationID (ApFaxCvt/OoFaxCvt)  521
+SetStatusFunc  522
+SetSWCTurnDelay  402
+SetTag (LzhNode)  680
+SetTag (ZipNode)  717
+SetTaskDate  615
+SetTaskTime  615
+SetTerminalWinEmulator  482
+SetTerminalWinPort  483
+SetTerminator  402
+SetTitle  558
+SetToneDial  588
+SetUart  110, 155, 176
+SetUartProc  110
+SetView  483
+SetWaitCharProc  228
+SetZipComment  718
+ShowCommentsProc (ApZip) 693
+ShowCommentsProc (OoZip) 693
+ShowMethodProc (ApLzh)  655
+ShowMethodProc (ApZip)  693
+ShowMethodProc (OoLzh)  656
+ShowMethodProc (OoZip)  694
+ShowNameProc (ApLzh)  656
+ShowNameProc (OoLzh)  657
+ShowProgressFunc (ApLzh)  655
+ShowProgressFunc (ApZip)  693
+ShowProgressFunc (OoLzh)  656
+ShowProgressFunc (OoZip)  694
+ShowStatusProc (ApAbsPcl)  319
+ShowStatusProc (OoAbsPcl)  320
+SigArray  510
+SimulateLF  443
+Software#flow#options  105
+SortFileMaskList  643
+SoundBellProc  451
+SRegSet  254
+SRegsInit  254
+StartTracing  119
+StartTransmitter  110, 156
+StartTransmitterProc  110
+StatusArray  595
+StatusBuffering  229
+StatusRecord  595
+StatusStr  171
+StopBitType  110
+StopTracing  119
+Store (AbstractModem)  292
+Store (AbstractPort)  230
+Store (AnsiEmulator)  465
+Store (AsciiProtocol)  434
+Store (BPlusProtocol)  424
+Store (CaptureTerminalWindow)  492
+Store (KermitProtocol)  403
+Store (OoCom_objects)  230
+Store (TerminalEmulator)  460
+Store (TerminalWindow)  484
+Store (XModemProtocol)  359
+Store (ZmodemProtocol)  382
+SubmitSingleFile  616
+SubmitTask  617
+SupportsBatch  348
+SWCKermitTurnDelay  389
+SWFlowCtl  110, 156
+SWFlowDisable  232
+SWFlowEnable  233
+SWFlowEnableOpt  234
+SWFlowGet  110, 157
+SWFlowResume  235
+SWFlowSet  110, 157
+SWFlowSetChars  236
+SWFlowState  236
+TelixDelay  318
+teOptionsAreOn  461
+teOptionsOff  461
+teOptionsOn  461
+TerminalCommands  475
+TerminalEmulator  458
+TerminalWindow  475
+TextFaxConverter  512
+Tics2Secs  94
+TicsPerDay  88
+TiffFaxConverter  512
+TimerExpired  94
+Timing#and#retry#parameters  547
+TLogFaxCode  547
+TracingOn  105
+TransReady  110, 158
+TransReadyFunc  110
+twOptionsAreOn  485
+twOptionsOff  485
+twOptionsOn  485
+UART#register#numbers  105
+UartPort  187
+UartTest1  131
+UartTest2  132
+UartTest3  132
+UartType  125
+UartTypeString  125
+ucTermWin  474
+ufOptionsAreOn  527
+ufOptionsOff  527
+ufOptionsOn  527
+UnLzh  657
+UnpackFax (ApFaxCvt) 511
+UnpackFax (OoFaxCvt) 512
+UnpackFile  528
+UnpackPage  529
+UnpackToDcx (ApFaxCvt)  READ.1ST
+UnpackToDcx (OoFaxCvt)  READ.1ST
+UnpackToPcx (ApFaxCvt)  511
+UnpackToPcx (OoFaxCvt)  512
+UnZip  695
+UpdateChecksum  164
+UpdateCommentsFileMaskList  718
+UpdateCrc  164
+UpdateCrc32  165
+UpdateCrcKermit  165
+UpdateInterval  510
+UpdateLineStatus  110, 158
+UpdateLineStatusFunc  110
+UpdateModemStatus  110, 158
+UpdateModemStatusFunc  110
+UserBackProc (ApAbsPcl)  319
+UserBackProc (OoAbsPcl)  320
+UseVT100Mode  451
+ValidLineStatus  135
+ValidModemStatus  135
+WaitCharProc (ApCom)  186
+WaitCharProc (OoCom)  187
+WaitForChar  237
+WaitForMultiString  237
+WaitForString  238
+WindowsUsed  405
+WriteChar  486
+WriteCharAnsi  454
+WriteCharAnsiPort  454
+WriteFailOptions  318
+WriteString  486
+WriteStringAnsi  455
+WriteStringAnsiPort  455
+XmodemOverhead  351
+XmodemProtocol (ApXmodem)  351
+XmodemProtocol (OoXmodem)  352
+XmodemTurnDelay  351
+YmodemProtocol (ApYModem)  362
+YmodemProtocol (OoYModem)  363
+Zip  695
+ZipFileList (ApZip)  693
+ZipFileList (OoZip)  695
+ZipNode (ApZip)  693
+ZipNode (OoZip)  695
+ZmodemOverHead  373
+ZmodemProtocol (ApZModem)  373
+ZmodemProtocol (OoZModem)  374
+ZmodemTurnDelay  373
+

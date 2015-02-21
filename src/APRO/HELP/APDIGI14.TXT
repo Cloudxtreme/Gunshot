@@ -1,0 +1,70 @@
+;-------------------------------------------------------------------
+!TOPIC 374 ApDigi14
+ApDigi14 provides the connection between your application and a DigiBoard.
+
+ApDigi14 interfaces the following routines:
+
+  0375ActivateApDigi14
+  0376Declarations
+;
+;-------------------------------------------------------------------
+!TOPIC 375 ActivateApDigi14
+!NOINDEX
+procedure 0374ApDigi14.ActivateApDigi14;
+
+Register APDIGI14 as the active device layer.
+
+See also:  0539ActivateApFossil      0546ActivateApInt14
+           0919ActivateApUart        0887Core routines
+           0004Layered architecture
+;
+;-------------------------------------------------------------------
+!TOPIC 376 Declarations,ApDigi14
+!NOINDEX
+!NOSEARCH
+ApDigi14 declares the following types and constants:
+
+  0378DefDigi14Options
+  0377Digi14 port options
+;
+;-------------------------------------------------------------------
+!TOPIC 377 Digi14 port options
+!NOINDEX
+const
+  ptReadWriteWait     = $8000;
+  ptClearFlow         = $4000;
+
+Port options that are used for DigiBoard ports only. See 0843Port Options in
+APPORT for descriptions of the port options that are used for all device
+layers.
+
+ptReadWriteWait, when set, causes the PutChar/GetChar routines to wait two
+seconds for room in the transmit buffer or wait two seconds for a character
+to receive. Generally, there's no reason to wait in either case, so this
+option is not set by default.
+
+ptClearFlow, when set, causes the default flow control to be disabled when a
+Digi14 port is opened. This may be necessary if flow control was enabled
+when the DigiBoard XIDOS5.SYS driver was configured by the DigiBoard
+configuration program XIDOSCFG.EXE. If flow control was turned on in
+XIDOS5.SYS, then flow control is in operation. However, the Digi14 device
+layer doesn't know that flow control is on and it always reports that it is
+off. Additionally, while hardware flow control is on, the Digi14 device
+driver ignores all requests to set or reset the DTR/RTS lines. If you want
+to control these lines yourself, or you want to set and monitor flow
+control yourself, then you should set the ptClearFlow option.
+
+We recommend turning on ptClearFlow since it gives you the most flexibility
+and visibility over the hardware control lines and flow control in general.
+We suspect, however, that most DigiBoard users are used to setting flow
+control in the driver and prefer that the program not interfere with those
+settings. For this reason ptClearFlow is off by default.
+;
+;-------------------------------------------------------------------
+!TOPIC 378 DefDigi14Options
+!NOINDEX
+const
+  DefDigi14OptionsSimple  = 0;
+  DefDigi14Options : Word = DefDigi14OptionsSimple;
+
+The default Digi14 device layer options (none).

@@ -1,0 +1,244 @@
+type
+  {Procedure for handling chars during WaitForChar/String}
+  WaitCharProc = procedure(P : PortRecPtr; C : Char);
+
+{$IFDEF UsePModeDLL}
+
+procedure InitPortFast(var P : PortRecPtr; ComName : ComNameType;
+                       NewBaud : LongInt); Export;
+procedure ChangeBaud(P : PortRecPtr; NewBaud : LongInt); Export;
+procedure ChangeParity(P : PortRecPtr; NewParity : ParityType); Export;
+procedure ChangeDataBits(P : PortRecPtr; NewDataBits : DataBitType); Export;
+procedure ChangeStopBits(P : PortRecPtr; NewStopBits : StopBitType); Export;
+procedure ChangeBufferSizes(P : PortRecPtr; NewInSize, NewOutSize : Word); Export;
+procedure ForceBufferLimits(P : PortRecPtr; NewInLimit, NewOutLimit: Word); Export;
+function BlockReady(P : PortRecPtr; ExpectedLen : Word;
+                    DelimSet : CharSet) : Boolean; Export;
+function GetDelimLoc(P : PortRecPtr; DelimSet : CharSet) : Word; Export;
+procedure GetCharTimeout(P : PortRecPtr; var C : Char; Timeout : Word); Export;
+procedure PeekCharTimeout(P : PortRecPtr; var C : Char;
+                          PeekAhead : Word; Timeout : Word); Export;
+procedure GetString(P : PortRecPtr; var S : String;
+                    ExpectedLen : Byte;
+                    DelimSet : CharSet); Export;
+procedure GetStringTimeout(P : PortRecPtr; var S : String;
+                           ExpectedLen : Byte;
+                           DelimSet : CharSet;
+                           Timeout : Word); Export;
+procedure GetBlock(P : PortRecPtr; var Block;
+                   ExpectedLen : Word;
+                   var ReceivedLen : Word;
+                   DelimSet : CharSet); Export;
+procedure GetBlockDirect(P : PortRecPtr; var Block;
+                         ExpectedLen : Word;
+                         var ReceivedLen : Word;
+                         DelimSet : CharSet); Export;
+procedure GetBlockTimeout(P : PortRecPtr; var Block;
+                          ExpectedLen : Word;
+                          var ReceivedLen : Word;
+                          DelimSet : CharSet;
+                          Timeout : Word); Export;
+procedure PutCharTimeout(P : PortRecPtr; C : Char; Timeout : Word); Export;
+procedure PutString(P : PortRecPtr; S : String); Export;
+procedure PutStringTimeout(P : PortRecPtr; S : String; Timeout : Word); Export;
+procedure PutBlock(P : PortRecPtr; var Block;
+                   BlockLen : Word; var BytesWritten : Word); Export;
+procedure PutBlockTimeout(P : PortRecPtr; var Block;
+                          BlockLen : Word; var BytesWritten : Word;
+                          Timeout : Word); Export;
+procedure PutBlockDirect(P : PortRecPtr; var Block;
+                         BlockLen : Word; var BytesWritten : Word); Export;
+procedure FlushInBuffer(P : PortRecPtr); Export;
+procedure FlushOutBuffer(P : PortRecPtr); Export;
+function InBuffUsed(P : PortRecPtr) : Word; Export;
+function OutBuffUsed(P : PortRecPtr) : Word; Export;
+function InBuffFree(P : PortRecPtr) : Word; Export;
+function OutBuffFree(P : PortRecPtr) : Word; Export;
+procedure DrainOutBuffer(P : PortRecPtr; Timeout : Word); Export;
+{$IFDEF StatusBuffering}
+procedure EnableStatusBuffer(P : PortRecPtr); Export;
+procedure DisableStatusBuffer(P : PortRecPtr); Export;
+function StatusBuffering(P : PortRecPtr) : Boolean; Export;
+{$ENDIF}
+{$IFDEF UseSWFlow}
+procedure SWFlowEnable(P : PortRecPtr;
+                       BufferFull, BufferResume : Word); Export;
+procedure SWFlowEnableOpt(P : PortRecPtr;
+                       BufferFull, BufferResume : Word;
+                       Opt : Word); Export;
+procedure SWFlowDisable(P : PortRecPtr); Export;
+function SWFlowState(P : PortRecPtr) : FlowState; Export;
+procedure SWFlowResume(P : PortRecPtr); Export;
+procedure SWFlowSetChars(P : PortRecPtr; OnChar, OffChar : Char); Export;
+{$ENDIF}
+{$IFDEF UseHWFlow}
+procedure HWFlowEnable(P : PortRecPtr;
+                       BufferFull, BufferResume : Word;
+                       Options : Word); Export;
+procedure HWFlowDisable(P : PortRecPtr); Export;
+function HWFlowState(P : PortRecPtr) : FlowState; Export;
+{$ENDIF}
+procedure SetDTR(P : PortRecPtr; State : Boolean); Export;
+procedure SetRTS(P : PortRecPtr; State : Boolean); Export;
+function GetModemControl(P : PortRecPtr) : Byte; Export;
+function GetModemStatusPrim(P : PortRecPtr; ClearMask : Byte) : Byte; Export;
+function GetModemStatus(P : PortRecPtr) : Byte; Export;
+function CheckCTS(P : PortRecPtr) : Boolean; Export;
+function CheckDSR(P : PortRecPtr) : Boolean; Export;
+function CheckRI(P : PortRecPtr) : Boolean; Export;
+function CheckDCD(P : PortRecPtr) : Boolean; Export;
+function CheckDeltaCTS(P : PortRecPtr) : Boolean; Export;
+function CheckDeltaDSR(P : PortRecPtr) : Boolean; Export;
+function CheckDeltaRI(P : PortRecPtr) : Boolean; Export;
+function CheckDeltaDCD(P : PortRecPtr) : Boolean; Export;
+function GetLineControl(P : PortRecPtr) : Byte; Export;
+function GetLineStatus(P : PortRecPtr) : Byte; Export;
+function CheckDataReady(P : PortRecPtr) : Boolean; Export;
+function CheckLineError(P : PortRecPtr) : Boolean; Export;
+function GetLineError(P : PortRecPtr) : Word; Export;
+function CheckLineBreak(P : PortRecPtr) : Boolean; Export;
+function CheckTHRE(P : PortRecPtr) : Boolean; Export;
+function CheckTE(P : PortRecPtr) : Boolean; Export;
+function CheckFifoError(P : PortRecPtr) : Boolean; Export;
+function GetComName(P : PortRecPtr) : ComNameType; Export;
+function GetBaseAddr(P : PortRecPtr) : Word; Export;
+procedure SetErrorProc(P : PortRecPtr; EP : AsyncErrorProc); Export;
+procedure WaitForChar(P : PortRecPtr; DelimSet : CharSet;
+                      var C : Char; Timeout : Word); Export;
+procedure WaitForString(P : PortRecPtr; S : String; Timeout : Word); Export;
+procedure WaitForMultiString(P : PortRecPtr;
+                             SL : String; SepChar : Char;
+                             var FoundS : String;
+                             var FoundI : Byte;
+                             Timeout : Word); Export;
+procedure SetAbortFunc(P : PortRecPtr; AFunc : AbortFunc); Export;
+procedure SetWaitCharProc(WCP : WaitCharProc); Export;
+procedure ptOptionsOn(P : PortRecPtr; OptionFlags : Word); Export;
+procedure ptOptionsOff(P : PortRecPtr; OptionFlags : Word); Export;
+function ptOptionsAreOn(P : PortRecPtr; OptionFlags : Word) : Boolean; Export;
+function ProtocolInProgress(P : PortRecPtr) : Boolean; Export;
+function FaxInProgress(P : PortRecPtr) : Boolean; Export;
+function WaitComplete(P : PortRecPtr; ET : EventTimer) : Boolean; Export;
+procedure NoWaitChar(P : PortRecPtr; C : Char); Export;
+
+{$ELSE}
+
+procedure InitPortFast(var P : PortRecPtr; ComName : ComNameType;
+                       NewBaud : LongInt);
+procedure ChangeBaud(P : PortRecPtr; NewBaud : LongInt);
+procedure ChangeParity(P : PortRecPtr; NewParity : ParityType);
+procedure ChangeDataBits(P : PortRecPtr; NewDataBits : DataBitType);
+procedure ChangeStopBits(P : PortRecPtr; NewStopBits : StopBitType);
+procedure ChangeBufferSizes(P : PortRecPtr; NewInSize, NewOutSize : Word);
+procedure ForceBufferLimits(P : PortRecPtr; NewInLimit, NewOutLimit: Word);
+function BlockReady(P : PortRecPtr; ExpectedLen : Word;
+                    DelimSet : CharSet) : Boolean;
+function GetDelimLoc(P : PortRecPtr; DelimSet : CharSet) : Word;
+procedure GetCharTimeout(P : PortRecPtr; var C : Char; Timeout : Word);
+procedure PeekCharTimeout(P : PortRecPtr; var C : Char;
+                          PeekAhead : Word; Timeout : Word);
+procedure GetString(P : PortRecPtr; var S : String;
+                    ExpectedLen : Byte;
+                    DelimSet : CharSet);
+procedure GetStringTimeout(P : PortRecPtr; var S : String;
+                           ExpectedLen : Byte;
+                           DelimSet : CharSet;
+                           Timeout : Word);
+procedure GetBlock(P : PortRecPtr; var Block;
+                   ExpectedLen : Word;
+                   var ReceivedLen : Word;
+                   DelimSet : CharSet);
+procedure GetBlockDirect(P : PortRecPtr; var Block;
+                         ExpectedLen : Word;
+                         var ReceivedLen : Word;
+                         DelimSet : CharSet);
+procedure GetBlockTimeout(P : PortRecPtr; var Block;
+                          ExpectedLen : Word;
+                          var ReceivedLen : Word;
+                          DelimSet : CharSet;
+                          Timeout : Word);
+procedure PutCharTimeout(P : PortRecPtr; C : Char; Timeout : Word);
+procedure PutString(P : PortRecPtr; S : String);
+procedure PutStringTimeout(P : PortRecPtr; S : String; Timeout : Word);
+procedure PutBlock(P : PortRecPtr; var Block;
+                   BlockLen : Word; var BytesWritten : Word);
+procedure PutBlockTimeout(P : PortRecPtr; var Block;
+                          BlockLen : Word; var BytesWritten : Word;
+                          Timeout : Word);
+procedure PutBlockDirect(P : PortRecPtr; var Block;
+                         BlockLen : Word; var BytesWritten : Word);
+procedure FlushInBuffer(P : PortRecPtr);
+procedure FlushOutBuffer(P : PortRecPtr);
+function InBuffUsed(P : PortRecPtr) : Word;
+function OutBuffUsed(P : PortRecPtr) : Word;
+function InBuffFree(P : PortRecPtr) : Word;
+function OutBuffFree(P : PortRecPtr) : Word;
+procedure DrainOutBuffer(P : PortRecPtr; Timeout : Word);
+{$IFDEF StatusBuffering}
+procedure EnableStatusBuffer(P : PortRecPtr);
+procedure DisableStatusBuffer(P : PortRecPtr);
+function StatusBuffering(P : PortRecPtr) : Boolean;
+{$ENDIF}
+{$IFDEF UseSWFlow}
+procedure SWFlowEnable(P : PortRecPtr;
+                       BufferFull, BufferResume : Word);
+procedure SWFlowEnableOpt(P : PortRecPtr;
+                       BufferFull, BufferResume : Word;
+                       Opt : Word);
+procedure SWFlowDisable(P : PortRecPtr);
+function SWFlowState(P : PortRecPtr) : FlowState;
+procedure SWFlowResume(P : PortRecPtr);
+procedure SWFlowSetChars(P : PortRecPtr; OnChar, OffChar : Char);
+{$ENDIF}
+{$IFDEF UseHWFlow}
+procedure HWFlowEnable(P : PortRecPtr;
+                       BufferFull, BufferResume : Word;
+                       Options : Word);
+procedure HWFlowDisable(P : PortRecPtr);
+function HWFlowState(P : PortRecPtr) : FlowState;
+{$ENDIF}
+procedure SetDTR(P : PortRecPtr; State : Boolean);
+procedure SetRTS(P : PortRecPtr; State : Boolean);
+function GetModemControl(P : PortRecPtr) : Byte;
+function GetModemStatusPrim(P : PortRecPtr; ClearMask : Byte) : Byte;
+function GetModemStatus(P : PortRecPtr) : Byte;
+function CheckCTS(P : PortRecPtr) : Boolean;
+function CheckDSR(P : PortRecPtr) : Boolean;
+function CheckRI(P : PortRecPtr) : Boolean;
+function CheckDCD(P : PortRecPtr) : Boolean;
+function CheckDeltaCTS(P : PortRecPtr) : Boolean;
+function CheckDeltaDSR(P : PortRecPtr) : Boolean;
+function CheckDeltaRI(P : PortRecPtr) : Boolean;
+function CheckDeltaDCD(P : PortRecPtr) : Boolean;
+function GetLineControl(P : PortRecPtr) : Byte;
+function GetLineStatus(P : PortRecPtr) : Byte;
+function CheckDataReady(P : PortRecPtr) : Boolean;
+function CheckLineError(P : PortRecPtr) : Boolean;
+function GetLineError(P : PortRecPtr) : Word;
+function CheckLineBreak(P : PortRecPtr) : Boolean;
+function CheckTHRE(P : PortRecPtr) : Boolean;
+function CheckTE(P : PortRecPtr) : Boolean;
+function CheckFifoError(P : PortRecPtr) : Boolean;
+function GetComName(P : PortRecPtr) : ComNameType;
+function GetBaseAddr(P : PortRecPtr) : Word;
+procedure SetErrorProc(P : PortRecPtr; EP : AsyncErrorProc);
+procedure WaitForChar(P : PortRecPtr; DelimSet : CharSet;
+                      var C : Char; Timeout : Word);
+procedure WaitForString(P : PortRecPtr; S : String; Timeout : Word);
+procedure WaitForMultiString(P : PortRecPtr;
+                             SL : String; SepChar : Char;
+                             var FoundS : String;
+                             var FoundI : Byte;
+                             Timeout : Word);
+procedure SetAbortFunc(P : PortRecPtr; AFunc : AbortFunc);
+procedure SetWaitCharProc(WCP : WaitCharProc);
+procedure ptOptionsOn(P : PortRecPtr; OptionFlags : Word);
+procedure ptOptionsOff(P : PortRecPtr; OptionFlags : Word);
+function ptOptionsAreOn(P : PortRecPtr; OptionFlags : Word) : Boolean;
+function ProtocolInProgress(P : PortRecPtr) : Boolean;
+function FaxInProgress(P : PortRecPtr) : Boolean;
+function WaitComplete(P : PortRecPtr; ET : EventTimer) : Boolean;
+procedure NoWaitChar(P : PortRecPtr; C : Char);
+
+{$ENDIF}
+

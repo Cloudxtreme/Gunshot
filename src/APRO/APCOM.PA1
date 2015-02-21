@@ -1,0 +1,1527 @@
+  {---- internal routines -------}
+  procedure AllcaseCharSet(var CS : CharSet);
+    {-Make CS a non case sensitive set}
+  const
+    BitMask : array[1..8] of Byte = ($01, $02, $04, $08, $10, $20, $40, $80);
+  var
+    SetArray : array[0..31] of Byte absolute CS;
+    I, J : Word;
+    Ordinal : Integer;
+    Stop : Byte;
+
+    procedure AddMember(M : Byte);
+      {-Make M a member of CS}
+    var
+      I, J : Byte;
+    begin
+      Inc(M);
+      I := M div 8;
+      J := M mod 8;
+      SetArray[I] := SetArray[I] or BitMask[J];
+    end;
+
+  begin
+    {Process upper case chars}
+    Ordinal := 64;
+    for I := 8 to 12 do begin
+      {Set stop limit for this byte}
+      if I = 12 then
+        Stop := 1
+      else
+        Stop := 8;
+      {For each upcase char in this byte, add a locase char}
+      for J := 1 to Stop do begin
+        if (SetArray[I] and BitMask[J]) = BitMask[J] then
+          AddMember(Ordinal+32);
+        Inc(Ordinal);
+      end;
+    end;
+
+    {Process lower case chars}
+    Ordinal := 96;
+    for I := 12 to 16 do begin
+      {Set stop limits for this byte}
+      if I = 16 then
+        Stop := 1
+      else
+        Stop := 8;
+      {For each locase char in this byte, add an upcase char}
+      for J := 1 to Stop do begin
+        if (SetArray[I] and BitMask[J]) = BitMask[J] then
+          AddMember(Ordinal-32);
+        Inc(Ordinal);
+      end;
+    end;
+  end;
+
+  function WaitComplete(P : PortRecPtr; ET : EventTimer) : Boolean;
+    {-Returns True if ET expired or UserAbort returns True}
+  begin
+    WaitComplete := True;
+
+    {Check for timer expired or user abort}
+    if TimerExpired(ET) then
+      AsyncStatus := ecTimeout
+    else if P^.UserAbort then
+      AsyncStatus := ecUserAbort
+    else
+      {Still waiting...}
+      WaitComplete := False;
+  end;
+
+  {---- Open routines ----}
+  procedure InitPortFast(var P : PortRecPtr; ComName : ComNameType;
+                         NewBaud : LongInt);
+    {-Uses default open parms (N,8,1,RaiseModemCtl)}
+  begin
+    with DefaultLineOptions do
+      InitPort(P, ComName, NewBaud, Parity, DataBits, StopBits,
+                  InSize, OutSize, Options);
+  end;
+
+  procedure ChangeBaud(P : PortRecPtr; NewBaud : LongInt);
+    {-Changes baud rate of P to NewBaud}
+  begin
+    with P^ do
+      SetLine(P, NewBaud, CurParity, CurDataBits, CurStopBits);
+  end;
+
+  procedure ChangeParity(P : PortRecPtr; NewParity : ParityType);
+    {-Changes parity of P to NewParity}
+  begin
+    with P^ do
+      SetLine(P, 0, NewParity, CurDataBits, CurStopBits);
+  end;
+
+  procedure ChangeDataBits(P : PortRecPtr; NewDataBits : DataBitType);
+    {-Changes data bits of P to NewDataBits}
+  begin
+    with P^ do
+      SetLine(P, 0, CurParity, NewDataBits, CurStopBits);
+  end;
+
+  procedure ChangeStopBits(P : PortRecPtr; NewStopBits : StopBitType);
+    {-Changes stop bit of P to NewStopBits}
+  begin
+    with P^ do
+      SetLine(P, 0, CurParity, CurDataBits, NewStopBits);
+  end;
+
+  procedure ChangeBufferSizes(P : PortRecPtr; NewInSize, NewOutSize : Word);
+    {-Changes input/output buffer sizes (0 means no change)}
+  var
+    SaveInLen : Word;
+  label
+    Fail1, Fail2, Fail3;
+
+    procedure SetInBuff(Size : Word);
+    begin
+      with P^ do begin
+        InBuffLen := Size;
+        InBuffCount := 0;
+        InHead := InBuff;
+        InTail := InBuff;
+        InBuffEnd := InBuff;
+        Inc(OS(InBuffEnd).Ofs, InBuffLen);
+      end;
+    end;
+
+    procedure SetOutBuff(Size : Word);
+    begin
+      with P^ do begin
+        OutBuffLen := Size;
+        OutBuffCount := 0;
+        OutHead := OutBuff;
+        OutTail := OutBuff;
+        OutBuffEnd := OutBuff;
+        Inc(OS(OutBuffEnd).Ofs, OutBuffLen);
+      end;
+    end;
+
+    procedure SetStatBuff;
+    begin
+      with P^ do begin
+        StatHead := StatBuff;
+        StatTail := StatBuff;
+        StatBuffEnd := StatBuff;
+        Inc(OS(StatBuffEnd).Ofs, InBuffLen);
+      end;
+    end;
+
+  begin
+    AsyncStatus := ecOk;
+
+    {Exit if nothing to do}
+    if (NewInSize = 0) and (NewOutSize = 0) then
+      Exit;
+
+    {Range check the buffer sizes}
+    if (NewInSize <> 0) then
+      if not CheckRange(NewInSize, MinInBuff, 65521) then begin
+        GotError(P, epNonFatal+ecInvalidArgument);
+        Exit;
+      end;
+    if (NewOutSize <> 0) then
+      if not CheckRange(NewOutSize, MinOutBuff, 65521) then begin
+        GotError(P, epNonFatal+ecInvalidArgument);
+        Exit;
+      end;
+
+    with P^ do begin
+      if not Buffered then begin
+        GotError(P, epNonFatal+ecNotBuffered);
+        Exit;
+      end;
+
+      {Deactivate the port while changing the buffers around}
+      ActivatePort(P, False);
+
+      {Do input buffers}
+      SaveInLen := InBuffLen;
+      if NewInSize <> 0 then begin
+        FreeMemCheck(InBuff, InBuffLen);
+        if not GetMemCheck(InBuff, NewInSize) then begin
+          if GetMemCheck(InBuff, InBuffLen) then ;
+          SetInBuff(InBuffLen);
+          goto Fail1;
+        end;
+
+        if UseStatusBuffer then begin
+          FreeMemCheck(StatBuff, InBuffLen);
+          if not GetMemCheck(StatBuff, NewInSize) then begin
+            if GetMemCheck(StatBuff, InBuffLen) then ;
+            InBuffLen := SaveInLen;
+            SetStatBuff;
+            goto Fail2;
+          end;
+        end;
+      end;
+
+      {Do output buffer}
+      if NewOutSize <> 0 then begin
+        FreeMemCheck(OutBuff, OutBuffLen);
+        if not GetMemCheck(OutBuff, NewOutSize) then begin
+          if GetMemCheck(OutBuff, OutBuffLen) then ;
+          SetOutBuff(OutBuffLen);
+          goto Fail3;
+        end;
+      end;
+
+      {All is well if we get here -- update the rest of the buffer fields}
+      if NewInSize <> 0 then begin
+        SetInBuff(NewInSize);
+        if UseStatusBuffer then
+          SetStatBuff;
+      end;
+      if NewOutSize <> 0 then
+        SetOutBuff(NewOutSize);
+
+      {Reactivate the port and exit}
+      ActivatePort(P, False);
+      Exit;
+
+  Fail3:
+      {Restore original status buffer}
+      if (NewInSize <> 0) and UseStatusBuffer then begin
+        FreeMemCheck(StatBuff, NewInSize);
+        if GetMemCheck(StatBuff, InBuffLen) then ;
+        SetStatBuff;
+      end;
+
+  Fail2:
+      {Restore original input buffer}
+      if NewInSize <> 0 then begin
+        FreeMemCheck(InBuff, NewInSize);
+        if GetMemCheck(InBuff, InBuffLen) then ;
+        SetInBuff(InBuffLen);
+      end;
+
+  Fail1:
+      {Reactivate the port}
+      ActivatePort(P, False);
+
+      {Report nonfatal memory error -- everything has been restored}
+      GotError(P, epNonFatal+ecOutOfMemory);
+    end;
+  end;
+
+  procedure ForceBufferLimits(P : PortRecPtr; NewInLimit, NewOutLimit: Word);
+    {-Forces new buffer limits (_no_ error checking)}
+
+    procedure SetInBuff(Size : Word);
+    begin
+      with P^ do begin
+        InBuffLen := Size;
+        InBuffCount := 0;
+        InHead := InBuff;
+        InTail := InBuff;
+        InBuffEnd := InBuff;
+        Inc(OS(InBuffEnd).Ofs, InBuffLen);
+      end;
+    end;
+
+    procedure SetOutBuff(Size : Word);
+    begin
+      with P^ do begin
+        OutBuffLen := Size;
+        OutBuffCount := 0;
+        OutHead := OutBuff;
+        OutTail := OutBuff;
+        OutBuffEnd := OutBuff;
+        Inc(OS(OutBuffEnd).Ofs, OutBuffLen);
+      end;
+    end;
+
+    procedure SetStatBuff;
+    begin
+      with P^ do begin
+        StatHead := StatBuff;
+        StatTail := StatBuff;
+        StatBuffEnd := StatBuff;
+        Inc(OS(StatBuffEnd).Ofs, InBuffLen);
+      end;
+    end;
+
+  begin
+    AsyncStatus := ecOk;
+
+    {Exit if nothing to do}
+    if (NewInLimit = 0) and (NewOutLimit = 0) then
+      Exit;
+
+    {Range check the buffer limits}
+    if (NewInLimit <> 0) then
+      if not CheckRange(NewInLimit, MinInBuff, 65521) then begin
+        GotError(P, epNonFatal+ecInvalidArgument);
+        Exit;
+      end;
+    if (NewOutLimit <> 0) then
+      if not CheckRange(NewOutLimit, MinOutBuff, 65521) then begin
+        GotError(P, epNonFatal+ecInvalidArgument);
+        Exit;
+      end;
+
+    with P^ do begin
+      if not Buffered then begin
+        GotError(P, epNonFatal+ecNotBuffered);
+        Exit;
+      end;
+
+      {Deactivate the port while changing the buffers around}
+      DeactivatePort(P, False);
+
+      {Do input buffers}
+      if NewInLimit <> 0 then begin
+        SetInBuff(NewInLimit);
+        if UseStatusBuffer then
+          SetStatBuff;
+      end;
+
+      {Do output buffer}
+      if NewOutLimit <> 0 then
+        SetOutBuff(NewOutLimit);
+
+      {Reactivate the port}
+      ActivatePort(P, False);
+    end;
+  end;
+
+  {---- Get routines ----}
+  function BlockReady(P : PortRecPtr; ExpectedLen : Word;
+                      DelimSet : CharSet) : Boolean;
+    {-Returns True if a block is ready of ExpectedLen or with DelimSet}
+  var
+    CharsInBuff : Word;
+    I : Word;
+    C : Char;
+  begin
+    {Device must be buffered}
+    if not P^.Buffered then begin
+      GotError(P, epNonFatal+ecNotBuffered);
+      Exit;
+    end;
+
+    BlockReady := True;
+    CharsInBuff := InBuffUsed(P);
+
+    {Check expected length first}
+    if (ExpectedLen > 0) and (ExpectedLen <= CharsInBuff) then
+      Exit;
+
+    {Check for delimiter}
+    if DelimSet <> EmptySet then begin
+
+      {If ignoring case, make sure DelimSet has both cases}
+      if FlagIsSet(P^.Flags, ptIgnoreDelimCase) then
+        AllcaseCharSet(DelimSet);
+
+      {Look thru buffer for chars in DelimSet}
+      for I := 1 to CharsInBuff do begin
+        PeekChar(P, C, I);
+        if C in DelimSet then
+          Exit;
+      end;
+    end;
+
+    {If we get here, the string isn't ready}
+    BlockReady := False;
+  end;
+
+  function GetDelimLoc(P : PortRecPtr; DelimSet : CharSet) : Word;
+    {-Returns the location in the input buffer of DelimSet}
+  var
+    CharsInBuff : Word;
+    I : Word;
+    C : Char;
+  begin
+    {Device must be buffered}
+    if not P^.Buffered then begin
+      GotError(P, epNonFatal+ecNotBuffered);
+      Exit;
+    end;
+
+    {If ignoring case, make sure DelimSet has both cases}
+    if FlagIsSet(P^.Flags, ptIgnoreDelimCase) then
+      AllcaseCharSet(DelimSet);
+
+    {Look thru buffer for chars in DelimSet}
+    CharsInBuff := InBuffUsed(P);
+    for I := 1 to CharsInBuff do begin
+      PeekChar(P, C, I);
+      if C in DelimSet then begin
+        GetDelimLoc := I;
+        Exit;
+      end;
+    end;
+
+    {If we get here we couldn't find a delimiter, return CharsInBuff}
+    GetDelimLoc := CharsInBuff;
+  end;
+
+  procedure GetCharTimeout(P : PortRecPtr; var C : Char; Timeout : Word);
+    {-Waits for C or Timeout}
+  var
+    ET : EventTimer;
+  begin
+    AsyncStatus := ecOk;
+    C := #255;
+
+    {If a char is ready now just exit}
+    if CharReady(P) then begin
+      GetChar(P, C);
+      Exit;
+    end;
+
+    {Char not ready, start waiting and checking}
+    NewTimer(ET, Timeout);
+    repeat
+    until CharReady(P) or WaitComplete(P, ET);
+
+    {Report WaitComplete errors only}
+    if (AsyncStatus = ecTimeout) or (AsyncStatus = ecUserAbort) then
+      GotError(P, epNonFatal+AsyncStatus)
+    else
+      GetChar(P, C);
+  end;
+
+  procedure PeekCharTimeout(P : PortRecPtr; var C : Char;
+                            PeekAhead : Word; Timeout : Word);
+    {-Waits for C at PeekAhead or Timeout}
+  var
+    ET : EventTimer;
+    Ready : Boolean;                                                   {!!.02}
+  begin
+    AsyncStatus := ecOk;
+
+    {Use CharReady for peeks of 1}                                     {!!.02}
+    if PeekAhead = 1 then                                              {!!.02}
+      Ready := CharReady(P)                                            {!!.02}
+    else                                                               {!!.02}
+      Ready := InBuffUsed(P) >= PeekAhead;                             {!!.02}
+
+    {If a char is ready now just exit}
+    if Ready then begin                                                {!!.02}
+      PeekChar(P, C, PeekAhead);
+      Exit;
+    end;
+
+    {Char not ready, start waiting and checking}
+    NewTimer(ET, Timeout);
+    repeat
+      if PeekAhead = 1 then                                            {!!.02}
+        Ready := CharReady(P)                                          {!!.02}
+      else                                                             {!!.02}
+        Ready := InBuffUsed(P) >= PeekAhead;                           {!!.02}
+    until Ready or WaitComplete(P, ET);                                {!!.02}
+    if Ready then                                                      {!!.02}
+      PeekChar(P, C, PeekAhead);                                       {!!.02}
+
+    {Report timeout and user abort errors only}
+    if (AsyncStatus = ecTimeout) or (AsyncStatus = ecUserAbort) then
+      GotError(P, epNonFatal+AsyncStatus);
+  end;
+
+  procedure GetString(P : PortRecPtr; var S : String;
+                      ExpectedLen : Byte;
+                      DelimSet : CharSet);
+    {-Returns string S with Len or ending with DelimSet}
+  var
+    C : Char;
+    Cnt : Byte;
+    Finished : Boolean;
+    GotDelim : Boolean;
+    Delimited : Boolean;
+  begin
+    AsyncStatus := ecOk;
+    S := '';
+
+    {Check for delimiter}
+    if DelimSet <> EmptySet then
+      Delimited := True
+    else
+      Delimited := False;
+
+    if (ExpectedLen = 0) and (not Delimited) then begin
+      GotError(P, epNonFatal+ecInvalidArgument);
+      Exit;
+    end;
+
+    {If ignoring case, make sure DelimSet has both cases}
+    if Delimited then
+      if FlagIsSet(P^.Flags, ptIgnoreDelimCase) then
+        AllcaseCharSet(DelimSet);
+
+    {If partial strings aren't allowed, make sure we can satisfy the request}
+    if not FlagIsSet(P^.Flags, ptReturnPartialGets) and P^.Buffered then
+      if not BlockReady(P, ExpectedLen, DelimSet) then begin
+        GotError(P, epNonFatal+ecBufferIsEmpty);
+        Exit;
+      end;
+
+    {Ok to return partial strings}
+    Finished := False;
+    Cnt := 1;
+    GotDelim := False;
+    repeat
+      {Get a character (or error)}
+      if not CharReady(P) then begin
+        {Expected char but didn't get one, return incomplete string}
+        if Cnt = 1 then
+          GotError(P, epNonFatal+ecBufferIsEmpty)
+        else
+          GotError(P, epNonFatal+ecStringIncomplete);
+        S[0] := Char(Cnt-1);
+        Exit;
+      end else begin
+        {Get the char}
+        GetChar(P, C);
+        if AsyncStatus <> ecOk then begin
+          {Got line error, just exit}
+          S[0] := Char(Cnt-1);
+          Exit;
+        end;
+
+        {Add the character}
+        S[Cnt] := C;
+
+        {Check to see if we're finished}
+        if Delimited and (C in DelimSet) then begin
+          Finished := True;
+          GotDelim := True;
+        end;
+        if (ExpectedLen <> 0) and (Cnt >= ExpectedLen) then
+          Finished := True;
+
+        {Check for wrap}
+        if not Finished then begin
+          Inc(Cnt);
+          if Cnt = 0 then begin
+            GotError(P, epNonFatal+ecStringOverrun);
+            S[0] := #255;
+            Exit;
+          end;
+        end;
+      end;
+    until Finished;
+    S[0] := Char(Cnt);
+
+    {Optionally delete the delimiter character}
+    if Delimited and GotDelim and not FlagIsSet(P^.Flags, ptReturnDelimiter) then
+      S[0] := Char(Cnt-1)
+  end;
+
+  procedure GetStringTimeout(P : PortRecPtr; var S : String;
+                             ExpectedLen : Byte;
+                             DelimSet : CharSet;
+                             Timeout : Word);
+    {-Waits for string S or Timeout}
+  var
+    ET : EventTimer;
+    Finished : Boolean;
+    Cnt : Byte;
+    C : Char;
+    SaveStatus : Word;
+    Delimited : Boolean;
+  begin
+    AsyncStatus := ecOk;
+    S := '';
+
+    {Check for delimiter}
+    if DelimSet <> EmptySet then
+      Delimited := True
+    else
+      Delimited := False;
+
+    NewTimer(ET, Timeout);
+
+    {If ignoring case, make sure DelimSet has both cases}
+    if Delimited then
+      if FlagIsSet(P^.Flags, ptIgnoreDelimCase) then
+        AllcaseCharSet(DelimSet);
+
+    {Wait until string is ready or Timeout}
+    if P^.Buffered then
+      while not BlockReady(P, ExpectedLen, DelimSet) and
+            not WaitComplete(P, ET) do ;
+
+    SaveStatus := AsyncStatus;
+    if (AsyncStatus = ecOk) or
+       FlagIsSet(P^.Flags, ptReturnPartialGets) or
+       not P^.Buffered then
+      {Need to try to get a string}
+      if P^.Buffered then begin
+        {String is ready, go get it}
+        GetString(P, S, ExpectedLen, DelimSet);
+
+        {Conditionally restore WaitComplete's status}
+        if SaveStatus <> ecOk then
+          if (AsyncStatus = ecOk) or
+             ((AsyncStatus mod 10000) = ecStringIncomplete) or
+             ((AsyncStatus mod 10000) = ecBufferIsEmpty) then
+            GotError(P, epNonFatal+SaveStatus);
+
+      end else begin
+        {Need to Timeout each character in a non-buffered device}
+        Finished := False;
+        Cnt := 1;
+        repeat
+          {Get a character (or error)}
+          GetCharTimeout(P, C, Timeout);
+          if (AsyncStatus <> ecOk) then begin
+            if (AsyncStatus mod 10000) = ecBufferIsEmpty then
+              GotError(P, epNonFatal+ecStringIncomplete);
+            S[0] := Char(Cnt-1);
+            Exit;
+          end else begin
+            {Add the character}
+            S[Cnt] := C;
+
+            {Check to see if we're finished}
+            if Delimited and (C in DelimSet) then
+              Finished := True;
+            if (ExpectedLen <> 0) and (Cnt >= ExpectedLen) then
+              Finished := True;
+
+            {Check for wrap}
+            if not Finished then begin
+              Inc(Cnt);
+              if Cnt = 0 then begin
+                GotError(P, epNonFatal+ecStringOverrun);
+                S[0] := #255;
+                Exit;
+              end;
+            end;
+          end;
+        until Finished;
+        S[0] := Char(Cnt);
+
+        {Optionally delete the delimiter character}
+        if Delimited and not FlagIsSet(P^.Flags, ptReturnDelimiter) then
+          S[0] := Char(Cnt-1)
+      end
+    else
+      {No string to get}
+      GotError(P, epNonFatal + (AsyncStatus mod 10000));
+  end;
+
+  procedure GetBlock(P : PortRecPtr; var Block;
+                     ExpectedLen : Word;
+                     var ReceivedLen : Word;
+                     DelimSet : CharSet);
+    {-Returns block of ExpectedLen}
+  var
+    C : Char;
+    Finished : Boolean;
+    GotDelim : Boolean;
+    Cnt : Word;
+    Delimited : Boolean;
+  begin
+    AsyncStatus := ecOk;
+
+    {Check for delimiter}
+    if DelimSet <> EmptySet then
+      Delimited := True
+    else
+      Delimited := False;
+
+    {Make sure there is something to do}
+    if (ExpectedLen = 0) and not Delimited then begin
+      GotError(P, epNonFatal+ecInvalidArgument);
+      Exit;
+    end;
+
+    {If ignoring case, make sure DelimSet has both cases}
+    if Delimited then
+      if FlagIsSet(P^.Flags, ptIgnoreDelimCase) then
+        AllcaseCharSet(DelimSet);
+
+    {If partial blocks aren't allowed, make sure we can satisfy the request}
+    if not FlagIsSet(P^.Flags, ptReturnPartialGets) and P^.Buffered then
+      if not BlockReady(P, ExpectedLen, DelimSet) then begin
+        GotError(P, epNonFatal+ecBufferIsEmpty);
+        Exit;
+      end;
+
+    {Block ready or ok to return partial block}
+    Finished := False;
+    Cnt := 0;
+    GotDelim := False;
+    repeat
+      {Get a character (or error)}
+      if not CharReady(P) then begin
+        {Expected char but didn't get one, return incomplete string}
+        if Cnt = 0 then
+          GotError(P, epNonFatal+ecBufferIsEmpty)
+        else
+          GotError(P, epNonFatal+ecBlockIncomplete);
+        ReceivedLen := Cnt;
+        Exit;
+      end else begin
+        {Get the char}
+        GetChar(P, C);
+        if AsyncStatus <> ecOk then begin
+          {Got line error, just exit}
+          ReceivedLen := Cnt;
+          Exit;
+        end;
+
+        {Add the character}
+        CharArray(Block)[Cnt] := C;
+        Inc(Cnt);
+
+        {Check to see if we're finished}
+        if Delimited and (C in DelimSet) then begin
+          Finished := True;
+          GotDelim := True;
+        end;
+        if (ExpectedLen <> 0) and (Cnt >= ExpectedLen) then
+          Finished := True;
+      end;
+    until Finished;
+    ReceivedLen := Cnt;
+
+    {Show block incomplete errors}
+    if (ExpectedLen > 0) and (ReceivedLen <> ExpectedLen) and not GotDelim then
+      GotError(P, epNonFatal+ecBlockIncomplete);
+
+    {Optionally delete the delimiter character}
+    if Delimited and GotDelim and not FlagIsSet(P^.Flags, ptReturnDelimiter) then
+      Dec(ReceivedLen);
+  end;
+
+  procedure GetBlockDirect(P : PortRecPtr; var Block;
+                           ExpectedLen : Word;
+                           var ReceivedLen : Word;
+                           DelimSet : CharSet);
+    {-Reads block directly from InBuff}
+  var
+    I, N, D : Word;
+    GotDelim : Boolean;
+    SaveStatus : Word;
+    Delimited : Boolean;
+  begin
+    AsyncStatus := ecOk;
+
+    {Check for delimiter}
+    if DelimSet <> EmptySet then
+      Delimited := True
+    else
+      Delimited := False;
+
+    {Make sure there is something to do}
+    if (ExpectedLen = 0) and not Delimited then begin
+      GotError(P, epNonFatal+ecInvalidArgument);
+      ReceivedLen := 0;
+      Exit;
+    end;
+
+    {If no buffers then filter through to GetBlock}
+    if not P^.Buffered then begin
+      GetBlock(P, Block, ExpectedLen, ReceivedLen, DelimSet);
+      Exit;
+    end;
+
+    {If ignoring case, make sure DelimSet has both cases}
+    if Delimited then
+      if FlagIsSet(P^.Flags, ptIgnoreDelimCase) then
+        AllcaseCharSet(DelimSet);
+
+    {If partial blocks aren't allowed, make sure we can satisfy the request}
+    if not FlagIsSet(P^.Flags, ptReturnPartialGets) and P^.Buffered then
+      if not BlockReady(P, ExpectedLen, DelimSet) then begin
+        GotError(P, epNonFatal+ecBufferIsEmpty);
+        Exit;
+      end;
+
+    {Get smaller of ExpectedLen and InBuffUsed}
+    N := InBuffUsed(P);
+    if (N > ExpectedLen) and (ExpectedLen <> 0) then
+      N := ExpectedLen;
+
+    {Exit immediately if buffer is empty}
+    if N = 0 then begin
+      GotError(P, epNonFatal+ecBufferIsEmpty);
+      ReceivedLen := 0;
+      Exit;
+    end;
+
+    {If fewer bytes than expected show error and keep going}
+    if N < ExpectedLen then
+      GotError(P, epNonFatal+ecBlockIncomplete);
+    SaveStatus := AsyncStatus;
+
+    {If Delimited then find the position of the delimiter}
+    GotDelim := False;
+    if Delimited then begin
+      D := GetDelimLoc(P, DelimSet);
+      if D <> 0 then
+        GotDelim := True;
+      {Return smaller of ExpectedLen and DelimLoc}
+      if D < N then
+        N := D;
+    end;
+
+    {Extract characters directly from input buffer}
+    with P^ do begin
+      IntOff;
+      I := OS(InBuff).Ofs - OS(InTail).Ofs + InBuffLen;
+      if N > I then begin
+        {Buffer wraps, move lead and trailing sections}
+        Move(InTail^, CharArray(Block)[0], I);
+        Move(InBuff^, CharArray(Block)[I], (N-I));
+        OS(InTail).Ofs := OS(InBuff).Ofs + (N-I);
+        if UseStatusBuffer then
+          OS(StatTail).Ofs := OS(StatBuff).Ofs + (N-I);
+      end else begin
+        {Move whats between InTail and InHead}
+        Move(InTail^, CharArray(Block)[0], N);
+        OS(InTail).Ofs := OS(InTail).Ofs + N;
+        if UseStatusBuffer then
+          OS(StatTail).Ofs := OS(StatTail).Ofs + N;
+        {Handle case of ending at buffer limit}
+        if N = I then
+          InTail := InBuff;
+      end;
+
+      {Adjust the buffer count}
+      InBuffCount := InBuffCount - N;
+      IntOn;
+
+      {Set ReceivedLen to actual number of characters returned}
+      ReceivedLen := N;
+      if GotDelim and not FlagIsSet(P^.Flags, ptReturnDelimiter) then
+        Dec(ReceivedLen);
+      AsyncStatus := SaveStatus;
+
+      {!!.02 start}
+      {$IFDEF UseHWFlow}
+      {Check for hardware flow control}
+      if (HWFRecHonor <> 0) and HWFRemoteOff and
+         (InBuffCount < HWFResume) then begin
+        {Clear bits we are honoring, then set to "on" state}
+        ModemControl := ModemControl xor HWFRecHonor;
+        Port[BaseAddr+MCreg] := ModemControl;
+        HWFRemoteOff := False;
+      end;
+      {$ENDIF}
+
+      {$IFDEF UseSWFlow}
+      {Check for software flow control}
+      if (SWFState <> 0) and
+         SWFSentXoff and
+         (InBuffCount < SWFResume) then begin
+        {Need to turn remote back on, send Xon}
+        SWFSentXoff := False;
+        PutChar(P, SWFOnChar);
+      end;
+      {$ENDIF}
+
+      {Report errors}
+      if AsyncStatus <> ecOk then
+        GotError(P, epNonFatal + AsyncStatus);
+      {!!.02 end}
+
+      {$IFDEF Tracing}
+      if TracingOn then
+        for I := 0 to ReceivedLen-1 do
+          AddTraceEntry('R', CharArray(Block)[I]);
+      {$ENDIF}
+    end;
+  end;
+
+  procedure GetBlockTimeout(P : PortRecPtr; var Block;
+                            ExpectedLen : Word;
+                            var ReceivedLen : Word;
+                            DelimSet : CharSet;
+                            Timeout : Word);
+    {-Waits for block or Timeout}
+  var
+    ET : EventTimer;
+    C : Char;
+    SaveStatus : Word;
+    Cnt : Word;
+    Finished : Boolean;
+    GotDelim : Boolean;
+    Delimited : Boolean;
+  begin
+    AsyncStatus := ecOk;
+
+    {Check for delimiter}
+    if DelimSet <> EmptySet then
+      Delimited := True
+    else
+      Delimited := False;
+
+    {Make sure there is something to do}
+    if (ExpectedLen = 0) and not Delimited then begin
+      GotError(P, epNonFatal+ecInvalidArgument);
+      ReceivedLen := 0;
+      Exit;
+    end;
+
+    NewTimer(ET, Timeout);
+
+    {Wait until block is ready or Timeout}
+    if P^.Buffered then
+      while not BlockReady(P, ExpectedLen, DelimSet) and
+            not WaitComplete(P, ET) do ;
+
+    SaveStatus := AsyncStatus;
+
+    if (AsyncStatus = ecOk) or
+       FlagIsSet(P^.Flags, ptReturnPartialGets) or
+       not P^.Buffered then
+      {Need to try to get a block}
+      if P^.Buffered then begin
+        {Attempt to get a buffered block}
+        GetBlock(P, Block, ExpectedLen, ReceivedLen, DelimSet);
+
+        {Conditionally restore WaitComplete's status}
+        if SaveStatus <> ecOk then
+          if (AsyncStatus = ecOk) or
+             ((AsyncStatus mod 10000) = ecBlockIncomplete) or
+             ((AsyncStatus mod 10000) = ecBufferIsEmpty) then
+            GotError(P, epNonFatal + SaveStatus);
+
+      end else begin
+        {Non-buffered device, timeout each character}
+        Finished := False;
+        GotDelim := False;
+        Cnt := 0;
+        repeat
+          {Get the char}
+          GetCharTimeout(P, C, Timeout);
+          if AsyncStatus <> ecOk then begin
+            {Got line error, just exit}
+            ReceivedLen := Cnt;
+            Exit;
+          end;
+
+          {Add the character}
+          CharArray(Block)[Cnt] := C;
+          Inc(Cnt);
+
+          {Check to see if we're finished}
+          if Delimited and (C in DelimSet) then begin
+            Finished := True;
+            GotDelim := True;
+          end;
+          if (ExpectedLen <> 0) and (Cnt >= ExpectedLen) then
+            Finished := True;
+        until Finished;
+        ReceivedLen := Cnt;
+        if GotDelim and not FlagIsSet(P^.Flags, ptReturnDelimiter) then
+          Dec(ReceivedLen);
+      end
+    else begin
+      {No block to return, report results}
+      GotError(P, epNonFatal + (AsyncStatus mod 10000));
+      ReceivedLen := 0;
+    end;
+  end;
+
+  {----Put routines---}
+  procedure PutCharTimeout(P : PortRecPtr; C : Char; Timeout : Word);
+    {-Puts char in output buffer or Timeout}
+  var
+    ET : EventTimer;
+  begin
+    AsyncStatus := ecOk;
+
+    with P^ do begin
+      {If room is available now, just do it}
+      if TransReady(P) then
+        PutChar(P, C)
+      else begin
+        {No room, start waiting}
+        NewTimer(ET, Timeout);
+        repeat
+        until TransReady(P) or WaitComplete(P, ET);
+        if AsyncStatus = ecOk then
+          {Now there is room, send the character}
+          PutChar(P, C);
+      end;
+
+      {Report timeouts or user aborts only}
+      if (AsyncStatus = ecTimeout) or (AsyncStatus = ecUserAbort) then
+        GotError(P, epNonFatal+AsyncStatus);
+    end;
+  end;
+
+  procedure PutString(P : PortRecPtr; S : String);
+    {-Puts string S in output buffer}
+  var
+    I : Integer;
+  begin
+    AsyncStatus := ecOk;
+
+    {Make sure there is enough room}
+    if not FlagIsSet(P^.Flags, ptExecutePartialPuts) then
+      if OutBuffFree(P) < Length(S) then begin
+        GotError(P, epNonFatal+ecBufferIsFull);
+        Exit;
+      end;
+
+    {Send the characters to output}
+    for I := 1 to Length(S) do begin
+      PutChar(P, S[I]);
+      if AsyncStatus <> ecOk then
+        Exit;
+    end;
+  end;
+
+  procedure PutStringTimeout(P : PortRecPtr; S : String; Timeout : Word);
+    {-Puts string in output buffer or Timeout}
+  var
+    ET : EventTimer;
+    Len : Byte absolute S;
+    I : Byte;
+    SaveStatus : Word;
+  begin
+    AsyncStatus := ecOk;
+    NewTimer(ET, Timeout);
+
+    {Wait until there is enough room or Timeout}
+    if P^.Buffered then
+      while (OutBuffFree(P) < Len) and not WaitComplete(P, ET) do ;
+
+    {Save the results of ptWaitComplete}
+    SaveStatus := AsyncStatus;
+
+    if (AsyncStatus = ecOk) or
+       FlagIsSet(P^.Flags, ptExecutePartialPuts) or
+       not P^.Buffered then
+      {Need to try to put a string}
+      if P^.Buffered then begin
+        {Buffer has room, send the string}
+        PutString(P, S);
+
+        {Conditionally restore ptWaitComplete's status}
+        if SaveStatus <> ecOk then
+          if (AsyncStatus = ecOk) or
+             ((AsyncStatus mod 10000) = ecBufferIsFull) then
+            GotError(P, epNonFatal+SaveStatus);
+
+      end else begin
+        {Device isn't buffered, need to Timeout each char}
+        for I := 1 to Length(S) do begin
+          PutCharTimeout(P, S[I], Timeout);
+          if AsyncStatus <> ecOk then
+            Exit;
+        end
+      end
+    else
+      {No room for string, return error}
+      GotError(P, epNonFatal + (AsyncStatus mod 10000));
+  end;
+
+  procedure PutBlock(P : PortRecPtr; var Block;
+                     BlockLen : Word; var BytesWritten : Word);
+    {-Puts block of BlockLen}
+  var
+    I : Word;
+  begin
+    AsyncStatus := ecOk;
+    BytesWritten := 0;
+
+    if (BlockLen = 0) then begin
+      GotError(P, epNonFatal+ecInvalidArgument);
+      Exit;
+    end;
+
+    {Make sure there is enough room}
+    if not FlagIsSet(P^.Flags, ptExecutePartialPuts) then
+      if OutBuffFree(P) < BlockLen then begin
+        GotError(P, epNonFatal+ecBufferIsFull);
+        Exit;
+      end;
+
+    {Send the block to output}
+    I := 0;
+    repeat
+      PutChar(P, CharArray(Block)[I]);
+      if AsyncStatus = ecOk then
+        Inc(I);
+    until (AsyncStatus <> ecOk) or (I = BlockLen);
+    BytesWritten := I;
+  end;
+
+  procedure PutBlockDirect(P : PortRecPtr; var Block;
+                           BlockLen : Word; var BytesWritten : Word);
+    {-Puts block of BlockLen directly into the output buffer}
+  var
+    FreeSpace : Word;
+    I : Word;
+    TotalFree : Word;                                                  {!!.03}
+  begin
+    AsyncStatus := ecOk;
+    BytesWritten := 0;
+
+    if (BlockLen = 0) then begin
+      GotError(P, epNonFatal+ecInvalidArgument);
+      Exit;
+    end;
+
+    {If no buffers then filter thru to PutBlock}
+    if not P^.Buffered then begin
+      PutBlock(P, Block, BlockLen, BytesWritten);
+      Exit;
+    end;
+
+    {Get static value for freespace}                                   {!!.03}
+    TotalFree := OutBuffFree(P);                                       {!!.03}
+
+    {Make sure there is enough room}
+    if not FlagIsSet(P^.Flags, ptExecutePartialPuts) then
+      if TotalFree < BlockLen then begin                               {!!.03}
+        GotError(P, epNonFatal+ecBufferIsFull);
+        Exit;
+      end;
+
+    {Truncate if not enough room}
+    if BlockLen > TotalFree then                                       {!!.03}
+      BlockLen := TotalFree;                                           {!!.03}
+
+    with P^ do begin
+      IntOff;
+      if (OS(OutHead).Ofs >= OS(OutTail).Ofs) then begin
+        {"Normal" buffer}
+        FreeSpace := (OS(OutBuffEnd).Ofs - OS(OutHead).Ofs);
+        if FreeSpace >= BlockLen then begin
+          Move(CharArray(Block)[0], OutHead^, BlockLen);
+          Inc(OS(OutHead).Ofs, BlockLen);
+        end else begin
+          Move(CharArray(Block)[0], OutHead^, FreeSpace);
+          Move(CharArray(Block)[FreeSpace], OutBuff^, BlockLen-FreeSpace);
+          OutHead := OutBuff;
+          Inc(OS(OutHead).Ofs, BlockLen-FreeSpace);
+        end;
+      end else begin
+        {"Wrapped" buffer}
+        Move(CharArray(Block)[0], OutHead^, BlockLen);
+        Inc(OS(OutHead).Ofs, BlockLen);
+      end;
+
+      {Adjust OutHead and count}
+      Inc(OutBuffCount, BlockLen);
+
+      {Check for buffer wrap-around}
+      if OutHead = OutBuffEnd then
+        OutHead := OutBuff;
+
+      {(Re)start the transmit stream}
+      StartTransmitter(P);
+      IntOn;
+
+      {Return the bytes written}
+      BytesWritten := BlockLen;
+
+      {$IFDEF Tracing}
+      if TracingOn then
+        for I := 0 to BlockLen-1 do
+          AddTraceEntry('T', CharArray(Block)[I]);
+      {$ENDIF}
+    end;
+  end;
+
+  procedure PutBlockTimeout(P : PortRecPtr; var Block;
+                            BlockLen : Word; var BytesWritten : Word;
+                            Timeout : Word);
+    {-Puts a block or Timeout}
+  var
+    I : Word;
+    ET : EventTimer;
+    SaveStatus : Word;
+  begin
+    AsyncStatus := ecOk;
+    BytesWritten := 0;
+
+    if (BlockLen = 0) then begin
+      GotError(P, epNonFatal+ecInvalidArgument);
+      Exit;
+    end;
+
+    NewTimer(ET, Timeout);
+
+    {Wait for enough room or Timeout}
+    if P^.Buffered then
+      while (OutBuffFree(P) < BlockLen) and not WaitComplete(P, ET) do;
+
+    {Save the results of ptWaitComplete}
+    SaveStatus := AsyncStatus;
+
+    if (AsyncStatus = ecOk) or
+       FlagIsSet(P^.Flags, ptExecutePartialPuts) or
+       not P^.Buffered then
+      {Need to try to put a block}
+      if P^.Buffered then begin
+        {Buffer has room, send the block}
+        PutBlock(P, Block, BlockLen, BytesWritten);
+
+        {Conditionally restore ptWaitComplete's status}
+        if SaveStatus <> ecOk then
+          if (AsyncStatus = ecOk) or
+             ((AsyncStatus mod 10000) = ecBufferIsFull) then
+            GotError(P, epNonFatal+SaveStatus);
+
+      end else begin
+        {Device is unbuffered, need to Timeout each char}
+        I := 0;
+        repeat
+          PutCharTimeout(P, CharArray(Block)[I], Timeout);
+          if AsyncStatus = ecOk then
+            Inc(I);
+        until (I = BlockLen) or (AsyncStatus <> ecOk);
+        BytesWritten := I;
+      end
+    else
+      {No room for block, return error}
+      GotError(P, epNonFatal+ecBufferIsFull);
+  end;
+
+  {-----Buffer management-----}
+  procedure FlushInBuffer(P : PortRecPtr);
+    {-Flush the input buffer}
+  begin
+    BufferFlush(P, True, False);
+  end;
+
+  procedure FlushOutBuffer(P : PortRecPtr);
+    {-Flush the output buffer}
+  begin
+    BufferFlush(P, False, True);
+  end;
+
+  function InBuffUsed(P : PortRecPtr) : Word;
+    {-Return number of chars in input buffer}
+  var
+    InFree, OutFree, InUsed, OutUsed : Word;
+  begin
+    BufferStatus(P, InFree, OutFree, InUsed, OutUsed);
+    InBuffUsed := InUsed;
+  end;
+
+  function OutBuffUsed(P : PortRecPtr) : Word;
+    {-Return number of chars in output buffer}
+  var
+    InFree, OutFree, InUsed, OutUsed : Word;
+  begin
+    BufferStatus(P, InFree, OutFree, InUsed, OutUsed);
+    OutBuffUsed := OutUsed;
+  end;
+
+  function InBuffFree(P : PortRecPtr) : Word;
+    {-Return number of chars in input buffer}
+  var
+    InFree, OutFree, InUsed, OutUsed : Word;
+  begin
+    BufferStatus(P, InFree, OutFree, InUsed, OutUsed);
+    InBuffFree := InFree;
+  end;
+
+  function OutBuffFree(P : PortRecPtr) : Word;
+    {-Return number of chars in output buffer}
+  var
+    InFree, OutFree, InUsed, OutUsed : Word;
+  begin
+    BufferStatus(P, InFree, OutFree, InUsed, OutUsed);
+    OutBuffFree := OutFree;
+  end;
+
+  procedure DrainOutBuffer(P : PortRecPtr; Timeout : Word);
+    {-Delays until output buffer drained or Timeout}
+  var
+    ET : EventTimer;
+  begin
+    AsyncStatus := ecOk;
+    NewTimer(ET, Timeout);
+
+    {Drain the output buffer}
+    while (AsyncStatus = ecOk) and
+          (P^.OutBuffCount <> 0) and
+          not WaitComplete(P, ET) do ;
+
+    {If timer expired, set Timeout status}
+    if ((AsyncStatus mod 10000) = ecTimeout) or
+       ((AsyncStatus mod 10000) = ecUserAbort) then
+      GotError(P, epNonFatal + (AsyncStatus mod 10000));
+  end;
+
+  {$IFDEF StatusBuffering}
+  procedure EnableStatusBuffer(P : PortRecPtr);
+    {-Enables input status buffer}
+  var
+    Delta : Word;
+  begin
+    AsyncStatus := ecOk;
+
+    with P^ do begin
+      {Error if device not buffered}
+      if not Buffered then begin
+        GotError(P, epNonFatal+ecNotBuffered);
+        Exit;
+      end;
+
+      {Exit if buffer is already on}
+      if UseStatusBuffer then
+        Exit;
+
+      {Allocate input status buffer}
+      {$IFDEF DPMI}
+      if not GlobalAllocCheck(StatBuff, gmem_Fixed, InBuffLen) then begin
+        GotError(P, epNonFatal+ecOutOfMemory);
+        Exit;
+      end;
+      {$ELSE}
+      if not GetMemCheck(StatBuff, InBuffLen) then begin
+        GotError(P, epNonFatal+ecOutOfMemory);
+        Exit;
+      end;
+      {$ENDIF}
+
+      {Align status buffer with input buffer}
+      IntOff;
+      Delta := OS(InHead).Ofs - OS(InBuff).Ofs;
+      Inc(OS(StatHead).Ofs, Delta);
+      UseStatusBuffer := True;
+      IntOn;
+
+      {Finish inits}
+      FillChar(StatBuff^, InBuffLen, 0);
+      StatHead := StatBuff;
+      StatTail := StatBuff;
+      StatBuffEnd := StatBuff;
+      Inc(OS(StatBuffEnd).Ofs, InBuffLen);
+    end;
+  end;
+
+  procedure DisableStatusBuffer(P : PortRecPtr);
+    {-Disables input status buffer}
+  begin
+    with P^ do begin
+      {Just exit if not on}
+      if not UseStatusBuffer then
+        Exit;
+
+      {Free heap space}
+      FreeMemCheck(StatBuff, InBuffLen);
+      UseStatusBuffer := False;
+    end;
+  end;
+
+  function StatusBuffering(P : PortRecPtr) : Boolean;
+    {-Returns state of status buffering}
+  begin
+    StatusBuffering := P^.UseStatusBuffer;
+  end;
+  {$ENDIF}
+
+  {$IFDEF UseSWFlow}
+  {-----Software flow control-----}
+  procedure SWFlowEnable(P : PortRecPtr;
+                         BufferFull, BufferResume : Word);
+    {-Enables automatic xon/xoff flow control}
+  begin
+    SWFlowSet(P, True, BufferFull, BufferResume, DefSWFOpt);
+  end;
+
+  procedure SWFlowEnableOpt(P : PortRecPtr;
+                            BufferFull, BufferResume : Word;
+                            Opt : Word);
+    {-Enables automatic xon/xoff flow control}
+  begin
+    SWFlowSet(P, True, BufferFull, BufferResume, Lo(Opt));
+  end;
+
+  procedure SWFlowDisable(P : PortRecPtr);
+    {-Disables automatic xon/xoff flow control}
+  begin
+    SWFlowSet(P, False, 0, 0, 0);
+  end;
+
+  procedure SWFlowResume(P : PortRecPtr);
+    {-Forces transmits to resume even if currently blocked by Xoff}
+  begin
+    SWFlowCtl(P, ' ', ' ', True);
+  end;
+
+  function SWFlowState(P : PortRecPtr) : FlowState;
+    {-Returns current state of software flow control}
+  begin
+    SWFlowState := SWFlowGet(P);
+  end;
+
+  procedure SWFlowSetChars(P : PortRecPtr; OnChar, OffChar : Char);
+    {-Sets custom software flow control characters}
+  begin
+    SWFlowCtl(P, OnChar, OffChar, False);
+  end;
+  {$ENDIF}
+
+  {$IFDEF UseHWFlow}
+  {----Hardware flow control----}
+  procedure HWFlowEnable(P : PortRecPtr;
+                         BufferFull, BufferResume : Word;
+                         Options : Word);
+    {-Enable hardware flow control (DTR and/or RTS)}
+  begin
+    HWFlowSet(P, True, BufferFull, BufferResume, Options);;
+  end;
+
+  procedure HWFlowDisable(P : PortRecPtr);
+    {-Disable hardware flow control}
+  begin
+    HWFlowSet(P, False, 0, 0, 0);;
+  end;
+
+  function HWFlowState(P : PortRecPtr) : FlowState;
+    {-Returns state of flow control}
+  begin
+    HWFlowState := HWFlowGet(P);
+  end;
+  {$ENDIF}
+
+  procedure SetDTR(P : PortRecPtr; State : Boolean);
+    {-Raise/lower DTR}
+  begin
+    with P^ do
+      SetModem(P, State, ((ModemControl and RTSMask) = RTSMask));
+  end;
+
+  procedure SetRTS(P : PortRecPtr; State : Boolean);
+    {-Raise/lower CTS}
+  begin
+    with P^ do
+      SetModem(P, ((ModemControl and DTRMask) = DTRMask), State);
+  end;
+
+  {----Modem status----}
+  function GetModemControl(P : PortRecPtr) : Byte;
+    {-Return the modem control byte from the port record}
+  begin
+    GetModemControl := P^.ModemControl;
+  end;
+
+  function GetModemStatusPrim(P : PortRecPtr; ClearMask : Byte) : Byte;
+    {-Primitive to return modem status and clear selected bits}
+  begin
+    with P^ do begin
+      {Update ModemStatus field}
+      IntOff;
+      P^.ModemStatus := UpdateModemStatus(P);
+      IntOn;
+
+      GetModemStatusPrim := ModemStatus;
+
+      {Clear specified delta bits}
+      IntOff;
+      ModemStatus := ModemStatus and ClearMask;
+      IntOn;
+    end;
+  end;
+
+  function GetModemStatus(P : PortRecPtr) : Byte;
+    {-Return the modem status byte from the port record}
+  begin
+    GetModemStatus := GetModemStatusPrim(P, $F0);
+  end;
+
+  function CheckCTS(P : PortRecPtr) : Boolean;
+    {-Returns True if CTS is high}
+  begin
+    CheckCTS := GetModemStatusPrim(P, $FF) and CTSMask = CTSMask;
+  end;
+
+  function CheckDSR(P : PortRecPtr) : Boolean;
+    {-Returns True if DSR is high}
+  begin
+    CheckDSR := GetModemStatusPrim(P, $FF) and DSRMask = DSRMask;
+  end;
+
+  function CheckRI(P : PortRecPtr) : Boolean;
+    {-Returns True if RI is high}
+  begin
+    CheckRI := GetModemStatusPrim(P, $FF) and RIMask = RIMask;
+  end;
+
+  function CheckDCD(P : PortRecPtr) : Boolean;
+    {-Returns True if DCD is high}
+  begin
+    CheckDCD := GetModemStatusPrim(P, $FF) and DCDMask = DCDMask;
+  end;
+
+  function CheckDeltaCTS(P : PortRecPtr) : Boolean;
+    {-Returns True if DeltaCTS is high}
+  const
+    ClearDeltaCTS = Byte(not DeltaCTSMask);
+  begin
+    CheckDeltaCTS :=
+      GetModemStatusPrim(P, ClearDeltaCTS) and DeltaCTSMask = DeltaCTSMask;
+  end;
+
+  function CheckDeltaDSR(P : PortRecPtr) : Boolean;
+    {-Returns True if DeltaDSR is high}
+  const
+    ClearDeltaDSR = Byte(not DeltaDSRMask);
+  begin
+    CheckDeltaDSR :=
+      GetModemStatusPrim(P, ClearDeltaDSR) and DeltaDSRMask = DeltaDSRMask;
+  end;
+
+  function CheckDeltaRI(P : PortRecPtr) : Boolean;
+    {-Returns True if DeltaRI is high}
+  const
+    ClearDeltaRI = Byte(not DeltaRIMask);
+  begin
+    CheckDeltaRI :=
+      GetModemStatusPrim(P, ClearDeltaRI) and DeltaRIMask = DeltaRIMask;
+  end;
+
+  function CheckDeltaDCD(P : PortRecPtr) : Boolean;
+    {-Returns True if DeltaDCD is high}
+  const
+    ClearDeltaDCD = Byte(not DeltaDCDMask);
+  begin
+    CheckDeltaDCD :=
+      GetModemStatusPrim(P, ClearDeltaDCD) and DeltaDCDMask = DeltaDCDMask;
+  end;

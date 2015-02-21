@@ -1,0 +1,462 @@
+{$S-,R-,V-,I-}
+
+{$I APDEFINE.INC}
+
+{$IFNDEF UsePModeDLL}
+  !! STOP COMPILE - UsePModeDLL must be defined to compile this library
+{$ENDIF}
+
+{*********************************************************}
+{*                   APCOMD.PAD 2.03                     *}
+{*     Copyright (c) TurboPower Software 1993.           *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+library ApComD;
+
+uses
+  ApMisc,
+  ApPort,
+  ApTimer,
+  {$IFDEF UseUart}
+  ApUart,
+  {$ENDIF}
+  {$IFDEF UseFossil}
+  ApFossil,
+  {$ENDIF}
+  {$IFDEF UseDigi14}
+  ApDigi14,
+  {$ENDIF}
+  {$IFDEF UseInt14}
+  ApInt14,
+  {$ENDIF}
+  ApCom,
+  ApModem2,
+  ApModDB,
+  ApIniDB,
+  ApIni;
+
+Exports
+  {from APMISC}
+  StatusStr                  index indexAPMISC + 1,
+  UpdateChecksum             index indexAPMISC + 2,
+  UpdateCrc                  index indexAPMISC + 3,
+  UpdateCrcKermit            index indexAPMISC + 4,
+  GlobalAllocCheck           index indexAPMISC + 5,
+  GlobalFreeCheck            index indexAPMISC + 6,
+  GetMemCheck                index indexAPMISC + 7,
+  FreeMemCheck               index indexAPMISC + 8,
+  IsLeapYear                 index indexAPMISC + 9,
+  DaysInMonth                index indexAPMISC + 10,
+  ValidDate                  index indexAPMISC + 11,
+  DMYtoDate                  index indexAPMISC + 12,
+  DateToDMY                  index indexAPMISC + 13,
+  DateTimeDiff               index indexAPMISC + 14,
+  TimeToHMS                  index indexAPMISC + 15,
+  HMStoTime                  index indexAPMISC + 16,
+  IncDateTime                index indexAPMISC + 17,
+  StUpcase                   index indexAPMISC + 18,
+  PadCh                      index indexAPMISC + 19,
+  Search                     index indexAPMISC + 20,
+  AddBackSlash               index indexAPMISC + 21,
+  JustPathname               index indexAPMISC + 22,
+  DefaultExtension           index indexAPMISC + 23,
+  HexW                       index indexAPMISC + 24,
+  HexL                       index indexAPMISC + 25,
+  JustFilename               index indexAPMISC + 26,
+  ExistFile                  index indexAPMISC + 27,
+  StringToHeap               index indexAPMISC + 28,
+  DisposeString              index indexAPMISC + 29,
+  CheckRange                 index indexAPMISC + 30,
+  GetAsyncStatus             index indexAPMISC + 31,
+  SetAsyncStatus             index indexAPMISC + 32,
+  GetArchiveStatus           index indexAPMISC + 33,
+  SetArchiveStatus           index indexAPMISC + 34,
+  GetAproFileMode            index indexAPMISC + 35,                   {!!.03}
+  SetAproFileMode            index indexAPMISC + 36,                   {!!.03}
+  ExtractWord                index indexAPMISC + 37,                   {!!.03}
+  WordPosition               index indexAPMISC + 38,                   {!!.03}
+
+  {from APPORT}
+  IsPS2                      index indexAPPORT + 1,
+  ComNameString              index indexAPPORT + 2,
+  CheckForString             index indexAPPORT + 3,
+  RotateIrqPriority          index indexAPPORT + 4,
+  {$IFDEF Tracing}
+  ClearTracing               index indexAPPORT + 5,
+  AbortTracing               index indexAPPORT + 6,
+  InitTracing                index indexAPPORT + 7,
+  AddTraceEntry              index indexAPPORT + 8,
+  DumpTrace                  index indexAPPORT + 9,
+  DumpTraceHex               index indexAPPORT + 10,
+  StartTracing               index indexAPPORT + 11,
+  StopTracing                index indexAPPORT + 12,
+  AppendTrace                index indexAPPORT + 13,                   {!!.03}
+  AppendTraceHex             index indexAPPORT + 14,                   {!!.03}
+  {$ENDIF}
+  NoAbortFunc                index indexAPPORT + 15,                   {!!.03}
+  NoErrorProc                index indexAPPORT + 16,                   {!!.03}
+  GetProcPointers            index indexAPPORT + 17,                   {!!.03}
+  SetPs2DetectMode           index indexAPPORT + 18,                   {!!.03}
+
+  {from APTIMER}
+  Tics2Secs                  index indexAPTIMER + 1,
+  Secs2Tics                  index indexAPTIMER + 2,
+  NewTimer                   index indexAPTIMER + 3,
+  NewTimerSecs               index indexAPTIMER + 4,
+  TimerExpired               index indexAPTIMER + 5,
+  ElapsedTime                index indexAPTIMER + 6,
+  ElapsedTimeInSecs          index indexAPTIMER + 7,
+  ElapsedTimeInMSecs         index indexAPTIMER + 8,
+  RemainingTime              index indexAPTIMER + 9,
+  RemainingTimeInSecs        index indexAPTIMER + 10,
+  RemainingTimeInMSecs       index indexAPTIMER + 11,
+  DelayTics                  index indexAPTIMER + 12,
+  Delay                      index indexAPTIMER + 13,
+  CalibrateDelay             index indexAPTIMER + 14,
+
+  {$IFDEF UseUart}
+  {from APUART}
+  uInitPort                  index indexAPUART + 1,
+  uInitPortKeep              index indexAPUART + 2,
+  uDonePort                  index indexAPUART + 3,
+  uSetUart                   index indexAPUART + 4,
+  uSetLine                   index indexAPUART + 5,
+  uGetLine                   index indexAPUART + 6,
+  uSetModem                  index indexAPUART + 7,
+  uGetModem                  index indexAPUART + 8,
+  uGetChar                   index indexAPUART + 9,
+  uPeekChar                  index indexAPUART + 10,
+  uPutChar                   index indexAPUART + 11,
+  uStartTransmitter          index indexAPUART + 12,
+  uCharReady                 index indexAPUART + 13,
+  uTransReady                index indexAPUART + 14,
+  uSendBreak                 index indexAPUART + 15,
+  uActivatePort              index indexAPUART + 16,
+  uDeactivatePort            index indexAPUART + 17,
+  uSavePort                  index indexAPUART + 18,
+  uRestorePort               index indexAPUART + 19,
+  uGotError                  index indexAPUART + 20,
+  uUpdateLineStatus          index indexAPUART + 21,
+  uUpdateModemStatus         index indexAPUART + 22,
+  {$IFDEF UseHWFlow}
+  uHWFlowSet                 index indexAPUART + 23,
+  uHWFlowGet                 index indexAPUART + 24,
+  {$ENDIF}
+  {$IFDEF UseSWFlow}
+  uSWFlowSet                 index indexAPUART + 25,
+  uSWFlowGet                 index indexAPUART + 26,
+  uSWFlowCtl                 index indexAPUART + 27,
+  {$ENDIF}
+  uBufferStatus              index indexAPUART + 28,
+  uBufferFlush               index indexAPUART + 29,
+  ActivateApUart             index indexAPUART + 30,
+  UartTest1                  index indexAPUART + 31,
+  UartTest2                  index indexAPUART + 32,
+  UartTest3                  index indexAPUART + 33,
+  ClassifyUart               index indexAPUART + 34,
+  SetFifoBuffering           index indexAPUART + 35,
+  FifoStatus                 index indexAPUART + 36,
+  SaveUartState              index indexAPUART + 37,
+  RestoreUartState           index indexAPUART + 38,
+  GetLineStatusDirect        index indexAPUART + 39,
+  CheckTEDirect              index indexAPUART + 40,
+  GetModemStatusDirect       index indexAPUART + 41,
+  SendLongBreak              index indexAPUART + 42,
+  {$IFDEF EventLogging}
+  InitEventLogging           index indexAPUART + 43,
+  DumpEvents                 index indexAPUART + 44,
+  {$ENDIF}
+  {$ENDIF}
+
+  {$IFDEF UseFossil}
+  {from APFOSSIL}
+  fInitPort                  index indexAPFOSSIL + 1,
+  fInitPortKeep              index indexAPFOSSIL + 2,
+  fDonePort                  index indexAPFOSSIL + 3,
+  fSetUart                   index indexAPFOSSIL + 4,
+  fSetLine                   index indexAPFOSSIL + 5,
+  fGetLine                   index indexAPFOSSIL + 6,
+  fSetModem                  index indexAPFOSSIL + 7,
+  fGetModem                  index indexAPFOSSIL + 8,
+  fGetChar                   index indexAPFOSSIL + 9,
+  fPeekChar                  index indexAPFOSSIL + 10,
+  fPutChar                   index indexAPFOSSIL + 11,
+  fStartTransmitter          index indexAPFOSSIL + 12,
+  fCharReady                 index indexAPFOSSIL + 13,
+  fTransReady                index indexAPFOSSIL + 14,
+  fSendBreak                 index indexAPFOSSIL + 15,
+  fActivatePort              index indexAPFOSSIL + 16,
+  fDeactivatePort            index indexAPFOSSIL + 17,
+  fSavePort                  index indexAPFOSSIL + 18,
+  fRestorePort               index indexAPFOSSIL + 19,
+  fGotError                  index indexAPFOSSIL + 20,
+  fUpdateLineStatus          index indexAPFOSSIL + 21,
+  fUpdateModemStatus         index indexAPFOSSIL + 22,
+  {$IFDEF UseHWFlow}
+  fHWFlowSet                 index indexAPFOSSIL + 23,
+  fHWFlowGet                 index indexAPFOSSIL + 24,
+  {$ENDIF}
+  {$IFDEF UseSWFlow}
+  fSWFlowSet                 index indexAPFOSSIL + 25,
+  fSWFlowGet                 index indexAPFOSSIL + 26,
+  fSWFlowCtl                 index indexAPFOSSIL + 27,
+  {$ENDIF}
+  fBufferStatus              index indexAPFOSSIL + 28,
+  fBufferFlush               index indexAPFOSSIL + 29,
+  ActivateApFossil           index indexAPFOSSIL + 30,
+  FossilIntr                 index indexAPFOSSIL + 31,
+  {$ENDIF}
+
+  {$IFDEF UseDigi14}
+  {from APDIGI14}
+  dInitPort                  index indexAPDIGI14 + 1,
+  dInitPortKeep              index indexAPDIGI14 + 2,
+  dDonePort                  index indexAPDIGI14 + 3,
+  dSetUart                   index indexAPDIGI14 + 4,
+  dSetLine                   index indexAPDIGI14 + 5,
+  dGetLine                   index indexAPDIGI14 + 6,
+  dSetModem                  index indexAPDIGI14 + 7,
+  dGetModem                  index indexAPDIGI14 + 8,
+  dGetChar                   index indexAPDIGI14 + 9,
+  dPeekChar                  index indexAPDIGI14 + 10,
+  dPutChar                   index indexAPDIGI14 + 11,
+  dStartTransmitter          index indexAPDIGI14 + 12,
+  dCharReady                 index indexAPDIGI14 + 13,
+  dTransReady                index indexAPDIGI14 + 14,
+  dSendBreak                 index indexAPDIGI14 + 15,
+  dActivatePort              index indexAPDIGI14 + 16,
+  dDeactivatePort            index indexAPDIGI14 + 17,
+  dSavePort                  index indexAPDIGI14 + 18,
+  dRestorePort               index indexAPDIGI14 + 19,
+  dGotError                  index indexAPDIGI14 + 20,
+  dUpdateLineStatus          index indexAPDIGI14 + 21,
+  dUpdateModemStatus         index indexAPDIGI14 + 22,
+  {$IFDEF UseHWFlow}
+  dHWFlowSet                 index indexAPDIGI14 + 23,
+  dHWFlowGet                 index indexAPDIGI14 + 24,
+  {$ENDIF}
+  {$IFDEF UseSWFlow}
+  dSWFlowSet                 index indexAPDIGI14 + 25,
+  dSWFlowGet                 index indexAPDIGI14 + 26,
+  dSWFlowCtl                 index indexAPDIGI14 + 27,
+  {$ENDIF}
+  dBufferStatus              index indexAPDIGI14 + 28,
+  dBufferFlush               index indexAPDIGI14 + 29,
+  ActivateApDigi14           index indexAPDIGI14 + 30,
+  {$ENDIF}
+
+  {$IFDEF UseInt14}
+  {from APINT14}
+  iInitPort                  index indexAPINT14 + 1,
+  iInitPortKeep              index indexAPINT14 + 2,
+  iDonePort                  index indexAPINT14 + 3,
+  iSetUart                   index indexAPINT14 + 4,
+  iSetLine                   index indexAPINT14 + 5,
+  iGetLine                   index indexAPINT14 + 6,
+  iSetModem                  index indexAPINT14 + 7,
+  iGetModem                  index indexAPINT14 + 8,
+  iGetChar                   index indexAPINT14 + 9,
+  iPeekChar                  index indexAPINT14 + 10,
+  iPutChar                   index indexAPINT14 + 11,
+  iStartTransmitter          index indexAPINT14 + 12,
+  iCharReady                 index indexAPINT14 + 13,
+  iTransReady                index indexAPINT14 + 14,
+  iSendBreak                 index indexAPINT14 + 15,
+  iActivatePort              index indexAPINT14 + 16,
+  iDeactivatePort            index indexAPINT14 + 17,
+  iSavePort                  index indexAPINT14 + 18,
+  iRestorePort               index indexAPINT14 + 19,
+  iGotError                  index indexAPINT14 + 20,
+  iUpdateLineStatus          index indexAPINT14 + 21,
+  iUpdateModemStatus         index indexAPINT14 + 22,
+  {$IFDEF UseHWFlow}
+  iHWFlowSet                 index indexAPINT14 + 23,
+  iHWFlowGet                 index indexAPINT14 + 24,
+  {$ENDIF}
+  {$IFDEF UseSWFlow}
+  iSWFlowSet                 index indexAPINT14 + 25,
+  iSWFlowGet                 index indexAPINT14 + 26,
+  iSWFlowCtl                 index indexAPINT14 + 27,
+  {$ENDIF}
+  iBufferStatus              index indexAPINT14 + 28,
+  iBufferFlush               index indexAPINT14 + 29,
+  ActivateApInt14            index indexAPINT14 + 30,
+  {$ENDIF}
+
+  {from APCOM}
+  InitPortFast               index indexAPCOM + 1,
+  ChangeBaud                 index indexAPCOM + 2,
+  ChangeParity               index indexAPCOM + 3,
+  ChangeDataBits             index indexAPCOM + 4,
+  ChangeStopBits             index indexAPCOM + 5,
+  ChangeBufferSizes          index indexAPCOM + 6,
+  ForceBufferLimits          index indexAPCOM + 7,
+  BlockReady                 index indexAPCOM + 8,
+  GetDelimLoc                index indexAPCOM + 9,
+  GetCharTimeout             index indexAPCOM + 10,
+  PeekCharTimeout            index indexAPCOM + 11,
+  GetString                  index indexAPCOM + 12,
+  GetStringTimeout           index indexAPCOM + 13,
+  GetBlock                   index indexAPCOM + 14,
+  GetBlockDirect             index indexAPCOM + 15,
+  GetBlockTimeout            index indexAPCOM + 16,
+  PutCharTimeout             index indexAPCOM + 17,
+  PutString                  index indexAPCOM + 18,
+  PutStringTimeout           index indexAPCOM + 19,
+  PutBlock                   index indexAPCOM + 20,
+  PutBlockTimeout            index indexAPCOM + 21,
+  PutBlockDirect             index indexAPCOM + 22,
+  FlushInBuffer              index indexAPCOM + 23,
+  FlushOutBuffer             index indexAPCOM + 24,
+  InBuffUsed                 index indexAPCOM + 25,
+  OutBuffUsed                index indexAPCOM + 26,
+  InBuffFree                 index indexAPCOM + 27,
+  OutBuffFree                index indexAPCOM + 28,
+  DrainOutBuffer             index indexAPCOM + 29,
+  {$IFDEF StatusBuffering}
+  EnableStatusBuffer         index indexAPCOM + 30,
+  DisableStatusBuffer        index indexAPCOM + 31,
+  StatusBuffering            index indexAPCOM + 32,
+  {$ENDIF}
+  {$IFDEF UseSWFlow}
+  SWFlowEnable               index indexAPCOM + 33,
+  SWFlowEnableOpt            index indexAPCOM + 34,
+  SWFlowDisable              index indexAPCOM + 35,
+  SWFlowState                index indexAPCOM + 36,
+  SWFlowResume               index indexAPCOM + 37,
+  SWFlowSetChars             index indexAPCOM + 38,
+  {$ENDIF}
+  {$IFDEF UseHWFlow}
+  HWFlowEnable               index indexAPCOM + 39,
+  HWFlowDisable              index indexAPCOM + 40,
+  HWFlowState                index indexAPCOM + 41,
+  {$ENDIF}
+  SetDTR                     index indexAPCOM + 42,
+  SetRTS                     index indexAPCOM + 43,
+  GetModemControl            index indexAPCOM + 44,
+  GetModemStatusPrim         index indexAPCOM + 45,
+  GetModemStatus             index indexAPCOM + 46,
+  CheckCTS                   index indexAPCOM + 47,
+  CheckDSR                   index indexAPCOM + 48,
+  CheckRI                    index indexAPCOM + 49,
+  CheckDCD                   index indexAPCOM + 50,
+  CheckDeltaCTS              index indexAPCOM + 51,
+  CheckDeltaDSR              index indexAPCOM + 52,
+  CheckDeltaRI               index indexAPCOM + 53,
+  CheckDeltaDCD              index indexAPCOM + 54,
+  GetLineControl             index indexAPCOM + 55,
+  GetLineStatus              index indexAPCOM + 56,
+  CheckDataReady             index indexAPCOM + 57,
+  CheckLineError             index indexAPCOM + 58,
+  GetLineError               index indexAPCOM + 59,
+  CheckLineBreak             index indexAPCOM + 60,
+  CheckTHRE                  index indexAPCOM + 61,
+  CheckTE                    index indexAPCOM + 62,
+  CheckFifoError             index indexAPCOM + 63,
+  GetComName                 index indexAPCOM + 64,
+  GetBaseAddr                index indexAPCOM + 65,
+  SetErrorProc               index indexAPCOM + 66,
+  WaitForChar                index indexAPCOM + 67,
+  WaitForString              index indexAPCOM + 68,
+  WaitForMultiString         index indexAPCOM + 69,
+  SetAbortFunc               index indexAPCOM + 70,
+  SetWaitCharProc            index indexAPCOM + 71,
+  ptOptionsOn                index indexAPCOM + 72,
+  ptOptionsOff               index indexAPCOM + 73,
+  ptOptionsAreOn             index indexAPCOM + 74,
+  ProtocolInProgress         index indexAPCOM + 75,
+  FaxInProgress              index indexAPCOM + 76,
+  WaitComplete               index indexAPCOM + 77,
+  NoWaitChar                 index indexAPCOM + 78,
+
+  {!!.03 new}
+  {from APINI}
+  InitIniMgr                 index indexAPINI + 1,
+  DoneIniMgr                 index indexAPINI + 2,
+  FlushFile                  index indexAPINI + 3,
+  SetFlushMode               index indexAPINI + 4,
+  ChangeFileName             index indexAPINI + 5,
+  GetFileName                index indexAPINI + 6,
+  ForceUpd                   index indexAPINI + 7,
+  GetProfileString           index indexAPINI + 8,
+  GetProfileBool             index indexAPINI + 9,
+  GetProfileByte             index indexAPINI + 10,
+  GetProfileInt              index indexAPINI + 11,
+  GetProfileWord             index indexAPINI + 12,
+  GetProfileLong             index indexAPINI + 13,
+  SetProfileString           index indexAPINI + 14,
+  AddProfileString           index indexAPINI + 15,
+  EnumGroups                 index indexAPINI + 16,
+  EnumGroupItems             index indexAPINI + 17,
+  DeleteProfileString        index indexAPINI + 18,
+  DeleteProfileGroup         index indexAPINI + 19,
+  Modified                   index indexAPINI + 20,
+  InitIniLinePtr             index indexAPINI + 21,
+  DoneIniLinePtr             index indexAPINI + 22,
+
+  {!!.03 new}
+  {from APINIDB}
+  InitIniDataBase            index indexAPINIDB + 1,
+  DoneIniDatabase            index indexAPINIDB + 2,
+  AddIniDBStringField        index indexAPINIDB + 3,
+  AddIniDBIntField           index indexAPINIDB + 4,
+  PrepareIniDatabase         index indexAPINIDB + 5,
+  ChangeIniDefaults          index indexAPINIDB + 6,
+  KeyExists                  index indexAPINIDB + 7,
+  AddIniRecord               index indexAPINIDB + 8,
+  UpdIniRecord               index indexAPINIDB + 9,
+  DelIniRecord               index indexAPINIDB + 10,
+  GetIniRecord               index indexAPINIDB + 11,
+  NumIniRecs                 index indexAPINIDB + 12,
+  WriteToIni                 index indexAPINIDB + 13,
+  ReadFromIni                index indexAPINIDB + 14,
+  FlushIniDBFile             index indexAPINIDB + 15,
+  SetIniDBFileName           index indexAPINIDB + 16,
+
+  {!!.03 new}
+  {from APMODDB}
+  InitModemDB                index indexAPMODDB + 1,
+  DoneModemDB                index indexAPMODDB + 2,
+  AddModem                   index indexAPMODDB + 3,
+  UpdModem                   index indexAPMODDB + 4,
+  DelModem                   index indexAPMODDB + 5,
+  RetrieveModem              index indexAPMODDB + 6,
+  NumModems                  index indexAPMODDB + 7,
+  WriteModemToIni            index indexAPMODDB + 8,
+  ReadModemFromIni           index indexAPMODDB + 9,
+  FlushModDBFile             index indexAPMODDB + 10,
+  SetModDBFileName           index indexAPMODDB + 11,
+
+  {!!.03 new}
+  {from APMODEM2}
+  InitModem                  index indexAPMODEM2 + 1,
+  DoneModem                  index indexAPMODEM2 + 2,
+  SetDialTimeout             index indexAPMODEM2 + 3,
+  SetAnswerTimeout           index indexAPMODEM2 + 4,
+  SetDelayFactor             index indexAPMODEM2 + 5,
+  SetCmdTimeout              index indexAPMODEM2 + 6,
+  SetDTRDropHold             index indexAPMODEM2 + 7,
+  SetCharDelay               index indexAPMODEM2 + 8,
+  SetTildeDelay              index indexAPMODEM2 + 9,
+  SetRingWaitTimeout         index indexAPMODEM2 + 10,
+  SetStatusProc              index indexAPMODEM2 + 11,
+  PutCommand                 index indexAPMODEM2 + 12,
+  Initialize                 index indexAPMODEM2 + 13,
+  NumConfigStrings           index indexAPMODEM2 + 14,
+  GetConfigString            index indexAPMODEM2 + 15,
+  Configure                  index indexAPMODEM2 + 16,
+  HangUp                     index indexAPMODEM2 + 17,
+  Dial                       index indexAPMODEM2 + 18,
+  SendCancel                 index indexAPMODEM2 + 19,
+  GetConnectSpeed            index indexAPMODEM2 + 20,
+  GetDataCompression         index indexAPMODEM2 + 21,
+  GetErrorCorrection         index indexAPMODEM2 + 22,
+  ModemWorking               index indexAPMODEM2 + 23,
+  Answer                     index indexAPMODEM2 + 24,
+  AutoAnswer                 index indexAPMODEM2 + 25,
+  ProcessCommandResponse     index indexAPMODEM2 + 26,
+  ProcessConnectResponse     index indexAPMODEM2 + 27;
+
+begin
+end.

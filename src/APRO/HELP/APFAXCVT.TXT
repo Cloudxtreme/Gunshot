@@ -1,0 +1,834 @@
+;-------------------------------------------------------------------
+!TOPIC 428 ApFaxCvt
+ApFaxCvt provides the data and procedure declarations necessary to perform
+document conversion. Document conversion is the process of creating a
+compressed bitmap image suitable for fax transmission. Async Professional
+can convert plain text files, PCX image files, DCX image files, and TIFF
+image files into fax file format (extension APF).
+
+ApFaxCvt provides the following for document conversion:
+
+  0447ConvertFaxDcx                  0447ConvertFaxPcx
+  0447ConvertFaxText                 0447ConvertFaxTiff
+  0489Declarations                   0432DoneDcxConverter
+  0432DonePcxConverter               0432DoneTextConverter
+  0432DoneTiffConverter              0435fcOptionsAreOn
+  0434fcOptionsOff                   0433fcOptionsOn
+  0446GetFileName                    0445GetStatusInfo
+  0431InitDcxConverter               0431InitPcxConverter
+  0431InitTextConverter              0431InitTiffConverter
+  0437LoadFont                       0438LoadHPFont
+  0441SetFaxPath                     0443SetMargins
+  0439SetPageSize                    0440SetResolutionMode
+  0442SetResolutionWidth             0444SetStationID
+  0436SetStatusFunc
+
+ApFaxCvt provides the following for document unpacking:
+
+  0490Declarations                   0457DoneUnpacker
+  0457DoneUnpackToDcx                0457DoneUnpackToPcx
+  0461GetFaxHeader                   0462GetPageHeader
+  0456InitUnpacker                   0456InitUnpackToDcx
+  0456InitUnpackToPcx                0463SetOutputLineFunc
+  0460ufOptionsAreOn                 0459ufOptionsOff
+  0458ufOptionsOn                    0465UnpackFile
+  0465UnpackFileToDcx                0465UnpackFileToPcx
+  0464UnpackPage
+;
+;-------------------------------------------------------------------
+!TOPIC 429 OoFaxCvt
+OoFaxCvt provides the data and method declarations necessary to perform
+document conversion. Document conversion is the process of creating a
+compressed bitmap image suitable for fax transmission. Async Professional
+can convert plain text files, PCX image files, DCX image files, and TIFF
+image files into fax file format (extension APF). Following is the
+hierarchy diagram for the fax conversion and unpacking objects:
+
+  0430AbstractFaxConverter
+    0450TextFaxConverter
+    0451AbstractPcxFaxConverter
+      0452PcxFaxConverter
+      0453DcxFaxConverter
+    0454TiffFaxConverter
+  0455UnpackFax
+    0467AbstractPcxUnpack
+      0468UnpackToPcx
+      0469UnpackToDcx
+;
+;-------------------------------------------------------------------
+!TOPIC 430 AbstractFaxConverter
+!NOINDEX
+AbstractFaxConverterPtr = ^AbstractFaxConverter;
+!LINE
+AbstractFaxConverter = object(0651Root)
+
+Base fax converter object, used by the fax send engine directly, and also
+as an ancestor of the text, PCX, and TIFF fax converter objects. A pointer
+of type AbstractFaxConverterPtr is passed to the conversion user hooks,
+where it may be typecast if necessary to more specific types.
+
+AbstractFaxConverter provides the following for document conversion:
+
+  0447ConvertFax                     0491Declarations
+  0432Done                           0435fcOptionsAreOn
+  0434fcOptionsOff                   0433fcOptionsOn
+  0446GetFileName                    0445GetStatusInfo
+  0431Init                           0437LoadFont
+  0438LoadHPFont                     0441SetFaxPath
+  0443SetMargins                     0439SetPageSize
+  0440SetResolutionMode              0442SetResolutionWidth
+  0444SetStationID                   0436SetStatusFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 431 Init,ApFaxCvt/OoFaxCvt-Conversion
+!NOINDEX
+!NOWRAP
+procedure 0428ApFaxCvt.InitTextConverter(var FC : FaxConverterPtr);
+procedure 0428ApFaxCvt.InitPcxConverter(var FC : FaxConverterPtr);
+procedure 0428ApFaxCvt.InitDcxConverter(var FC : FaxConverterPtr);
+procedure 0428ApFaxCvt.InitTiffConverter(var FC : FaxConverterPtr);
+constructor 0430AbstractFaxConverter.Init;
+constructor 0450TextFaxConverter.Init;
+constructor 0451AbstractPcxFaxConverter.Init;
+constructor 0454TiffFaxConverter.Init;
+!WRAP
+
+Allocate and initialize a fax conversion object or record.
+
+See also:  0432Done
+;
+;-------------------------------------------------------------------
+!TOPIC 432 Done,ApFaxCvt/OoFaxCvt-Conversion
+!NOINDEX
+!NOWRAP
+procedure 0428ApFaxCvt.DoneTextConverter(var FC : FaxConverterPtr);
+procedure 0428ApFaxCvt.DonePcxConverter(var FC : FaxConverterPtr);
+procedure 0428ApFaxCvt.DoneDcxConverter(var FC : FaxConverterPtr);
+procedure 0428ApFaxCvt.DoneTiffConverter(var FC : FaxConverterPtr);
+destructor 0430AbstractFaxConverter.Done; virtual;
+destructor 0450TextFaxConverter.Done; virtual;
+destructor 0451AbstractPcxFaxConverter.Done; virtual;
+destructor 0454TiffFaxConverter.Done; virtual;
+!WRAP
+
+Dispose of a fax conversion object or record.
+
+See also:  0431Init
+;
+;-------------------------------------------------------------------
+!TOPIC 433 fcOptionsOn
+!NOINDEX
+procedure 0428ApFaxCvt.fcOptionsOn(FC : FaxConverterPtr; OptionFlags : Word);
+!LINE
+procedure 0430AbstractFaxConverter.fcOptionsOn(OptionFlags : Word);
+
+Activate multiple fax conversion options.
+
+See also:  0435fcOptionsAreOn        0434fcOptionsOff
+;
+;-------------------------------------------------------------------
+!TOPIC 434 fcOptionsOff
+!NOINDEX
+procedure 0428ApFaxCvt.fcOptionsOff(FC : FaxConverterPtr; OptionFlags : Word);
+!LINE
+procedure 0430AbstractFaxConverter.fcOptionsOff(OptionFlags : Word);
+
+Deactivate multiple fax conversion options.
+
+See also:  0435fcOptionsAreOn        0433fcOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 435 fcOptionsAreOn
+!NOINDEX
+function 0428ApFaxCvt.fcOptionsAreOn(FC : FaxConverterPtr;
+                                 OptionFlags : Word) : Boolean;
+!LINE
+function 0430AbstractFaxConverter.fcOptionsAreOn(OptionFlags : Word) : Boolean;
+
+Return True if all specified fax conversion options are on.
+
+See also:  0434fcOptionsOff          0433fcOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 436 SetStatusFunc
+!NOINDEX
+procedure 0428ApFaxCvt.SetStatusFunc(FC : FaxConverterPtr;
+                                 FCF : 0449FaxCvtStatusFunc);
+!LINE
+procedure 0430AbstractFaxConverter.SetStatusFunc(FCF : 0448FaxCvtStatusFunc);
+
+Activate a conversion status function.
+;
+;-------------------------------------------------------------------
+!TOPIC 437 LoadFont
+!NOINDEX
+function 0428ApFaxCvt.LoadFont(FC : FaxConverterPtr; FontHandle : Byte;
+                           HiRes : Boolean) : Boolean;
+!LINE
+function 0430AbstractFaxConverter.LoadFont(FontHandle : Byte;
+                                       HiRes : Boolean) : Boolean; virtual;
+
+Load a font from the default font file.
+
+See also:  0438LoadHPFont
+;
+;-------------------------------------------------------------------
+!TOPIC 438 LoadHPFont
+!NOINDEX
+function 0428ApFaxCvt.LoadHPFont(FC : FaxConverterPtr; FontName : PathStr;
+                             HiRes : Boolean) : Boolean;
+!LINE
+function 0430AbstractFaxConverter.LoadHPFont(FontName : PathStr;
+                                         HiRes : Boolean) : Boolean;
+
+Load a font from an H-P LaserJet font file.
+
+See also:  0437LoadFont
+;
+;-------------------------------------------------------------------
+!TOPIC 439 SetPageSize,ApFaxCvt/OoFaxCvt
+!NOINDEX
+procedure 0428ApFaxCvt.SetPageSize(FC : FaxConverterPtr; PS : Integer);
+!LINE
+procedure 0430AbstractFaxConverter.SetPageSize(PS : Integer);
+
+Set the page size for text faxes.
+;
+;-------------------------------------------------------------------
+!TOPIC 440 SetResolutionMode
+!NOINDEX
+procedure 0428ApFaxCvt.SetResolutionMode(FC : FaxConverterPtr;
+                                     HiRes : Boolean);
+!LINE
+procedure 0430AbstractFaxConverter.SetResolutionMode(HiRes : Boolean);
+
+Select standard or high resolution mode.
+;
+;-------------------------------------------------------------------
+!TOPIC 441 SetFaxPath
+!NOINDEX
+procedure 0428ApFaxCvt.SetFaxPath(FC : FaxConverterPtr; PS : PathStr);
+!LINE
+procedure 0430AbstractFaxConverter.SetFaxPath(PS : PathStr);
+
+Set the path for storing fax files.
+;
+;-------------------------------------------------------------------
+!TOPIC 442 SetResolutionWidth
+!NOINDEX
+procedure 0428ApFaxCvt.SetResolutionWidth(FC : FaxConverterPtr;
+                                      RW : 0483ResWidths);
+!LINE
+procedure 0430AbstractFaxConverter.SetResolutionWidth(RW : 0483ResWidths);
+
+Select the resolution width for a fax.
+;
+;-------------------------------------------------------------------
+!TOPIC 443 SetMargins
+!NOINDEX
+procedure 0428ApFaxCvt.SetMargins(FC : FaxConverterPtr; Left, Top : Word);
+!LINE
+procedure 0430AbstractFaxConverter.SetMargins(Left, Top : Word);
+
+Set the left and top margins for converted files.
+;
+;-------------------------------------------------------------------
+!TOPIC 444 SetStationID,ApFaxCvt/OoFaxCvt
+!NOINDEX
+procedure 0428ApFaxCvt.SetStationIDCvt(FC : FaxConverterPtr; SID : Str20);
+!LINE
+procedure 0430AbstractFaxConverter.SetStationID(SID : Str20);
+
+Set the sending Station ID.
+
+See also:  AbstractFax.0020SetStationID
+;
+;-------------------------------------------------------------------
+!TOPIC 445 GetStatusInfo
+!NOINDEX
+procedure 0428ApFaxCvt.GetStatusInfo;(FC : FaxConverterPtr; var Line : LongInt;
+                                  var Page : Integer);
+!LINE
+procedure 0430AbstractFaxConverter.GetStatusInfo(var Line : LongInt;
+                                             var Page : Integer);
+
+Return the current line number and page number.
+
+See also:  0436SetStatusFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 446 GetFileName,ApFaxCvt/OoFaxCvt
+!NOINDEX
+function 0428ApFaxCvt.GetFileName(FC : FaxConverterPtr) : PathStr;
+!LINE
+function 0430AbstractFaxConverter.GetFileName : PathStr;
+
+Return the name of the file being converted.
+
+See also:  0436SetStatusFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 447 ConvertFax
+!NOINDEX
+!NOWRAP
+procedure 0428ApFaxCvt.ConvertFaxText(FC : FaxConverterPtr; FName : PathStr);
+procedure 0428ApFaxCvt.ConvertFaxPcx(FC : FaxConverterPtr; FName : PathStr);
+procedure 0428ApFaxCvt.ConvertFaxDcx(FC : FaxConverterPtr; FName : PathStr);
+procedure 0428ApFaxCvt.ConvertFaxTiff(FC : FaxConverterPtr; FName : PathStr);
+procedure 0430AbstractFaxConverter.ConvertFax(FName : PathStr); virtual;
+procedure 0450TextFaxConverter.ConvertFax(FName : PathStr); virtual;
+procedure 0452PcxFaxConverter.ConvertFax(FName : PathStr); virtual;
+procedure 0453DcxFaxConverter.ConvertFax(FName : PathStr); virtual;
+procedure 0454TiffFaxConverter.ConvertFax(FName : PathStr); virtual;
+!WRAP
+
+Convert a file to APF format.
+
+See also:  0437LoadFont              0438LoadHPFont
+           0441SetFaxPath
+;
+;-------------------------------------------------------------------
+!TOPIC 448 FaxCvtStatusFunc,OoFaxCvt
+!NOINDEX
+type
+  FaxCvtStatusFunc = function (AF : AbstractFaxConverterPtr;
+                               Starting, Ending : Boolean);
+
+A function of this type is called regularly during fax conversion to give
+you an opportunity to display status information or abort the conversion.
+
+See also:  0436SetStatusFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 449 FaxCvtStatusFunc,ApFaxCvt
+!NOINDEX
+type
+  FaxCvtStatusFunc = function(FC : FaxConverterPtr;
+                              Starting, Ending : Boolean) : Boolean;
+
+A function of this type is called regularly during fax conversion to give
+you an opportunity to display status information or abort the conversion.
+
+See also:  0436SetStatusFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 450 TextFaxConverter
+!NOINDEX
+TextFaxConverterPtr = ^TextFaxConverter;
+!LINE
+TextFaxConverter = object(0430AbstractFaxConverter)
+
+Object for converting text files to fax format. It provides the following
+methods:
+
+  0447ConvertFax                     0432Done
+  0431Init
+;
+;-------------------------------------------------------------------
+!TOPIC 451 AbstractPcxFaxConverter
+!NOINDEX
+AbstractPcxFaxConverterPtr = ^AbstractPcxFaxConverter;
+!LINE
+AbstractPcxFaxConverter = object(0430AbstractFaxConverter)
+
+Base PCX converter object. AbstractPcxFaxConverter provides the following
+methods:
+
+  0432Done                           0431Init
+;
+;-------------------------------------------------------------------
+!TOPIC 452 PcxFaxConverter
+!NOINDEX
+PcxFaxConverterPtr = ^PcxFaxConverter;
+!LINE
+PcxFaxConverter = object(0451AbstractPcxFaxConverter)
+
+Object for converting PCX files to fax format. PcxFaxConverter provides the
+following methods:
+
+  0447ConvertFax
+;
+;-------------------------------------------------------------------
+!TOPIC 453 DcxFaxConverter
+!NOINDEX
+DcxFaxConverterPtr = ^DcxFaxConverter;
+!LINE
+DcxFaxConverter = object(0451AbstractPcxFaxConverter)
+
+Object for converting DCX files to fax format. DcxFaxConverter provides the
+following methods:
+
+  0447ConvertFax
+;
+;-------------------------------------------------------------------
+!TOPIC 454 TiffFaxConverter
+!NOINDEX
+TiffFaxConverterPtr = ^TiffFaxConverter;
+!LINE
+TiffFaxConverter = object(0430AbstractFaxConverter)
+
+Object for converting TIFF files to fax format. TiffFaxConverter provides
+the following methods:
+
+  0447ConvertFax                     0432Done
+  0431Init
+;
+;-------------------------------------------------------------------
+!TOPIC 455 UnpackFax,OoFaxCvt
+!NOINDEX
+UnpackFaxPtr = ^UnpackFax;
+!LINE
+UnpackFax = object(0651Root)
+
+Base object for unpacking fax files. You must call 0463SetOutputLineFunc or
+override the virtual method OutputLine to do anything with the unpacked
+output.
+
+UnpackFax provides the following methods:
+
+  0492Declarations                   0457Done
+  0461GetFaxHeader                   0462GetPageHeader
+  0456Init                           0463SetOutputLineFunc
+  0460ufOptionsAreOn                 0459ufOptionsOff
+  0458ufOptionsOn                    0465UnpackFile
+  0464UnpackPage
+;
+;-------------------------------------------------------------------
+!TOPIC 456 Init,ApFaxCvt/OoFaxCvt-Unpacking
+!NOINDEX
+procedure 0428ApFaxCvt.InitUnpacker(var UF : UnpackFaxPtr);
+!LINE
+procedure 0428ApFaxCvt.InitUnpackToPcx(var UFP : UnpackToPcxPtr);
+!LINE
+procedure 0428ApFaxCvt.InitUnpackToDcx(var UFP : UnpackToPcxPtr);
+!LINE
+constructor 0455UnpackFax.Init;
+
+Allocate and initialize an unpacker object or record.
+
+See also:  0457Done
+;
+;-------------------------------------------------------------------
+!TOPIC 457 Done,ApFaxCvt/OoFaxCvt-Unpacking
+!NOINDEX
+procedure 0428ApFaxCvt.DoneUnpacker(var UF : UnpackFaxPtr);
+!LINE
+procedure 0428ApFaxCvt.DoneUnpackToPcx(var UFP : UnpackToPcxPtr);
+!LINE
+procedure 0428ApFaxCvt.DoneUnpackToDcx(var UFP : UnpackToPcxPtr);
+!LINE
+destructor 0455UnpackFax.Done; virtual;
+
+Dispose of an unpacker object or record.
+
+See also:  0456Init
+;
+;-------------------------------------------------------------------
+!TOPIC 458 ufOptionsOn
+!NOINDEX
+procedure 0428ApFaxCvt.ufOptionsOn(UF : UnpackFaxPtr; OptionFlags : Word);
+!LINE
+procedure 0455UnpackFax.ufOptionsOn(OptionFlags : Word);
+
+Activate multiple unpacking options.
+
+See also:  0460ufOptionsAreOn        0459ufOptionsOff
+;
+;-------------------------------------------------------------------
+!TOPIC 459 ufOptionsOff
+!NOINDEX
+procedure 0428ApFaxCvt.ufOptionsOff(UF : UnpackFaxPtr; OptionFlags : Word);
+!LINE
+procedure 0455UnpackFax.ufOptionsOff(OptionFlags : Word);
+
+Deactivate multiple unpacking options.
+
+See also:  0460ufOptionsAreOn        0458ufOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 460 ufOptionsAreOn
+!NOINDEX
+function 0428ApFaxCvt.ufOptionsAreOn(UF : UnpackFaxPtr;
+                                 OptionFlags : Word) : Boolean;
+!LINE
+function 0455UnpackFax.ufOptionsAreOn(OptionFlags : Word) : Boolean;
+
+Return True if all specified unpacking options are on.
+
+See also:  0459ufOptionsOff          0458ufOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 461 GetFaxHeader
+!NOINDEX
+procedure 0428ApFaxCvt.GetFaxHeader(UF : UnpackFaxPtr; FName : PathStr;
+                                var FH : 0481FaxHeaderRec);
+!LINE
+procedure 0455UnpackFax.GetFaxHeader(FName : PathStr;
+                                 var FH : 0481FaxHeaderRec);
+
+Return an APF fax header.
+;
+;-------------------------------------------------------------------
+!TOPIC 462 GetPageHeader
+!NOINDEX
+procedure 0428ApFaxCvt.GetPageHeader(UF : UnpackFaxPtr; FName : PathStr;
+                                 Page : Word; var PH : 0482PageHeaderRec);
+!LINE
+procedure 0455UnpackFax.GetPageHeader(FName : PathStr;
+                                  Page : Word; var PH : 0482PageHeaderRec);
+
+Return the header for a page of a fax file.
+;
+;-------------------------------------------------------------------
+!TOPIC 463 SetOutputLineFunc
+!NOINDEX
+procedure 0428ApFaxCvt.SetOutputLineFunc(UF : UnpackFaxPtr;
+                                     OLF : 0466OutputLineFunc);
+!LINE
+procedure 0455UnpackFax.SetOutputLineFunc(OLF : 0466OutputLineFunc);
+
+Activate an OutputLine function.
+
+See also:  0465UnpackFile            0464UnpackPage
+;
+;-------------------------------------------------------------------
+!TOPIC 464 UnpackPage
+!NOINDEX
+procedure 0428ApFaxCvt.UnpackPage(UF : UnpackFaxPtr; FName : PathStr;
+                              Page : Word);
+!LINE
+procedure 0455UnpackFax.UnpackPage(FName : PathStr;
+                               Page : Word);
+
+Unpack a page.
+
+See also:  0463SetOutputLineFunc     0465UnpackFile
+;
+;-------------------------------------------------------------------
+!TOPIC 465 UnpackFile
+!NOINDEX
+!NOWRAP
+procedure 0428ApFaxCvt.UnpackFile(UF : UnpackFaxPtr; FName : PathStr);
+procedure 0428ApFaxCvt.UnpackFileToPcx(UFP : UnpackToPcxPtr; Fax, Pcx: PathStr);
+procedure 0428ApFaxCvt.UnpackFileToDcx(UFP : UnpackToDcxPtr; Fax, Dcx: PathStr);
+procedure 0455UnpackFax.UnpackFile(FName : PathStr);
+procedure 0468UnpackToPcx.UnpackFileToPcx(Fax, Pcx: PathStr);
+procedure 0469UnpackToDcx.UnpackFileToDcx(Fax, Dcx : PathStr);
+!WRAP
+
+Unpack all pages in a fax file.
+
+See also:  0463SetOutputLineFunc     0464UnpackPage
+;
+;-------------------------------------------------------------------
+!TOPIC 466 OutputLineFunc
+!NOINDEX
+type
+  OutputLineFunc = function(UFP : UnpackFaxPtr; Buffer : PByteBuffer;
+                            Len : Word; PH : 0482PageHeaderRec) : Boolean;
+
+A function of this type is called during fax unpacking to process each
+uncompressed raster line.
+
+See also:  0463SetOutputLineFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 467 AbstractPcxUnpack
+!NOINDEX
+AbstractPcxUnpackPtr = ^AbstractPcxUnpack;
+!LINE
+AbstractPcxUnpack = object(0455UnpackFax)
+
+Base object for unpacking PCX and DCX files.
+;
+;-------------------------------------------------------------------
+!TOPIC 468 UnpackToPcx,OoFaxCvt
+!NOINDEX
+UnpackToPcxPtr = ^UnpackToPcx;
+!LINE
+UnpackToPcx = object(0467AbstractPcxUnpack)
+
+Object for converting fax files to PCX format. UnpackToPcx provides the
+following methods:
+
+  0465UnpackFileToPcx
+;
+;-------------------------------------------------------------------
+!TOPIC 469 UnpackToDcx,OoFaxCvt
+!NOINDEX
+UnpackToDcxPtr = ^UnpackToDcx;
+!LINE
+UnpackToDcx = object(0467AbstractPcxUnpack)
+
+Object for converting fax files to DCX format. UnpackToDcx provides the
+following methods:
+
+  0465UnpackFileToDcx
+;
+;-------------------------------------------------------------------
+!TOPIC 470 AproFontName
+!NOINDEX
+const
+  AproFontName : PathStr = 'APFAX.FNT';
+
+Name of the standard font file that is loaded by calling 0437LoadFont. Modify
+this typed constant before calling LoadFont if the font file is not
+located in the current directory.
+;
+;-------------------------------------------------------------------
+!TOPIC 471 BadFaxCvtOptions
+!NOINDEX
+const
+  BadFaxCvtOptions = 0;
+
+Conversion options for internal use, which cannot be changed by calling
+0433fcOptionsOn or 0434fcOptionsOff. There are currently no such options.
+;
+;-------------------------------------------------------------------
+!TOPIC 472 BadUnpackOptions
+!NOINDEX
+const
+  BadUnpackOptions = 0;
+
+Unpacking options for internal use, which cannot be changed by calling
+0458ufOptionsOn or 0459ufOptionsOff. There are currently no such options.
+;
+;-------------------------------------------------------------------
+!TOPIC 473 DefFaxCvtOptions
+!NOINDEX
+const
+  DefFaxCvtOptions : Word = fcDoubleWidth+fcCenterImage;
+
+Default fax conversion options.
+;
+;-------------------------------------------------------------------
+!TOPIC 474 DefUnpackOptions
+!NOINDEX
+const
+  DefUnpackOptions : Word = 0;
+
+Default fax unpack options.
+;
+;-------------------------------------------------------------------
+!TOPIC 475 Fax conversion options
+!NOINDEX
+const
+  fcDoubleWidth = $0001;
+  fcCenterImage = $0002;
+
+Options for fax conversion. These options affect PCX and TIFF conversions
+only. When fcDoubleWidth is set, as it is by default, the graphics image
+width is doubled to achieve the expected 1:1 aspect ratio. Doubling is
+automatically disabled when high resolution mode is set or the doubled
+image width will not fit onto the fax page. When fcCenterImage is set, as
+it is by default, graphics images are automatically centered horizontally
+on the fax page.
+;
+;-------------------------------------------------------------------
+!TOPIC 476 Fax page header options
+!NOINDEX
+const
+  ffHighRes     = $0001;
+  ffHighWidth   = $0002;
+  ffLengthWords = $0004;
+
+Option flags for the fax page header. ffHighRes is set whenever the fax
+page is stored in high resolution format. ffHighWidth is set whenever the
+fax page depends on a long (2048 pixel) line. ffLengthWords is set whenever
+each compressed raster line in the page is preceded by a length word.
+;
+;-------------------------------------------------------------------
+!TOPIC 477 Font handles
+!NOINDEX
+const
+  SmallFont    = 16;
+  StandardFont = 48;
+
+Font handles passed to the 0437LoadFont function to identify the small or
+standard built-in font. The value of each constant equals the number of
+bytes per character in the font.
+;
+;-------------------------------------------------------------------
+!TOPIC 478 Fax pixel widths
+!NOINDEX
+const
+  StandardWidth  = 1728;
+  WideWidth      = 2048;
+
+Fax pixel widths. 1728 pixels corresponds to 8.5 inch width;
+2048 corresponds to 10 inch width.
+;
+;-------------------------------------------------------------------
+!TOPIC 479 Fax unpack options
+!NOINDEX
+const
+  ufHalfWidth   = $0001;
+
+Options for unpacking a fax. When ufHalfWidth is set, the unpacker
+automatically halves the number of pixels in each line.
+;
+;-------------------------------------------------------------------
+!TOPIC 480 UpdateInterval
+!NOINDEX
+const
+  UpdateInterval : Word = 16;
+
+The number of raster lines between calls to the conversion status
+procedure, when converting PCX or TIFF files to fax format.
+;
+;-------------------------------------------------------------------
+!TOPIC 481 FaxHeaderRec
+!NOINDEX
+type
+  FaxHeaderRec = record
+    Signature  : 0484SigArray;               {APRO FAX signature}
+    FDateTime  : LongInt;                {Date and time in DOS format}
+    SenderID   : String[20];             {Station ID}
+    Filler     : Byte;                   {Alignment byte, unused}
+    PageCount  : Word;                   {Number of pages in this file}
+    PageOfs    : LongInt;                {Offset in file of first page}
+    Padding    : Array[39..64] of Byte;  {Expansion room}
+  end;
+
+Defines the format of the header at the start of an APF file. Signature
+equals [0669DefSig]. FDateTime is set to the date and time when the fax
+file was converted or received. SenderID is set to the string specified
+using 0444SetStationID when the fax is converted, or to the transmitter's
+station ID when a fax is received. PageCount is the number of fax pages in
+this file. PageOfs is the offset into the file of the first page header.
+Padding fills the record out to 64 bytes, allowing room for additional
+information in the header.
+;
+;-------------------------------------------------------------------
+!TOPIC 482 PageHeaderRec
+!NOINDEX
+type
+  PageHeaderRec = record
+    ImgLength : LongInt;                 {Bytes of image data in this page}
+    ImgFlags  : Word;                    {Image flags}
+    Padding   : Array[7..16] of Byte;    {Expansion room}
+  end;
+
+Defines the format of the page header preceding each fax page in an APF
+file. ImgLength is the number of compressed bytes in this page. ImgFlags is
+a bitmapped word that can be interpreted using the 0476Fax page header options.
+Padding fills the record out to 16 bytes, allowing room for additional
+information in the page header.
+;
+;-------------------------------------------------------------------
+!TOPIC 483 ResWidths
+!NOINDEX
+type
+  ResWidths = (rw1728, rw2048);
+
+Acceptable fax widths. Used by 0442SetResolutionWidth.
+;
+;-------------------------------------------------------------------
+!TOPIC 484 SigArray
+!NOINDEX
+type
+  SigArray = Array[0..5] of Char;
+
+Fax file signature array.
+;
+;-------------------------------------------------------------------
+!TOPIC 485 FaxConverter
+!NOINDEX
+type
+  FaxConverterPtr = ^FaxConverter;
+  FaxConverter = record
+    ...
+  end;
+
+A generic FaxConverter record. A pointer of type FaxConverterPtr is
+initialized by the 0431InitZzzConverter functions and must be passed to all
+non-OOP fax conversion routines. You should not need to refer to any of the
+fields of this record.
+;
+;-------------------------------------------------------------------
+!TOPIC 486 UnpackFax,ApFaxCvt
+!NOINDEX
+type
+  UnpackFaxPtr = ^UnpackFax;
+  UnpackFax = record
+    ...
+  end;
+
+A generic UnpackFax record. A pointer of type UnpackFaxPtr is initialized
+by 0456InitUnpacker and must be passed to all non-OOP fax unpacking routines.
+You should not need to refer to any of the fields of this record.
+;
+;-------------------------------------------------------------------
+!TOPIC 487 UnpackToPcx,ApFaxCvt
+!NOINDEX
+type
+  UnpackToPcxPtr = ^UnpackToPcx;
+  UnpackToPcx = record
+    ...
+  end;
+
+An unpacking record used for fax to PCX conversion. A pointer of type
+UnpackToPcxPtr is initialized by 0456InitUnpackToPcxDcx and must be passed
+to 0465UnpackFileToPcx and 0457DoneUnpackToPcxDcx.
+;
+;-------------------------------------------------------------------
+!TOPIC 488 UnpackToDcx,ApFaxCvt
+!NOINDEX
+type
+  UnpackToDcxPtr = ^UnpackToDcx;
+  UnpackToDcx = record
+    ...
+  end;
+
+An unpacking record used for fax to DCX conversion. A pointer of type
+UnpackToDcxPtr is initialized by 0456InitUnpackToPcxDcx and must be passed
+to 0465UnpackFileToDcx and 0457DoneUnpackToPcxDcx.
+;
+;-------------------------------------------------------------------
+!TOPIC 489 Declarations,ApFaxCvt-Conversion
+!NOINDEX
+0428ApFaxCvt declares the following types and constants for document conversion:
+
+  0470AproFontName                   0471BadFaxCvtOptions
+  0473DefFaxCvtOptions               0475Fax conversion options
+  0485FaxConverter                   0449FaxCvtStatusFunc
+  0481FaxHeaderRec                   0476Fax page header options
+  0478Fax pixel widths               0477Font handles
+  0482PageHeaderRec                  0483ResWidths
+  0484SigArray                       0480UpdateInterval
+;
+;-------------------------------------------------------------------
+!TOPIC 490 Declarations,ApFaxCvt-Unpacking
+!NOINDEX
+0428ApFaxCvt declares the following types and constants for unpacking:
+
+  0472BadUnpackOptions               0474DefUnpackOptions
+  0481FaxHeaderRec                   0476Fax page header options
+  0479Fax unpack options             0466OutputLineFunc
+  0482PageHeaderRec                  0484SigArray
+  0486UnpackFax                      0488UnpackToDcx
+  0487UnpackToPcx
+;
+;-------------------------------------------------------------------
+!TOPIC 491 Declarations,OoFaxCvt-Conversion
+!NOINDEX
+0429OoFaxCvt declares the following types and constants for document
+conversion:
+
+  0470AproFontName                   0471BadFaxCvtOptions
+  0473DefFaxCvtOptions               0475Fax conversion options
+  0448FaxCvtStatusFunc               0481FaxHeaderRec
+  0476Fax page header options        0478Fax pixel widths
+  0477Font handles                   0482PageHeaderRec
+  0483ResWidths                      0484SigArray
+  0480UpdateInterval
+;
+;-------------------------------------------------------------------
+!TOPIC 492 Declarations,OoFaxCvt-Unpacking
+!NOINDEX
+0429OoFaxCvt declares the following types and constants for unpacking:
+
+  0472BadUnpackOptions               0474DefUnpackOptions
+  0481FaxHeaderRec                   0476Fax page header options
+  0479Fax unpack options             0466OutputLineFunc
+  0482PageHeaderRec                  0484SigArray

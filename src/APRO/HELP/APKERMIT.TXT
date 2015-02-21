@@ -1,0 +1,501 @@
+;-------------------------------------------------------------------
+!TOPIC 547 ApKermit
+ApKermit builds on ApAbsPcl to implement the Kermit protocol. It
+provides the following routines:
+
+  0579Declarations                   0550DoneKermit
+  0585GetLPStatus                    0584GetSwcSize
+  0549InitCustomKermit               0548InitKermit
+  0129PrepareReceivePartKM           0127PrepareTransmitPartKM
+  0090ProtocolReceiveKM              0130ProtocolReceivePartKM
+  0089ProtocolTransmitKM             0128ProtocolTransmitPartKM
+  0556SetCtlPrefix                   0557SetHibitPrefix
+  0559SetKermitCheck                 0551SetKermitOptions
+  0581SetMaxLongPacketLen            0552SetMaxPacketLen
+  0553SetMaxTimeoutSecs              0582SetMaxWindows
+  0554SetPacketPadding               0558SetRepeatPrefix
+  0583SetSwcTurnDelay                0555SetTerminator
+  0560WindowsUsed
+;
+;-------------------------------------------------------------------
+!TOPIC 548 InitKermit
+!NOINDEX
+procedure 0547ApKermit.InitKermit(var P : ProtocolRecPtr;
+                              PortPtr : PortRecPtr);
+
+Allocate and initialize a protocol control block.
+
+See also:  0550DoneKermit  0549InitCustomKermit
+;
+;-------------------------------------------------------------------
+!TOPIC 549 InitCustomKermit
+!NOINDEX
+procedure 0547ApKermit.InitCustomKermit(var P : ProtocolRecPtr;
+                                    PortPtr : PortRecPtr;
+                                    KOptions : 0568KermitOptionRec;
+                                    Options : Word);
+
+Allocate and initialize a protocol control block with the specified options.
+
+See also:  0550DoneKermit            0548InitKermit
+           0091Protocol options
+;
+;-------------------------------------------------------------------
+!TOPIC 550 DoneKermit
+!NOINDEX
+procedure 0547ApKermit.DoneKermit(var P : ProtocolRecPtr);
+
+Dispose of the protocol record.
+
+See also:  0549InitCustomKermit      0548InitKermit
+;
+;-------------------------------------------------------------------
+!TOPIC 551 SetKermitOptions
+!NOINDEX
+procedure 0547ApKermit.SetKermitOptions(P : ProtocolRecPtr;
+                                    KOptions : 0568KermitOptionRec);
+!LINE
+procedure 0562KermitProtocol.SetKermitOptions(KOptions : 0568KermitOptionRec);
+
+Update the protocol to use new Kermit options.
+
+See also:  0564InitCustom            0549InitCustomKermit
+           0556SetCtlPrefix          0557SetHibitPrefix
+           0559SetKermitCheck        0581SetMaxLongPacketLen
+           0552SetMaxPacketLen       0553SetMaxTimeoutSecs
+           0582SetMaxWindows         0554SetPacketPadding
+           0558SetRepeatPrefix       0555SetTerminator
+;
+;-------------------------------------------------------------------
+!TOPIC 552 SetMaxPacketLen
+!NOINDEX
+procedure 0547ApKermit.SetMaxPacketLen(P : ProtocolRecPtr; MaxLen : Byte);
+!LINE
+procedure 0562KermitProtocol.SetMaxPacketLen(MaxLen : Byte);
+
+Set the maximum packet length.
+
+See also:  0568KermitOptionRec       0551SetKermitOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 553 SetMaxTimeoutSecs
+!NOINDEX
+procedure 0547ApKermit.SetMaxTimeoutSecs(P : ProtocolRecPtr;
+                                     MaxTimeout : Byte);
+!LINE
+procedure 0562KermitProtocol.SetMaxTimeoutSecs(MaxTimeout : Byte);
+
+Set the maximum time to wait for a packet (in seconds).
+
+See also:  0568KermitOptionRec       0551SetKermitOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 554 SetPacketPadding
+!NOINDEX
+procedure 0547ApKermit.SetPacketPadding(P : ProtocolRecPtr; C : Char;
+                                    Count : Byte);
+!LINE
+procedure 0562KermitProtocol.SetPacketPadding(C : Char; Count : Byte);
+
+Set the packet pad character and pad count.
+
+See also:  0568KermitOptionRec       0551SetKermitOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 555 SetTerminator
+!NOINDEX
+procedure 0547ApKermit.SetTerminator(P : ProtocolRecPtr; C : Char);
+!LINE
+procedure 0562KermitProtocol.SetTerminator(C : Char);
+
+Set the packet terminator.
+
+See also:   0568KermitOptionRec      0551SetKermitOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 556 SetCtlPrefix
+!NOINDEX
+procedure 0547ApKermit.SetCtlPrefix(P : ProtocolRecPtr; C : Char);
+!LINE
+procedure 0562KermitProtocol.SetCtlPrefix(C : Char);
+
+Set the control character quote prefix.
+
+See also:  0568KermitOptionRec       0551SetKermitOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 557 SetHibitPrefix
+!NOINDEX
+procedure 0547ApKermit.SetHibitPrefix(P : ProtocolRecPtr; C : Char);
+!LINE
+procedure 0562KermitProtocol.SetHibitPrefix(C : Char);
+
+Set the high bit quote prefix.
+
+See also:  0568KermitOptionRec       0551SetKermitOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 558 SetRepeatPrefix
+!NOINDEX
+procedure 0547ApKermit.SetRepeatPrefix(P : ProtocolRecPtr; C : Char);
+!LINE
+procedure 0562KermitProtocol.SetRepeatPrefix(C : Char);
+
+Set the repeat quote prefix character.
+
+See also:  0568KermitOptionRec       0551SetKermitOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 559 SetKermitCheck
+!NOINDEX
+procedure 0547ApKermit.SetKermitCheck(P : ProtocolRecPtr; CType : Byte);
+!LINE
+procedure 0562KermitProtocol.SetKermitCheck(CType : Byte);
+
+Set the block check type.
+
+See also:  0093Checksum types        0568KermitOptionRec
+           0551SetKermitOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 560 WindowsUsed
+!NOINDEX
+function 0547ApKermit.WindowsUsed(P : ProtocolRecPtr) : Word;
+!LINE
+function 0562KermitProtocol.WindowsUsed : Word;
+
+Return the number of window slots used.
+;
+;-------------------------------------------------------------------
+!TOPIC 561 OoKermit
+OoKermit provides the KermitProtocol object, which implements the Kermit
+file transfer protocol:
+
+  [0086AbstractProtocol]
+    0562KermitProtocol
+;
+;-------------------------------------------------------------------
+!TOPIC 562 KermitProtocol,OoKermit
+!NOINDEX
+KermitProtocolPtr = ^KermitProtocol;
+!LINE
+KermitProtocol = object(0086AbstractProtocol)
+
+Object that defines the data fields and methods needed to implement the
+Kermit protocol. It provides the following methods:
+
+  0580Declarations                   0565Done
+  0585GetLPStatus                    0584GetSwcSize
+  0563Init                           0564InitCustom
+  0566Load                           0129PrepareReceivePart
+  0127PrepareTransmitPart            0090ProtocolReceive
+  0130ProtocolReceivePart            0089ProtocolTransmit
+  0128ProtocolTransmitPart           0556SetCtlPrefix
+  0557SetHibitPrefix                 0559SetKermitCheck
+  0551SetKermitOptions               0581SetMaxLongPacketLen
+  0552SetMaxPacketLen                0553SetMaxTimeoutSecs
+  0582SetMaxWindows                  0554SetPacketPadding
+  0558SetRepeatPrefix                0583SetSwcTurnDelay
+  0555SetTerminator                  0567Store
+  0560WindowsUsed
+;
+;-------------------------------------------------------------------
+!TOPIC 563 Init,KermitProtocol
+!NOINDEX
+constructor 0562KermitProtocol.Init(APPtr : AbstractPortPtr);
+
+Allocate and initialize a protocol control block.
+
+See also:  0565Done                  0564InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 564 InitCustom,KermitProtocol
+!NOINDEX
+constructor 0562KermitProtocol.InitCustom(APPtr : AbstractPortPtr;
+                                      KOptions : 0568KermitOptionRec;
+                                      Options : Word);
+
+Allocate and initialize a protocol control block with the specified options.
+
+See also:  0565Done                  0563Init
+           0091Protocol options
+;
+;-------------------------------------------------------------------
+!TOPIC 565 Done,KermitProtocol
+!NOINDEX
+destructor 0562KermitProtocol.Done; virtual;
+
+Dispose of the protocol object.
+
+See also:  0563Init                  0564InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 566 Load,KermitProtocol
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 0562KermitProtocol.Load(var S : IdStream);
+!WRAP
+
+Load a KermitProtocol object from a stream. The stream registration routine
+for a KermitProtocol object is KermitProtocolStream.
+
+See also:  0567Store
+;
+;-------------------------------------------------------------------
+!TOPIC 567 Store,KermitProtocol
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+procedure 0562KermitProtocol.Store(var S : IdStream);
+!WRAP
+
+Store a KermitProtocol object to a stream. The stream registration routine
+for a KermitProtocol object is KermitProtocolStream.
+
+See also:  0566Load
+;
+;-------------------------------------------------------------------
+!TOPIC 568 KermitOptionRec
+!NOINDEX
+type
+  KermitOptionRec =
+    record
+      MaxPacketLen     : Byte; {maximum length of the data field}
+      MaxTimeout       : Byte; {maximum timeout between characters (secs)}
+      PadCount         : Byte; {number of pad characters before packets}
+      PadChar          : Char; {pad character}
+      Terminator       : Char; {packet terminator}
+      CtlPrefix        : Char; {control character prefix}
+      HibitPrefix      : Char; {8-bit quoting prefix}
+      Check            : Char; {check method}
+      RepeatPrefix     : Char; {repeat prefix}
+      CapabilitiesMask : Byte; {extended capabilities}
+      WindowSize       : Byte; {window size}
+      MaxLongPacketLen : Word; {maximum long packet}
+    end;
+
+This record contains the various options that Kermit can control. The
+default values are shown in 0570DefKermitOptions. You need to be concerned
+about a KermitOptionRec only if you want to change the defaults used by
+Async Professional.
+
+See also:
+  0556SetCtlPrefix                   0557SetHibitPrefix
+  0559SetKermitCheck                 0551SetKermitOptions
+  0552SetMaxPacketLen                0553SetMaxTimeoutSecs
+  0554SetPacketPadding               0558SetRepeatPrefix
+  0555SetTerminator
+;
+;-------------------------------------------------------------------
+!TOPIC 569 DefHibitPrefix
+!NOINDEX
+const
+  DefHibitPrefix : Char = '&';
+
+Default character for high bit prefixing.
+;
+;-------------------------------------------------------------------
+!TOPIC 570 DefKermitOptions
+!NOINDEX
+const
+  DefKermitOptions : 0568KermitOptionRec = (
+    MaxPacketLen : 80;     {80 characters}
+    MaxTimeout : 5;        {5 seconds}
+    PadCount : 0;          {No pad chars}
+    PadChar : #0;          {Null pad char}
+    Terminator : cCR;      {Carriage return}
+    CtlPrefix : '#';       {'#' char}
+    HibitPrefix : 'Y';     {'Y' means don't need high bit prefixing}
+    Check : '1';           {1 byte chksum}
+    RepeatPrefix : '~';    {Default repeat prefix}
+    CapabilitiesMask : 0;  {No default extended capabilities}
+    WindowSize : 0;        {No default windows}
+    MaxLongPacketLen : 0); {No default long packets}
+
+Default Kermit options, based on the Kermit Protocol Manual.
+;
+;-------------------------------------------------------------------
+!TOPIC 571 DefMinRepeatCnt
+!NOINDEX
+const
+  DefMinRepeatCnt : Byte = 4;
+
+Sets the minimum repeated character threshold for Kermit's built-in run
+length encoding of repeated character strings. For the default value of
+four, Kermit will not apply run length encoding unless it sees at least
+four repeated characters. Generally, you won't need to adjust this value.
+;
+;-------------------------------------------------------------------
+!TOPIC 572 FastAbort
+!NOINDEX
+const
+  FastAbort : Boolean = False;
+
+The Kermit protocol manual describes the accepted process for aborting a
+protocol. Some implementations of Kermit (notably, ProComm) use a method
+that is faster but might not be recognized by all Kermit implementations
+(it just sends an error packet and exits). Setting FastAbort to True enables
+this "ProComm" style of aborting.
+;
+;-------------------------------------------------------------------
+!TOPIC 573 Packet types
+!NOINDEX
+const
+  KBreak         = 'B'; {Break transmission (EOT)}
+  KData          = 'D'; {Data packet}
+  KError         = 'E'; {Error packet}
+  KFile          = 'F'; {File header packet}
+  KNak           = 'N'; {Negative acknowledge packet}
+  KSendInit      = 'S'; {Initial packet (exchange options)}
+  KDisplay       = 'X'; {Display text on screen packet}
+  KAck           = 'Y'; {Acknowledge packet}
+  KEndOfFile     = 'Z'; {End of file packet}
+
+These are the Kermit packet types that Async Professional understands.
+;
+;-------------------------------------------------------------------
+!TOPIC 574 KermitOverhead
+!NOINDEX
+const
+  KermitOverhead : Word = 20;
+
+This is an estimate of the average number of overhead bytes per packet
+(required by 0084EstimateTransferSecs to estimate the time required to transfer
+a specified number of bytes). Because Kermit quotes all control characters,
+the actual overhead can vary between data packets. You might need to
+increase this number if you are transferring binary files.
+
+See also:  0065SetEfficiencyParms
+;
+;-------------------------------------------------------------------
+!TOPIC 575 KermitTurnDelay
+!NOINDEX
+const
+  KermitTurnDelay : Word = 1000;
+
+This is an estimate of the turnaround delay in a Kermit protocol (required
+by 0084EstimateTransferSecs to estimate the time required to transfer a
+specified number of bytes). Turnaround delay is the time, in milliseconds,
+required for the remote system to acknowledge the last block. 1000
+milliseconds is a reasonable, general-purpose estimate. If you are using
+Sliding Windows Control, 0577SWCKermitTurnDelay is used instead of
+KermitTurnDelay.
+
+See also:  0065SetEfficiencyParms
+;
+;-------------------------------------------------------------------
+!TOPIC 576 MaxWindowSlots
+!NOINDEX
+const
+  MaxWindowSlots = 27;
+
+Maximum number of table slots (window size) for SWC. By default
+MaxWindowSlots is set to 27 instead of the specification's stated limit of
+31. This avoids a bug in the MSKERMIT program when it tries to use window
+sizes above 27.
+;
+;-------------------------------------------------------------------
+!TOPIC 577 SWCKermitTurnDelay
+!NOINDEX
+const
+  SWCKermitTurnDelay : Word = 5;
+
+Turnaround delay on Kermit Sliding Windows Control transfers.
+;
+;-------------------------------------------------------------------
+!TOPIC 578 KermitProtocol,ApKermit
+!NOINDEX
+type
+  KermitPtr = ^KermitProtocol;
+  KermitProtocol =
+    record
+      ...
+    end;
+
+Record used to store data needed by the various routines in ApKermit to
+implement the Kermit protocol.
+
+See also:  0549InitCustomKermit
+;
+;-------------------------------------------------------------------
+!TOPIC 579 Declarations,ApKermit
+!NOINDEX
+!NOSEARCH
+ApKermit declares the following types and constants:
+
+  0569DefHibitPrefix                 0570DefKermitOptions
+  0571DefMinRepeatCnt                0572FastAbort
+  0568KermitOptionRec                0574KermitOverhead
+  0578KermitProtocol                 0575KermitTurnDelay
+  0576MaxWindowSlots                 0573Packet types
+  0577SWCKermitTurnDelay
+;
+;-------------------------------------------------------------------
+!TOPIC 580 Declarations,OoKermit
+!NOINDEX
+!NOSEARCH
+OoKermit declares the following types and constants:
+
+  0569DefHibitPrefix                 0570DefKermitOptions
+  0571DefMinRepeatCnt                0572FastAbort
+  0568KermitOptionRec                0574KermitOverhead
+  0575KermitTurnDelay                0576MaxWindowSlots
+  0573Packet types                   0577SWCKermitTurnDelay
+;
+;-------------------------------------------------------------------
+!TOPIC 581 SetMaxLongPacketLen
+!NOINDEX
+procedure 0547ApKermit.SetMaxLongPacketLen(P : ProtocolRecPtr; MaxLen : Word);
+!LINE
+procedure 0562KermitProtocol.SetMaxLongPacketLen(MaxLen : Word);
+
+Turn long packet support on or off.
+
+See also:  0552SetMaxPacketLen       0582SetMaxWindows
+;
+;-------------------------------------------------------------------
+!TOPIC 582 SetMaxWindows
+!NOINDEX
+procedure 0547ApKermit.SetMaxWindows(P : ProtocolRecPtr; MaxNum : Byte);
+!LINE
+procedure 0562KermitProtocol.SetMaxWindows(MaxNum : Byte);
+
+Turn Sliding Windows Control (SWC) on or off.
+
+See also:  0581SetMaxLongPacketLen
+;
+;----------------------------------------------------------------------
+!TOPIC 583 SetSWCTurnDelay
+!NOINDEX
+procedure 0547ApKermit.SetSWCTurnDelay(P : ProtocolRecPtr; TrnDelay : Word);
+!LINE
+procedure 0562KermitProtocol.SetSWCTurnDelay(TrnDelay : Word);
+
+Adjust the turnaround delay factor used when SWC is enabled.
+
+See also: 0582SetMaxWindows
+;
+;-------------------------------------------------------------------
+!TOPIC 584 GetSwcSize
+!NOINDEX
+function 0547ApKermit.GetSwcSize(P : ProtocolRecPtr) : Byte;
+!LINE
+function 0562KermitProtocol.GetSwcSize : Byte;
+
+Return the number of slots in the Sliding Windows Control table.
+
+See also: 0582SetMaxWindows
+;
+;-------------------------------------------------------------------
+!TOPIC 585 GetLPStatus
+!NOINDEX
+procedure 0547ApKermit.GetLPStatus(P : ProtocolRecPtr; var InUse : Boolean
+                               var PacketSize : Word);
+!LINE
+procedure 0562KermitProtocol.GetLPStatus(var InUse : Boolean;
+                                     var PacketSize : Word);
+
+Return the state of long packet usage and the packet size.
+
+See also:  0581SetMaxLongPacketLen

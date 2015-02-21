@@ -1,0 +1,1696 @@
+;-------------------------------------------------------------------
+!TOPIC 235 ApCom
+ApCom represents the interface layer of Async Professional when using
+the non-OOP calling format. It provides routines in the following
+categories:
+
+  0369Declarations                   0240Flow control
+  0236General                        0244I/O buffers
+  0242Options & user hooks           0239Port configuration
+  0243Port status                    0237Receiving
+  0238Sending                        0241Status buffering
+;
+;-------------------------------------------------------------------
+!TOPIC 236 General,ApCom
+!NOINDEX
+!NOSEARCH
+ApCom provides the following general purpose routines:
+
+  0274FaxInProgress                  0308GetBaseAddr
+  0307GetComName                     0288GetModemControl
+  0289GetModemStatus                 0245InitPortFast
+  0318ProtocolInProgress             0352SetUart
+
+;
+;-------------------------------------------------------------------
+!TOPIC 237 Receiving,ApCom
+!NOINDEX
+!NOSEARCH
+ApCom provides the following routines for receiving data:
+
+  0251BlockReady                     0257GetBlock
+  0258GetBlockDirect                 0259GetBlockTimeout
+  0253GetCharTimeout                 0252GetDelimLoc
+  0255GetString                      0256GetStringTimeout
+  0254PeekCharTimeout                0310WaitForChar
+  0312WaitForMultiString             0311WaitForString
+;
+;-------------------------------------------------------------------
+!TOPIC 238 Sending,ApCom
+!NOINDEX
+!NOSEARCH
+ApCom provides the following routines for sending data:
+
+  0263PutBlock                       0265PutBlockDirect
+  0264PutBlockTimeout                0260PutCharTimeout
+  0261PutString                      0262PutStringTimeout
+;
+;-------------------------------------------------------------------
+!TOPIC 239 Port configuration,ApCom
+!NOINDEX
+!NOSEARCH
+ApCom provides the following routines relating to port configuration:
+
+  0246ChangeBaud                     0248ChangeDataBits
+  0247ChangeParity                   0249ChangeStopBits
+  0286SetDTR                         0287SetRTS
+;
+;-------------------------------------------------------------------
+!TOPIC 240 Flow control,ApCom
+!NOINDEX
+!NOSEARCH
+ApCom provides the following routines relating to flow control:
+
+  0284HWFlowDisable                  0283HWFlowEnable
+  0285HWFlowState                    0279SWFlowDisable
+  0278SWFlowEnable                   0373SWFlowEnableOpt
+  0281SWFlowResume                   0282SWFlowSetChars
+  0280SWFlowState
+;
+;-------------------------------------------------------------------
+!TOPIC 241 Status buffering,ApCom
+!NOINDEX
+!NOSEARCH
+ApCom provides the following routines relating to status buffering:
+
+  0276DisableStatusBuffer            0273EnableStatusBuffer
+  0277StatusBuffering
+;
+;-------------------------------------------------------------------
+!TOPIC 242 Options & user hooks,ApCom
+!NOINDEX
+!NOSEARCH
+ApCom provides the following routines relating to options and user hooks:
+
+  0317ptOptionsAreOn                 0316ptOptionsOff
+  0315ptOptionsOn                    0313SetAbortFunc
+  0309SetErrorProc                   0314SetWaitCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 243 Port status,ApCom
+!NOINDEX
+!NOSEARCH
+ApCom provides the following routines relating to port status:
+
+  0290CheckCTS                       0300CheckDataReady
+  0293CheckDCD                       0294CheckDeltaCTS
+  0297CheckDeltaDCD                  0295CheckDeltaDSR
+  0296CheckDeltaRI                   0291CheckDSR
+  0306CheckFifoError                 0303CheckLineBreak
+  0301CheckLineError                 0292CheckRI
+  0305CheckTE                        0304CheckTHRE
+  0298GetLineControl                 0302GetLineError
+  0299GetLineStatus
+;
+;-------------------------------------------------------------------
+!TOPIC 244 I/O buffers,ApCom
+!NOINDEX
+!NOSEARCH
+ApCom provides the following routines relating to I/O buffers:
+
+  0250ChangeBufferSizes              0272DrainOutBuffer
+  0270FlushInBuffer                  0271FlushOutBuffer
+  0275ForceBufferLimits              0267InBuffFree
+  0266InBuffUsed                     0269OutBuffFree
+  0268OutBuffUsed
+;
+;-------------------------------------------------------------------
+!TOPIC 245 InitPortFast
+!NOINDEX
+procedure 0235ApCom.InitPortFast(var P : PortRecPtr; ComName : 0855ComNameType;
+                             NewBaud : LongInt);
+
+Initialize a port using default line options.
+
+See also:  0361InitFast              0330AbstractPort.Init
+           0863InitPortProc
+;
+;-------------------------------------------------------------------
+!TOPIC 246 ChangeBaud
+!NOINDEX
+procedure 0235ApCom.ChangeBaud(P : PortRecPtr; NewBaud : LongInt);
+!LINE
+procedure 0320AbstractPort.ChangeBaud(NewBaud : LongInt);
+
+Change the baud rate of the specified port.
+
+See also:  0332AbstractPort.SetLine  0873SetLineProc
+;
+;-------------------------------------------------------------------
+!TOPIC 247 ChangeParity
+!NOINDEX
+procedure 0235ApCom.ChangeParity(P : PortRecPtr; NewParity : 0865ParityType);
+!LINE
+procedure 0320AbstractPort.ChangeParity(NewParity : 0865ParityType);
+
+Change parity for the specified port.
+
+See also:  0332AbstractPort.SetLine  0873SetLineProc
+;
+;-------------------------------------------------------------------
+!TOPIC 248 ChangeDataBits
+!NOINDEX
+procedure 0235ApCom.ChangeDataBits(P : PortRecPtr; NewDataBits : 0856DataBitType);
+!LINE
+procedure 0320AbstractPort.ChangeDataBits(NewDataBits : 0856DataBitType);
+
+Change the data bit setting for the specified port.
+
+See also:  0332AbstractPort.SetLine  0873SetLineProc
+;
+;-------------------------------------------------------------------
+!TOPIC 249 ChangeStopBits
+!NOINDEX
+procedure 0235ApCom.ChangeStopBits(P : PortRecPtr; NewStopBits : 0877StopBitType);
+!LINE
+procedure 0320AbstractPort.ChangeStopBits(NewStopBits : 0877StopBitType);
+
+Change the stop bit setting for the specified port.
+
+See also:  0332AbstractPort.SetLine  0873SetLineProc
+;
+;-------------------------------------------------------------------
+!TOPIC 250 ChangeBufferSizes
+!NOINDEX
+procedure 0235ApCom.ChangeBufferSizes(P : PortRecPtr;
+                                  NewInSize, NewOutSize : Word);
+!LINE
+procedure 0320AbstractPort.ChangeBufferSizes(NewInSize, NewOutSize : Word);
+
+Change input/output buffer sizes.
+
+See also:  0330AbstractPort.Init  0863InitPortProc
+;
+;-------------------------------------------------------------------
+!TOPIC 251 BlockReady
+!NOINDEX
+function 0235ApCom.BlockReady(P : PortRecPtr; ExpectedLen : Word;
+                          DelimSet : 0854CharSet) : Boolean;
+!LINE
+function 0320AbstractPort.BlockReady(ExpectedLen : Word;
+                                 DelimSet : 0854CharSet) : Boolean;
+
+Return True if a block of a specified length or ending with a character in
+DelimSet is ready.
+
+See also:  0257GetBlock
+;
+;-------------------------------------------------------------------
+!TOPIC 252 GetDelimLoc
+!NOINDEX
+function 0235ApCom.GetDelimLoc(P : PortRecPtr; DelimSet : 0854CharSet) : Word;
+!LINE
+function 0320AbstractPort.GetDelimLoc(DelimSet : 0854CharSet) : Word;
+
+Return the location within the input buffer of the first character of
+DelimSet.
+
+See also:  0266InBuffUsed
+;
+;-------------------------------------------------------------------
+!TOPIC 253 GetCharTimeout
+!NOINDEX
+procedure 0235ApCom.GetCharTimeout(P : PortRecPtr; var C : Char;
+                               Timeout : Word);
+!LINE
+procedure 0320AbstractPort.GetCharTimeout(var C : Char; Timeout : Word);
+
+Wait for a character or Timeout.
+
+See also:  0336AbstractPort.GetChar  0858GetCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 254 PeekCharTimeout
+!NOINDEX
+procedure 0235ApCom.PeekCharTimeout(P : PortRecPtr; var C : Char;
+                                PeekAhead : Word; Timeout : Word);
+!LINE
+procedure 0320AbstractPort.PeekCharTimeout(var C : Char; PeekAhead : Word;
+                                       Timeout : Word);
+
+Wait for a character or Timeout.
+
+See also:  0337AbstractPort.PeekChar  0866PeekCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 255 GetString
+!NOINDEX
+procedure 0235ApCom.GetString(P : PortRecPtr; var S : String;
+                          ExpectedLen : Byte;
+                          DelimSet : 0854CharSet);
+!LINE
+procedure 0320AbstractPort.GetString(var S : String; ExpectedLen : Byte;
+                                 DelimSet : 0854CharSet); virtual;
+
+Return a string with a specified length or ending with a character in
+DelimSet.
+
+See also:  0257GetBlock              0256GetStringTimeout
+;
+;-------------------------------------------------------------------
+!TOPIC 256 GetStringTimeout
+!NOINDEX
+procedure 0235ApCom.GetStringTimeout(P : PortRecPtr; var S : String;
+                                 ExpectedLen : Byte;
+                                 DelimSet : 0854CharSet;
+                                 Timeout : Word);
+!LINE
+procedure 0320AbstractPort.GetStringTimeout(var S : String;
+                                        ExpectedLen : Byte;
+                                        DelimSet : 0854CharSet;
+                                        Timeout : Word);
+
+Wait for a string or Timeout.
+
+See also:  0259GetBlockTimeout       0255GetString
+;
+;-------------------------------------------------------------------
+!TOPIC 257 GetBlock
+!NOINDEX
+procedure 0235ApCom.GetBlock(P : PortRecPtr; var Block;
+                         ExpectedLen : Word;
+                         var ReceivedLen : Word;
+                         DelimSet : 0854CharSet);
+!LINE
+procedure 0320AbstractPort.GetBlock(var Block; ExpectedLen : Word;
+                                var ReceivedLen : Word;
+                                DelimSet : 0854CharSet); virtual;
+
+Return a block of a specified length or ending with a character in DelimSet.
+
+See also:  0251BlockReady            0258GetBlockDirect
+           0259GetBlockTimeout
+;
+;-------------------------------------------------------------------
+!TOPIC 258 GetBlockDirect
+!NOINDEX
+procedure 0235ApCom.GetBlockDirect(P : PortRecPtr; var Block;
+                               ExpectedLen : Word;
+                               var ReceivedLen : Word;
+                               DelimSet : 0854CharSet);
+!LINE
+procedure 0320AbstractPort.GetBlockDirect(var Block; ExpectedLen : Word;
+                                      var ReceivedLen : Word;
+                                      DelimSet : 0854CharSet); virtual;
+
+Read a block directly from the input buffer.
+
+See also:  0257GetBlock
+;
+;-------------------------------------------------------------------
+!TOPIC 259 GetBlockTimeout
+!NOINDEX
+procedure 0235ApCom.GetBlockTimeout(P : PortRecPtr; var Block;
+                                ExpectedLen : Word;
+                                var ReceivedLen : Word;
+                                DelimSet : 0854CharSet;
+                                Timeout : Word);
+!LINE
+procedure 0320AbstractPort.GetBlockTimeout(var Block; ExpectedLen : Byte;
+                                       var ReceivedLen : Word;
+                                       DelimSet : 0854CharSet;
+                                       Timeout : Word);
+
+Wait for a block or Timeout.
+
+See also:  0257GetBlock
+;
+;-------------------------------------------------------------------
+!TOPIC 260 PutCharTimeout
+!NOINDEX
+procedure 0235ApCom.PutCharTimeout(P : PortRecPtr; C : Char; Timeout : Word);
+!LINE
+procedure 0320AbstractPort.PutCharTimeout(C : Char; Timeout : Word);
+
+Put a character in output buffer or Timeout.
+
+See also:  0338AbstractPort.PutChar  0870PutCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 261 PutString
+!NOINDEX
+procedure 0235ApCom.PutString(P : PortRecPtr; S : String);
+!LINE
+procedure 0320AbstractPort.PutString(S : String); virtual;
+
+Put a string directly in the output buffer.
+
+See also:  0263PutBlock              0338AbstractPort.PutChar
+           0870PutCharProc           0262PutStringTimeout
+;
+;-------------------------------------------------------------------
+!TOPIC 262 PutStringTimeout
+!NOINDEX
+procedure 0235ApCom.PutStringTimeout(P : PortRecPtr; S : String;
+                                 Timeout : Word);
+!LINE
+procedure 0320AbstractPort.PutStringTimeout(S : String; Timeout : Word);
+
+Put a string in the output buffer or timeout.
+
+See also:  0261PutString
+;
+;-------------------------------------------------------------------
+!TOPIC 263 PutBlock
+!NOINDEX
+procedure 0235ApCom.PutBlock(P : PortRecPtr; var Block;
+                         BlockLen : Word; var BytesWritten : Word);
+!LINE
+procedure 0320AbstractPort.PutBlock(var Block; BlockLen : Word;
+                                var BytesWritten : Word); virtual;
+
+Transmit a block of data.
+
+See also:  0265PutBlockDirect        0264PutBlockTimeout
+;
+;-------------------------------------------------------------------
+!TOPIC 264 PutBlockTimeout
+!NOINDEX
+procedure 0235ApCom.PutBlockTimeout(P : PortRecPtr; var Block;
+                                BlockLen : Word;
+                                var BytesWritten : Word;
+                                Timeout : Word);
+!LINE
+procedure 0320AbstractPort.PutBlockTimeout(var Block; BlockLen : Word;
+                                       var BytesWritten : Word;
+                                       Timeout : Word);
+
+Transmit a block of data or Timeout.
+
+See also:  0263PutBlock
+;
+;-------------------------------------------------------------------
+!TOPIC 265 PutBlockDirect
+!NOINDEX
+procedure 0235ApCom.PutBlockDirect(P : PortRecPtr; var Block;
+                               BlockLen : Word; var BytesWritten : Word);
+!LINE
+procedure 0320AbstractPort.PutBlockDirect(var Block; BlockLen : Word;
+                                      var BytesWritten : Word); virtual;
+
+Put a block of data directly into the output buffer.
+
+See also:  0263PutBlock              0264PutBlockTimeout
+;
+;-------------------------------------------------------------------
+!TOPIC 266 InBuffUsed
+!NOINDEX
+function 0235ApCom.InBuffUsed(P : PortRecPtr) : Word;
+!LINE
+function 0320AbstractPort.InBuffUsed : Word; virtual;
+
+Return the number of characters in the input buffer.
+
+See also:  0267InBuffFree            0268OutBuffUsed
+;
+;-------------------------------------------------------------------
+!TOPIC 267 InBuffFree
+!NOINDEX
+function 0235ApCom.InBuffFree(P : PortRecPtr) : Word;
+!LINE
+function 0320AbstractPort.InBuffFree : Word; virtual;
+
+Return the amount of free space in the input buffer.
+
+See also:  0266InBuffUsed            0269OutBuffFree
+;
+;-------------------------------------------------------------------
+!TOPIC 268 OutBuffUsed
+!NOINDEX
+function 0235ApCom.OutBuffUsed(P : PortRecPtr) : Word;
+!LINE
+function 0320AbstractPort.OutBuffUsed : Word; virtual;
+
+Return the number of characters in the output buffer.
+
+See also:  0272DrainOutBuffer        0266InBuffUsed
+           0269OutBuffFree
+;
+;-------------------------------------------------------------------
+!TOPIC 269 OutBuffFree
+!NOINDEX
+function 0235ApCom.OutBuffFree(P : PortRecPtr) : Word;
+!LINE
+function 0320AbstractPort.OutBuffFree : Word; virtual;
+
+Return the amount of free space in the output buffer.
+
+See also:  0267InBuffFree            0268OutBuffUsed
+;
+;-------------------------------------------------------------------
+!TOPIC 270 FlushInBuffer
+!NOINDEX
+procedure 0235ApCom.FlushInBuffer(P : PortRecPtr);
+!LINE
+procedure 0320AbstractPort.FlushInBuffer; virtual;
+
+Flush the input buffer.
+
+See also:  0305CheckTE               0271FlushOutBuffer
+;
+;-------------------------------------------------------------------
+!TOPIC 271 FlushOutBuffer
+!NOINDEX
+procedure 0235ApCom.FlushOutBuffer(P : PortRecPtr);
+!LINE
+procedure 0320AbstractPort.FlushOutBuffer; virtual;
+
+Flush the output buffer.
+
+See also:  0270FlushInBuffer
+;
+;-------------------------------------------------------------------
+!TOPIC 272 DrainOutBuffer
+!NOINDEX
+procedure 0235ApCom.DrainOutBuffer(P : PortRecPtr; Timeout : Word);
+!LINE
+procedure 0320AbstractPort.DrainOutBuffer(Timeout : Word); virtual;
+
+Delay until the output buffer is drained or Timeout.
+
+See also:  0305CheckTE
+;
+;-------------------------------------------------------------------
+!TOPIC 273 EnableStatusBuffer
+!NOINDEX
+!NOWRAP
+{$IFDEF StatusBuffering}
+procedure 0235ApCom.EnableStatusBuffer(P : PortRecPtr);
+procedure 0320AbstractPort.EnableStatusBuffer;
+!WRAP
+
+Enable the input status buffer.
+
+See also:  0276DisableStatusBuffer
+;
+;-------------------------------------------------------------------
+!TOPIC 274 FaxInProgress
+!NOINDEX
+function 0235ApCom.FaxInProgress(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.FaxInProgress : Boolean;
+
+Return True if this port is currently processing a fax.
+
+See also:  0309SetErrorProc
+;
+;-------------------------------------------------------------------
+!TOPIC 275 ForceBufferLimits
+!NOINDEX
+procedure 0235ApCom.ForceBufferLimits(P : PortRecPtr;
+                                  NewInLimit, NewOutLimit: Word);
+!LINE
+procedure 0320AbstractPort.ForceBufferLimits(NewInLimit, NewOutLimit: Word);
+
+Force new buffer limits.
+
+See also:  0250ChangeBufferSizes
+;
+;-------------------------------------------------------------------
+!TOPIC 276 DisableStatusBuffer
+!NOINDEX
+!NOWRAP
+{$IFDEF StatusBuffering}
+procedure 0235ApCom.DisableStatusBuffer(P : PortRecPtr);
+procedure 0320AbstractPort.DisableStatusBuffer;
+!WRAP
+
+Disable the input status buffer.
+
+See also:  0273EnableStatusBuffer
+;
+;-------------------------------------------------------------------
+!TOPIC 277 StatusBuffering
+!NOINDEX
+!NOWRAP
+{$IFDEF StatusBuffering}
+function 0235ApCom.StatusBuffering(P : PortRecPtr) : Boolean;
+function 0320AbstractPort.StatusBuffering : Boolean;
+!WRAP
+
+Return the state of status buffering.
+
+See also:  0276DisableStatusBuffer   0273EnableStatusBuffer
+;
+;-------------------------------------------------------------------
+!TOPIC 278 SWFlowEnable
+!NOINDEX
+!NOWRAP
+{$IFDEF UseSWFlow}
+procedure 0235ApCom.SWFlowEnable(P : PortRecPtr;
+                             BufferFull, BufferResume : Word);
+procedure 0320AbstractPort.SWFlowEnable(BufferFull, BufferResume : Word);
+                                                            virtual;
+!WRAP
+
+Enable automatic software flow control (Xon/Xoff flow control).
+
+See also:  0279SWFlowDisable         0373SWFlowEnableOpt
+           0281SWFlowResume          0282SWFlowSetChars
+           0280SWFlowState
+;
+;-------------------------------------------------------------------
+!TOPIC 279 SWFlowDisable
+!NOINDEX
+!NOWRAP
+{$IFDEF UseSWFlow}
+procedure 0235ApCom.SWFlowDisable(P : PortRecPtr);
+procedure 0320AbstractPort.SWFlowDisable; virtual;
+!WRAP
+
+Disable automatic software flow control (Xon/Xoff flow control).
+
+See also:  0278SWFlowEnable          0281SWFlowResume
+           0280SWFlowState
+;
+;-------------------------------------------------------------------
+!TOPIC 280 SWFlowState
+!NOINDEX
+!NOWRAP
+{$IFDEF UseSWFlow}
+function 0235ApCom.SWFlowState(P : PortRecPtr) : 0889FlowState;
+function 0320AbstractPort.SWFlowState : 0889FlowState; virtual;
+!WRAP
+
+Return the current state of software flow control.
+
+See also:  0281SWFlowResume
+;
+;-------------------------------------------------------------------
+!TOPIC 281 SWFlowResume
+!NOINDEX
+!NOWRAP
+{$IFDEF UseSWFlow}
+procedure 0235ApCom.SWFlowResume(P : PortRecPtr);
+procedure 0320AbstractPort.SWFlowResume; virtual;
+!WRAP
+
+Force transmits to resume, even if currently blocked by Xoff.
+
+See also:  0280SWFlowState
+;
+;-------------------------------------------------------------------
+!TOPIC 282 SWFlowSetChars
+!NOINDEX
+!NOWRAP
+{$IFDEF UseSWFlow}
+procedure 0235ApCom.SWFlowSetChars(P : PortRecPtr; OnChar, OffChar : Char);
+procedure 0320AbstractPort.SWFlowSetChars(OnChar, OffChar : Char); virtual;
+!WRAP
+
+Set custom Xon/Xoff characters.
+
+See also:  0278SWFlowEnable          0373SWFlowEnableOpt
+;
+;-------------------------------------------------------------------
+!TOPIC 283 HWFlowEnable
+!NOINDEX
+!NOWRAP
+{$IFDEF UseHWFlow}
+procedure 0235ApCom.HWFlowEnable(P : PortRecPtr;
+                             BufferFull, BufferResume : Word;
+                             Options : Word);
+procedure 0320AbstractPort.HWFlowEnable(BufferFull, BufferResume : Word;
+                                    Options : Word); virtual;
+!WRAP
+
+Enable hardware flow control (DTR and/or RTS).
+
+See also:  0890Hardware flow options
+           0284HWFlowDisable         0285HWFlowState
+           0286SetDTR                0287SetRTS
+;
+;-------------------------------------------------------------------
+!TOPIC 284 HWFlowDisable
+!NOINDEX
+!NOWRAP
+{$IFDEF UseHWFlow}
+procedure 0235ApCom.HWFlowDisable(P : PortRecPtr);
+procedure 0320AbstractPort.HWFlowDisable; virtual;
+!WRAP
+
+Disable automatic hardware flow control.
+
+See also:  0283HWFlowEnable          0285HWFlowState
+;
+;-------------------------------------------------------------------
+!TOPIC 285 HWFlowState
+!NOINDEX
+!NOWRAP
+{$IFDEF UseHWFlow}
+function 0235ApCom.HWFlowState(P : PortRecPtr) : 0889FlowState;
+function 0320AbstractPort.HWFlowState : 0889FlowState; virtual;
+!WRAP
+
+Return the state of hardware flow control.
+
+See also:  0284HWFlowDisable         0283HWFlowEnable
+;
+;-------------------------------------------------------------------
+!TOPIC 286 SetDTR
+!NOINDEX
+procedure 0235ApCom.SetDTR(P : PortRecPtr; State : Boolean);
+!LINE
+procedure 0320AbstractPort.SetDTR(State : Boolean);
+
+Raise or lower DTR.
+
+See also:  0283HWFlowEnable          0330AbstractPort.Init
+           0863InitPortProc          0287SetRTS
+;
+;-------------------------------------------------------------------
+!TOPIC 287 SetRTS
+!NOINDEX
+procedure 0235ApCom.SetRTS(P : PortRecPtr; State : Boolean);
+!LINE
+procedure 0320AbstractPort.SetRTS(State : Boolean);
+
+Raise or lower RTS.
+
+See also:  0283HWFlowEnable          0330AbstractPort.Init
+           0863InitPortProc          0286SetDTR
+;
+;-------------------------------------------------------------------
+!TOPIC 288 GetModemControl
+!NOINDEX
+function 0235ApCom.GetModemControl(P : PortRecPtr) : Byte;
+!LINE
+function 0320AbstractPort.GetModemControl : Byte; virtual;
+
+Return the modem control byte from the port record.
+
+See also:  0335AbstractPort.GetModem  0860GetModemProc
+;
+;-------------------------------------------------------------------
+!TOPIC 289 GetModemStatus
+!NOINDEX
+function 0235ApCom.GetModemStatus(P : PortRecPtr) : Byte;
+!LINE
+function 0320AbstractPort.GetModemStatus : Byte;
+
+Return the modem status byte from the port record.
+
+See also:  0290CheckCTS              0293CheckDCD
+           0294CheckDeltaCTS         0297CheckDeltaDCD
+           0295CheckDeltaDSR         0296CheckDeltaRI
+           0291CheckDSR              0292CheckRI
+;
+;-------------------------------------------------------------------
+!TOPIC 290 CheckCTS
+!NOINDEX
+function 0235ApCom.CheckCTS(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckCTS : Boolean;
+
+Return True if CTS is high.
+
+See also:  0294CheckDeltaCTS         0291CheckDSR
+;
+;-------------------------------------------------------------------
+!TOPIC 291 CheckDSR
+!NOINDEX
+function 0235ApCom.CheckDSR(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckDSR : Boolean;
+
+Return True if DSR is high.
+
+See also:  0290CheckCTS              0295CheckDeltaDSR
+;
+;-------------------------------------------------------------------
+!TOPIC 292 CheckRI
+!NOINDEX
+function 0235ApCom.CheckRI(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckRI : Boolean;
+
+Return True if RI is high.
+
+See also:  0296CheckDeltaRI
+;
+;-------------------------------------------------------------------
+!TOPIC 293 CheckDCD
+!NOINDEX
+function 0235ApCom.CheckDCD(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckDCD : Boolean;
+
+Return True if DCD is high.
+
+See also:  0290CheckCTS              0297CheckDeltaDCD
+           0291CheckDSR
+;
+;-------------------------------------------------------------------
+!TOPIC 294 CheckDeltaCTS
+!NOINDEX
+function 0235ApCom.CheckDeltaCTS(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckDeltaCTS : Boolean;
+
+Return True if DeltaCTS is high.
+
+See also:  0290CheckCTS
+;
+;-------------------------------------------------------------------
+!TOPIC 295 CheckDeltaDSR
+!NOINDEX
+function 0235ApCom.CheckDeltaDSR(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckDeltaDSR : Boolean;
+
+Return True if DeltaDSR is high.
+
+See also:  0291CheckDSR
+;
+;-------------------------------------------------------------------
+!TOPIC 296 CheckDeltaRI
+!NOINDEX
+function 0235ApCom.CheckDeltaRI(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckDeltaRI : Boolean;
+
+Return True if DeltaRI is high.
+
+See also:  0714AnswerModem           0292CheckRI
+;
+;-------------------------------------------------------------------
+!TOPIC 297 CheckDeltaDCD
+!NOINDEX
+function 0235ApCom.CheckDeltaDCD(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckDeltaDCD : Boolean;
+
+Return True if DeltaDCD is high.
+
+See also:  0293CheckDCD
+;
+;-------------------------------------------------------------------
+!TOPIC 298 GetLineControl
+!NOINDEX
+function 0235ApCom.GetLineControl(P : PortRecPtr) : Byte;
+!LINE
+function 0320AbstractPort.GetLineControl : Byte; virtual;
+
+Return the line control byte from the port record.
+
+See also:  0333AbstractPort.GetLine  0859GetLineProc
+;
+;-------------------------------------------------------------------
+!TOPIC 299 GetLineStatus
+!NOINDEX
+function 0235ApCom.GetLineStatus(P : PortRecPtr) : Byte;
+!LINE
+function 0320AbstractPort.GetLineStatus : Byte; virtual;
+
+Return the line status byte from the port record.
+;
+;-------------------------------------------------------------------
+!TOPIC 300 CheckDataReady
+!NOINDEX
+function 0235ApCom.CheckDataReady(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckDataReady : Boolean;
+
+Return True if DR (Data Ready) is high.
+
+See also:  0340AbstractPort.CharReady  0853CharReadyFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 301 CheckLineError
+!NOINDEX
+function 0235ApCom.CheckLineError(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckLineError : Boolean;
+
+Return True if any error bits are set in the line status register.
+
+See also:  0302GetLineError
+;
+;-------------------------------------------------------------------
+!TOPIC 302 GetLineError
+!NOINDEX
+function 0235ApCom.GetLineError(P : PortRecPtr) : Word;
+!LINE
+function 0320AbstractPort.GetLineError : Word;
+
+Return the line error type (here and in AsyncStatus).
+
+See also:  0301CheckLineError
+;
+;-------------------------------------------------------------------
+!TOPIC 303 CheckLineBreak
+!NOINDEX
+function 0235ApCom.CheckLineBreak(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckLineBreak : Boolean;
+
+Return True if a break was received (BI bit is high).
+
+See also:  0342AbstractPort.SendBreak  0872SendBreakProc
+;
+;-------------------------------------------------------------------
+!TOPIC 304 CheckTHRE
+!NOINDEX
+function 0235ApCom.CheckTHRE(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckTHRE : Boolean;
+
+Return True if transmitter holding register is empty.
+
+See also:  0305CheckTE
+;
+;-------------------------------------------------------------------
+!TOPIC 305 CheckTE
+!NOINDEX
+function 0235ApCom.CheckTE(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckTE : Boolean;
+
+Return True if the transmitter is empty.
+
+See also:  0304CheckTHRE             0331Done
+           0857DonePortProc
+;
+;-------------------------------------------------------------------
+!TOPIC 306 CheckFifoError
+!NOINDEX
+function 0235ApCom.CheckFifoError(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.CheckFifoError : Boolean;
+
+Return True if the FIFO error bit is set.
+
+See also:  0924SetFifoBuffering
+;
+;-------------------------------------------------------------------
+!TOPIC 307 GetComName
+!NOINDEX
+function 0235ApCom.GetComName(P : PortRecPtr) : 0855ComNameType;
+!LINE
+function 0320AbstractPort.GetComName : 0855ComNameType;
+
+Return the name of the specified port.
+
+See also:  0819ComNameString
+;
+;-------------------------------------------------------------------
+!TOPIC 308 GetBaseAddr
+!NOINDEX
+function 0235ApCom.GetBaseAddr(P : PortRecPtr) : Word;
+!LINE
+function 0320AbstractPort.GetBaseAddr : Word;
+
+Return the UART base address of this port.
+;
+;-------------------------------------------------------------------
+!TOPIC 309 SetErrorProc
+!NOINDEX
+procedure 0235ApCom.SetErrorProc(P : PortRecPtr; EP : 0850AsyncErrorProc);
+!LINE
+procedure 0320AbstractPort.SetErrorProc(EP : 0850AsyncErrorProc);
+
+Sets an error handler for the port.
+
+See also:  0347AbstractPort.GotError  0861GotErrorProc
+           0318ProtocolInProgress
+;
+;-------------------------------------------------------------------
+!TOPIC 310 WaitForChar
+!NOINDEX
+procedure 0235ApCom.WaitForChar(P : PortRecPtr; DelimSet : 0854CharSet;
+                            var C : Char; Timeout : Word);
+!LINE
+procedure 0320AbstractPort.WaitForChar(DelimSet : 0854CharSet; var C : Char;
+                                   Timeout : Word);
+
+Wait for a character in DelimSet or Timeout.
+
+See also:  0314SetWaitCharProc       0312WaitForMultiString
+           0311WaitForString
+;
+;-------------------------------------------------------------------
+!TOPIC 311 WaitForString
+!NOINDEX
+procedure 0235ApCom.WaitForString(P : PortRecPtr; S : String; Timeout : Word);
+!LINE
+procedure 0320AbstractPort.WaitForString(S : String; Timeout : Word);
+
+Wait for a specified string or Timeout.
+
+See also:  0314SetWaitCharProc       0310WaitForChar
+           0312WaitForMultiString
+;
+;-------------------------------------------------------------------
+!TOPIC 312 WaitForMultiString
+!NOINDEX
+procedure 0235ApCom.WaitForMultiString(P : PortRecPtr;
+                                   SL : String; SepChar : Char;
+                                   var FoundS : String;
+                                   var FoundI : Byte;
+                                   Timeout : Word);
+!LINE
+procedure 0320AbstractPort.WaitForMultiString(SL : String; SepChar : Char;
+                                          var FoundS : String;
+                                          var FoundI : Byte;
+                                          Timeout : Word);
+
+Wait for a substring or Timeout.
+
+See also:  0314SetWaitCharProc       0310WaitForChar
+           0311WaitForString
+;
+;-------------------------------------------------------------------
+!TOPIC 313 SetAbortFunc
+!NOINDEX
+procedure 0235ApCom.SetAbortFunc(P : PortRecPtr; AFunc : 0848AbortFunc);
+!LINE
+procedure 0320AbstractPort.SetAbortFunc(AFunc : 0848AbortFunc);
+
+Set AFunc as the user abort function.
+;
+;-------------------------------------------------------------------
+!TOPIC 314 SetWaitCharProc
+!NOINDEX
+procedure 0235ApCom.SetWaitCharProc(WCP : 0367WaitCharProc);
+!LINE
+procedure 0320AbstractPort.SetWaitCharProc(WCP : 0368WaitCharProc);
+
+Set a global WaitChar procedure.
+
+See also:  0310WaitForChar           0312WaitForMultiString
+           0311WaitForString
+;
+;-------------------------------------------------------------------
+!TOPIC 315 ptOptionsOn
+!NOINDEX
+procedure 0235ApCom.ptOptionsOn(P : PortRecPtr; OptionFlags : Word);
+!LINE
+procedure 0320AbstractPort.ptOptionsOn(OptionFlags : Word);
+
+Activate multiple options.
+
+See also:  0843Port options          0317ptOptionsAreOn
+           0316ptOptionsOff
+;
+;-------------------------------------------------------------------
+!TOPIC 316 ptOptionsOff
+!NOINDEX
+procedure 0235ApCom.ptOptionsOff(P : PortRecPtr; OptionFlags : Word);
+!LINE
+procedure 0320AbstractPort.ptOptionsOff(OptionFlags : Word);
+
+Deactivate multiple options.
+
+See also:  0843Port options          0317ptOptionsAreOn
+           0315ptOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 317 ptOptionsAreOn
+!NOINDEX
+function 0235ApCom.ptOptionsAreOn(P : PortRecPtr;
+                              OptionFlags : Word) : Boolean;
+!LINE
+function 0320AbstractPort.ptOptionsAreOn(OptionFlags : Word) : Boolean;
+
+Return True if all specified options are on.
+
+See also:  0843Port options          0316ptOptionsOff
+           0315ptOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 318 ProtocolInProgress
+!NOINDEX
+function 0235ApCom.ProtocolInProgress(P : PortRecPtr) : Boolean;
+!LINE
+function 0320AbstractPort.ProtocolInProgress : Boolean;
+
+Return True if this port is currently processing a protocol.
+
+See also:  0309SetErrorProc
+;
+;-------------------------------------------------------------------
+!TOPIC 319 OoCom
+OoCom represents the interface layer of Async Professional when using
+the OOP calling format. It provides three objects, arranged in the
+following hierarchy:
+
+  [0651Root]
+    0320AbstractPort
+      0360UartPort
+      0371FossilPort
+      0372Digi14Port
+      0366Int14Port
+
+See also:  0370Declarations
+;
+;-------------------------------------------------------------------
+!TOPIC 320 AbstractPort
+!NOINDEX
+AbstractPortPtr = ^AbstractPort;
+!LINE
+AbstractPort = object(0651Root)
+
+Abstract port object. Defines data and methods to be shared in common by
+UartPort, FossilPort, Digi14Port, Int14Port, and other (future or
+user-written) device layer objects.
+
+AbstractPort provides methods in the following categories:
+
+  0370Declarations                   0325Flow control
+  0321General                        0329I/O buffers
+  0327Options & user hooks           0324Port configuration
+  0328Port status                    0322Receiving
+  0323Sending                        0326Status buffering
+;
+;-------------------------------------------------------------------
+!TOPIC 321 General,OoCom
+!NOINDEX
+!NOSEARCH
+OoCom provides the following general purpose methods:
+
+  0343ActivatePort                   0344DeactivatePort
+  0331Done                           0274FaxInProgress
+  0308GetBaseAddr                    0307GetComName
+  0335GetModem                       0288GetModemControl
+  0289GetModemStatus                 0347GotError
+  0330Init                           0358Load
+  0318ProtocolInProgress             0346RestorePort
+  0345SavePort                       0334SetModem
+  0352SetUart                        0339StartTransmitter
+  0359Store                          0341TransReady
+;
+;-------------------------------------------------------------------
+!TOPIC 322 Receiving,OoCom
+!NOINDEX
+!NOSEARCH
+OoCom provides the following methods for receiving data:
+
+  0251BlockReady                     0340CharReady
+  0336GetChar                        0257GetBlock
+  0258GetBlockDirect                 0259GetBlockTimeout
+  0253GetCharTimeout                 0252GetDelimLoc
+  0255GetString                      0256GetStringTimeout
+  0337PeekChar                       0254PeekCharTimeout
+  0310WaitForChar                    0312WaitForMultiString
+  0311WaitForString
+;
+;-------------------------------------------------------------------
+!TOPIC 323 Sending,OoCom
+!NOINDEX
+!NOSEARCH
+OoCom provides the following methods for sending data:
+
+  0263PutBlock                       0265PutBlockDirect
+  0264PutBlockTimeout                0338PutChar
+  0260PutCharTimeout                 0261PutString
+  0262PutStringTimeout               0342SendBreak
+;
+;-------------------------------------------------------------------
+!TOPIC 324 Port configuration,OoCom
+!NOINDEX
+!NOSEARCH
+OoCom provides the following methods relating to port configuration:
+
+  0246ChangeBaud                     0248ChangeDataBits
+  0247ChangeParity                   0249ChangeStopBits
+  0332SetLine                        0286SetDTR
+  0287SetRTS
+;
+;-------------------------------------------------------------------
+!TOPIC 325 Flow control,OoCom
+!NOINDEX
+!NOSEARCH
+OoCom provides the following methods relating to flow control:
+
+  0284HWFlowDisable                  0283HWFlowEnable
+  0350HWFlowGet                      0351HWFlowSet
+  0285HWFlowState                    0353SWFlowCtl
+  0279SWFlowDisable                  0278SWFlowEnable
+  0373SWFlowEnableOpt                0354SWFlowGet
+  0281SWFlowResume                   0355SWFlowSet
+  0282SWFlowSetChars                 0280SWFlowState
+;
+;-------------------------------------------------------------------
+!TOPIC 326 Status buffering,OoCom
+!NOINDEX
+!NOSEARCH
+OoCom provides the following methods relating to status buffering:
+
+  0276DisableStatusBuffer            0273EnableStatusBuffer
+  0277StatusBuffering
+;
+;-------------------------------------------------------------------
+!TOPIC 327 Options & user hooks,OoCom
+!NOINDEX
+!NOSEARCH
+OoCom provides the following methods relating to options and user hooks:
+
+  0317ptOptionsAreOn                 0316ptOptionsOff
+  0315ptOptionsOn                    0313SetAbortFunc
+  0309SetErrorProc                   0314SetWaitCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 328 Port status,OoCom
+!NOINDEX
+!NOSEARCH
+OoCom provides the following methods relating to port status:
+
+  0290CheckCTS                       0300CheckDataReady
+  0293CheckDCD                       0294CheckDeltaCTS
+  0297CheckDeltaDCD                  0295CheckDeltaDSR
+  0296CheckDeltaRI                   0291CheckDSR
+  0306CheckFifoError                 0303CheckLineBreak
+  0301CheckLineError                 0292CheckRI
+  0305CheckTE                        0304CheckTHRE
+  0333GetLine                        0298GetLineControl
+  0302GetLineError                   0299GetLineStatus
+  0356UpdateLineStatus               0357UpdateModemStatus
+;
+;-------------------------------------------------------------------
+!TOPIC 329 I/O buffers,OoCom
+!NOINDEX
+!NOSEARCH
+OoCom provides the following methods relating to I/O buffers:
+
+  0348BufferFlush                    0349BufferStatus
+  0250ChangeBufferSizes              0272DrainOutBuffer
+  0270FlushInBuffer                  0271FlushOutBuffer
+  0275ForceBufferLimits              0267InBuffFree
+  0266InBuffUsed                     0269OutBuffFree
+  0268OutBuffUsed
+;
+;-------------------------------------------------------------------
+!TOPIC 330 Init,AbstractPort
+!NOINDEX
+constructor 0320AbstractPort.Init;
+
+Open the specified port.
+
+See also:  0331Done                  0363UartPort.InitCustom
+           0361UartPort.InitFast     0362UartPort.InitKeep
+;
+;-------------------------------------------------------------------
+!TOPIC 331 Done,AbstractPort
+!NOINDEX
+destructor 0320AbstractPort.Done; virtual;
+
+Closes the specified port.
+
+See also:  0330AbstractPort.Init
+;
+;-------------------------------------------------------------------
+!TOPIC 332 SetLine
+!NOINDEX
+procedure 0320AbstractPort.SetLine(Baud : LongInt; Parity : 0865ParityType;
+                               DataBits : 0856DataBitType;
+                               StopBits : 0877StopBitType); virtual;
+
+Set the port and the port record with the new values.
+
+See also:  0873SetLineProc
+;
+;-------------------------------------------------------------------
+!TOPIC 333 GetLine
+!NOINDEX
+procedure 0320AbstractPort.GetLine(var Baud : LongInt; var Parity : 0865ParityType;
+                               var DataBits : 0856DataBitType;
+                               var StopBits : 0877StopBitType;
+                               FromHardware : Boolean); virtual;
+
+Get the line parameters directly from the hardware, if possible.
+
+See also:  0859GetLineProc
+;
+;-------------------------------------------------------------------
+!TOPIC 334 SetModem
+!NOINDEX
+procedure 0320AbstractPort.SetModem(DTR, RTS : Boolean); virtual;
+
+Activate DTR and/or RTS signals.
+
+See also:  0335GetModem              0330Init
+           0874SetModemProc
+;
+;-------------------------------------------------------------------
+!TOPIC 335 GetModem
+!NOINDEX
+procedure 0320AbstractPort.GetModem(var DTR, RTS : Boolean); virtual;
+
+Get the DTR and RTS settings directly from the port.
+
+See also:  0860GetModemProc          0334SetModem
+;
+;-------------------------------------------------------------------
+!TOPIC 336 GetChar
+!NOINDEX
+procedure 0320AbstractPort.GetChar(var C : Char); virtual;
+
+Return the next character from the specified port.
+
+See also:  0858GetCharProc           0340CharReady
+           0337PeekChar
+;
+;-------------------------------------------------------------------
+!TOPIC 337 PeekChar
+!NOINDEX
+procedure 0320AbstractPort.PeekChar(var C : Char; PeekAhead : Word); virtual;
+
+Look at characters in the input buffer without actually removing them.
+
+See also:  0340CharReady             0336GetChar
+           0866PeekCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 338 PutChar
+!NOINDEX
+procedure 0320AbstractPort.PutChar(C : Char); virtual;
+
+Transmit a character.
+
+See also:  0336GetChar               0269OutBuffFree
+           0870PutCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 339 StartTransmitter
+!NOINDEX
+procedure 0320AbstractPort.StartTransmitter; virtual;
+
+Start the transmitter by sending out one character.
+
+See also:  0265PutBlockDirect        0876StartTransmitterProc
+           0281SWFlowResume
+;
+;-------------------------------------------------------------------
+!TOPIC 340 CharReady
+!NOINDEX
+function 0320AbstractPort.CharReady : Boolean; virtual;
+
+Return True if at least one character is ready for retrieval.
+
+See also:  0853CharReadyFunc         0336GetChar
+           0337PeekChar
+;
+;-------------------------------------------------------------------
+!TOPIC 341 TransReady
+!NOINDEX
+function 0320AbstractPort.TransReady : Boolean; virtual;
+
+Return True if the transmitter is ready for another character.
+
+See also:  0338PutChar               0878TransReadyFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 342 SendBreak
+!NOINDEX
+procedure 0320AbstractPort.SendBreak; virtual;
+
+Send a serial line break.
+
+See also:  0872SendBreakProc         0936SendLongBreak
+;
+;-------------------------------------------------------------------
+!TOPIC 343 ActivatePort
+!NOINDEX
+procedure 0320AbstractPort.ActivatePort(Restore : Boolean); virtual;
+
+Turn on interrupts for this port.
+
+See also:  0849ActivatePortProc      0344DeactivatePort
+           0346RestorePort           0345SavePort
+;
+;-------------------------------------------------------------------
+!TOPIC 344 DeactivatePort
+!NOINDEX
+procedure 0320AbstractPort.DeactivatePort(Restore : Boolean); virtual;
+
+Turn off interrupts for this port.
+
+See also:  0849ActivatePortProc      0346RestorePort
+           0345SavePort
+;
+;-------------------------------------------------------------------
+!TOPIC 345 SavePort
+!NOINDEX
+procedure 0320AbstractPort.SavePort(var PSR); virtual;
+
+Saves the state of the port in PSR.
+
+See also:    0343ActivatePort        0344DeactivatePort
+             0871SavePortProc
+;
+;-------------------------------------------------------------------
+!TOPIC 346 RestorePort
+!NOINDEX
+procedure 0320AbstractPort.RestorePort(var PSR); virtual;
+
+Restores the state of the port from PSR.
+
+See also:    0343ActivatePort        0344DeactivatePort
+             0871SavePortProc
+;
+;-------------------------------------------------------------------
+!TOPIC 347 GotError
+!NOINDEX
+procedure 0320AbstractPort.GotError(StatusCode : Word); virtual;
+
+Report an error to the user defined error handler, if one exists.
+
+See also:  0861GotErrorProc          0309SetErrorProc
+;
+;-------------------------------------------------------------------
+!TOPIC 348 BufferFlush
+!NOINDEX
+procedure 0320AbstractPort.BufferFlush(FlushIn, FlushOut: Boolean); virtual;
+
+Flush the input and/or output buffers.
+
+See also:  0270FlushInBuffer         0271FlushOutBuffer
+;
+;-------------------------------------------------------------------
+!TOPIC 349 BufferStatus
+!NOINDEX
+procedure 0320AbstractPort.BufferStatus(var InFree, OutFree, InUsed, OutUsed
+                                    : Word); virtual;
+
+Return buffer usage information.
+
+See also:  0267InBuffFree            0266InBuffUsed
+           0269OutBuffFree           0268OutBuffUsed
+;
+;-------------------------------------------------------------------
+!TOPIC 350 HWFlowGet
+!NOINDEX
+!NOWRAP
+{$IFDEF UseHWFlow}
+function 0320AbstractPort.HWFlowGet : 0889FlowState; virtual;
+!WRAP
+
+Return the state of hardware flow control.
+
+See also:  0351HWFlowSet             0285HWFlowState
+;
+;-------------------------------------------------------------------
+!TOPIC 351 HWFlowSet
+!NOINDEX
+!NOWRAP
+{$IFDEF UseHWFlow}
+procedure 0320AbstractPort.HWFlowSet(Enable : Boolean;
+                                 BufferFull, BufferResume : Word;
+                                 Options : Word); virtual;
+!WRAP
+
+Start or stop hardware flow control.
+
+See also:  0284HWFlowDisable         0283HWFlowEnable
+           0350HWFlowGet
+;
+;-------------------------------------------------------------------
+!TOPIC 352 SetUart
+!NOINDEX
+procedure 0235ApCom.SetUart(ComName : 0855ComNameType; NewBase: Word;
+                        NewIrq, NewVector : Byte);
+
+Change the standard base address, IRQ, and vector of the specified port.
+
+See also:  0330Init
+;
+;-------------------------------------------------------------------
+!TOPIC 353 SWFlowCtl
+!NOINDEX
+!NOWRAP
+{$IFDEF UseSWFlow}
+procedure 0320AbstractPort.SWFlowCtl(OnChar, OffChar : Char;
+                                 Resume : Boolean); virtual;
+!WRAP
+
+Set the on/off characters or resume a blocked transmitter.
+
+See also:  0281SWFlowResume          0282SWFlowSetChars
+;
+;-------------------------------------------------------------------
+!TOPIC 354 SWFlowGet
+!NOINDEX
+!NOWRAP
+{$IFDEF UseSWFlow}
+function 0320AbstractPort.SWFlowGet : 0889FlowState; virtual;
+!WRAP
+
+Return the state of software flow control.
+
+See also:  0280SWFlowState
+;
+;-------------------------------------------------------------------
+!TOPIC 355 SWFlowSet
+!NOINDEX
+!NOWRAP
+{$IFDEF UseSWFlow}
+procedure 0320AbstractPort.SWFlowSet(Enable : Boolean;
+                                 BufferFull, BufferResume : Word;
+                                 Options : Word); virtual;
+!WRAP
+
+Start or stop software flow control.
+
+See also:  0279SWFlowDisable         0278SWFlowEnable
+           0354SWFlowGet
+;
+;-------------------------------------------------------------------
+!TOPIC 356 UpdateLineStatus
+!NOINDEX
+function 0320AbstractPort.UpdateLineStatus : Byte; virtual;
+
+Return the line status register value.
+;
+;-------------------------------------------------------------------
+!TOPIC 357 UpdateModemStatus
+!NOINDEX
+function 0320AbstractPort.UpdateModemStatus : Byte; virtual;
+
+Return the modem status register value.
+;
+;-------------------------------------------------------------------
+!TOPIC 358 Load,AbstractPort
+!NOINDEX
+{$IFDEF UseStreams}
+!LINE
+constructor 0320AbstractPort.Load(var S : IdStream);
+!LINE
+{$ENDIF}
+
+Abstract Load for a port object. The stream registration routines for an
+AbstractPort object is AbstractPortStream.
+
+See also:  0359Store
+;
+;-------------------------------------------------------------------
+!TOPIC 359 Store,AbstractPort
+!NOINDEX
+{$IFDEF UseStreams}
+!LINE
+procedure 0320AbstractPort.Store(var S : IdStream);
+!LINE
+{$ENDIF}
+
+Abstract Store for a port object. The stream registration routines for an
+AbstractPort object is AbstractPortStream.
+
+See also:  0358Load
+;
+;-------------------------------------------------------------------
+!TOPIC 360 UartPort
+!NOINDEX
+!NOWRAP
+{$IFDEF UseUart}
+UartPortPtr = ^UartPort;
+UartPort = object(0320AbstractPort)
+!WRAP
+
+Object derived from AbstractPort to implement an ApUart-based device
+layer. It provides the following methods:
+
+  0363InitCustom                     0361InitFast
+  0362InitKeep                       0364Load
+  0365Store
+;
+;-------------------------------------------------------------------
+!TOPIC 361 InitFast
+!NOINDEX
+constructor 0360UartPort.InitFast(ComName : 0855ComNameType; NewBaud : LongInt);
+constructor 0371FossilPort.InitFast(ComName : 0855ComNameType; NewBaud : LongInt);
+constructor 0372Digi14Port.InitFast(ComName : 0855ComNameType; NewBaud : LongInt);
+constructor 0366Int14Port.InitFast(ComName : 0855ComNameType; NewBaud : LongInt);
+
+Open ComName with default line options.
+
+See also:  0330AbstractPort.Init  0245InitPortFast
+;
+;-------------------------------------------------------------------
+!TOPIC 362 InitKeep
+!NOINDEX
+constructor 0360UartPort.InitKeep(ComName : 0855ComNameType;
+                              InSize, OutSize : Word);
+
+Opens ComName (without changing line options).
+
+See also:  0330AbstractPort.Init  0864InitPortKeepProc
+;
+;-------------------------------------------------------------------
+!TOPIC 363 InitCustom,UartPort
+!NOINDEX
+constructor 0360UartPort.InitCustom(ComName : 0855ComNameType; Baud : LongInt;
+                                Parity : 0865ParityType;
+                                DataBits : 0856DataBitType;
+                                StopBits : 0877StopBitType;
+                                InSize, OutSize : Word;
+                                Options : Word);
+
+Open the specified com port.
+
+See also:  0330AbstractPort.Init
+;
+;-------------------------------------------------------------------
+!TOPIC 364 Load,OoCom_objects
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 0360UartPort.Load(var S : IdStream);
+constructor 0371FossilPort.Load(var S : IdStream);
+constructor 0372Digi14Port.Load(var S : IdStream);
+constructor 0366Int14Port.Load(var S : IdStream);
+!WRAP
+
+Load a port object from a stream. The stream registration routines for the
+port object types are UartPortStream, FossilPortStream, Digi14PortStream, and Int14PortStream.
+
+See also:  0365Store
+;
+;-------------------------------------------------------------------
+!TOPIC 365 Store,OoCom_objects
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+procedure 0360UartPort.Store(var S : IdStream);
+procedure 0371FossilPort.Store(var S : IdStream);
+procedure 0372Digi14Port.Store(var S : IdStream);
+procedure 0366Int14Port.Store(var S : IdStream);
+!WRAP
+
+Store a port object to a stream. The stream registration routines for the
+port object types are UartPortStream, FossilPortStream, Digi14PortStream,
+Int14PortStream.
+
+See also:  0364Load
+;
+;-------------------------------------------------------------------
+!TOPIC 366 Int14Port
+!NOINDEX
+!NOWRAP
+{$IFDEF UseInt14}
+Int14PortPtr = ^Int14Port;
+Int14Port = object(0320AbstractPort)
+!WRAP
+
+Object derived from AbstractPort to implement an ApInt14-based device
+layer. It provides the following methods:
+
+  0363InitCustom                     0361InitFast
+  0362InitKeep                       0364Load
+  0365Store
+
+(The cross-references for InitCustom and InitKeep are actually UartPort
+cross-references, but the declarations are identical to Int14Port methods.)
+;
+;-------------------------------------------------------------------
+!TOPIC 367 WaitCharProc,ApCom
+!NOINDEX
+type
+  WaitCharProc = procedure(P : PortRecPtr; C : Char);
+
+Procedure called by 0310WaitForChar, 0311WaitForString, and 0312WaitForMultiString to
+allow received characters to be displayed or stored.
+
+See also:  0314SetWaitCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 368 WaitCharProc,OoCom
+!NOINDEX
+type
+  WaitCharProc = procedure(APPtr : AbstractPortPtr; C : Char);
+
+Procedure called by 0310WaitForChar, 0311WaitForString, and 0312WaitForMultiString to
+allow received characters to be displayed or stored.
+
+See also:  0314SetWaitCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 369 Declarations,ApCom
+!NOINDEX
+!NOSEARCH
+ApCom declares the following types and constants:
+
+  0367WaitCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 370 Declarations,OoCom
+!NOINDEX
+!NOSEARCH
+OoCom declares the following types and constants:
+
+  0368WaitCharProc
+;
+;-------------------------------------------------------------------
+!TOPIC 371 FossilPort
+!NOINDEX
+!NOWRAP
+{$IFDEF UseFossil}
+FossilPortPtr = ^FossilPort;
+FossilPort = object(0320AbstractPort)
+!WRAP
+
+Object derived from AbstractPort to implement a Fossil-based device
+layer. It overrides the following methods:
+
+  0363InitCustom                     0361InitFast
+  0362InitKeep                       0364Load
+  0365Store
+
+(The cross-references for InitCustom and InitKeep are actually UartPort
+cross-references, but the declarations are identical to FossilPort methods.)
+;
+;-------------------------------------------------------------------
+!TOPIC 372 Digi14Port
+!NOINDEX
+!NOWRAP
+{$IFDEF UseDigi14}
+Digi14PortPtr = ^Digi14Port;
+Digi14Port = object(0320AbstractPort)
+!WRAP
+
+Object derived from AbstractPort to implement an DigiBoard-based device
+layer. It overrides the following methods:
+
+  0363InitCustom                     0361InitFast
+  0362InitKeep                       0364Load
+  0365Store
+
+(The cross-references for InitCustom and InitKeep are actually UartPort
+cross-references, but the declarations are identical to Digi14Port methods.)
+
+;
+;-------------------------------------------------------------------
+!TOPIC 373 SWFlowEnableOpt
+!NOINDEX
+!NOWRAP
+{$IFDEF UseSWFlow}
+procedure 0235ApCom.SWFlowEnableOpt(P : PortRecPtr;
+                                BufferFull, BufferResume : Word;
+                                Opt : Word);
+procedure 0320AbstractPort.SWFlowEnableOpt(BufferFull, BufferResume : Word;
+                                       Opt : Word); virtual;
+!WRAP
+
+Enable one-way software flow control.
+
+See also:  0892Software flow options  0279SWFlowDisable
+           0278SWFlowEnable          0281SWFlowResume
+           0282SWFlowSetChars        0280SWFlowState

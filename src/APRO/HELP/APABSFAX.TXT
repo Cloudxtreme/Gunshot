@@ -1,0 +1,590 @@
+;-------------------------------------------------------------------
+!TOPIC 7 ApAbsFax
+ApAbsFax provides the abstract data and procedure declarations needed for
+sending and receiving faxes, regardless of the kind of faxmodem hardware.
+It provides the following:
+
+  0026AddFaxEntry                    0014afOptionsAreOn
+  0013afOptionsOff                   0012afOptionsOn
+  0027ClearFaxEntries                0048Declarations
+  0028GetFaxName                     0029GetFaxProgress
+  0025SetAcceptFaxFunc               0021SetConnectAttempts
+  0019SetDestinationDir              0023SetFaxLogProc
+  0024SetFaxNameFunc                 0018SetFaxStatusProc
+  0022SetNextFaxFunc                 0016SetRecipientName
+  0017SetSenderName                  0020SetStationID
+  0015SetTitle
+;
+;-------------------------------------------------------------------
+!TOPIC 8 OoAbsFax
+OoAbsFax provides the abstract data and procedure declarations needed for
+sending and receiving faxes, regardless of the kind of faxmodem hardware.
+Following is the hierarchy diagram for the fax send and receive objects:
+
+  0009AbstractFax
+    [0495C12AbstractFax]
+      [0511C12SendFax]
+      [0524C12ReceiveFax]
+    [0381CASFax]
+;
+;-------------------------------------------------------------------
+!TOPIC 9 AbstractFax
+!NOINDEX
+AbstractFaxPtr = ^AbstractFax;
+!LINE
+AbstractFax = object(0651Root)
+
+The base fax send/receive object, used as an ancestor to the Class 1/2 and
+CAS fax objects. A pointer of type AbstractFaxPtr is passed to the fax
+send/receive user hooks, where it may be typecast if necessary to more
+specific types.
+
+AbstractFax provides the following:
+
+  0026AddFaxEntry                    0014afOptionsAreOn
+  0013afOptionsOff                   0012afOptionsOn
+  0027ClearFaxEntries                0049Declarations
+  0011Done                           0028GetFaxName
+  0029GetFaxProgress                 0010Init
+  0025SetAcceptFaxFunc               0021SetConnectAttempts
+  0019SetDestinationDir              0023SetFaxLogProc
+  0024SetFaxNameFunc                 0018SetFaxStatusProc
+  0022SetNextFaxFunc                 0016SetRecipientName
+  0017SetSenderName                  0020SetStationID
+  0015SetTitle
+;
+;-------------------------------------------------------------------
+!TOPIC 10 Init,AbstractFax
+!NOINDEX
+constructor 0009AbstractFax.Init(ID : Str20);
+
+Initialize low-level fields in the AbstractFax object.
+
+See also:  0011Done
+;
+;-------------------------------------------------------------------
+!TOPIC 11 Done,AbstractFax
+!NOINDEX
+destructor 0009AbstractFax.Done; virtual;
+
+Dispose of a fax object.
+;
+;-------------------------------------------------------------------
+!TOPIC 12 afOptionsOn
+!NOINDEX
+procedure 0007ApAbsFax.afOptionsOn(FP : FaxRecPtr; OptionFlags : Word);
+!LINE
+procedure 0009AbstractFax.afOptionsOn(OptionFlags : Word);
+
+Activate multiple fax options.
+;
+;-------------------------------------------------------------------
+!TOPIC 13 afOptionsOff
+!NOINDEX
+procedure 0007ApAbsFax.afOptionsOff(FP : FaxRecPtr; OptionFlags : Word);
+!LINE
+procedure 0009AbstractFax.afOptionsOff(OptionFlags : Word);
+
+Deactivate multiple fax options.
+;
+;-------------------------------------------------------------------
+!TOPIC 14 afOptionsAreOn
+!NOINDEX
+function 0007ApAbsFax.afOptionsAreOn(FP : FaxRecPtr; OptionFlags : Word)
+                                 : Boolean;
+!LINE
+function 0009AbstractFax.afOptionsAreOn(OptionFlags : Word) : Boolean;
+
+Return True if all specified fax options are on.
+;
+;-------------------------------------------------------------------
+!TOPIC 15 SetTitle
+!NOINDEX
+procedure 0007ApAbsFax.SetTitle(FP : FaxRecPtr; NewTitle : String);
+!LINE
+procedure 0009AbstractFax.SetTitle(NewTitle : String);
+
+Specify a title for the transmitted fax header line (token $S).
+
+See also:  0519SetHeaderText
+;
+;-------------------------------------------------------------------
+!TOPIC 16 SetRecipientName
+!NOINDEX
+procedure 0007ApAbsFax.SetRecipientName(FP : FaxRecPtr; NewName : String);
+!LINE
+procedure 0009AbstractFax.SetRecipientName(NewName : String);
+
+Add a name for the token $R for cover files.
+
+See also:  0017SetSenderName         0015SetTitle
+;
+;-------------------------------------------------------------------
+!TOPIC 17 SetSenderName
+!NOINDEX
+procedure 0007ApAbsFax.SetSenderName(FP : FaxRecPtr; NewName : String);
+!LINE
+procedure 0009AbstractFax.SetSenderName(NewName : String);
+
+Add a name for the token $F for cover files.
+
+See also:  0016SetRecipientName      0015SetTitle
+;
+;-------------------------------------------------------------------
+!TOPIC 18 SetFaxStatusProc
+!NOINDEX
+procedure 0007ApAbsFax.SetFaxStatusProc(FP : FaxRecPtr; SP : 0041FaxStatusProc);
+!LINE
+procedure 0009AbstractFax.SetFaxStatusProc(SP : 0046FaxStatusProc);
+
+Activate a fax status routine.
+
+See also:  0023SetFaxLogProc
+;
+;-------------------------------------------------------------------
+!TOPIC 19 SetDestinationDir
+!NOINDEX
+procedure 0007ApAbsFax.SetDestinationDir(FP : FaxRecPtr; Dest : PathStr);
+!LINE
+procedure 0009AbstractFax.SetDestinationDir(Dest : PathStr);
+
+Set a destination directory for received files.
+;
+;-------------------------------------------------------------------
+!TOPIC 20 SetStationID,ApAbsFax/OoAbsFax
+!NOINDEX
+procedure 0007ApAbsFax.SetStationID(FP : FaxRecPtr; NewID : Str20);
+!LINE
+procedure 0009AbstractFax.SetStationID(NewID : Str20);
+
+Set the faxmodem's station ID.
+;
+;-------------------------------------------------------------------
+!TOPIC 21 SetConnectAttempts
+!NOINDEX
+procedure 0007ApAbsFax.SetConnectAttempts(FP : FaxRecPtr; Attempts : Word,
+                                      DelayTicks : Word);
+!LINE
+procedure 0009AbstractFax.SetConnectAttempts(Attempts : Word;
+                                         DelayTicks : Word);
+
+Set the connect retry parameters for a fax transmission.
+;
+;-------------------------------------------------------------------
+!TOPIC 22 SetNextFaxFunc
+!NOINDEX
+procedure 0007ApAbsFax.SetNextFaxFunc(FP : FaxRecPtr; NFF : 0042NextFaxFunc);
+!LINE
+procedure 0009AbstractFax.SetNextFaxFunc(NFF : 0047NextFaxFunc);
+
+Activate a next fax function.
+;
+;-------------------------------------------------------------------
+!TOPIC 23 SetFaxLogProc
+!NOINDEX
+procedure 0007ApAbsFax.SetFaxLogProc(FP : FaxRecPtr; FLP : 0038FaxLogProc);
+!LINE
+procedure 0009AbstractFax.SetFaxLogProc(FLP : 0044FaxLogProc);
+
+Activate a fax logging routine.
+;
+;-------------------------------------------------------------------
+!TOPIC 24 SetFaxNameFunc
+!NOINDEX
+procedure 0007ApAbsFax.SetFaxNameFunc(FP : FaxRecPtr; FNF : 0039FaxNameFunc);
+!LINE
+procedure 0009AbstractFax.SetFaxNameFunc(FNF : 0045FaxNameFunc);
+
+Activate a fax naming function.
+;
+;-------------------------------------------------------------------
+!TOPIC 25 SetAcceptFaxFunc
+!NOINDEX
+procedure 0007ApAbsFax.SetAcceptFaxFunc(FP : FaxRecPtr; AFF :0037AcceptFaxFunc);
+!LINE
+procedure 0009AbstractFax.SetAcceptFaxFunc(AFF : 0043AcceptFaxFunc);
+
+Activate an accept fax function.
+;
+;-------------------------------------------------------------------
+!TOPIC 26 AddFaxEntry
+!NOINDEX
+procedure 0007ApAbsFax.AddFaxEntry(FP : FaxRecPtr; Number : String;
+                               FName : PathStr; Cover : PathStr);
+!LINE
+procedure 0009AbstractFax.AddFaxEntry(Number : String;
+                                  FName : PathStr; Cover : PathStr);
+
+Add a fax entry to the built-in list.
+
+See also:  0027ClearFaxEntries
+;
+;-------------------------------------------------------------------
+!TOPIC 27 ClearFaxEntries
+!NOINDEX
+procedure 0007ApAbsFax.ClearFaxEntries(FP : FaxRecPtr);
+!LINE
+procedure 0009AbstractFax.ClearFaxEntries;
+
+Remove all fax entries from the built-in list.
+;
+;-------------------------------------------------------------------
+!TOPIC 28 GetFaxName
+!NOINDEX
+function 0007ApAbsFax.GetFaxName(FP : FaxRecPtr) : PathStr;
+!LINE
+function 0009AbstractFax.GetFaxName : PathStr;
+
+Return name of current fax if known.
+
+See also:  0506GetPageInfo           0509GetSessionParams
+           0508GetRemoteID
+;
+;-------------------------------------------------------------------
+!TOPIC 29 GetFaxProgress
+!NOINDEX
+function 0007ApAbsFax.GetFaxProgress(FP : FaxRecPtr) : Word;
+!LINE
+function 0009AbstractFax.GetFaxProgress : Word;
+
+Return the current fax progress value.
+
+The following table shows the possible values of GetFaxProgress while faxes
+are being sent.
+
+  fpInitModem -         The faxmodem is being initialized for fax use. For
+                        Class 1 modems, this is nearly instantaneous; for
+                        Class 2 modems, the initialization takes a couple
+                        of seconds.
+
+  fpDialing -           The faxmodem is dialing the number and waiting for
+                        a response from the remote fax device.
+
+  fpSessionParams -     The local and remote fax devices completed
+                        negotiation of session parameters. The status
+                        procedure can now call 0509GetSessionParams to get the
+                        negotiated bit rate, fax resolution, and error
+                        correction mode.
+
+  fpGotRemoteID -       A fax connection was established and the remote fax
+                        has reported its station ID. The status procedure
+                        can now call 0508GetRemoteID to get the ID string.
+
+  fpSendPage -          Page data is currently being transmitted. The
+                        status procedure can call 0506GetPageInfo to find out
+                        which page is being transmitted and how many bytes
+                        have been transferred so far.
+
+  fpSendPageStatus -    All data for the current page has been transmitted.
+                        The remote fax device is being told whether there
+                        are more pages to follow.
+
+  fpPageError -         The remote fax device did not successfully receive
+                        the page data and it should be sent again.
+                        FaxTransmit resends the page for a limited number
+                        of Retries. See 0520SetMaxRetries.
+
+  fpPageOK -            The remote fax device received the page data
+                        successfully.
+
+The following table shows GetFaxProgress values while faxes are being received.
+
+  fpWaiting -           The faxmodem is waiting for incoming fax calls.
+
+  fpAnswer -            The faxmodem is answering an incoming call.
+
+  fpIncoming -          The incoming call has been validated as a fax call.
+
+  fpSessionParams -     The local and remote fax devices completed
+                        negotiation of session parameters. The status
+                        procedure can now call 0509GetSessionParams to get the
+                        negotiated bit rate, fax resolution, and error
+                        correction mode.
+
+  fpGotRemoteID -       A fax connection was established and the remote fax
+                        has reported its station ID. The status procedure
+                        can now call 0508GetRemoteID to get the ID string.
+
+  fpGetPage -           Page data is currently being received. The status
+                        procedure can call 0506GetPageInfo to find out which
+                        page is being received and how many bytes have been
+                        received so far.
+
+  fpGetPageResult -     The faxmodem just reported whether it received a
+                        page successfully. The status procedure can call
+                        0507GetLastPageStatus to find out the result.
+
+  fpCheckMorePages -    The faxmodem is waiting for the remote fax device
+                        to indicate whether it has more pages to send.
+
+  fpGetHangup -         The faxmodem is waiting for a response to a
+                        disconnect or hangup command.
+
+  fpGotHangup -         The faxmodem has disconnected or hung up.
+;
+;-------------------------------------------------------------------
+!TOPIC 30 Fax send/receive options
+!NOINDEX
+const
+  afAbortNoConnect      = $0001;
+  afCASWaitTillDone     = $0002;
+  afExitOnError         = $0004;
+  afCASSubmitUseControl = $0008;
+  afNoSoftwareFlow      = $0010;
+
+Fax send/receive options. If afAbortNoConnect is set, 0523FaxTransmit returns
+to the calling application if it is unable to connect to a particular fax
+number after the default number of retries, even if additional faxes are
+already queued to be sent. If afAbortNoConnect is not set, FaxTransmit
+moves on to the next entry returned by the next fax hook.
+
+If afCASWaitTillDone is set, as it is by default, the CAS version of
+0413FaxTransmit remains in control until the CAS driver indicates that the fax
+has been fully transmitted, and the CAS version of 0416FaxReceive remains in
+control until an abort hook or an error forces it to return. This option
+makes the APFAXCAS/OOFAXCAS versions of FaxTransmit and FaxReceive act more
+like the APFAX12/OOFAX12 versions, especially in terms of how the fax user
+hooks are called. If afCASWaitTillDone is not set, FaxTransmit returns
+immediately after all fax requests are submitted to the CAS driver, and
+FaxReceive returns as soon as any already-queued faxes are transferred to
+DOS files.
+
+If an error occurs within FaxTransmit or FaxReceive when the afExitOnError
+option is enabled, control immediately returns to your application. If an
+error occurs when the afExitOnError option is disabled, as it is by
+default, FaxTransmit continues on with the next fax in the transmit queue,
+and FaxReceive resets the modem and starts listening for a new incoming fax.
+
+If afCASSubmitUseControl is enabled, 0405SubmitSingleFile does not use the CAS
+$15 function, submit single file. Instead, it formats and creates a control
+file and submits the control file using 0386SubmitTask. This avoids a bug in at
+least one version of CASMODEM where function $15 does not send the
+requested cover text. An added advantage of this option is that it uses
+the PCX logo file set by 0406SetLogoFile, which isn't used by the normal
+SubmitSingleFile function. afCASSubmitUseControl is disabled by default.
+
+If afNoSoftwareFlow is enabled, automatic software flow control is disabled in
+Class 1/2 fax transfers. Most faxmodems require software flow control; a few
+don't support it and require hardware flow control instead.
+;
+;-------------------------------------------------------------------
+!TOPIC 31 BadFaxOptions
+!NOINDEX
+const
+  BadFaxOptions = 0;
+
+Fax send/receive options for internal use, which cannot be changed by
+calling 0012afOptionsOn or 0013afOptionsOff. There are currently no such options.
+;
+;-------------------------------------------------------------------
+!TOPIC 32 Timing and retry parameters
+!NOINDEX
+const
+  DefConnectAttempts : Word  = 1;     {Connect attempts when dialing}
+  DefMaxRetries : Integer    = 2;     {Send retries for a page with errors}
+  DefCmdTimeout : Integer    = 546;   {Ticks to wait for command response}
+  DefDialTimeout : Integer   = 1092;  {Ticks to wait for a dial response}
+  DefTransTimeout : Integer  = 1092;  {Ticks to wait for output buff room}
+  DefStatusTimeout : Integer = 18;    {Ticks between status updates}
+  DefStatusBytes : Word      = 10000; {Image bytes between status updates}
+  MaxBadPercent : Word       = 10;    {Percent bad bytes allowed during
+                                       successful training}
+
+Timing and retry parameters used during fax send/receive. These typed
+constants are copied into the fields of a fax record or object when it is
+initialized. Connect attempts can be modified later, by calling the
+0021SetConnectAttempts routine. Page retries can also be modified later, by
+calling the 0520SetMaxRetries routine of APFAX12/OOFAX12. Generally speaking,
+these constants apply only to Class 1 and Class 2 fax transfers. CAS
+transfers are tuned by using the CAS driver software.
+;
+;-------------------------------------------------------------------
+!TOPIC 33 DefFaxOptions
+!NOINDEX
+const
+  DefFaxOptions : Word = afCASWaitTillDone;
+
+Default fax send/receive options.
+;
+;-------------------------------------------------------------------
+!TOPIC 34 DefInit
+!NOINDEX
+const
+  DefInit = 'ATE0Q0V1X4S0=0';
+
+This string is always sent to the Class 1 or Class 2 faxmodem when a send
+or receive is starting. It is sent immediately after the string specified
+by 0499SetModemInit (APFAX12/OOFAX12) is sent.
+;
+;-------------------------------------------------------------------
+!TOPIC 35 FaxStateType
+!NOINDEX
+type
+  FaxStateType = (
+    faxReady,           {State machine ready immediately}
+    faxWaiting,         {State machine waiting}
+    faxCritical,        {State machine in critical state}
+    faxFinished);       {State machine is finished}
+
+Fax states returned by 0521FaxTransmitPart and 0534FaxReceivePart (or the CAS
+functions 0412FaxTransmitPart and 0415FaxReceivePart). faxReady indicates that
+more work can be done immediately--you should call FaxTransmitPart or
+FaxReceivePart soon, but not doing so will not damage the fax session.
+faxWaiting indicates the fax session is waiting for a response, for more
+data, or for a buffer to drain--your program can safely perform a brief
+task, perhaps up to several seconds long, before calling FaxTransmitPart
+or FaxReceivePart again. faxCritical means that the fax session is in a
+time critical area--you must call FaxTransmitPart or FaxReceivePart again
+immediately. faxFinished means that the fax session is finished.
+;
+;-------------------------------------------------------------------
+!TOPIC 36 TLogFaxCode
+!NOINDEX
+type
+  TLogFaxCode = (
+    lfaxTransmitStart,    {A fax transmit session is starting}
+    lfaxTransmitOk,       {The fax was transmitted successfully}
+    lfaxTransmitFail,     {The fax was not transmitted successfully}
+    lfaxReceiveStart,     {A fax receive session is starting}
+    lfaxReceiveOk,        {The fax was received successfully}
+    lfaxReceiveSkip,      {The incoming fax was rejected}
+    lfaxReceiveFail);     {The fax was not received successfully}
+
+Codes passed to the fax logging procedure.
+;
+;-------------------------------------------------------------------
+!TOPIC 37 AcceptFaxFunc,ApAbsFax
+!NOINDEX
+type
+  AcceptFaxFunc = function(FP : FaxRecPtr; RemoteName : Str20) : Boolean;
+
+A function of this type is used to accept or reject an incoming fax.
+;
+;-------------------------------------------------------------------
+!TOPIC 38 FaxLogProc,ApAbsFax
+!NOINDEX
+type
+  FaxLogProc = procedure(FP : FaxRecPtr; Number : String; FName : PathStr;
+                         Log : 0036TLogFaxCode);
+
+A procedure of this type is used to log the start and end of each fax that
+is sent or received.
+;
+;-------------------------------------------------------------------
+!TOPIC 39 FaxNameFunc,ApAbsFax
+!NOINDEX
+type
+  FaxNameFunc = function(FP : FaxRecPtr) : PathStr;
+
+A function of this type is used to return a file name for each incoming
+fax.
+;
+;-------------------------------------------------------------------
+!TOPIC 40 FaxRec
+!NOINDEX
+type
+  FaxRecPtr = ^FaxRec;
+  FaxRec = record
+    ...
+  end;
+
+A generic fax send or receive record. A pointer of type FaxRecPtr is
+initialized by InitXxxYyy (e.g., InitC12SendFax) and must then be passed
+to all non-OOP fax send/receive routines. You should not need to refer to
+any of the fields of this record.
+;
+;-------------------------------------------------------------------
+!TOPIC 41 FaxStatusProc,ApAbsFax
+!NOINDEX
+type
+  FaxStatusProc = procedure(FP : FaxRecPtr; Starting, Ending : Boolean);
+
+A procedure of this type is used to display fax send or receive status
+information.
+;
+;-------------------------------------------------------------------
+!TOPIC 42 NextFaxFunc,ApAbsFax
+!NOINDEX
+!NOWRAP
+type
+  NextFaxFunc = function(FP : FaxRecPtr; var Number : String;
+                         var FName : PathStr;
+                         var Cover : PathStr) : Boolean;
+!WRAP
+
+A function of this type is used to return the next fax phone number, image
+file name, and cover file name to 0523FaxTransmit.
+;
+;-------------------------------------------------------------------
+!TOPIC 43 AcceptFaxFunc,OoAbsFax
+!NOINDEX
+type
+  AcceptFaxFunc = function(FP : AbstractFaxPtr;
+                           RemoteName : Str20) : Boolean;
+
+A function of this type is used to accept or reject an incoming fax.
+;
+;-------------------------------------------------------------------
+!TOPIC 44 FaxLogProc,OoAbsFax
+!NOINDEX
+type
+  FaxLogProc = procedure(FP : AbstractFaxPtr; Number : String;
+                         FName : PathStr; Log : 0036TLogFaxCode);
+
+A procedure of this type is used to log the start and end of each fax that
+is sent or received.
+;
+;-------------------------------------------------------------------
+!TOPIC 45 FaxNameFunc,OoAbsFax
+!NOINDEX
+type
+  FaxNameFunc = function(FP : AbstractFaxPtr) : PathStr;
+
+A function of this type is used to return a file name for each incoming
+fax.
+;
+;-------------------------------------------------------------------
+!TOPIC 46 FaxStatusProc,OoAbsFax
+!NOINDEX
+type
+  FaxStatusProc = procedure(AP : AbstractFaxPtr;
+                            Starting, Ending : Boolean);
+
+A procedure of this type is used to display fax send or receive status
+information.
+;
+;-------------------------------------------------------------------
+!TOPIC 47 NextFaxFunc,OoAbsFax
+!NOINDEX
+type
+  NextFaxFunc = function(AP : AbstractFaxPtr; var Number : String;
+                         var FName : PathStr;
+                         var Cover : PathStr) : Boolean;
+
+A function of this type is used to return the next fax phone number, image
+file name, and cover file name to 0523FaxTransmit.
+;
+;-------------------------------------------------------------------
+!TOPIC 48 Declarations,ApAbsFax
+!NOINDEX
+0007ApAbsFax declares the following types and constants:
+
+  0037AcceptFaxFunc                  0031BadFaxOptions
+  0033DefFaxOptions                  0034DefInit
+  0038FaxLogProc                     0039FaxNameFunc
+  0040FaxRec                         0030Fax send/receive options
+  0035FaxStateType                   0041FaxStatusProc
+  0042NextFaxFunc                    0032Timing and retry parameters
+  0036TLogFaxCode
+;
+;-------------------------------------------------------------------
+!TOPIC 49 Declarations,OoAbsFax
+!NOINDEX
+0008OoAbsFax declares the following types and constants:
+
+  0043AcceptFaxFunc                  0031BadFaxOptions
+  0033DefFaxOptions                  0034DefInit
+  0044FaxLogProc                     0045FaxNameFunc
+  0030Fax send/receive options       0035FaxStateType
+  0046FaxStatusProc                  0047NextFaxFunc
+  0032Timing and retry parameters    0036TLogFaxCode

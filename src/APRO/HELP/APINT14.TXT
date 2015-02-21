@@ -1,0 +1,18 @@
+;-------------------------------------------------------------------
+!TOPIC 545 ApInt14
+ApInt14 is a device layer unit that relies only on the standard PC BIOS
+interrupt $14 services for accessing serial ports. The unit interfaces only
+a single routine:
+
+  0546ActivateApInt14
+;
+;-------------------------------------------------------------------
+!TOPIC 546 ActivateApInt14
+!NOINDEX
+procedure 0545ApInt14.ActivateApInt14;
+
+Register APINT14 as the active device layer.
+
+See also:  0375ActivateApDigi14      0539ActivateApFossil
+           0919ActivateApUart        0887Core routines
+           0004Layered architecture

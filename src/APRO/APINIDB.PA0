@@ -1,0 +1,100 @@
+const
+  MaxDBRecs      = 999;         {Maximum number of database records}
+  MaxNameLen     = 21;          {Maximum length of a profile String key}
+  MaxIndexLen    = 31;          {Maximum length of an index String}
+  DbIndex        = 'Index';     {Item index section heading}
+  DbDefaultTitle = 'Defaults';  {Default value section heading}
+
+type
+  {Defines a single record}
+  IniDataBaseKeyPtr = ^IniDataBaseKey;
+  IniDataBaseKey = record
+    KeyName  : String;
+    DataSize : Word;
+    StrType  : Boolean;
+    Index    : Boolean;
+    Next     : IniDataBaseKeyPtr;
+  end;
+
+  {Defines database record}
+  IniDataBaseRecPtr = ^IniDataBaseRec;
+  IniDataBaseRec = record
+    IData          : IniMgrRecPtr;
+    DictionaryHead : IniDataBaseKeyPtr;
+    DictionaryTail : IniDataBaseKeyPtr;
+    NumRecords     : Integer;
+    RecordSize     : Word;
+    DefaultRecord  : Pointer;
+    Prepared       : Boolean;
+  end;
+
+{$IFDEF UsePModeDLL}
+  procedure InitIniDataBase(var D : IniDataBaseRecPtr; FName : String;
+                            ReadOnly : Boolean; AlwaysRW: Boolean); Export;
+  procedure DoneIniDatabase(D : IniDataBaseRecPtr); Export;
+  procedure AddIniDBStringField(D : IniDataBaseRecPtr; FieldName : String;
+                                MaxLen : Word; Index : Boolean); Export;
+  procedure AddIniDBIntField(D : IniDataBaseRecPtr; FieldName : String); Export;
+  procedure PrepareIniDatabase(D : IniDataBaseRecPtr; Defaults : Pointer); Export;
+  procedure ChangeIniDefaults(D : IniDataBaseRecPtr; var DefaultRec); Export;
+  function KeyExists(D : IniDataBaseRecPtr; Key : String) : Boolean; Export;
+  procedure AddIniRecord(D : IniDataBaseRecPtr; var Rec); Export;
+  procedure UpdIniRecord(D : IniDataBaseRecPtr; Key : String; var Rec); Export;
+  procedure DelIniRecord(D : IniDataBaseRecPtr; Key : String); Export;
+  procedure GetIniRecord(D : IniDataBaseRecPtr; Key : String; var Rec); Export;
+  function NumIniRecs(D : IniDataBaseRecPtr) : Integer; Export;
+  procedure WriteToIni(D : IniDataBaseRecPtr; var Rec; Group, IniFile : String); Export;
+  procedure ReadFromIni(D : IniDataBaseRecPtr; var Rec; Group, IniFile : String); Export;
+  procedure FlushIniDBFile(D : IniDataBaseRecPtr); Export;
+  procedure SetIniDBFileName(D : IniDataBaseRecPtr; NewName : String); Export;
+{$ELSE}
+  procedure InitIniDataBase(var D : IniDataBaseRecPtr; FName : String;
+                            ReadOnly : Boolean; AlwaysRW: Boolean);
+    {-Initialize an .INI file database}
+
+  procedure DoneIniDatabase(D : IniDataBaseRecPtr);
+    {-Destroy an .INI file database}
+
+  procedure AddIniDBStringField(D : IniDataBaseRecPtr; FieldName : String;
+                                MaxLen : Word; Index : Boolean);
+    {-Add a String field to the .INI file database}
+
+  procedure AddIniDBIntField(D : IniDataBaseRecPtr; FieldName : String);
+    {-Add an integer field to the .INI file database}
+
+  procedure PrepareIniDatabase(D : IniDataBaseRecPtr; Defaults : Pointer);
+    {-Prepare the databse for reading/writing}
+
+  procedure ChangeIniDefaults(D : IniDataBaseRecPtr; var DefaultRec);
+    {-Change the default values for record fields}
+
+  function KeyExists(D : IniDataBaseRecPtr; Key : String) : Boolean;
+    {-Return TRUE if an entry with an index of 'Name' exists}
+
+  procedure AddIniRecord(D : IniDataBaseRecPtr; var Rec);
+    {-Add a record to the database}
+
+  procedure UpdIniRecord(D : IniDataBaseRecPtr; Key : String; var Rec);
+    {-Update a record in the database}
+
+  procedure DelIniRecord(D : IniDataBaseRecPtr; Key : String);
+    {-Remove a record from the database}
+
+  procedure GetIniRecord(D : IniDataBaseRecPtr; Key : String; var Rec);
+    {-Get a record from the database}
+
+  function NumIniRecs(D : IniDataBaseRecPtr) : Integer;
+    {-Return the number of records in an INI database}
+
+  procedure WriteToIni(D : IniDataBaseRecPtr; var Rec; Group, IniFile : String);
+    {-Write the record to a user-specified .INI file}
+
+  procedure ReadFromIni(D : IniDataBaseRecPtr; var Rec; Group, IniFile : String);
+    {-Read the record from a user-specified .INI file}
+
+  procedure FlushIniDBFile(D : IniDataBaseRecPtr);
+    {-Write the INI database to disk}
+
+  procedure SetIniDBFileName(D : IniDataBaseRecPtr; NewName : String);
+    {-Change filename of an INI database}
+{$ENDIF}

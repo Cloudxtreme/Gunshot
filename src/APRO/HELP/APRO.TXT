@@ -1,0 +1,62 @@
+;Help text for Async Professional 2.0 Online Reference Guide
+;Copyright (c) 1991, 1993, TurboPower Software
+;All rights reserved
+;Version 2.00
+;
+;Help file was designed for a ScrollingHelpWindow
+!SCROLLING
+;
+;Full screen width is used to best display procedure headers
+;Actual width available after framing and padding is 75 characters
+!WIDTH 77
+;
+;The help text assumes that wrapping is on, except where it temporarily
+;turns wrapping off.
+!WRAP
+;
+;For best appearance, use an active help window height of at least 12 rows.
+;
+;Formatting conventions:
+; Char  Where used (usually)  Video attribute
+; ----  --------------------  ---------------------------
+;   -   normal help text      dim on a monochrome monitor
+;  ^A   not used              reverse video
+;  ^B   function headers      bold video
+;  ^C   emphasis              underlined bold video
+;  ^E   unselected xref       underlined dim video
+;  ^E   selected xref         reverse video
+;
+; Note: Where appropriate, the APxxx.TXT files listed below include the
+;       help text for the corresponding OOxxx unit. APMODEM.TXT also
+;       includes the help text for the APCOUR and APMCOM units.
+;
+!INCLUDE SPECIALS.TXT
+!INCLUDE APABSFAX.TXT
+!INCLUDE APABSPCL.TXT
+!INCLUDE APANSI.TXT
+!INCLUDE APARCHIV.TXT
+!INCLUDE APASCII.TXT
+!INCLUDE APBPLUS.TXT
+!INCLUDE APCOM.TXT
+!INCLUDE APDIGI14.TXT
+!INCLUDE APFAXCAS.TXT
+!INCLUDE APFAXCVT.TXT
+!INCLUDE APFAX12.TXT
+!INCLUDE APFOSSIL.TXT
+!INCLUDE APINT14.TXT
+!INCLUDE APKERMIT.TXT
+!INCLUDE APLZH.TXT
+!INCLUDE APMISC.TXT
+!INCLUDE APMODEM.TXT
+!INCLUDE APPORT.TXT
+!INCLUDE APTFDD.TXT
+!INCLUDE APTIMER.TXT
+!INCLUDE APUART.TXT
+!INCLUDE APXMODEM.TXT
+!INCLUDE APYMODEM.TXT
+!INCLUDE APZIP.TXT
+!INCLUDE APZMODEM.TXT
+!INCLUDE OOEMU.TXT
+!INCLUDE TERMWIN.TXT
+;
+;highest topic number used 1130

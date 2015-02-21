@@ -1,0 +1,972 @@
+{*********************************************************}
+{*                  OOPMAIN.PA2 2.03                     *}
+{*       Copyright (c) TurboPower Software 1991.         *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+  {-------------- phone book ----------------}
+
+var
+  PhoneEntry    : EntryScreen;
+  PhoneBook     : file of PhoneRec;
+  ScrapPhoneRec : PhoneRec;
+  PhoneCount    : Word;
+  PhoneRecs     : array[1..MaxPhones] of PhonePickRec;
+
+  constructor PhonePickList.Init(X1, Y1, X2, Y2 : Byte;
+                                 ItemWidth : Byte;
+                                 NumItems : Word;
+                                 StringProc : pkStringProc;
+                                 Orientation : pkGenlProc;
+                                 CommandHandler : pkGenlProc);
+    {-Initialize a phone pick list}
+  begin
+    {initialize the pick list}
+    if not PickList.Init(X1, Y1, X2, Y2, ItemWidth, NumItems,
+                         StringProc, Orientation, CommandHandler) then
+      Fail;
+
+    {set the command processor}
+    SetCommandProcessor(PhoneCommands);
+
+    {set the search mode}
+    SetSearchMode(PickCharSearch);
+  end;
+
+  procedure PhonePickList.UpdateContents;
+    {-Update the contents of a phone pick list window}
+  const
+    Header2 : string[4] = 'Name';
+    Header3 : string[12] = 'Phone number';
+  var
+    S : string;
+    SLen : Byte absolute S;
+  begin
+    {display the column titles}
+    SLen := Succ(wXH-wXL);
+    FillChar(S[1], SLen, ' ');
+    Move(Header2[1], S[02], Length(Header2));
+    Move(Header3[1], S[41], Length(Header3));
+    FastWrite(S, wYL-2, wXL, ColorMono(wTextColor, wTextMono));
+
+    {draw the pick list}
+    PickList.UpdateContents;
+  end;
+
+  function MakePhoneString(MakeBlank : Boolean) : PhoneString;
+    {-Make a string representing the record in ScrapPhoneRec}
+  var
+    PS : PhoneString;
+    PSLen : Byte absolute PS;
+    S : string[28];
+    SLen : Byte absolute S;
+  begin
+    {create blank phone string}
+    PSLen := PhoneLen;
+    FillChar(PS[1], PSLen, ' ');
+    PS[38] := '³';
+
+    if not MakeBlank then
+      with ScrapPhoneRec do begin
+        {insert index}
+        S := Name;
+        Move(S[1], PS[1], SLen);
+
+        {insert phone number}
+        Move(Phone[1], PS[40], MinWord(Length(Phone), 20));
+      end;
+
+    MakePhoneString := PS;
+  end;
+
+  function EditPhoneRec(NewRec : Boolean) : Boolean;
+    {-Edit the phone book record in ScrapPhoneRec}
+  var
+    AllDone : Boolean;
+    Cmd : Word;
+  begin
+    {if it's a new record, initialize it}
+    if NewRec then begin
+      FillChar(ScrapPhoneRec, SizeOf(ScrapPhoneRec), 0);
+      with ScrapPhoneRec do begin
+        Baud := DefBaud;
+        Parity := DefParity;
+        DataBits := DefDataBits;
+        StopBits := DefStopBits;
+        Options  := 0;
+        Duplex   := DefDuplexType;
+        Ansi     := DefUseAnsi;
+      end;
+    end;
+    with PhoneEntry do begin
+      {put the data entry window on the stack}
+      Draw;
+
+      AllDone := False;
+
+      {start at the first field}
+      SetNextField(0);
+      repeat
+        {edit the record}
+        Process;
+
+        {process exit commands}
+        Cmd := GetLastCommand;
+        case Cmd of
+          ccDone,                 {^Enter, ^KD, or ^KQ}
+          ccError,
+          ccQuit :                {ESC}
+            begin
+              AllDone := True;
+              EditPhoneRec := (Cmd = ccDone);
+            end;
+        end;
+      until AllDone;
+
+      {erase the entry screen}
+      Erase;
+    end;
+  end;
+
+  function ReadPhoneRec(RecNum : Word) : Boolean;
+    {-Read the specified record into ScrapPhoneRec}
+  var
+    I : Word;
+  begin
+    Seek(PhoneBook, RecNum);
+    I := IoResult;
+    if I = 0 then begin
+      Read(PhoneBook, ScrapPhoneRec);
+      I := IoResult;
+    end;
+    if I <> 0 then
+      ErrorMessage('Error reading phone book entry', True);
+
+    ReadPhoneRec := (I = 0);
+  end;
+
+  function WritePhoneRec(RecNum : Word) : Boolean;
+    {-Write ScrapPhoneRec to the specified position in the phone book}
+  var
+    I : Word;
+  begin
+    Seek(PhoneBook, RecNum);
+    I := IoResult;
+    if I = 0 then begin
+      Write(PhoneBook, ScrapPhoneRec);
+      I := IoResult;
+      if (I = 0) and not FlushDosBuffers(PhoneBook) then
+        I := 1;
+    end;
+    if I <> 0 then
+      ErrorMessage('Error writing phone book entry', True);
+
+    WritePhoneRec := (I = 0);
+  end;
+
+  procedure SortPhoneRecs(RestoreChoice : Boolean);
+    {-Sort the phone book entries}
+  var
+    I, SaveRecNum : Word;
+
+    function ItemIsLess(I, J : Word) : Boolean;
+      {-Return True if item I < item J}
+    begin
+      ItemIsLess := CompUCString(PhoneRecs[I].PSP^, PhoneRecs[J].PSP^) = Less;
+    end;
+
+    procedure ShellSort(Low, High : Word);
+      {-Sort items from Low to High}
+    var
+      InOrder        : Boolean;
+      I, J, K, Offset : Word;
+    begin
+      Offset := High;
+      while Offset > Low do begin
+        Offset := (Pred(Low)+Offset) shr 1;
+        repeat
+          InOrder := True;
+          K := Pred(Low)+High-Offset;
+          I := Offset;
+          for J := Low to K do begin
+            Inc(I);
+            if ItemIsLess(I, J) then begin
+              {exchange the records}
+              ExchangeStructs(PhoneRecs[I], PhoneRecs[J], SizeOf(PhonePickRec));
+
+              {not in order yet}
+              InOrder := False;
+            end;
+          end;
+        until InOrder;
+      end;
+    end;
+
+  begin
+    if PhoneCount <= 1 then
+      Exit;
+
+    with PhoneWin do begin
+      {save the record number for the current item}
+      if RestoreChoice then
+        SaveRecNum := PhoneRecs[GetLastChoice].RNum;
+
+      {sort the phone book records in memory}
+      ShellSort(1, PhoneCount);
+
+      if RestoreChoice then
+        {reset the current item}
+        for I := 1 to PhoneCount do
+          if PhoneRecs[I].RNum = SaveRecNum then begin
+            SetInitialChoice(I);
+            Exit;
+          end;
+    end;
+  end;
+
+  function AllocPhoneRec(Index : Word) : Boolean;
+    {-Allocate a new phone record}
+  begin
+    with PhoneRecs[Index] do
+      if not GetMemCheck(PSP, SizeOf(PhoneString)) then begin
+        InsufficientMemory;
+        AllocPhoneRec := False;
+      end
+      else begin
+        PSP^ := MakePhoneString(False);
+        Baud := ScrapPhoneRec.Baud;
+        Parity := ScrapPhoneRec.Parity;
+        DataBits := ScrapPhoneRec.DataBits;
+        StopBits := ScrapPhoneRec.StopBits;
+        Options  := ScrapPhoneRec.Options;
+        Duplex   := ScrapPhoneRec.Duplex;
+        Ansi     := ScrapPhoneRec.Ansi;
+        RNum := Index;
+        AllocPhoneRec := True;
+      end;
+  end;
+
+  procedure AddPhoneRec;
+    {-Add a new record to the phone book}
+  begin
+    if PhoneCount = MaxPhones then
+      ErrorMessage('Phone book is full', True)
+    {edit a blank phone book record}
+    else if EditPhoneRec(True) then
+      with PhoneWin, PhoneRecs[PhoneCount+1] do
+        {try to allocate space for and write the new record}
+        if AllocPhoneRec(PhoneCount+1) and WritePhoneRec(PhoneCount+1) then begin
+          {increment record count}
+          Inc(PhoneCount);
+
+          if PhoneCount > 1 then begin
+            {adjust the pick list}
+            ChangeNumItems(PhoneCount);
+            SetInitialChoice(PhoneCount);
+            OptimizeSize;
+
+            {re-sort the records}
+            SortPhoneRecs(True);
+          end;
+        end
+        else
+          {dispose of the new record if we couldn't write it}
+          FreeMemCheck(PSP, SizeOf(PhoneString));
+  end;
+
+  procedure ModifyPhoneRec(Index : Word);
+    {-Edit the specified record}
+  var
+    RecNum : Word;
+  begin
+    if Index > PhoneCount then
+      AddPhoneRec
+    else begin
+      RecNum := PhoneRecs[Index].RNum;
+      if ReadPhoneRec(RecNum) then
+        if EditPhoneRec(False) then
+          if WritePhoneRec(RecNum) then begin
+            {fix the phone record in memory}
+            PhoneRecs[Index].PSP^ := MakePhoneString(False);
+
+            {re-sort the records}
+            SortPhoneRecs(True);
+          end;
+    end;
+  end;
+
+  procedure DeletePhoneRec(Index : Word);
+    {-Delete the specified phone book entry}
+  var
+    I, Total, NewChoice, RecNum : Word;
+  begin
+    RecNum := PhoneRecs[Index].RNum;
+
+    if RecNum <> PhoneCount then begin
+      {move the last record in the file into the current one's place}
+      if not ReadPhoneRec(PhoneCount) then
+        Exit
+      else if not WritePhoneRec(RecNum) then
+        {phone book may be corrupted!}
+        Exit;
+
+      {fix the affected record}
+      for I := 1 to PhoneCount do
+        if PhoneRecs[I].RNum = PhoneCount then
+          PhoneRecs[I].RNum := RecNum;
+    end;
+
+    {exchange with last item}
+    if Index <> PhoneCount then
+      ExchangeStructs(
+        PhoneRecs[Index], PhoneRecs[PhoneCount], SizeOf(PhonePickRec));
+
+    with PhoneWin do begin
+      {truncate the file}
+      Seek(PhoneBook, PhoneCount);
+      Truncate(PhoneBook);
+      if not FlushDosBuffers(PhoneBook) then ;
+      I := IoResult;
+
+      {dispose of the string pointer}
+      FreeMemCheck(PhoneRecs[PhoneCount].PSP, SizeOf(PhoneString));
+
+      {decrement the record count}
+      Dec(PhoneCount);
+
+      {fix up the pick list}
+      if PhoneCount <= 1 then begin
+        NewChoice := 1;
+        Total := 1;
+      end
+      else begin
+        if Index >= PhoneCount then
+          NewChoice := PhoneCount
+        else
+          NewChoice := Index+1;
+        Total := PhoneCount;
+      end;
+      ChangeNumItems(Total);
+      SetInitialChoice(NewChoice);
+      OptimizeSize;
+
+      {re-sort the records}
+      SortPhoneRecs(True);
+    end;
+  end;
+
+  function DialPhonePrim(PhoneNumber : string) : Boolean;
+    {-Dial the specified phone number}
+  var
+    I : Word;
+  begin
+    with TermiWin.octwModem^ do begin
+      if DefTonePulse = Tone then
+        SetDialTone
+      else
+        SetDialPulse;
+      DialModem(PhoneNumber);
+    end;
+    DialPhonePrim := AsyncStatus = ecConnect;
+    AsyncStatus := ecOK;
+  end;
+
+  function DialPhone(Index : Word) : Boolean;
+    {-Dial the phone number}
+  var
+    S : string[20];
+  begin
+    DialPhone := False;
+    {set Com parameters}
+    with PhoneRecs[Index] do begin
+      TermiWin.EnableOptions(PhoneRecs[Index]);
+
+      {extract the phone number}
+      S := Copy(PhoneRecs[Index].PSP^, 40, 20);
+    end;
+    S := Trim(S);
+    if S <> '' then
+      DialPhone := DialPhonePrim(S);
+  end;
+
+  procedure ClosePhoneBook;
+    {-Close phone book}
+  var
+    I : Word;
+  begin
+    {close the phone book}
+    Close(PhoneBook);
+    I := IoResult;
+
+    {dispose of phone records}
+    for I := 1 to PhoneCount do
+      with PhoneRecs[I] do
+        FreeMemCheck(PSP, SizeOf(PhoneString));
+
+    {reset to 0 records}
+    PhoneCount := 0;
+    FillChar(PhoneRecs, SizeOf(PhoneRecs), 0);
+  end;
+
+  function OpenPhoneBook(FName : PathStr) : Boolean;
+    {-Open a phonebook file}
+  var
+    I : Word;
+    IR : IdRec absolute ScrapPhoneRec;
+  begin
+    OpenPhoneBook := False;
+
+    PhoneCount := 0;
+    FillChar(PhoneRecs, SizeOf(PhoneRecs), 0);
+
+    if not ExistFile(FName) then begin
+      {file doesn't exist--does user want to create it?}
+      if not ConfirmCreateFile then
+        Exit;
+
+      {try to create it}
+      Assign(PhoneBook, FName);
+      Rewrite(PhoneBook);
+      if IoResult <> 0 then begin
+        ErrorMessage('Unable to create file', True);
+        Exit;
+      end;
+
+      {write a header record}
+      FillChar(ScrapPhoneRec, SizeOf(ScrapPhoneRec), 0);
+      IR.Id := PhoneBookId;
+      Write(PhoneBook, ScrapPhoneRec);
+      if IoResult <> 0 then begin
+        ErrorMessage('Error writing to phone book', True);
+        Close(PhoneBook);
+        Erase(PhoneBook);
+        Exit;
+      end;
+    end
+    else begin
+      {open the phone book}
+      Assign(PhoneBook, FName);
+      Reset(PhoneBook);
+      if IoResult <> 0 then begin
+        ErrorMessage('Error opening phone book', True);
+        Exit;
+      end;
+
+      {make sure it's a valid phone book}
+      if not ReadPhoneRec(0) or (IR.ID <> PhoneBookId) then begin
+        ErrorMessage('Not a valid phone book', True);
+        Close(PhoneBook);
+        Exit;
+      end;
+
+      {get the number of records in the phone book}
+      PhoneCount := FileSize(PhoneBook)-1;
+      if PhoneCount = 0 then begin
+        OpenPhoneBook := True;
+        Exit;
+      end;
+
+      {read each of the records}
+      for I := 1 to PhoneCount do
+        if not (ReadPhoneRec(I) and AllocPhoneRec(I)) then begin
+          ErrorMessage('Error reading phone book', True);
+          ClosePhoneBook;
+          Exit;
+        end;
+
+      {sort the phone book records}
+      SortPhoneRecs(False);
+    end;
+
+    OpenPhoneBook := True;
+  end;
+
+  function ChangePhoneBooks : Boolean;
+    {-Change phone books. Return False in case of fatal error}
+  const
+    MaxLen = SizeOf(PathStr)-1;
+  var
+    FName : PathStr;
+    Total : Word;
+  begin
+    ChangePhoneBooks := True;
+
+    {get name of phone book}
+    FName := PhoneBookName;
+    if not GetFile(0, 'Phone book: ', True, True, False, False,
+                   MaxLen, DefPhoneExt, FName) then
+      Exit;
+
+    {close the current phone book}
+    ClosePhoneBook;
+
+    {try to open the new phone book}
+    if OpenPhoneBook(FName) then begin
+      {save the new file name}
+      PhoneBookName := FName;
+
+      {update the window header}
+      ChangeTitle(PhoneWin, PhoneTitle+JustFileName(FName));
+
+      {fix the pick list}
+      with PhoneWin do begin
+        Total := MaxWord(PhoneCount, 1);
+        ChangeNumItems(Total);
+        SetInitialChoice(1);
+        OptimizeSize;
+      end;
+    end
+    else
+      {try to reopen the previous file}
+      ChangePhoneBooks := OpenPhoneBook(PhoneBookName);
+  end;
+
+  procedure StatusPhone;
+    {-Display the status line for the phone book window}
+  const
+    StatusMsg =
+      '<F3> New file  <F9> Menu  <AltD> Dial  <^N> Insert  <^Y> Delete  <Enter> Edit';
+  begin
+    Message(StatusMsg, True);
+  end;
+
+  procedure PhonePreEdit(ESP : EntryScreenPtr);
+  var
+    S : String;
+  begin
+    case ESP^.GetCurrentID of
+      idName      : S := 'Enter person or company name';
+      idPhone     : S := 'Enter the phone number (remember the 1 and area code if applicable)';
+      idBaud      : S := '<Space bar> to toggle baud rate (300-115k baud)';
+      idParity    : S := '<Space bar> to toggle parity (none, even, odd, mark)';
+      idDataBits  : S := '<Space bar> to toggle data bits (5..8)';
+      idStopBits  : S := '<Space bar> to toggle stop bits (1 or 2)';
+      idDuplex    : S := '<Space bar> to toggle between half and full duplex';
+      idAnsi      : S := '<Space bar> to toggle between ANSI emulation on and off';
+      idNotes     : S := 'Enter any notes';
+    end;
+    Message(S, True);
+  end;
+
+  procedure IncChoice(var Value; ID : Word; Factor : Integer; var St : string);
+    {-Increment a multiple choice field value and convert it to a string}
+  var
+    Baud : LongInt absolute Value;
+    Parity : ParityType absolute Value;
+    DataBits : DataBitType absolute Value;
+    StopBits : StopBitType absolute Value;
+    Duplex   : DuplexType absolute Value;
+    Ansi     : Boolean absolute Value;
+  begin
+    case ID of
+      idBaud :
+        begin
+          case Factor of
+            1 :
+              if Baud = 300 then
+                Baud := 1200
+              else if Baud = 1200 then
+                Baud := 2400
+              else if Baud = 2400 then
+                Baud := 4800
+              else if Baud = 4800 then
+                Baud := 9600
+              else if Baud = 9600 then
+                Baud := 19200
+              else if Baud = 19200 then
+                Baud := 38400
+              else if Baud = 38400 then
+                Baud := 57600
+              else if Baud = 57600 then
+                Baud := 115200
+              else if Baud = 115200 then
+                Baud := 300
+              else
+                Baud := DefBaud;
+            -1 :
+              if Baud = 115200 then
+                Baud := 57600
+              else if Baud = 57600 then
+                Baud := 38400
+              else if Baud = 38400 then
+                Baud := 19200
+              else if Baud = 19200 then
+                Baud := 9600
+              else if Baud = 9600 then
+                Baud := 4800
+              else if Baud = 4800 then
+                Baud := 2400
+              else if Baud = 2400 then
+                Baud := 1200
+              else if Baud = 1200 then
+                Baud := 300
+              else if Baud = 300 then
+                Baud := 115200
+              else
+                Baud := DefBaud;
+          end;
+          Str(Baud, St);
+        end;
+      idParity :
+        begin
+          case Factor of
+            1 :
+              if Parity = SpaceParity then
+                Parity := NoParity
+              else
+                Inc(Parity);
+            -1 :
+              if Parity = NoParity then
+                Parity := SpaceParity
+              else
+                Dec(Parity);
+          end;
+          if (Ord(Parity) <= Ord(SpaceParity)) and
+             (Ord(Parity) >= Ord(NoParity)) then
+            St := ParityString[Parity]
+          else
+            St := 'error';
+        end;
+      idDataBits :
+        begin
+          case Factor of
+            1 :
+              if DataBits = 8 then
+                DataBits := 5
+              else
+                Inc(DataBits);
+            -1 :
+              if DataBits = 5 then
+                DataBits := 8
+              else
+                Dec(DataBits);
+          end;
+          Str(DataBits, St);
+        end;
+      idStopBits :
+        begin
+          case Factor of
+            -1, 1 :
+              if StopBits = 2 then
+                StopBits := 1
+              else
+                StopBits := 2;
+          end;
+          Str(StopBits, St);
+        end;
+      idDuplex :
+        begin
+          case Factor of
+            -1, 1 :
+              if Duplex = dupHalf then
+                Duplex := dupFull
+              else
+                Duplex := dupHalf;
+          end;
+          if Duplex = dupHalf then
+            St := 'half'
+          else
+            St := 'full';
+        end;
+      idAnsi :
+        begin
+          case Factor of
+            -1, 1 :
+              Ansi := not Ansi;
+          end;
+          St := OffOn[Ansi];
+        end;
+    end;
+  end;
+
+  function InitEntryScreen : Boolean;
+    {-Initialize the entry screen used to edit phone book records}
+  begin
+    InitEntryScreen := False;
+
+    with PhoneEntry, udMap(wUserData), ScrapPhoneRec do begin
+      {initialize the entry screen}
+      if not Init(16, 3, 64, 23) then begin
+        InsufficientMemory;
+        Exit;
+      end;
+
+      {deactivate AllMouseEvents flag}
+      wOptionsOff(wAllMouseEvents);
+
+      {add header}
+      wFrame.AddHeader(' Phonebook Editor ', heTC);
+      udmTitle := wFrame.GetLastHeaderIndex;
+
+      {set edit screen options}
+      SetWrapMode(WrapAtEdges);
+      SetBeepOnError(On);
+
+      {set field editing options}
+      esFieldOptionsOn(efClearFirstChar);
+
+      {customize the colors}
+      SetPromptAttr(PhonePromptColor, PhonePromptMono);
+      SetSelectedPromptAttr(PhoneSelPromptColor, PhoneSelPromptMono);
+      SetSelectedFieldAttr(PhoneSelFieldColor, PhoneSelFieldMono);
+      SetCtrlAttr(PhoneCtrlColor, PhoneCtrlMono);
+
+      {add each of the fields in order: left to right, top to bottom}
+      {                Prompt       Field  Fld Fld Hlp Field}
+      { Prompt         Row Col Pic Row Col Wid Hgt Ndx Value}
+
+      AddStringField('Name',       03, 02, '', 03, 18, 30,hidPhoneName, Name);
+      esFieldOptionsOn(efRequired);  {name is required}
+      AddStringField(
+        'Phone',       04, 02, '', 04, 18, 20, hidPhoneNumber, Phone);
+      esFieldOptionsOff(efRequired); {remaining fields are optional}
+
+      AddChoiceField('Baud rate', 06, 02, '######', 06, 18, hidPhoneBaud,
+                     SizeOf(Baud), IncChoice, Baud);
+      AddChoiceField('Parity', 07, 02, 'XXXXX', 07, 18, hidPhoneParity,
+                     SizeOf(Parity), IncChoice, Parity);
+      AddChoiceField('Data bits', 08, 02, '#', 08, 18, hidPhoneData,
+                     SizeOf(DataBits), IncChoice, DataBits);
+      AddChoiceField('Stop bits', 09, 02, '#', 09, 18, hidPhoneStop,
+                     SizeOf(StopBits), IncChoice, StopBits);
+      AddChoiceField('Duplex', 10, 02, 'XXXX', 10, 18, hidPhoneDuplex,
+                      SizeOf(DuplexType), IncChoice, Duplex);
+      AddChoiceField('ANSI emulation', 11, 02, 'XXX', 11, 18, hidPhoneAnsi,
+                      SizeOf(Ansi), IncChoice, Ansi);
+
+      AddMultiLineField('Notes', 13, 02, AnyChar,
+                        13, 09, 40, 04, hidPhoneNotes, Notes);
+      AddLineField('Ä', 'Ä', 'Ä', 18, 1, Width, False);
+      AddTextField(Center('Press Ctrl-Enter to accept changes', Width), 19, 1);
+      AddTextField(Center('Press Esc to abandon changes', Width), 20, 1);
+      SetPreEditProc(PhonePreEdit);
+
+      {install error handler}
+      SetErrorProc(TpUiErrorProc);
+      if ClassifyError(GetLastError) = etFatal then
+        Done
+      else
+        InitEntryScreen := True;
+    end;
+  end;
+
+  procedure PhoneStringProc(Item : Word;
+                            Mode : pkMode;
+                            var IType : pkItemType;
+                            var IString : string;
+                            PickPtr : PickListPtr);
+    {-Routine to return phone string corresponding to Item}
+  var
+    ILen : Byte absolute IString;
+  begin
+    if Item > PhoneCount then
+      IString := MakePhoneString(True)
+    else
+      IString := PhoneRecs[Item].PSP^;
+
+    if Mode = pkSearch then begin
+      ILen := 5;
+      IString := TrimTrail(IString);
+    end
+    else
+      IString := ' '+IString+' ';
+  end;
+
+  function InitPhone(X1, Y1, X2, Y2 : Byte; Msg : string) : Boolean;
+    {-Initialize the phone book window}
+  const
+    TitleSize = Length(PhoneTitle)+12;
+    MaxLen = SizeOf(PathStr)-1;
+  var
+    I : Word;
+  begin
+    InitPhone := False;
+    if not ExistFile(PhoneBookName) then
+      if not GetFile(0, 'Phone book: ', True, True, False, False,
+                          MaxLen, DefPhoneExt, PhoneBookName) then
+        Exit;
+
+    {try to open the phone book}
+    if not OpenPhoneBook(PhoneBookName) then
+      Exit;
+
+    with PhoneWin do begin
+      {initialize the pick list}
+      X2 := X1+PhoneLen-5;
+      if not Init(X1, Y1+2, X2, Y2, PhoneLen+2, MaxWord(PhoneCount, 1),
+                  PhoneStringProc, PickVertical, SingleChoice) then begin
+        InsufficientMemory;
+        Exit;
+      end;
+
+      {adjust frame coordinates}
+      with wFrame do
+        AdjustFrameCoords(frXL, frYL-2, frXH, frYH);
+
+      {add window divider}
+      wFrame.AddSpanHeader('Ã', 'Ä', '´', 2, frTT);
+
+      if ClassifyError(GetLastError) = etFatal then begin
+        Done;
+        Exit;
+      end;
+
+      {add headers, hot spots, etc.}
+      CustomizeWindow(PhoneWin, PhoneTitle+JustFileName(PhoneBookName), TitleSize);
+
+      {set special options}
+      SetCursor(cuHidden);
+      pkOptionsOn(pkDrawActive+pkMousePage);
+
+      {customize colors}
+      SetPickAttr(pkNormal,    False, PhoneItemColor, PhoneItemMono);
+      SetPickAttr(pkNormal,    True,  PhoneSelItemColor, PhoneSelItemMono);
+
+      if ClassifyError(GetLastError) = etFatal then begin
+        Done;
+        Exit;
+      end;
+
+      {try to initialize the entry screen}
+      if not InitEntryScreen then begin
+        Done;
+        Exit;
+      end;
+    end;
+
+    InitPhone := True;
+  end;
+
+  procedure ProcessPhone(var Cmd : Word);
+    {-Process the commands for the phone book window}
+  label
+    Reevaluate;
+  const
+    MaxLen = SizeOf(PathStr)-1;
+    DialerCmds : Array[1..4] of Word = (ccQuit,
+                                        SelectSpecial, TermWinID,
+                                        ccNone);
+  var
+    AllDone, Esc : Boolean;
+    Mask, SaveMask : PathStr;
+
+    function ProcessLocalMenu(var Cmd : Word) : Boolean;
+      {-Process local menu commands}
+    const
+      LastChoice : Word = 1;
+    var
+      Stop : Boolean;
+      P : Pointer;
+    begin
+      StatusLocalMenu;
+
+      ProcessLocalMenu := True;
+      Stop := False;
+      repeat
+        case GetLocalMenuCmd(PhoneWin, LastChoice) of
+          ccSelect :
+            begin
+              case LastChoice of
+                hidLocalClose    : Cmd := ccQuit;
+                hidLocalMove     : Cmd := MoveWindowCmd;
+                hidLocalResize   : Cmd := ResizeWindowCmd;
+                hidLocalZoom     : Cmd := ZoomWindowCmd;
+              end;
+              ProcessLocalMenu := False;
+              Stop := True;
+            end;
+          {$IFDEF UseMouse}
+          ccMouseSel :
+            begin
+              P := Desk.WindowClickedOn;
+              if P = @PhoneWin then
+                Stop := True
+              else if P <> nil then begin
+                Cmd := ccMouseSel;
+                ProcessLocalMenu := False;
+                Stop := True;
+              end;
+            end;
+          {$ENDIF}
+          MainMenuCmd :
+            begin
+              Cmd := MainMenuCmd;
+              ProcessLocalMenu := False;
+              Stop := True;
+            end;
+          LocalMenuCmd,
+          ccQuit,
+          ccError :
+            Stop := True;
+        end;
+      until Stop;
+      EraseLocalMenu;
+    end;
+
+  begin
+    AllDone := False;
+    with PhoneWin do
+      repeat
+        {draw status line}
+        StatusPhone;
+        SetHelpIndex(DialerWinID);
+        {make a selection}
+        Process;
+
+        {get the command}
+        Cmd := GetLastCommand;
+
+Reevaluate:
+        {process exit commands}
+        if not Desk.ProcessExitCommands(Cmd) then begin
+          {process any exit commands that TPUI can't handle for us}
+          case Cmd of
+            ccDialPhone :
+              if DialPhone(GetLastChoice) then begin
+                Desk.SetCommandList(DialerCmds);
+                Cmd := ccQuit;
+                AllDone := True;
+              end;
+              {*******should report error*********}
+            ccHangUpModem :
+              TermiWin.octwModem^.HangupModem(0, HangupDropDTR);
+            ccSelect :
+              ModifyPhoneRec(GetLastChoice);
+            ccDeleteItem :
+              if PhoneCount > 0 then
+                if YesNo('Delete this record?', 'N', Esc) then
+                  DeletePhoneRec(GetLastChoice);
+            ccInsertItem :
+              AddPhoneRec;
+            ccNewMask :
+              AllDone := not ChangePhoneBooks;
+            LocalMenuCmd :
+              if not ProcessLocalMenu(Cmd) then
+                goto Reevaluate;
+            NextWindowCmd..SelectWindow8,
+            ExitProgramCmd,
+            UnloadTsrCmd,
+            MainMenuCmd,
+            ccError,
+            ccQuit :
+              AllDone := True;
+          end;
+        end;
+      until AllDone;
+  end;
+
+  procedure ClosePhone(EraseFirst : Boolean);
+    {-Close the phone book window}
+  begin
+    if EraseFirst then
+      PhoneWin.Erase;
+    ClosePhoneBook;
+    PhoneEntry.Done;
+    PhoneWin.Done;
+  end;
+
+  function OkToClosePhone : Boolean;
+    {-Return True if OK to close the phone book window}
+  begin
+    OkToClosePhone := True;
+  end;

@@ -1,0 +1,194 @@
+;-------------------------------------------------------------------
+!TOPIC 918 ApUart
+ApUart provides the connection between your application and the serial
+hardware itself. In this case, that hardware is assumed to be the industry
+standard serial ports found on nearly all PCs, ATs, compatibles, and PS/2s.
+On PC and AT compatibles, those standard ports include Com1 through Com4.
+On PS/2s, the standard ports include Com1 through Com8.
+
+ApUart interfaces the following routines:
+
+  0919ActivateApUart                 0923ClassifyUart
+  0935Declarations                   0929DumpEvents
+  0925FifoStatus                     0928InitEventLogging
+  0927RestoreUartState               0926SaveUartState
+  0936SendLongBreak                  0924SetFifoBuffering
+  0920UartTest1                      0921UartTest2
+  0922UartTest3
+;
+;-------------------------------------------------------------------
+!TOPIC 919 ActivateApUart
+!NOINDEX
+procedure 0918ApUart.ActivateApUart;
+
+Register APUART as the active device layer.
+
+See also:  0375ActivateApDigi14      0539ActivateApFossil
+           0546ActivateApInt14       0887Core routines
+           0004Layered architecture
+;
+;-------------------------------------------------------------------
+!TOPIC 920 UartTest1
+!NOINDEX
+function 0918ApUart.UartTest1(BaseAddr : Word) : Boolean;
+
+Check for a UART by reading the interrupt enable register, interrupt ID
+register, and modem control register.
+
+See also:  0921UartTest2             0922UartTest3
+;
+;-------------------------------------------------------------------
+!TOPIC 921 UartTest2
+!NOINDEX
+function 0918ApUart.UartTest2(BaseAddr : Word) : Boolean;
+
+Check for a UART by writing to the interrupt enable register.
+
+See also:  0920UartTest1             0922UartTest3
+;
+;-------------------------------------------------------------------
+!TOPIC 922 UartTest3
+!NOINDEX
+function 0918ApUart.UartTest3(BaseAddr : Word) : Boolean;
+
+Check for a UART by reading the serial port data portion of the BIOS data
+area.
+
+See also:  0920UartTest1             0921UartTest2
+;
+;-------------------------------------------------------------------
+!TOPIC 923 ClassifyUart
+!NOINDEX
+function 0918ApUart.ClassifyUart(BaseAddr : Word;
+                             CheckUart : Boolean) : 0930UartType;
+
+Return the UartType for the specified UART.
+
+See also:  0924SetFifoBuffering      0934UartTypeString
+;
+;-------------------------------------------------------------------
+!TOPIC 924 SetFifoBuffering
+!NOINDEX
+procedure 0918ApUart.SetFifoBuffering(BaseAddr : Word;
+                                  Enable : Boolean; Level : Byte);
+
+Turn fifo buffering on/off for the UART at the specified port address.
+
+See also:  0923ClassifyUart          0925FifoStatus
+;
+;-------------------------------------------------------------------
+!TOPIC 925 FifoStatus
+!NOINDEX
+function 0918ApUart.FifoStatus(BaseAddr : Word) : Boolean;
+
+Return True if FIFO buffering is on for the UART at the specified port
+address.
+
+See also:  0923ClassifyUart          0924SetFifoBuffering
+;
+;-------------------------------------------------------------------
+!TOPIC 926 SaveUartState
+!NOINDEX
+procedure 0918ApUart.SaveUartState(BaseAddr : Word; var PSR : 0868PortSaveRec);
+
+Save the state of the UART at the specified port address.
+
+See also:  0927RestoreUartState
+;
+;-------------------------------------------------------------------
+!TOPIC 927 RestoreUartState
+!NOINDEX
+procedure 0918ApUart.RestoreUartState(BaseAddr : Word; PSR : 0868PortSaveRec);
+
+Restore a communications chip to its previous state.
+
+See also:  0926SaveUartState
+;
+;-------------------------------------------------------------------
+!TOPIC 928 InitEventLogging
+!NOINDEX
+{$IFDEF EventLogging}
+!LINE
+procedure 0918ApUart.InitEventLogging(Events : Word);
+
+Allocate an event buffer, reprogram and calibrate the system timer.
+
+See also:  0929DumpEvents
+;
+;-------------------------------------------------------------------
+!TOPIC 929 DumpEvents
+!NOINDEX
+{$IFDEF EventLogging}
+!LINE
+procedure 0918ApUart.DumpEvents(FName : PathStr);
+
+Write the EventQueue to a file.
+
+See also:  0928InitEventLogging
+;
+;-------------------------------------------------------------------
+!TOPIC 930 UartType
+!NOINDEX
+type
+  UartType = (NoUart, U8250B, U8250A, U16550, U16550A);
+
+The various types of UARTs recognized and classified by Async
+Professional.
+
+See also:  0923ClassifyUart          0934UartTypeString
+;
+;-------------------------------------------------------------------
+!TOPIC 931 DefBaseAddr
+!NOINDEX
+const
+  DefBaseAddr : array[Com1..Com8] of Word = (
+    $03F8, $02F8, $03E8, $02E8, $4220, $4228, $5220, $5228);
+
+The standard base I/O addresses for UARTs.
+;
+;-------------------------------------------------------------------
+!TOPIC 932 DefComVector
+!NOINDEX
+const
+  DefComVector : array[Com1..Com8] of Byte = (
+    $0C, $0B, $0C, $0B, $0B, $0B, $0B, $0B);
+
+The standard interrupt vectors for UARTs.
+;
+;-------------------------------------------------------------------
+!TOPIC 933 DefIrqNumber
+!NOINDEX
+const
+  DefIrqNumber : array[Com1..Com8] of Byte = (4, 3, 4, 3, 3, 3, 3, 3);
+
+The standard IRQ numbers for UARTs.
+;
+;-------------------------------------------------------------------
+!TOPIC 934 UartTypeString
+!NOINDEX
+const
+  UartTypeString : array[0930UartType] of String[11] =
+    ('No UART', '8250B', '8250A/16450', '16550', '16550A');
+
+A convenient set of strings for displaying UART types.
+
+See also:  0923ClassifyUart
+;
+;-------------------------------------------------------------------
+!TOPIC 935 Declarations,ApUart
+!NOINDEX
+!NOSEARCH
+ApUart declares the following types and constants:
+
+  0931DefBaseAddr                    0932DefComVector
+  0933DefIrqNumber                   0930UartType
+  0934UartTypeString
+;
+;-------------------------------------------------------------------
+!TOPIC 936 SendLongBreak
+!NOINDEX
+procedure 0918ApUart.SendLongBreak(BaseAddr : Word; Count : Byte);
+
+Send a long serial line break.
+
+See also:  0872SendBreakProc

@@ -1,0 +1,124 @@
+;-------------------------------------------------------------------
+!TOPIC 961 ApYModem
+!NOWRAP
+ApYModem builds on ApAbsPcl and ApXmodem to implement the Ymodem and
+Ymodem G protocols. It provides the following routines and types:
+!WRAP
+
+  0964DoneYmodem                     0963InitCustomYmodem
+  0962InitYmodem                     0129PrepareReceivePartYM
+  0127PrepareTransmitPartYM          0130ProtocolReceivePartYM
+  0090ProtocolReceiveYM              0128ProtocolTransmitPartYM
+  0089ProtocolTransmitYM             0971YmodemProtocol
+;
+;-------------------------------------------------------------------
+!TOPIC 962 InitYmodem
+!NOINDEX
+procedure 0961ApYModem.InitYmodem(var P : ProtocolRecPtr;
+                              PortPtr : PortRecPtr;
+                              Use1K, UseGMode : Boolean);
+
+Allocate and initialize a Ymodem control block.
+
+See also:
+    0964DoneYmodem                   0963InitCustomYmodem
+;
+;-------------------------------------------------------------------
+!TOPIC 963 InitCustomYmodem
+!NOINDEX
+procedure 0961ApYModem.InitCustomYmodem(var P : ProtocolRecPtr;
+                                    PortPtr : PortRecPtr;
+                                    Use1K, UseGMode : Boolean;
+                                    Options : Word);
+
+Allocate and initialize a Ymodem control block with the specified options.
+
+See also:
+  0964DoneYmodem                     0962InitYmodem
+;
+;-------------------------------------------------------------------
+!TOPIC 964 DoneYmodem
+!NOINDEX
+procedure 0961ApYModem.DoneYmodem(var P : ProtocolRecPtr);
+
+Dispose of a protocol record.
+
+See also:  0963InitCustomYmodem      0962InitYmodem
+;
+;-------------------------------------------------------------------
+!TOPIC 965 OoYModem
+OoYModem provides the YmodemProtocol object, which implements the Ymodem
+and Ymodem G protocols:
+
+  [0086AbstractProtocol]
+    [0945XmodemProtocol]
+      0966YmodemProtocol
+;
+;-------------------------------------------------------------------
+!TOPIC 966 YmodemProtocol,OoYModem
+!NOINDEX
+YmodemProtocolPtr = ^YmodemProtocol;
+!LINE
+YmodemProtocol = object(0945XmodemProtocol)
+
+This object defines the data fields and methods needed to implement the
+Ymodem and Ymodem G protocols.
+
+YmodemProtocol provides the following methods:
+
+  0969Done                           0967Init
+  0968InitCustom                     0970Load
+  0129PrepareReceivePart             0127PrepareTransmitPart
+  0090ProtocolReceive                0130ProtocolReceivePart
+  0089ProtocolTransmit               0128ProtocolTransmitPart
+;
+;-------------------------------------------------------------------
+!TOPIC 967 Init,YmodemProtocol
+!NOINDEX
+constructor 0966YmodemProtocol.Init(APPtr : AbstractPortPtr;
+                                Use1K, UseGMode : Boolean);
+
+Allocate and initialize a protocol control block.
+
+See also:  0968InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 968 InitCustom,YmodemProtocol
+!NOINDEX
+constructor 0966YmodemProtocol.InitCustom(APPtr : AbstractPortPtr;
+                                      Use1K, UseGMode : Boolean;
+                                      Options : Word);
+
+Allocate and initialize a protocol control block with the specified options.
+
+See also:  0967Init                  0087AbstractProtocol.InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 969 Done,YmodemProtocol
+!NOINDEX
+destructor 0966YmodemProtocol.Done; virtual;
+
+Dispose of the protocol object.
+
+See also:  0967Init                  0968InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 970 Load,YmodemProtocol
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 0966YmodemProtocol.Load(var S : IdStream);
+!WRAP
+
+Load a YmodemProtocol object from a stream. The stream registration routine
+for a YmodemProtocol object is YmodemProtocolStream.
+;
+;-------------------------------------------------------------------
+!TOPIC 971 YmodemProtocol,ApYModem
+!NOINDEX
+type
+  YmodemPtr = ^YmodemProtocol;
+  YmodemProtocol = record;
+
+Record used to store data needed by the various routines in ApYmodem to
+implement the Ymodem and Ymodem G protocols.

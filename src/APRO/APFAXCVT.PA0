@@ -1,0 +1,852 @@
+const
+  indexAPFAXCVT   = 100;
+  indexAPABSFAX   = 200;
+  indexAPFAX12    = 300;
+  indexAPFAXCAS   = 400;
+
+type
+  SigArray = Array[0..5] of Char;        {Fax file signature array}
+  ResWidths = (rw1728, rw2048);          {Acceptable fax widths}
+
+const
+  {General}
+  UpdateInterval : Word = 16;             {Lines per status call}
+  DefSig         : SigArray = 'APF10'#26; {Default fax file signature}
+  AproFontName   : PathStr = 'APFAX.FNT'; {Name of standard font file}
+  DefLeftMargin  : Word = 50;             {Default left margin of 1/4 inch}
+  DefTopMargin   : Word = 0;              {Default top margin of zero}
+  TabStop        : Word = 4;              {Default tab stops}
+
+  {Fax pixel widths}
+  StandardWidth  = 1728;          {Standard width in pixels}
+  WideWidth      = 2048;          {Allowed higher resolution}
+
+  {Option flags for FAX page header}
+  ffHighRes     = $0001;          {Image stored in high-res mode}
+  ffHighWidth   = $0002;          {Image uses option high-width mode}
+  ffLengthWords = $0004;          {Set if raster lines include length word}
+
+  {Options for fax conversion}
+  fcDoubleWidth = $0001;          {Double the horizontal width in std res}
+  fcCenterImage = $0002;          {Center graphics images horizontally}
+
+  {Default fax conversion options}
+  DefFaxCvtOptions  : Word = fcDoubleWidth + fcCenterImage;
+
+  {No bad options}
+  BadFaxCvtOptions = 0;
+
+  {Options for unpacking}
+  ufHalfWidth   = $0001;     {Halve the horizontal width while unpacking}
+
+  {No default options}
+  DefUnpackOptions  : Word = 0;
+
+  {No bad options}
+  BadUnpackOptions = 0;
+
+  {.Z+}{Private constants}
+  {Maximum number of tree records}
+  MaxTreeRec = 306;
+
+  {HP soft font limits}
+  MaxCharData  = 1024;                  {Max bytes of HP bitmap data}
+  MaxFullFont  = 2048;                  {Max bytes of HP full bitmap data}
+  MaxTempFont  = 512;                   {Max bytes in temp font array}
+
+  {Max size of decompress buffer}
+  MaxData = 2048;
+
+  {Font handles, same value as bytes-per-char}
+  SmallFont = 16;
+  StandardFont = 48;
+
+  {For checking/setting bits}
+  Mask : array[1..8] of Byte = ($80, $40, $20, $10, $08, $04, $02, $01);
+  {.Z-}
+
+  {!!.03 - New}
+  MaxCodeTable   = 63;
+  MaxMUCodeTable = 39;
+
+type
+  {.Z+}{Private types}
+  Str20 = String[20];
+
+  {Generic byte buffer type}
+  PByteBuffer = ^TByteBuffer;
+  TByteBuffer = array[0..$FFF0] of Byte;
+
+  PBitBuffer = ^TBitBuffer;
+  TBitBuffer = array[1..MaxFullFont] of Byte;
+
+  {Compression code tables}
+  CodeRec = record
+    Code : Word;
+    Sig  : Word;
+  end;
+  TermCodeArray = array[0..MaxCodeTable] of CodeRec;      {!!.03}
+  MakeUpCodeArray = array[0..MaxMUCodeTable] of CodeRec;  {!!.03}
+
+  {Stores information about our fonts}
+  FontRecord = record
+    Bytes  : Byte;  {# of bytes per char in font}
+    PWidth : Byte;  {width of font in pixels}
+    Width  : Byte;  {width of font in bytes (e.g. 16-pixel-wide = 2)}
+    Height : Byte;  {height of font in raster lines}
+  end;
+
+  {Used for rasterizing text}
+  TRasterMatrix = Array[0..255] of Byte;
+
+  {APRO fax file header record}
+  FaxHeaderRec = record
+    Signature  : SigArray;               {APRO FAX signature}
+    FDateTime  : LongInt;                {Date and time in DOS format}
+    SenderID   : String[20];             {Station ID of sender}
+    Filler     : Byte;                   {Alignment byte, unused}
+    PageCount  : Word;                   {Number of pages in this file}
+    PageOfs    : LongInt;                {Offset in file of first page}
+    Padding    : Array[39..64] of Byte;  {Expansion room}
+  end;
+
+  {APRO fax page header record}
+  PageHeaderRec = record
+    ImgLength : LongInt;                 {Bytes of image data in this page}
+    ImgFlags  : Word;                    {Image flags for width, res, etc}
+    Padding   : Array[7..16] of Byte;    {Expansion room}
+  end;
+
+  {Pcx header}
+  PcxPalArray = Array[0..47] of Byte;
+  PcxHeaderRec = record
+    Mfgr      : Byte;
+    Ver       : Byte;
+    Encoding  : Byte;
+    BitsPixel : Byte;
+    XMin      : Word;
+    YMin      : Word;
+    XMax      : Word;
+    YMax      : Word;
+    HRes      : Word;
+    VRes      : Word;
+    Palette   : PcxPalArray;
+    Reserved  : Byte;
+    Planes    : Byte;
+    BytesLine : Word;
+    PalType   : Word;
+    Filler    : Array[1..58] of Byte;  {pad to 128 bytes}
+  end;
+
+  DcxOfsArray = array[1..1024] of LongInt;
+
+  DcxHeaderRec = record
+    ID      : LongInt;
+    Offsets : DcxOfsArray;
+  end;
+
+  {!!.03 - New}
+  {Bmp header}
+  BmpHeaderRec = record
+    FileType     : Word;
+    FileSize     : LongInt;
+    Reserved1    : Word;
+    Reserved2    : Word;
+    ImageDataOfs : LongInt;
+  end;
+
+  {!!.03 - New}
+  BmpInfoHeaderRec = record
+    HeaderSize     : LongInt;
+    BmpWidth       : LongInt;
+    BmpHeight      : LongInt;
+    NumPlanes      : Word;
+    BitsPerPixel   : Word;
+    CompressMethod : LongInt;
+    BitmapSize     : LongInt;
+    HorzRes        : LongInt;
+    VertRes        : LongInt;
+    ColorsUsed     : LongInt;
+    NumSigColors   : LongInt;
+  end;
+
+  {Portion of HP font file header we care about}
+  TFontHdr = record
+    FontDescSize : Integer;
+    DescFormat   : Byte;
+    FontType     : Byte;
+    StyleMSB     : Byte;
+    Reserve1     : Byte;
+    BaseLine     : Integer;
+    CellWidth    : Integer;
+    CellHeight   : Integer;
+    Orientation  : Byte;
+    Spacing      : Byte;
+  end;
+
+  {HP character header}
+  TCharHdr = record
+    C4         : Byte;
+    Continue   : Byte;
+    CSize      : Byte;
+    CClass     : Byte;
+    Orientation: Byte;
+    Reserve1   : Byte;
+    LeftOffset : Integer;
+    TopOffset  : Integer;
+    CharWidth  : Integer;
+    CharHeight : Integer;
+    DeltaX     : Integer;
+  end;
+
+  TreeRec = record
+    Next0 : Integer;
+    Next1 : Integer;
+  end;
+  TreeArray = array[0..MaxTreeRec] of TreeRec;
+  TreePtr = ^TreeArray;
+  {.Z-}
+
+  {Basic converter record}
+  FaxConverterPtr = ^FaxConverter;
+
+  {Hook types}
+  FaxCvtStatusFunc = function (FC : FaxConverterPtr;
+                                Starting, Ending : Boolean) : Boolean;
+
+  {Primitive converter record}
+  ConverterDataPtr = ^ConverterData;
+  ConverterData = record
+    CID          : Byte;               {ID of current character}
+    FontLoaded   : Boolean;            {False until font loaded}
+    DoubleWidth  : Boolean;            {True for PCX files/dbl width lines}
+    UseHighRes   : Boolean;            {True if for high-res mode}
+    HighResFont  : Boolean;            {True if using high-res font}
+    Fill1        : Byte;               {Keep word alignment}
+    fcFlags      : Word;               {Option flags}
+    ByteOfs      : Word;               {Byte offset in buffer}
+    BitOfs       : Word;               {Bit offset in buffer}
+    ResWidth     : Word;               {Width of current resolution in pixels}
+    BytesPerRow  : Word;               {Bytes per row in fullfont}
+    CharDataLen  : Word;               {Number of bytes in bitmap}
+    FaxLeftMargin: Word;               {Left margin in pixels}
+    FaxTopMargin : Word;               {Right margin in pixels}
+    CurrPage     : Integer;            {Current page being processed}
+    LineCount    : Integer;            {Number of text lines between page}
+    CurrLine     : LongInt;            {Current line of text in file}
+    DataLine     : PByteBuffer;        {Buffered line of compressed data}
+    TmpBuffer    : PByteBuffer;        {Temp compression buffer}
+    FontPtr      : PByteBuffer;        {Pointer to the loaded font table}
+    CharData     : PBitBuffer;         {HPCharacter bitmap}
+    FullFont     : PBitBuffer;         {Full dimension bitmap}
+    LineMatrix   : TRasterMatrix;      {Rasterizing buffer}
+    MainHeader   : FaxHeaderRec;       {Record of current fax info}
+    PageHeader   : PageHeaderRec;      {Record of current page info}
+    FontRec      : FontRecord;         {Holds current font info}
+    Font         : File;               {HP font file}
+    OutFile      : File;               {Output file}
+    FontHdr      : TFontHdr;           {Holds font file header}
+    CharHdr      : TCharHdr;           {Holds current character header}
+    ScaleCol     : array[1..20] of Word; {For scaling HP fonts}
+    ScaleRow     : array[1..32] of Word; {For scaling HP fonts}
+    StationID    : Str20;              {FLID of this station}
+    FaxPath      : PathStr;            {Path for storage of files}
+    OutFileName  : PathStr;            {Name of current output file}
+    InFileName   : PathStr;            {Name of current input file}
+    StatusP      : FaxCvtStatusFunc;   {Status proc hook}
+    SaveMode     : Byte;               {Save FileMode}                 {!!.02}
+  end;
+
+  {Generic FaxConverter record}
+  FaxConverter = record
+    PData        : ConverterDataPtr;   {Pointer to abstract data}
+  end;
+
+type
+  {Text-to-fax converter engine object}
+  TextConverterPtr = ^TextConverter;
+  TextConverter = record
+    PData        : ConverterDataPtr;   {Pointer to abstract data}
+    ReadBuffer   : PByteBuffer;        {Buffer for reads}
+    InFile       : Text;               {Input file}
+  end;
+
+type
+  PcxConverterDataPtr = ^PcxConverterData;
+  PcxConverterData = record
+    CurrRBSize : Word;
+    CurrRBOfs  : Word;
+    ActBytesLine : Word;                                               {!!.01}
+    ReadBuffer : PByteBuffer;
+    PcxHeader  : PcxHeaderRec;
+    PcxBytes   : LongInt;
+    InFile     : File;
+  end;
+
+type
+  {Pcx-to-fax converter engine object}
+  PcxConverterPtr = ^PcxConverter;
+  PcxConverter = record
+    PData        : ConverterDataPtr;   {Pointer to abstract data}
+    XData        : PcxConverterDataPtr;
+  end;
+
+type
+  {Dcx-to-fax converter engine object}
+  DcxConverterPtr = ^DcxConverter;
+  DcxConverter = record
+    PData     : ConverterDataPtr;
+    XData     : PcxConverterDataPtr;
+    DcxHeader : DcxHeaderRec;
+    DcxPgSz   : DcxOfsArray;
+    DcxNumPag : Word;
+  end;
+
+type
+  {!!.01 new}
+  {Tiff strip information}
+  StripRecord = record
+    Offset : LongInt;
+    Length : LongInt;
+  end;
+  PStripInfo = ^StripInfo;
+  StripInfo = array[1..(65521 div SizeOf(StripRecord))] of StripRecord;
+
+  TiffConverterPtr = ^TiffConverter;
+  TiffConverter = record
+    PData        : ConverterDataPtr;
+    Intel        : Boolean;            {True if file is in Intel byte order}
+    LastBitMask  : Byte;
+    CurrRBSize   : Word;               {amount of data in buffer}
+    CurrRBOfs    : Word;               {buffer index}
+    tiffVersion  : Word;               {Version number from file preamble}
+    tiffSubFile  : Word;               {TIFF tag field values for image:}
+    tiffWidth    : Word;               {image width}
+    tiffBytes    : Word;               {bytes per raster line}
+    tiffLength   : Word;               {image length (height)}
+    tiffComp     : Word;               {compression type}
+    tiffPhotoMet : Word;               {photometric conversion type}
+    tiffRowStrip : LongInt;            {raster lines per image strip}
+    tiffStripOfs : LongInt;            {offset in file to first strip}
+    tiffStripCnt : LongInt;            {number of strips}
+    tiffStripInfo: PStripInfo;         {strip offsets/lengths}       {!!.01}
+    tiffByteCntOfs : LongInt;          {offset to byte count list}   {!!.01}
+    tiffImgStart : LongInt;            {start of image data in file}
+    ReadBuffer   : PByteBuffer;        {buffer for reads}
+    InFile       : File;               {input file}
+  end;
+
+  {!!.03 - New}
+  {Bmp converter}
+  BmpConverterPtr = ^BmpConverter;
+  BmpConverter = record
+    PData        : ConverterDataPtr;
+    BmpByteWidth : Word;
+    BytesPerLine : Word;
+    Offset       : LongInt;
+    InFile       : File;
+    FileHeader   : BmpHeaderRec;
+    InfoHeader   : BmpInfoHeaderRec;
+  end;
+
+type
+  UnpackFaxPtr = ^UnpackFax;
+  OutputLineFunc = function (UFP : UnpackFaxPtr;
+                             Buffer : PByteBuffer;
+                             Len : Word;
+                             PH : PageHeaderRec) : Boolean;
+  UnpackFax = record
+    CurCode         : Word;
+    CurSig          : Word;
+    LineOfs         : Word;            {current offset in line}
+    LineBit         : Word;            {current offset in byte}
+    CurrPage        : Word;            {current page}
+    ufFlags         : Word;            {option flags}
+    BadCodes        : Word;
+    TreeLast        : Integer;
+    TreeNext        : Integer;
+    Match           : Integer;
+    WhiteTree       : TreePtr;         {tree of White runlength codes}
+    BlackTree       : TreePtr;         {tree of black runlength codes}
+    LineBuffer      : PByteBuffer;     {buffer for decompression}
+    FileBuffer      : PByteBuffer;     {file I/O buffer}
+    FaxHeader       : FaxHeaderRec;
+    PageHeader      : PageHeaderRec;
+    HalfWidth       : Boolean;         {True if halfwidth option set}
+    LastOdd         : Boolean;         {Toggle for HalfWidth adjust}   {!!.01}
+    ufOutputLine    : OutputLineFunc;  {output a decompressed raster line}
+    UserData        : LongInt;
+    SaveMode     : Byte;               {Save FileMode}                 {!!.02}
+  end;
+
+type
+  PcxUnpackDataPtr = ^PcxUnpackData;
+  PcxUnpackData = record
+    Lines      : Word;
+    PBOfs      : Word;
+    PcxF       : File;
+    PcxOfs     : LongInt;
+    PcxName    : PathStr;
+    PackBuffer : Array[0..511] of Byte;
+  end;
+
+type
+  UnpackToPcxPtr = ^UnpackToPcx;
+  UnpackToPcx = record
+    UData      : PcxUnpackDataPtr;
+    UF         : UnpackFaxPtr;
+    UserOutput : OutputLineFunc;
+  end;
+
+{$IFDEF UsePModeDLL}
+
+{.Z+}
+{ConverterData routines}
+procedure InitConverterData(var P : ConverterDataPtr); Export;
+  {-Allocate and initialize ConverterData record}
+procedure DoneConverterData(var P : ConverterDataPtr); Export;
+  {-Dispose of ConverterData record}
+
+{Abstract converter routines}
+procedure InitAbsConverter(var FC : FaxConverterPtr); Export;
+  {-Allocate and initialize a TextConverter record}
+procedure DoneAbsConverter(var FC : FaxConverterPtr); Export;
+  {-Dispose of a TextConverter record}
+{!!.03 - Added}
+procedure acCompressStringRowPrim(FC : FaxConverterPtr; S : String;
+                                  Row : Byte; LenWord : Boolean);
+  {-Compress one raster row in a string of text, not copying to other buffer}
+procedure acCompressStringRow(FC : FaxConverterPtr; S : String;
+                              Row : Byte; var Buffer;
+                              var Len : Word; LenWord : Boolean); Export;
+  {-compress a text string into run of codes using current font}
+procedure acMakeEndOfPage(FC : FaxConverterPtr; var Buffer; var Len : Word); Export;
+  {-generate an EOP bit run}
+{.Z-}
+
+{Option management}
+procedure fcOptionsOn(FC : FaxConverterPtr; OptionFlags : Word); Export;
+  {-Activate multiple options}
+procedure fcOptionsOff(FC : FaxConverterPtr; OptionFlags : Word); Export;
+  {-Deactivate multiple options}
+function fcOptionsAreOn(FC : FaxConverterPtr; OptionFlags : Word) : Boolean; Export;
+  {-Return True if all specified options are on}
+
+{User control}
+procedure SetStatusFunc(FC : FaxConverterPtr; FCF : FaxCvtStatusFunc); Export;
+  {-Set our status proc}
+function LoadFont(FC : FaxConverterPtr; FontHandle : Byte; HiRes : Boolean) : Boolean; Export;
+  {-Load selected font from APFAX.FNT or memory}
+function LoadHPFont(FC : FaxConverterPtr; FontName : PathStr; HiRes : Boolean) : Boolean; Export;
+  {-Load font from HP soft font file FontName}
+procedure SetPageSize(FC : FaxConverterPtr; PS : Integer); Export;
+  {-Set paging size for text faxes}
+procedure SetResolutionMode(FC : FaxConverterPtr; HiRes : Boolean); Export;
+  {-Select low- or high-resolution mode}
+procedure SetFaxPath(FC : FaxConverterPtr; PS : PathStr); Export;
+  {-Set path for storage of fax files}
+procedure SetResolutionWidth(FC : FaxConverterPtr; RW : ResWidths); Export;
+  {-Select resolution width for this fax}
+procedure SetStationIDCvt(FC : FaxConverterPtr; SID : Str20); Export;
+  {-Set the sending Station ID for this fax}
+procedure SetMargins(FC : FaxConverterPtr; Left, Top : Word); Export;
+  {-Set top and left margins for converted documents}
+procedure GetStatusInfo(FC : FaxConverterPtr; var Line : LongInt; var Page : Integer); Export;
+  {-Return current line/page}
+function GetFileName(FC : FaxConverterPtr) : PathStr; Export;
+  {-Return the name of the input file}
+
+{Text converter routines}
+procedure InitTextConverter(var FC : FaxConverterPtr); Export;
+  {-Allocate and initialize a TextConverter record}
+procedure DoneTextConverter(var FC : FaxConverterPtr); Export;
+  {-Dispose of a TextConverter record}
+procedure ConvertFaxText(FC : FaxConverterPtr; FName : PathStr); Export;
+  {-Convert text file to our FAX output format}
+
+{PcxConverterData routines}
+procedure InitPcxConverterData(var P : PcxConverterDataPtr); Export;
+  {-Allocate and initialize ConverterData record}
+procedure DonePcxConverterData(var P : PcxConverterDataPtr); Export;
+  {-Dispose of ConverterData record}
+
+{PcxConverter routines}
+procedure InitPcxConverter(var FC : FaxConverterPtr); Export;
+  {-Allocate and initialize a PcxConverter record}
+procedure DonePcxConverter(var FC : FaxConverterPtr); Export;
+  {-Dispose of a PcxConverter record}
+procedure ConvertFaxPcx(FC : FaxConverterPtr; FName : PathStr); Export;
+  {-Convert a pcx file to our FAX format}
+
+{DcxConverter routines}
+procedure InitDcxConverter(var FC : FaxConverterPtr); Export;
+  {-Allocate and initialize a DcxConverter record}
+procedure DoneDcxConverter(var FC : FaxConverterPtr); Export;
+  {-Dispose of a DcxConverter record}
+procedure ConvertFaxDcx(FC : FaxConverterPtr; FName : PathStr); Export;
+  {-Convert a dcx file to our FAX format}
+
+{Tiff converter routines}
+procedure InitTiffConverter(var FC : FaxConverterPtr); Export;
+  {-Allocate and initialize a TiffConverter record}
+procedure DoneTiffConverter(var FC : FaxConverterPtr); Export;
+  {-Dispose of a TiffConverter record}
+procedure ConvertFaxTiff(FC : FaxConverterPtr; FName : PathStr); Export;
+  {-Convert a tiff file to our FAX format}
+
+{!!.03 - New}
+{Bmp converter routines}
+procedure InitBmpConverter(var FC : FaxConverterPtr); Export;
+  {-Allocate and initialize a BmpConverter record}
+procedure DoneBmpConverter(var FC : FaxConverterPtr); Export;
+  {-Dispose of a BmpConverter record}
+procedure ConvertFaxBmp(FC : FaxConverterPtr; FName : PathStr); Export;
+  {-Convert a bmp file to our FAX format}
+
+{Unpack Init/destroy}
+procedure InitUnpacker(var UF : UnpackFaxPtr); Export;
+  {-Allocate and initialize a fax unpacker}
+procedure DoneUnpacker(var UF : UnpackFaxPtr); Export;
+  {-Dispose of a fax unpacker}
+
+{Option management}
+procedure ufOptionsOn(UF : UnpackFaxPtr; OptionFlags : Word); Export;
+  {-Activate multiple options}
+procedure ufOptionsOff(UF : UnpackFaxPtr; OptionFlags : Word); Export;
+  {-Deactivate multiple options}
+function ufOptionsAreOn(UF : UnpackFaxPtr; OptionFlags : Word) : Boolean; Export;
+  {-Return True if all specified options are on}
+
+{User control}
+procedure GetFaxHeader(UF : UnpackFaxPtr; FName : PathStr; var FH : FaxHeaderRec); Export;
+  {-Return header for fax FName}
+procedure GetPageHeader(UF : UnpackFaxPtr; FName : PathStr;
+                        Page : Word; var PH : PageHeaderRec); Export;
+  {-Return header for Page in fax FName}
+procedure SetOutputLineFunc(UF : UnpackFaxPtr; OLF : OutputLineFunc); Export;
+  {-Set output-line procedure}
+procedure UnpackPage(UF : UnpackFaxPtr; FName : PathStr; Page : Word); Export;
+  {-Unpack page PgNo of FName, calling OutputLine for each raster line}
+procedure UnpackFile(UF : UnpackFaxPtr; FName : PathStr); Export;
+  {-Unpack all pages in a fax file}
+
+{UnpackPcxData}
+procedure InitPcxUnpackData(var P : PcxUnpackDataPtr); Export;
+  {-Allocate and initialize PcxUnpackData record}
+procedure DoneUnpackPcxData(var P : PcxUnpackDataPtr); Export;
+  {-Dispose of PcxUnpackData record}
+
+{UnpackToPcx}
+procedure InitUnpackToPcx(var UFP : UnpackToPcxPtr); Export;
+  {-Allocate and initialize a fax unpacker}
+procedure DoneUnpackToPcx(var UFP: UnpackToPcxPtr); Export;
+  {-Dispose of a fax unpacker}
+procedure UnpackFileToPcx(UFP : UnpackToPcxPtr; Fax, Pcx: PathStr); Export;
+  {-Unpack fax file FaxName to pcx file PcxName}
+
+{UnpackToDCX}
+procedure InitUnpackToDcx(var UFP : UnpackToPcxPtr); Export;
+  {-Allocate and initialize a fax unpacker}
+procedure DoneUnpackToDcx(var UFP : UnpackToPcxPtr); Export;
+  {-Dispose of a fax unpacker}
+procedure UnpackFileToDcx(UFP : UnpackToPcxPtr; Fax, Dcx: PathStr); Export;
+  {-Unpack fax file FaxName to pcx file PcxName}
+
+{.Z+}{Private routines}
+
+function TodayString : String; Export;
+  {-Return today's date in a "MM/DD/YY" format string}
+function NowString : String; Export;
+  {-Return the current time as a "HH:MMpm" string}
+procedure Merge(var S : String; C : Char); Export;
+  {-Appends C to S, shifting S if it gets too long}
+function Trim(S : String) : String; Export;
+  {-Trim string}
+function ForceExtension(Name : string; Ext : ExtStr) : string; Export;
+  {-Return a pathname with the specified extension attached}
+function TrimStationID(S : String) : String; Export;
+  {-Trim a station ID string}
+procedure StripPrefix(var S : String); Export;
+  {-Removes prefix from faxmodem response string}
+function GetPackedDateTime : LongInt; Export;
+  {-Return current date/time in packed format}
+function acAddData(FC : FaxConverterPtr; var Buffer; Len : Word;
+                   DoInc : Boolean) : Boolean; Export;
+
+{!!.01}
+function acAddLine(FC : FaxConverterPtr; var Buffer; Len : Word) : Boolean; Export;
+  {-Add a raster with <lengthword><rasterdata> format }
+
+{!!.01}
+function acAddBlankLines(FC : FaxConverterPtr; Count : Word) : Boolean; Export;
+  {-Write blank raster lines to disk }
+
+function acCreateOutputFile(FC : FaxConverterPtr; FN : PathStr) : Integer; Export;
+  {-create output file FN}
+function acUpdateMainHeader(FC : FaxConverterPtr) : Integer; Export;
+  {-update the contents of the main header in the file}
+function acUpdatePageHeader(FC : FaxConverterPtr; PgNo : Word;
+                            var PgInfo : PageHeaderRec) : Integer; Export;
+  {-update the contents of the PgNo-th page header in the file}
+procedure acAddCodePrim(FC : FaxConverterPtr; Code : Word;
+                        SignificantBits : Word); Export;
+  {-Lowlevel routine to add a runlength code to the line buffer}
+procedure acAddCode(FC : FaxConverterPtr; RunLen : Word; IsWhite : Boolean); Export;
+  {-Adds a code representing RunLen pixels of white (IsWhite=True) or black
+    to the current line buffer}
+procedure acCompressRasterLine(FC : FaxConverterPtr; var Buffer); Export;
+  {-compress a raster line of bits into runlength codes}
+function pcOpenPcxFile(FC : FaxConverterPtr) : Integer; Export;
+  {-open input file}
+function pcValidatePcxHdr(FC : FaxConverterPtr) : Boolean; Export;
+  {-Validate file as pcx}
+procedure pcReadRasterLine(FC : FaxConverterPtr; var Buffer); Export;
+  {-Read a PCX raster line into Buffer.  Buffer is assumed to be at least
+    ResWidth bits in size.}
+procedure tcReadRasterLine(FC : FaxConverterPtr; var Buffer); Export;
+  {-Read and decompress the next line of raster data from the file}
+procedure tcLoadStripInfo(FC : FaxConverterPtr); Export;               {!!.01}
+  {-Load strip offset/length arrays from tif file}                     {!!.01}
+function tcValidTIFF(FC : FaxConverterPtr) : Boolean; Export;
+  {-Validate as TIFF file and set Intel byte-order flag}
+function tcOpenTiffFile(FC : FaxConverterPtr) : Integer; Export;
+  {-open input file}
+function tcSeek(FC : FaxConverterPtr; NewOfs : LongInt) : Boolean; Export;
+  {-Seek to NewOfs in file}
+function tcReadTagDir(FC : FaxConverterPtr) : Boolean; Export;
+  {-Read the tags from the "image directory"}
+function tcGetLong(FC : FaxConverterPtr) : LongInt; Export;
+  {-Get the next longint from the file, accounting for byte ordering}
+
+{!!.03 New}
+function bcOpenBmpFile(FC : FaxConverterPtr) : Integer; Export;
+  {-open input file}
+procedure bcReadRasterLine(FC : FaxConverterPtr; var Buffer); Export;
+  {-Read a BMP raster line into Buffer.}
+
+{.Z-}
+
+{$ELSE}
+
+{.Z+}
+{ConverterData routines}
+procedure InitConverterData(var P : ConverterDataPtr);
+  {-Allocate and initialize ConverterData record}
+procedure DoneConverterData(var P : ConverterDataPtr);
+  {-Dispose of ConverterData record}
+
+{Abstract converter routines}
+procedure InitAbsConverter(var FC : FaxConverterPtr);
+  {-Allocate and initialize a TextConverter record}
+procedure DoneAbsConverter(var FC : FaxConverterPtr);
+  {-Dispose of a TextConverter record}
+procedure acCompressStringRow(FC : FaxConverterPtr; S : String;
+                              Row : Byte; var Buffer; var Len : Word;
+                              LenWord : Boolean);
+  {-compress a text string into run of codes using current font}
+procedure acMakeEndOfPage(FC : FaxConverterPtr; var Buffer; var Len : Word);
+  {-generate an EOP bit run}
+{.Z-}
+
+{Option management}
+procedure fcOptionsOn(FC : FaxConverterPtr; OptionFlags : Word);
+  {-Activate multiple options}
+procedure fcOptionsOff(FC : FaxConverterPtr; OptionFlags : Word);
+  {-Deactivate multiple options}
+function fcOptionsAreOn(FC : FaxConverterPtr; OptionFlags : Word) : Boolean;
+  {-Return True if all specified options are on}
+
+{User control}
+procedure SetStatusFunc(FC : FaxConverterPtr; FCF : FaxCvtStatusFunc);
+  {-Set our status proc}
+function LoadFont(FC : FaxConverterPtr; FontHandle : Byte; HiRes : Boolean) : Boolean;
+  {-Load selected font from APFAX.FNT or memory}
+function LoadHPFont(FC : FaxConverterPtr; FontName : PathStr; HiRes : Boolean) : Boolean;
+  {-Load font from HP soft font file FontName}
+procedure SetPageSize(FC : FaxConverterPtr; PS : Integer);
+  {-Set paging size for text faxes}
+procedure SetResolutionMode(FC : FaxConverterPtr; HiRes : Boolean);
+  {-Select low- or high-resolution mode}
+procedure SetFaxPath(FC : FaxConverterPtr; PS : PathStr);
+  {-Set path for storage of fax files}
+procedure SetResolutionWidth(FC : FaxConverterPtr; RW : ResWidths);
+  {-Select resolution width for this fax}
+procedure SetStationIDCvt(FC : FaxConverterPtr; SID : Str20);
+  {-Set the sending Station ID for this fax}
+procedure SetMargins(FC : FaxConverterPtr; Left, Top : Word);
+  {-Set top and left margins for converted documents}
+procedure GetStatusInfo(FC : FaxConverterPtr; var Line : LongInt; var Page : Integer);
+  {-Return current line/page}
+function GetFileName(FC : FaxConverterPtr) : PathStr;
+  {-Return the name of the input file}
+
+{Text converter routines}
+procedure InitTextConverter(var FC : FaxConverterPtr);
+  {-Allocate and initialize a TextConverter record}
+procedure DoneTextConverter(var FC : FaxConverterPtr);
+  {-Dispose of a TextConverter record}
+procedure ConvertFaxText(FC : FaxConverterPtr; FName : PathStr);
+  {-Convert text file to our FAX output format}
+
+{PcxConverterData routines}
+procedure InitPcxConverterData(var P : PcxConverterDataPtr);
+  {-Allocate and initialize ConverterData record}
+procedure DonePcxConverterData(var P : PcxConverterDataPtr);
+  {-Dispose of ConverterData record}
+
+{PcxConverter routines}
+procedure InitPcxConverter(var FC : FaxConverterPtr);
+  {-Allocate and initialize a PcxConverter record}
+procedure DonePcxConverter(var FC : FaxConverterPtr);
+  {-Dispose of a PcxConverter record}
+procedure ConvertFaxPcx(FC : FaxConverterPtr; FName : PathStr);
+  {-Convert a pcx file to our FAX format}
+
+{DcxConverter routines}
+procedure InitDcxConverter(var FC : FaxConverterPtr);
+  {-Allocate and initialize a DcxConverter record}
+procedure DoneDcxConverter(var FC : FaxConverterPtr);
+  {-Dispose of a DcxConverter record}
+procedure ConvertFaxDcx(FC : FaxConverterPtr; FName : PathStr);
+  {-Convert a dcx file to our FAX format}
+
+{Tiff converter routines}
+procedure InitTiffConverter(var FC : FaxConverterPtr);
+  {-Allocate and initialize a TiffConverter record}
+procedure DoneTiffConverter(var FC : FaxConverterPtr);
+  {-Dispose of a TiffConverter record}
+procedure ConvertFaxTiff(FC : FaxConverterPtr; FName : PathStr);
+  {-Convert a tiff file to our FAX format}
+
+{Bmp converter routines}
+procedure InitBmpConverter(var FC : FaxConverterPtr);
+  {-Allocate and initialize a BmpConverter record}
+procedure DoneBmpConverter(var FC : FaxConverterPtr);
+  {-Dispose of a BmpConverter record}
+procedure ConvertFaxBmp(FC : FaxConverterPtr; FName : PathStr);
+  {-Convert a bmp file to our FAX format}
+
+{Unpack Init/destroy}
+procedure InitUnpacker(var UF : UnpackFaxPtr);
+  {-Allocate and initialize a fax unpacker}
+procedure DoneUnpacker(var UF : UnpackFaxPtr);
+  {-Dispose of a fax unpacker}
+
+{Option management}
+procedure ufOptionsOn(UF : UnpackFaxPtr; OptionFlags : Word);
+  {-Activate multiple options}
+procedure ufOptionsOff(UF : UnpackFaxPtr; OptionFlags : Word);
+  {-Deactivate multiple options}
+function ufOptionsAreOn(UF : UnpackFaxPtr; OptionFlags : Word) : Boolean;
+  {-Return True if all specified options are on}
+
+{User control}
+procedure GetFaxHeader(UF : UnpackFaxPtr; FName : PathStr; var FH : FaxHeaderRec);
+  {-Return header for fax FName}
+procedure GetPageHeader(UF : UnpackFaxPtr; FName : PathStr;
+                        Page : Word; var PH : PageHeaderRec);
+  {-Return header for Page in fax FName}
+procedure SetOutputLineFunc(UF : UnpackFaxPtr; OLF : OutputLineFunc);
+  {-Set output-line procedure}
+procedure UnpackPage(UF : UnpackFaxPtr; FName : PathStr; Page : Word);
+  {-Unpack page PgNo of FName, calling OutputLine for each raster line}
+procedure UnpackFile(UF : UnpackFaxPtr; FName : PathStr);
+  {-Unpack all pages in a fax file}
+
+{UnpackPcxData}
+procedure InitPcxUnpackData(var P : PcxUnpackDataPtr);
+  {-Allocate and initialize PcxUnpackData record}
+procedure DoneUnpackPcxData(var P : PcxUnpackDataPtr);
+  {-Dispose of PcxUnpackData record}
+
+{UnpackToPcx}
+procedure InitUnpackToPcx(var UFP : UnpackToPcxPtr);
+  {-Allocate and initialize a fax unpacker}
+procedure DoneUnpackToPcx(var UFP: UnpackToPcxPtr);
+  {-Dispose of a fax unpacker}
+procedure UnpackFileToPcx(UFP : UnpackToPcxPtr; Fax, Pcx: PathStr);
+  {-Unpack fax file FaxName to pcx file PcxName}
+
+{UnpackToDCX}
+procedure InitUnpackToDcx(var UFP : UnpackToPcxPtr);
+  {-Allocate and initialize a fax unpacker}
+procedure DoneUnpackToDcx(var UFP : UnpackToPcxPtr);
+  {-Dispose of a fax unpacker}
+procedure UnpackFileToDcx(UFP : UnpackToPcxPtr; Fax, Dcx: PathStr);
+  {-Unpack fax file FaxName to pcx file PcxName}
+
+{.Z+}{Private routines}
+{!!.03 ordering and ifdef changes}
+function TodayString : String;
+  {-Return today's date in a "MM/DD/YY" format string}
+function NowString : String;
+  {-Return the current time as a "HH:MMpm" string}
+{$IFDEF Standalone}
+function Trim(S : String) : String;
+  {-Trim string}
+function ForceExtension(Name : string; Ext : ExtStr) : string;
+  {-Return a pathname with the specified extension attached}
+{$ENDIF}
+procedure Merge(var S : String; C : Char);
+  {-Appends C to S, shifting S if it gets too long}
+function TrimStationID(S : String) : String;
+  {-Trim a station ID string}
+procedure StripPrefix(var S : String);
+  {-Removes prefix from faxmodem response string}
+function GetPackedDateTime : LongInt;
+  {-Return current date/time in packed format}
+function acAddData(FC : FaxConverterPtr; var Buffer; Len : Word;
+                   DoInc : Boolean) : Boolean;
+
+{!!.01}
+function acAddLine(FC : FaxConverterPtr; var Buffer; Len : Word) : Boolean;
+  {-Add a raster with <lengthword><rasterdata> format }
+
+{!!.01}
+function acAddBlankLines(FC : FaxConverterPtr; Count : Word) : Boolean;
+  {-Write blank raster lines to disk }
+
+function acCreateOutputFile(FC : FaxConverterPtr; FN : PathStr) : Integer;
+  {-create output file FN}
+function acUpdateMainHeader(FC : FaxConverterPtr) : Integer;
+  {-update the contents of the main header in the file}
+function acUpdatePageHeader(FC : FaxConverterPtr; PgNo : Word;
+                            var PgInfo : PageHeaderRec) : Integer;
+  {-update the contents of the PgNo-th page header in the file}
+procedure acAddCodePrim(FC : FaxConverterPtr; Code : Word;
+                        SignificantBits : Word);
+  {-Lowlevel routine to add a runlength code to the line buffer}
+procedure acAddCode(FC : FaxConverterPtr; RunLen : Word; IsWhite : Boolean);
+  {-Adds a code representing RunLen pixels of white (IsWhite=True) or black
+    to the current line buffer}
+procedure acCompressRasterLine(FC : FaxConverterPtr; var Buffer);
+  {-compress a raster line of bits into runlength codes}
+function pcOpenPcxFile(FC : FaxConverterPtr) : Integer;
+  {-open input file}
+function pcValidatePcxHdr(FC : FaxConverterPtr) : Boolean;
+  {-Validate file as pcx}
+procedure pcReadRasterLine(FC : FaxConverterPtr; var Buffer);
+  {-Read a PCX raster line into Buffer.  Buffer is assumed to be at least
+    ResWidth bits in size.}
+procedure tcReadRasterLine(FC : FaxConverterPtr; var Buffer);
+  {-Read and decompress the next line of raster data from the file}
+procedure tcLoadStripInfo(FC : FaxConverterPtr);                       {!!.01}
+  {-Load strip offset/length arrays from tif file}                     {!!.01}
+function tcValidTIFF(FC : FaxConverterPtr) : Boolean;
+  {-Validate as TIFF file and set Intel byte-order flag}
+function tcOpenTiffFile(FC : FaxConverterPtr) : Integer;
+  {-open input file}
+function tcSeek(FC : FaxConverterPtr; NewOfs : LongInt) : Boolean;
+  {-Seek to NewOfs in file}
+function tcReadTagDir(FC : FaxConverterPtr) : Boolean;
+  {-Read the tags from the "image directory"}
+function tcGetLong(FC : FaxConverterPtr) : LongInt;
+  {-Get the next longint from the file, accounting for byte ordering}
+function bcOpenBmpFile(FC : FaxConverterPtr) : Integer;
+  {-open input file}
+procedure bcReadRasterLine(FC : FaxConverterPtr; var Buffer);
+  {-Read a BMP raster line into Buffer.}
+
+{.Z-}
+
+{$ENDIF}

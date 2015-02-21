@@ -1,0 +1,791 @@
+;-------------------------------------------------------------------
+!TOPIC 586 ApLzh
+ApLzh provides facilities for working with LZH archives. Using the
+routines/methods in it, you can archive files to an LZH archive, list the files stored in an LZH archive, and extract files from a LZH archive.
+
+ApLzh offers the following routines:
+
+  0591BuildLzhFileList               0634Compress
+  0635CompressFileMaskList           0637CreateLzhFile
+  0631Declarations                   0640DeleteFileMaskList
+  0638DeleteFilesLzh                 0592DeleteLzhFileListNode
+  0588DoneLzhFile                    0594DoneLzhFileList
+  0614Extract                        0589ExtractFileMaskList
+  0593ExtractLzhFileList             0641FreshenArchive
+  0587InitLzhFile                    0590InitLzhFileList
+  0600SetCompressionMode             0643SetCompressSuccessFunc
+  0598SetExtractSuccessFunc          0642SetOkToCompressFunc
+  0595SetOkToWriteFunc               0606SetProgressWidth
+  0597SetShowMethodProc              0596SetShowNameProc
+  0599SetShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 587 InitLzhFile
+!NOINDEX
+procedure 0586ApLzh.InitLzhFile(LzhName : PathStr);
+
+Open the LZH file.
+
+See also:  0588DoneLzhFile
+;
+;-------------------------------------------------------------------
+!TOPIC 588 DoneLzhFile
+!NOINDEX
+procedure 0586ApLzh.DoneLzhFile;
+
+Close the LZH file.
+
+See also:  0587InitLzhFile
+;
+;-------------------------------------------------------------------
+!TOPIC 589 ExtractFileMaskList,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.ExtractFileMaskListLzh(var FML : 0180FileMaskList);
+!LINE
+procedure 0612UnLzh.ExtractFileMaskList(var FML : 0166FileMaskList);
+
+Extract all files that match the file mask list.
+
+See also:  0593ExtractLzhFileList    0174GetLastError
+           0152InitFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 590 InitLzhFileList
+!NOINDEX
+procedure 0586ApLzh.InitLzhFileList(var LFL : 0619LzhFileList);
+
+Initialize an LzhFileList.
+
+See also:  0591BuildLzhFileList      0594DoneLzhFileList
+           0593ExtractLzhFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 591 BuildLzhFileList
+!NOINDEX
+procedure 0586ApLzh.BuildLzhFileList(var LFL : 0619LzhFileList;
+                                 var FML : 0180FileMaskList);
+!LINE
+procedure 0612UnLzh.BuildLzhFileList(var LFL : 0607LzhFileList;
+                                 var FML : 0166FileMaskList);
+
+Build a list of files to be unarchived.
+
+See also:    0594DoneLzhFileList     0174GetLastError
+             0608Init                0590InitLzhFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 592 DeleteLzhFileListNode
+!NOINDEX
+procedure 0586ApLzh.DeleteLzhFileListNode(var LFL : 0619LzhFileList;
+                                      LNP : 0620LzhNodePtr);
+
+Delete the specified node from the LzhFileList.
+
+See also:  0611Delete
+;
+;-------------------------------------------------------------------
+!TOPIC 593 ExtractLzhFileList
+!NOINDEX
+procedure 0586ApLzh.ExtractLzhFileList(var LFL : 0619LzhFileList);
+!LINE
+procedure 0612UnLzh.ExtractLzhFileList(var LFL : 0607LzhFileList);
+
+Extract all files in the specified LzhFileList.
+
+See also:  0591BuildLzhFileList      0614Extract
+           0589ExtractFileMaskList   0590InitLzhFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 594 DoneLzhFileList
+!NOINDEX
+procedure 0586ApLzh.DoneLzhFileList(var LFL : 0619LzhFileList);
+
+Destroy an LzhFileList.
+
+See also:  0591BuildLzhFileList      0590InitLzhFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 595 SetOkToWriteFunc,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.SetOkToWriteFuncLzh(OKF : 0621OkToWriteFunc);
+!LINE
+procedure 0612UnLzh.SetOkToWriteFunc(OKF : 0627OkToWriteFunc);
+
+Specify a function to call before extracting a file.
+;
+;-------------------------------------------------------------------
+!TOPIC 596 SetShowNameProc
+!NOINDEX
+procedure 0586ApLzh.SetShowNameProcLzh(SNP : 0623ShowNameProc);
+!LINE
+procedure 0612UnLzh.SetShowNameProc(SNP : 0629ShowNameProc);
+
+Specify a procedure to display the LZH file name.
+;
+;-------------------------------------------------------------------
+!TOPIC 597 SetShowMethodProc,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.SetShowMethodProcLzh(SMP : 0622ShowMethodProc);
+!LINE
+procedure 0612UnLzh.SetShowMethodProc(SMP : 0628ShowMethodProc);
+
+Specify a procedure to display the file name and compression method.
+;
+;-------------------------------------------------------------------
+!TOPIC 598 SetExtractSuccessFunc,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.SetExtractSuccessFuncLzh(ESF : 0618ExtractSuccessFunc);
+!LINE
+procedure 0612UnLzh.SetExtractSuccessFunc(ESF : 0626ExtractSuccessFunc);
+
+Specify a function to call after file is unarchived.
+;
+;-------------------------------------------------------------------
+!TOPIC 599 SetShowProgressFunc,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.SetShowProgressFuncLzh(SPF : 0624ShowProgressFunc);
+!LINE
+procedure 0612UnLzh.SetShowProgressFunc(SPF : 0630ShowProgressFunc);
+
+Specify a function to call to show the progress of a compression or
+extraction.
+;
+;-------------------------------------------------------------------
+!TOPIC 600 SetCompressionMode,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.SetCompressionModeLzh(CM : 0649CompressionMode);
+!LINE
+procedure 0612UnLzh.SetCompressionMode(CM : 0649CompressionMode);
+
+Set the compression mode.
+;
+;-------------------------------------------------------------------
+!TOPIC 601 OoLzh
+OoLzh provides facilities for working with LZH archives. Using the objects
+in it, you can archive files to an LZH archive, list the files stored in an LZH archive, and extract files from an LZH archive.
+
+OoLzh implements four objects:
+
+  0602LzhNode     - A single file in an LZH archive
+
+  0607LzhFileList - A list of files in an LZH archive
+
+  [0171Archive]
+    0612UnLzh     - Object for listing/extracting files from LZH archives
+      0633Lzh     - Object for adding/updating files to LZH archives
+
+See also:  0632Declarations
+;
+;-------------------------------------------------------------------
+!TOPIC 602 LzhNode,OoLzh
+!NOINDEX
+LzhNodePtr = ^LzhNode;
+!LINE
+LzhNode =
+  object
+    lnNext    : LzhNodePtr;
+    lnLH      : 0617LzhHeader;
+    lnFileOfs : LongInt;
+    lnTagged  : Boolean;
+  end;
+
+A single node in an LzhFileList. lnFileOfs is the offset within the LZH file
+for the compressed file described by the LzhHeader. lnNext points to the next
+node in the list. lnTagged may be set to False to prevent the file from being
+extracted. LzhNode provides the following methods:
+
+  0604Done                           0603Init
+  0605SetTag
+
+See also:  0607LzhFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 603 Init,LzhNode
+!NOINDEX
+constructor 0602LzhNode.Init(var LH : 0617LzhHeader; FO : LongInt);
+
+Initialize node.
+
+See also:  0604Done                  0610LzhFileList.Append
+;
+;-------------------------------------------------------------------
+!TOPIC 604 Done,LzhNode
+!NOINDEX
+destructor 0602LzhNode.Done; virtual;
+
+Destroy a node.
+
+See also:  0603Init
+;
+;-------------------------------------------------------------------
+!TOPIC 605 SetTag,LzhNode
+!NOINDEX
+procedure 0602LzhNode.SetTag(On : Boolean);
+
+Tag/untag this node.
+;
+;-------------------------------------------------------------------
+!TOPIC 606 SetProgressWidth
+!NOINDEX
+procedure 0586ApLzh.SetProgressWidth(Width : Word);
+!LINE
+procedure 0633Lzh.SetProgressWidth(Width : Word);
+
+Set the display width used by DefShowProgress.
+
+See also:  0599SetShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 607 LzhFileList,OoLzh
+!NOINDEX
+LzhFileListPtr = ^LzhFileList;
+!LINE
+LzhFileList =
+  object
+    lfHead : LzhNodePtr;
+    lfTail : LzhNodePtr;
+    lfCount : Word;
+  end;
+
+A singly-linked list of files in an LZH file, generally created by calling
+UnLzh.BuildLzhFileList. lfHead points to the first node in the list, lfTail to
+the last. lfCount is the number of nodes in the list. LzhFileList provides the
+following methods:
+
+  0610Append                         0611Delete
+  0609Done                           0608Init
+
+See also:  0602LzhNode
+;
+;-------------------------------------------------------------------
+!TOPIC 608 Init,LzhFileList
+!NOINDEX
+constructor 0607LzhFileList.Init;
+
+Initialize an LzhFileList.
+
+See also:  0609Done
+;
+;-------------------------------------------------------------------
+!TOPIC 609 Done,LzhFileList
+!NOINDEX
+destructor 0607LzhFileList.Done; virtual;
+
+Destroy an LzhFileList.
+
+See also:  0608Init
+;
+;-------------------------------------------------------------------
+!TOPIC 610 Append,LzhFileList
+!NOINDEX
+function 0607LzhFileList.Append(var LH : 0617LzhHeader; FO : LongInt) : Boolean;
+
+Add a node to the list.
+
+See also:  0591BuildLzhFileList      0603LzhNode.Init
+;
+;-------------------------------------------------------------------
+!TOPIC 611 Delete,LzhFileList
+!NOINDEX
+procedure 0607LzhFileList.Delete(LNP : LzhNodePtr);
+
+Delete the specified node from the LzhFileList.
+
+See also:  0592DeleteLzhFileListNode
+;
+;-------------------------------------------------------------------
+!TOPIC 612 UnLzh
+!NOINDEX
+UnLzhPtr = ^UnLzh;
+!LINE
+UnLzh =
+  object(0171Archive)
+    ulCrc : Word;  {running CRC counter}
+    ...
+  end;
+
+An object used for extracting information and/or compressed files from an LZH
+archive. ulCRC is a running CRC counter, used when extracting a file. This
+variable can be used by an ExtractSuccess function in the event of an
+ecBadFileCRC error to determine what the computed CRC value was. UnLzh
+provides the following methods:
+
+  0591BuildLzhFileList               0632Declarations
+  0614Extract                        0589ExtractFileMaskList
+  0593ExtractLzhFileList             0613Init
+  0598SetExtractSuccessFunc          0595SetOkToWriteFunc
+  0597SetShowMethodProc              0596SetShowNameProc
+  0599SetShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 613 Init,UnLzh
+!NOINDEX
+constructor 0612UnLzh.Init(FName : PathStr);
+
+Initialize the archive and open the input file.
+;
+;-------------------------------------------------------------------
+!TOPIC 614 Extract,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.ExtractLzh(Mask : PathStr);
+!LINE
+procedure 0612UnLzh.Extract(Mask : PathStr);
+
+Extract all files that match the specified file mask.
+
+See also:  0589ExtractFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 615 Compression method codes,ApLzh/OoLzh
+!NOINDEX
+const
+  cmcStored   = '0'; {stored (no compression)}
+  cmcFrozen1  = '1'; {shrunk by LHARC 1.x}
+  cmcFrozen2  = '5'; {shrunk by LHA 2.x}
+
+The possible compression method codes. In an 0617LzhHeader, the compression
+method code is at HeadID[4].
+
+See also:  0597SetShowMethodProc
+;
+;-------------------------------------------------------------------
+!TOPIC 616 NextDisplayInc
+!NOINDEX
+const
+  NextDisplayInc : Word;
+
+Controls how frequently the ShowProgress function is called. NextDisplayInc
+is the number of bytes that should be read from the source file and
+compressed before the ShowProgress function is called again. The default is
+4096 bytes.
+;
+;-------------------------------------------------------------------
+!TOPIC 617 LzhHeader
+!NOINDEX
+type
+  LzhHeader =
+    record
+      HeadSize     : Byte;       {size of header}
+      HeadChk      : Byte;       {checksum for header}
+      HeadID       : HeadIdType; {compression type tag}
+      NewSize      : LongInt;    {compressed size}
+      OrigSize     : LongInt;    {original size}
+      Time         : Word;       {packed time}
+      Date         : Word;       {packed date}
+      Attr         : Byte;       {file attributes}
+      Level        : Byte;       {=0 LZH method, =1 LHA method}
+      FName        : PathStr;    {filename (variable length)}
+      CRC          : Word;       {16-bit CRC (immediately follows FName)}
+      OSID         : Char;       {=M for DOS - LHA method}
+      PathHdrSize  : Word;       {path extended header size}
+      PathHdrID    : Byte;       {=2 "Path" extended header flag}
+      ExtFPath     : PathStr;    {pathname (variable length)}
+      AttrHdrSize  : Word;       {size of the attribute header}
+      AttrHdrID    : Byte;       {attribute header ID}
+      ExtAttr      : Word;       {extended attribute}
+      FNameHdrSize : Word;       {filename extended header size}
+      FNameHdrID   : Byte;       {=1 "FileName" extended header}
+      ExtFName     : PathStr;    {filename (variable length)}
+      CRCHdrSize   : Word;       {=5 extended CRC Header}
+      CRCHdrID     : Byte;       {=0 "CRC" extended header flag}
+      ExtCRC       : Word;       {extended Header CRC value}
+      NextHdrSize  : Word;       {=0 No more extended headers}
+    end;
+
+Data structure similar to the header that precedes a compressed file stored
+in an LZH archive. In an actual file header, some of the fields are variable
+length. The header is then followed by the compressed file itself.
+
+See also:  0615Compression method codes
+;
+;-------------------------------------------------------------------
+!TOPIC 618 ExtractSuccessFunc,ApLzh
+!NOINDEX
+type
+  ApLzh.ExtractSuccessFunc = function(var LH : 0617LzhHeader; FName : PathStr;
+                                      ErrCode : Word) : Boolean;
+
+A function called after a file is extracted from an archive. ErrCode
+contains 0 if the extraction was successful, else an error code. LH is the
+header for the file being extracted, and FName is the name of the output
+file that was created. The function should return True if it wants the
+extraction operation to continue.
+
+See also:  0625Crc                   0598SetExtractSuccessFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 619 LzhFileList,ApLzh
+!NOINDEX
+type
+  LzhFileList =
+    record
+      Head, Tail : LzhNodePtr;
+      Count : Word;
+    end;
+
+A singly-linked list of files in an LZH file, generally created by calling
+0591BuildLzhFileList. Head points to the first node in the list, Tail to the
+last. Count is the number of nodes in the list.
+
+See also:  0620LzhNode
+;
+;-------------------------------------------------------------------
+!TOPIC 620 LzhNode,ApLzh
+!NOINDEX
+type
+  LzhNodePtr = ^LzhNode;
+  LzhNode = record
+    Next    : LzhNodePtr;
+    LH      : 0617LzhHeader;
+    FileOfs : LongInt;
+    Tagged  : Boolean;
+  end;
+
+A single node in an LzhFileList. FileOfs is the offset within the LZH file
+for the compressed file described by the LzhHeader. Next points to the next
+node in the list. Tagged can be set to False to prevent the file from being
+extracted.
+
+See also:  0619LzhFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 621 OkToWriteFunc,ApLzh
+!NOINDEX
+type
+  ApLzh.OkToWriteFunc = function(var LH : 0617LzhHeader;
+                                 var FName : PathStr) : Boolean;
+
+A function of this type is called to determine whether or not the specified
+file (FName) should be extracted from the LZH archive. This function can
+also change the name of the file to be written. Note that the call is made
+after any file mask matching has been done.
+
+See also:  0595SetOkToWriteFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 622 ShowMethodProc,ApLzh
+!NOINDEX
+type
+  ApLzh.ShowMethodProc = procedure(Method : Char; FName : PathStr);
+
+A procedure of this type is called just before the specified file (FName) is
+compressed or extracted, giving you an opportunity to display its name and
+(during extraction) the compression method used (cmcStored, cmcFrozen1, or
+cmcFrozen2).
+
+See also:  0615Compression method codes  0597SetShowMethodProc
+;
+;-------------------------------------------------------------------
+!TOPIC 623 ShowNameProc,ApLzh
+!NOINDEX
+type
+  ShowNameProc = procedure(FName : PathStr);
+
+A procedure of this type is called when an LzhFileList is being built,
+giving you an opportunity to display the name of the LZH file.
+
+See also:  0596SetShowNameProc
+;
+;-------------------------------------------------------------------
+!TOPIC 624 ShowProgressFunc,ApLzh
+!NOINDEX
+type
+  ApLzh.ShowProgressFunc = function(BytesWritten : LongInt;
+                                    TotalBytes : LongInt) : Boolean;
+
+A function of this type is called periodically during the compression or
+extraction of a file, giving you an opportunity to indicate to the user that
+progress is being made. It should return False if it wants to abort the
+extract operation.
+
+See also:  0599SetShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 625 Crc,ApLzh
+!NOINDEX
+var
+  ApLzh.Crc : Word;
+
+Running CRC counter. This variable can be used by an ExtractSuccess
+function in the event of an ecBadFileCRC error to determine what the
+computed CRC value was. (LH.CRC would contain the correct CRC value.)
+
+See also:  0618ExtractSuccessFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 626 ExtractSuccessFunc,OoLzh
+!NOINDEX
+type
+  ExtractSuccessFunc = function(LNP : 0602LzhNodePtr; FName : PathStr;
+                                UP : UnLzhPtr) : Boolean;
+
+A function called after a file is extracted from an archive. LNP points to
+the LzhNode corresponding to the file being extracted, and FName is the name
+of the output file that was being created. The success of the operation can
+be determined by calling UP^.GetLastError. The function should return True
+if it wants the extraction operation to continue.
+
+See also:  0598SetExtractSuccessFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 627 OkToWriteFunc,OoLzh
+!NOINDEX
+type
+  OkToWriteFunc = function(LNP : 0602LzhNodePtr; var FName : PathStr;
+                           UP : UnLzhPtr) : Boolean;
+
+A function of this type is called to determine whether or not the specified
+file (FName) should be extracted from the LZH archive. This function can
+also change the name of the file to be written. Note that the call is made
+after any file mask matching has been done.
+
+See also:  0595SetOkToWriteFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 628 ShowMethodProc,OoLzh
+!NOINDEX
+type
+  ShowMethodProc = procedure(LNP : 0602LzhNodePtr; FName : PathStr;
+                             UP : UnLzhPtr);
+
+A procedure of this type is called just before the specified file (FName)
+is compressed or extracted, giving you an opportunity to display its name
+and (during extraction) the compression method used (cmcStored, cmcFrozen1,
+or cmcFrozen2).
+
+See also:  0597SetShowMethodProc
+;
+;-------------------------------------------------------------------
+!TOPIC 629 ShowNameProc,OoLzh
+!NOINDEX
+type
+  ShowNameProc = procedure(UP : UnLzhPtr);
+
+A procedure of this type is called when an LzhFileList is being built,
+giving you an opportunity to display the name of the LZH file.
+
+See also:  0596SetShowNameProc
+;
+;-------------------------------------------------------------------
+!TOPIC 630 ShowProgressFunc,OoLzh
+!NOINDEX
+type
+  ShowProgressFunc = function(UP : UnLzhPtr; BytesWritten : LongInt;
+                              TotalBytes : LongInt) : Boolean;
+
+A function of this type is called periodically during the compression or
+extraction of a file, giving you an opportunity to indicate to the user
+hat progress is being made. It should return False if it wants to abort the
+extract operation.
+
+See also:  0599SetShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 631 Declarations,ApLzh
+!NOINDEX
+!NOSEARCH
+ApLzh declares the following types, constants, and variables:
+
+  0615Compression method codes       0649CompressionMode
+  0645CompressSuccessFunc            0625Crc
+  0618ExtractSuccessFunc             0619LzhFileList
+  0617LzhHeader                      0620LzhNode
+  0616NextDisplayInc                 0644OkToCompressFunc
+  0621OkToWriteFunc                  0622ShowMethodProc
+  0623ShowNameProc                   0624ShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 632 Declarations,OoLzh
+!NOINDEX
+!NOSEARCH
+OoLzh declares the following types and constants:
+
+  0615Compression method codes       0649CompressionMode
+  0648CompressSuccessFunc            0626ExtractSuccessFunc
+  0617LzhHeader                      0647OkToCompressFunc
+  0616NextDisplayInc                 0627OkToWriteFunc
+  0628ShowMethodProc                 0629ShowNameProc
+  0630ShowProgressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 633 Lzh
+!NOINDEX
+LzhPtr = ^Lzh;
+!LINE
+Lzh =
+  object(0612UnLzh)
+    ...
+  end;
+
+An object used for compressing files into an LZH archive. Lzh provides the
+following methods:
+
+  0634Compress                       0635CompressFileMaskList
+  0636Create                         0639Delete
+  0640DeleteFileMaskList             0641FreshenArchive
+  0646Init                           0600SetCompressionMode
+  0643SetCompressSuccessFunc         0606SetProgressWidth
+  0642SetOkToCompressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 634 Compress,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.CompressLzh(Mask : PathStr);
+!LINE
+procedure 0633Lzh.Compress(Mask : PathStr);
+
+Compress all files that match a file mask.
+
+See also:  0635CompressFileMaskList  0641FreshenArchive
+;
+;-------------------------------------------------------------------
+!TOPIC 635 CompressFileMaskList,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.CompressFileMaskListLzh(var FML : 0180FileMaskList);
+!LINE
+procedure 0633Lzh.CompressFileMaskList(var FML : 0166FileMaskList);
+
+Compress all files that match the file mask list.
+
+See also:  0634Compress              0600SetCompressionMode
+;
+;-------------------------------------------------------------------
+!TOPIC 636 Create,Lzh
+!NOINDEX
+constructor 0633Lzh.Create(FName : PathStr);
+
+Creates a new LZH archive file.
+
+See also:  0646Init
+;
+;-------------------------------------------------------------------
+!TOPIC 637 CreateLzhFile
+!NOINDEX
+procedure 0586ApLzh.CreateLzhFile(LzhName : PathStr);
+
+Create a new LZH archive file.
+
+See also:  0588DoneLzhFile           0587InitLzhFile
+;
+;-------------------------------------------------------------------
+!TOPIC 638 DeleteFilesLzh
+!NOINDEX
+procedure 0586ApLzh.DeleteFilesLzh(Mask : PathStr);
+
+Remove all files that match a file mask from an archive.
+
+See also:  0640DeleteFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 639 Delete,Lzh
+!NOINDEX
+procedure 0633Lzh.Delete(Mask : PathStr);
+
+Remove all files that match a file mask from an archive.
+
+See also:  0640DeleteFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 640 DeleteFileMaskList,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.DeleteFileMaskListLzh(var FML : 0180FileMaskList);
+!LINE
+procedure 0633Lzh.DeleteFileMaskList(var FML : 0166FileMaskList);
+
+Remove all files that match any mask in the file mask list from an archive.
+
+See also:  0638DeleteFilesLzh        0639Lzh.Delete
+;
+;-------------------------------------------------------------------
+!TOPIC 641 FreshenArchive,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.FreshenArchiveLzh;
+!LINE
+procedure 0633Lzh.FreshenArchive;
+
+Conditionally update files in the current archive.
+;
+;-------------------------------------------------------------------
+!TOPIC 642 SetOkToCompressFunc,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.SetOkToCompressFunc(OKC : 0644OkToCompressFunc);
+!LINE
+procedure 0633Lzh.SetOkToCompressFunc(OKC : 0647OkToCompressFunc);
+
+Specify a function to call before compressing a file.
+;
+;-------------------------------------------------------------------
+!TOPIC 643 SetCompressSuccessFunc,ApLzh/OoLzh
+!NOINDEX
+procedure 0586ApLzh.SetCompressSuccessFuncLzh(CSF : 0645CompressSuccessFunc);
+!LINE
+procedure 0633Lzh.SetCompressSuccessFunc(CSF : 0648CompressSuccessFunc);
+
+Specify a function to call after each file is compressed.
+;
+;-------------------------------------------------------------------
+!TOPIC 644 OkToCompressFunc,ApLzh
+!NOINDEX
+type
+  ApLzh.OkToCompressFunc = function(NewFile : PathStr;
+                                    LH : 0617LzhHeader) : Boolean;
+
+A function of this type is called before each file is compressed, giving you
+a chance to skip the compression.
+
+See also:  0642SetOkToCompressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 645 CompressSuccessFunc,ApLzh
+!NOINDEX
+type
+  ApLzh.CompressSuccessFunc = function(var LH : 0617LzhHeader;
+                                       ErrCode : Word) : Boolean;
+
+A function of this type is called after each file is compressed, giving you
+a chance to update your status display. LH is the header for the file being
+extracted. The function should return True if it wants the compression
+operation to continue.
+
+See also:  0643SetCompressSuccessFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 646 Init,Lzh
+!NOINDEX
+constructor 0633Lzh.Init(FName : PathStr);
+
+Open an LZH archive.
+;
+;-------------------------------------------------------------------
+!TOPIC 647 OkToCompressFunc,OoLzh
+!NOINDEX
+type
+  OkToCompressFunc = function(LP : 0633LzhPtr; NewFile : PathStr;
+                              LH : 0617LzhHeader) : Boolean;
+
+A function of this type is called before each file is compressed, giving you
+a chance to skip the compression.
+
+See also:  0642SetOkToCompressFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 648 CompressSuccessFunc,OoLzh
+!NOINDEX
+type
+  CompressSuccessFunc = function(LP : 0633LzhPtr;
+                                 LH : 0617LzhHeader) : Boolean;
+
+A function of this type is called after each file is compressed, giving you
+a chance to update your status display. LH is the header for the file being
+extracted. The function should return True if it wants the compression
+operation to continue.
+
+See also:  0643SetCompressSuccessFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 649 CompressionMode,ApLzh
+!NOINDEX
+type
+  ApLzh.CompressionMode  = (cmBestMethod, cmStored, cmFrozen1, cmFrozen2);
+
+Enumerated type used to select the compression mode.

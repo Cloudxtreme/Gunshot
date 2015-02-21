@@ -1,0 +1,463 @@
+;-------------------------------------------------------------------
+!TOPIC 151 ApArchiv
+ApArchiv provides facilities that are useful when working with archives in
+both the LZH and the ZIP formats. It offers procedures and functions for
+setting options that affect the handling of archives by the higher-level units
+APLZH and APZIP, as well as a variety of routines for working with file mask
+lists.
+
+ApArchiv provides the following routines:
+
+  0154AppendFileMask                 0158arOptionsAreOn
+  0157arOptionsOff                   0156arOptionsOn
+  0160CreateOutputFile               0182Declarations
+  0153DoneFileMaskList               0184ExpandFileMaskList
+  0152InitFileMaskList               0155MatchFileMask
+  0159SetOutputPath                  0185SortFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 152 InitFileMaskList
+!NOINDEX
+procedure 0151ApArchiv.InitFileMaskList(var FML : 0180FileMaskList);
+
+Initialize a file mask list.
+
+See also:  0154AppendFileMask        0153DoneFileMaskList
+           0155MatchFileMask
+;
+;-------------------------------------------------------------------
+!TOPIC 153 DoneFileMaskList
+!NOINDEX
+procedure 0151ApArchiv.DoneFileMaskList(var FML : 0180FileMaskList);
+
+Deallocate memory used by a FileMaskList.
+
+See also:  0152InitFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 154 AppendFileMask
+!NOINDEX
+function 0151ApArchiv.AppendFileMask(FM : PathStr;
+                                 var FML : 0166FileMaskList) : Boolean;
+
+Add a file mask to a list of file masks.
+
+See also:  0152InitFileMaskList      0155MatchFileMask
+;
+;-------------------------------------------------------------------
+!TOPIC 155 MatchFileMask
+!NOINDEX
+function 0151ApArchiv.MatchFileMask(FM : PathStr;
+                                var FML : 0180FileMaskList) : Boolean;
+
+Return True if the specified file name is in the list of file masks.
+
+See also:  0154AppendFileMask        0152InitFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 156 arOptionsOn
+!NOINDEX
+procedure 0151ApArchiv.arOptionsOn(OptionFlags : Word);
+!LINE
+procedure 0171Archive.arOptionsOn(OptionFlags : Word);
+
+Activate multiple options.
+
+See also:  0176Archive options       0158arOptionsAreOn
+           0157arOptionsOff
+;
+;-------------------------------------------------------------------
+!TOPIC 157 arOptionsOff
+!NOINDEX
+procedure 0151ApArchiv.arOptionsOff(OptionFlags : Word);
+!LINE
+procedure 0171Archive.arOptionsOff(OptionFlags : Word);
+
+Deactivate multiple options.
+
+See also:  0176Archive options       0158arOptionsAreOn
+           0156arOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 158 arOptionsAreOn
+!NOINDEX
+function 0151ApArchiv.arOptionsAreOn(OptionFlags : Word) : Boolean;
+!LINE
+function 0171Archive.arOptionsAreOn(OptionFlags : Word) : Boolean;
+
+Return True if all specified options are on.
+
+See also:  0176Archive options       0157arOptionsOff
+           0156arOptionsOn
+;
+;-------------------------------------------------------------------
+!TOPIC 159 SetOutputPath
+!NOINDEX
+procedure 0151ApArchiv.SetOutputPath(Path : PathStr);
+!LINE
+procedure 0171Archive.SetOutputPath(Path : PathStr);
+
+Set a path for output files.
+
+See also:  0179arOutPath
+;
+;-------------------------------------------------------------------
+!TOPIC 160 CreateOutputFile
+!NOINDEX
+procedure 0151ApArchiv.CreateOutputFile(var F : File; FName : PathStr);
+!LINE
+procedure 0171Archive.CreateOutputFile(var F : File; FName : PathStr);
+
+Create a file with the specified name.
+
+See also:  0156arOptionsOn           0174GetLastError
+;
+;-------------------------------------------------------------------
+!TOPIC 161 OoArchiv
+OoArchiv provides objects that are useful when working with archives in
+both the LZH and the ZIP formats. It implements two objects relating to file
+mask lists:
+
+  0162FileMaskNode - a single file mask
+  0166FileMaskList - a singly-linked list of file masks
+
+OoArchiv also implements the Archive object, from which the higher level
+objects UnLzh and Unzip are derived:
+
+  0171Archive
+    [0612UnLzh]
+    [0996UnZip]
+
+See also:  0183Declarations
+;
+;-------------------------------------------------------------------
+!TOPIC 162 FileMaskNode,OoArchiv
+!NOINDEX
+FileMaskNodePtr = ^FileMaskNode;
+!LINE
+FileMaskNode =
+  object
+    fmnNext   : FileMaskNodePtr;
+    fmnDirPtr : StringPtr;
+    fmnName   : NameStr;
+    fmnExt    : ExtStr;
+  end;
+
+A node in a list of file masks. fmnName and fmnExt store the actual file mask
+(e.g., '*' and 'DOC' for '*.DOC'). fmnNext points to the next file mask in the
+list. FileMaskNode provides the following methods:
+
+  0164Done                           0163Init
+  0165Match
+
+See also:  0166FileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 163 Init,FileMaskNode
+!NOINDEX
+constructor 0162FileMaskNode.Init(FM : PathStr);
+
+Initialize the node.
+
+See also:  0164Done
+;
+;-------------------------------------------------------------------
+!TOPIC 164 Done,FileMaskNode
+!NOINDEX
+destructor 0162FileMaskNode.Done; virtual;
+
+Deallocate the memory used by the node.
+
+See also:  0163Init
+;
+;-------------------------------------------------------------------
+!TOPIC 165 Match,FileMaskNode
+!NOINDEX
+function 0162FileMaskNode.Match(Dir : DirStr: Name : NameStr;
+                            Ext : ExtStr) : Boolean;
+
+Return True if the specified file name matches the file mask stored in this
+node.
+
+See also:  0170FileMaskList.Match
+;
+;-------------------------------------------------------------------
+!TOPIC 166 FileMaskList,OoArchiv
+!NOINDEX
+FileMaskListPtr = ^FileMaskList;
+!LINE
+FileMaskList =
+  object
+    fmlHead, fmlTail : FileMaskNodePtr;
+  end;
+
+A singly-linked list of file masks. fmlHead points to the first node in the
+list, fmlTail to the last node. FileMaskList provides the following methods:
+
+  0169Append                         0168Done
+  0184ExpandFileMaskList             0167Init
+  0170Match                          0185SortFileMaskList
+
+See also:  0162FileMaskNode
+;
+;-------------------------------------------------------------------
+!TOPIC 167 Init,FileMaskList
+!NOINDEX
+constructor 0166FileMaskList.Init;
+
+Initialize a file mask list.
+
+See also:  0169Append                0168Done
+;
+;-------------------------------------------------------------------
+!TOPIC 168 Done,FileMaskList
+!NOINDEX
+destructor 0166FileMaskList.Done; virtual;
+
+Deallocate memory used by all nodes in the list.
+
+See also:  0167Init
+;
+;-------------------------------------------------------------------
+!TOPIC 169 Append,FileMaskList
+!NOINDEX
+function 0166FileMaskList.Append(FM : PathStr) : Boolean;
+
+Add a file mask to a list of file masks.
+
+See also:  0167Init
+;
+;-------------------------------------------------------------------
+!TOPIC 170 Match,FileMaskList
+!NOINDEX
+function 0166FileMaskList.Match(FName : PathStr) : Boolean;
+
+Return True if the specified file name is in list of file masks.
+
+See also:  0165FileMaskNode.Match
+;
+;-------------------------------------------------------------------
+!TOPIC 171 Archive
+!NOINDEX
+ArchivePtr = ^Archive;
+!LINE
+Archive =
+  object
+    arError   : Word;
+    arFile    : File;
+    arName    : PathStr;
+    arOutPath : PathStr;
+    arOptions : Word;
+    ...
+  end;
+
+An abstract object. Descendants of Archive are used for extracting information
+and/or files from an archive (i.e., a ZIP or LZH file). Archive provides the
+following methods:
+
+  0158arOptionsAreOn                 0157arOptionsOff
+  0156arOptionsOn                    0160CreateOutputFile
+  0173Done                           0175GetFileName
+  0174GetLastError                   0172Init
+  0159SetOutputPath
+
+See also:  0183Declarations
+;
+;-------------------------------------------------------------------
+!TOPIC 172 Init,Archive
+!NOINDEX
+constructor 0171Archive.Init(FName : PathStr);
+
+Initialize the archive and open the input file.
+
+See also:  0173Done
+;
+;-------------------------------------------------------------------
+!TOPIC 173 Done,Archive
+!NOINDEX
+destructor 0171Archive.Done; virtual;
+
+Destroy the archive object and close the input file.
+
+See also:  0172Init
+;
+;-------------------------------------------------------------------
+!TOPIC 174 GetLastError
+!NOINDEX
+function 0171Archive.GetLastError : Word;
+
+Get the code for the last error.
+
+See also:  0160CreateOutputFile
+;
+;-------------------------------------------------------------------
+!TOPIC 175 GetFileName,Archive
+!NOINDEX
+function 0171Archive.GetFileName : PathStr;
+
+Get name of an archive.
+
+See also:  0172Init
+;
+;-------------------------------------------------------------------
+!TOPIC 176 Archive options
+!NOINDEX
+const
+  arCreateDirs       = $0001;
+  arReadArcComments  = $0002;
+  arReadFileComments = $0004;
+  arStripPath        = $0008;
+  arCompressing      = $0100;
+  arDeleting         = $0200;
+  arNoDriveLetter    = $0400;
+  arRemoveDots       = $0800;
+
+These options, which can be turned on or off with 0156arOptionsOn and
+0157arOptionsOff, influence how archives are read and processed. If the
+arCreateDirs option is off, and a file in an archive has a relative
+pathname (e.g. 'DOC\README.DOC'), it is written to the default path for
+output files (e.g. 'C:\FILES') when it is dearchived. If the option is
+on, it is written to the indicated directory (e.g. 'C:\FILES\DOC'),
+which is created if necessary.
+
+The arReadArcComments and arReadFileComments options determine whether or
+not the comments stored in an archive are read into memory when the
+appropriate section of the archive is processed. arReadArcComments pertains
+to the comments for the archive as a whole. arReadFileComments pertains to
+the comments for individual files. These options affect the handling only of
+ZIP files, since LZH files currently do not provide a facility for storing
+comments in the archive.
+
+The arStripPath option tells the compressor to strip the path from the
+supplied file names as they are stored in the archive. The compressor still
+honors the path name when finding the file to compress.
+
+The arCompressing and arDeleting options are "information only" options--you
+should never change these options. You can check them in your ShowProgress
+and ShowName hooks (or any other user hooks) so that you can display exactly
+what action is taking place. If neither option is set, files are currently
+being extracted from the archive.
+
+arNoDriveLetter is used for compatibility with PKZIP 2.0. When this option
+is set, the zipping routines do not store the drive letter with the path.
+If the drive letter is stored, PKZIP 2.0 reports "invalid file name" and
+refuses to decompress the file. Apparently, not storing the drive letter is
+the proper behavior since no version of PKZIP stores them. However, the
+Async Professional unzipping routines and PKUNZIP 1.0 tolerate and honor the
+drive letter if it's specified. arNoDriveLetter is not set by default to
+maintain compatibility with earlier versions of Async Professional.
+
+When arRemoveDots is set, as it is by default, relative paths are removed
+from file names as they are stored. For example, ..\TEMP\XXX is stored as
+TEMP\XXX. This is the same behavior used by PKZIP 1.0/2.0 and is useful for
+recreating directory structures from any root directory. However, it is
+different from the way names were stored prior to Async Professional 1.12,
+which stored relative path information in the archive. If you want the old
+behavior of Async Professional, turn off arRemoveDots.
+
+See also:  0177BadArchiveOptions     0178DefArchiveOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 177 BadArchiveOptions
+!NOINDEX
+const
+  BadArchiveOptions : Word = arReadExtraField;
+
+Used to designate archive options that are intended solely
+for internal use, and should not be changed.
+
+See also:  0176Archive options
+;
+;-------------------------------------------------------------------
+!TOPIC 178 DefArchiveOptions
+!NOINDEX
+const
+  DefArchiveOptions : Word = arRemoveDots;
+
+This constant is used to store the default archive options.
+
+See also:  0176Archive options
+;
+;-------------------------------------------------------------------
+!TOPIC 179 arOutPath
+!NOINDEX
+const
+  arOutPath : PathStr = '';
+
+This internal variable is used to store the name of an output path, as
+specified by a call to 0159SetOutputPath.
+;
+;-------------------------------------------------------------------
+!TOPIC 180 FileMaskList,ApArchiv
+!NOINDEX
+type
+  FileMaskList =
+    record
+      Head, Tail : FileMaskNodePtr;
+    end;
+
+A singly-linked list of file masks. Head points to the first node in the
+list, Tail to the last node.
+
+See also:  0181FileMaskNode  0152InitFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 181 FileMaskNode,ApArchiv
+!NOINDEX
+type
+  FileMaskNodePtr = ^FileMaskNode;
+  FileMaskNode =
+    record
+      DirPtr : StringPtr;
+      Name   : NameStr;
+      Ext    : ExtStr;
+      Next   : FileMaskNodePtr;
+    end;
+
+A node in a list of file masks. Name and Ext store the actual file
+mask (e.g., '*' and 'DOC' for '*.DOC'). DirPtr stores the path
+information from the PathStr passed to Append or AppendFileMask. Next
+points to the next file mask in the list.
+
+See also:  0154AppendFileMask        0180FileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 182 Declarations,ApArchiv
+!NOINDEX
+!NOSEARCH
+ApArchiv declares the following types and constants:
+
+  0176Archive options                0179arOutPath
+  0177BadArchiveOptions              0178DefArchiveOptions
+  0180FileMaskList                   0181FileMaskNode
+;
+;-------------------------------------------------------------------
+!TOPIC 183 Declarations,OoArchiv
+!NOINDEX
+!NOSEARCH
+OoArchiv declares the following constants:
+
+  0176Archive options                0177BadArchiveOptions
+  0178DefArchiveOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 184 ExpandFileMaskList
+!NOINDEX
+procedure 0151ApArchiv.ExpandFileMaskList(var FML, ExpandedFML : 0180FileMaskList);
+!LINE
+procedure 0166FileMaskList.ExpandFileMaskList;
+
+Expand all masks into complete file names.
+
+See also:  0154AppendFileMask        0185SortFileMaskList
+;
+;-------------------------------------------------------------------
+!TOPIC 185 SortFileMaskList
+!NOINDEX
+procedure 0151ApArchiv.SortFileMaskList(var FML : 0180FileMaskList);
+!LINE
+procedure 0166FileMaskList.SortFileMaskList; virtual;
+
+Sort the file masks in a file mask list in ascending order.
+
+See also:  0154AppendFileMask        0184ExpandFileMaskList

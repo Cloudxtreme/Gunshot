@@ -1,0 +1,201 @@
+!TOPIC 898 ApTimer
+ApTimer provides the timer functions required internally by Async
+Professional. Since you might find these routines handy for your programs
+as well, they are available here.
+
+ApTimer provides the following routines:
+
+  0912CalibrateDelay                 0917Declarations
+  0911Delay                          0910DelayTics
+  0904ElapsedTime                    0906ElapsedTimeInMSecs
+  0905ElapsedTimeInSecs              0901NewTimer
+  0902NewTimerSecs                   0907RemainingTime
+  0909RemainingTimeInMSecs           0908RemainingTimeInSecs
+  0900Secs2Tics                      0899Tics2Secs
+  0903TimerExpired
+;
+;-------------------------------------------------------------------
+!TOPIC 899 Tics2Secs
+!NOINDEX
+function 0898ApTimer.Tics2Secs(Tics : LongInt) : LongInt;
+
+Convert clock ticks to seconds.
+
+See also:  0900Secs2Tics
+;
+;-------------------------------------------------------------------
+!TOPIC 900 Secs2Tics
+!NOINDEX
+function 0898ApTimer.Secs2Tics(Secs : LongInt) : LongInt;
+
+Convert seconds to clock ticks.
+
+See also:  0899Tics2Secs
+;
+;-------------------------------------------------------------------
+!TOPIC 901 NewTimer
+!NOINDEX
+procedure 0898ApTimer.NewTimer(var ET : EventTimer; Tics : LongInt);
+
+Return an EventTimer that will expire in the specified number of clock ticks.
+
+See also:  0904ElapsedTime           0913EventTimer
+           0902NewTimerSecs          0907RemainingTime
+           0903TimerExpired
+;
+;-------------------------------------------------------------------
+!TOPIC 902 NewTimerSecs
+!NOINDEX
+procedure 0898ApTimer.NewTimerSecs(var ET : EventTimer; Secs : LongInt);
+
+Return an EventTimer that will expire in the specified number of seconds.
+
+See also:  0905ElapsedTimeInSecs     0901NewTimer
+           0908RemainingTimeInSecs   0903TimerExpired
+;
+;-------------------------------------------------------------------
+!TOPIC 903 TimerExpired
+!NOINDEX
+function 0898ApTimer.TimerExpired(ET : EventTimer) : Boolean;
+
+Return True if the specified EventTimer expired.
+
+See also:  0901NewTimer              0902NewTimerSecs
+;
+;-------------------------------------------------------------------
+!TOPIC 904 ElapsedTime
+!NOINDEX
+function 0898ApTimer.ElapsedTime(ET : EventTimer) : LongInt;
+
+Return the elapsed time, in ticks, for this timer.
+
+See also:  0906ElapsedTimeInMSecs    0905ElapsedTimeInSecs
+           0901NewTimer
+;
+;-------------------------------------------------------------------
+!TOPIC 905 ElapsedTimeInSecs
+!NOINDEX
+function 0898ApTimer.ElapsedTimeInSecs(ET : EventTimer) : LongInt;
+
+Return the elapsed time, in seconds, for this timer.
+
+See also:  0904ElapsedTime           0906ElapsedTimeInMSecs
+           0901NewTimer
+;
+;-------------------------------------------------------------------
+!TOPIC 906 ElapsedTimeInMSecs
+!NOINDEX
+function 0898ApTimer.ElapsedTimeInMSecs(ET : EventTimer) : LongInt;
+
+Return the elapsed time, in milliseconds, for this timer.
+
+See also:  0904ElapsedTime           0905ElapsedTimeInSecs
+           0901NewTimer
+;
+;-------------------------------------------------------------------
+!TOPIC 907 RemainingTime
+!NOINDEX
+function 0898ApTimer.RemainingTime(ET : EventTimer) : LongInt;
+
+Return the remaining time, in ticks, for this timer.
+
+See also:  0909RemainingTimeInMSecs  0908RemainingTimeInSecs
+           0903TimerExpired
+;
+;-------------------------------------------------------------------
+!TOPIC 908 RemainingTimeInSecs
+!NOINDEX
+function 0898ApTimer.RemainingTimeInSecs(ET : EventTimer) : LongInt;
+
+Return the remaining time, in seconds, for this timer.
+
+See also:  0907RemainingTime         0909RemainingTimeInMSecs
+           0903TimerExpired
+;
+;-------------------------------------------------------------------
+!TOPIC 909 RemainingTimeInMSecs
+!NOINDEX
+function 0898ApTimer.RemainingTimeInMSecs(ET : EventTimer) : LongInt;
+
+Return the remaining time, in milliseconds, for this timer.
+
+See also:  0907RemainingTime         0908RemainingTimeInSecs
+           0903TimerExpired
+;
+;-------------------------------------------------------------------
+!TOPIC 910 DelayTics
+!NOINDEX
+procedure 0898ApTimer.DelayTics(Tics : LongInt);
+
+Delay for a specified number of ticks.
+
+See also:  0911Delay
+;
+;-------------------------------------------------------------------
+!TOPIC 911 Delay
+!NOINDEX
+procedure 0898ApTimer.Delay(Ms : Word);
+
+Delay for specified number of milliseconds.
+
+See also:  0912CalibrateDelay
+;
+;-------------------------------------------------------------------
+!TOPIC 912 CalibrateDelay
+!NOINDEX
+procedure 0898ApTimer.CalibrateDelay;
+
+Delay calibration routine.
+
+See also:  0911Delay
+;
+;-------------------------------------------------------------------
+!TOPIC 913 EventTimer
+!NOINDEX
+type
+  EventTimer =
+    record
+      StartTics  : LongInt;
+      ExpireTics : LongInt;
+    end;
+
+The standard event timer record structure used by all timing routines.
+
+See also:  0901NewTimer
+;
+;-------------------------------------------------------------------
+!TOPIC 914 SecsPerDay
+!NOINDEX
+const
+  SecsPerDay = 86400;
+
+Number of seconds in one day.
+
+See also:  0915TicsPerDay
+;
+;-------------------------------------------------------------------
+!TOPIC 915 TicsPerDay
+!NOINDEX
+const
+  TicsPerDay = 1573040;
+
+Number of clock ticks in one day (based on 18.20648 ticks/second).
+
+See also:  0914SecsPerDay
+;
+;-------------------------------------------------------------------
+!TOPIC 916 CountsPerMs
+!NOINDEX
+var
+  CountsPerMs : Word;
+
+This variable contains the loop count used by Delay to generate a 1 ms delay.
+;
+;-------------------------------------------------------------------
+!TOPIC 917 Declarations,ApTimer
+!NOINDEX
+!NOSEARCH
+ApTimer interfaces the following types, constants, and variables:
+
+  0916CountsPerMs                    0913EventTimer
+  0914SecsPerDay                     0915TicsPerDay

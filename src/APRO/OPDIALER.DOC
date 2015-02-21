@@ -1,0 +1,318 @@
+           Dialer Dialog Box Addition to Object Professional
+
+              Copyright (c) 1995 TurboPower Software
+                              June 1995
+
+----- Overview ---------------------------------------------------------
+This unit builds on the OPDIALOG unit by deriving a dialog box that
+handles dialing with retry logic. It uses the OOMODEM2 unit from Async
+Professional to handle modem interaction and is a good example of how
+to use the no-wait routines defined there.
+
+===== Dialer Dialog Boxes : OPDIALER ===================================
+OPDIALER provides a DialerDialog object which dials a phone number
+and, depending on whether or not a connection is established, delays
+for a moment and then tries to dial again.  DialerDialog is a
+descendant of DialogBox. Its Process method dials a phone number and
+handles the dialog box's three buttons:  Cycle, Extend, Cancel.
+Extend increases the time remaining before the current dial attempt
+times out.  The Cycle stops whatever is currently happening and
+begins another dial attempt immediately.  The dialog box will exit
+after Abort is pressed, the modem responds to the dial attempt, or it
+dials a specified number of times with no answer or repeated busy
+signals.  Pressing Cycle exits the dialog box if it has already
+dialed the specified number of times.
+
+Example:
+
+{$I OPDEFINE.INC}
+program ExDialer; {EXDIALER.PAS}
+
+uses
+  {$IFDEF UseMouse}
+  OpMouse,
+  {$ENDIF}
+  OpCmd,
+  OpWindow,
+  OpFrame,
+  OpDialog,
+  OoCom,
+  OoModDB,
+  OoModem2,
+  ApMisc,
+  ApPort,
+  OpCrt,
+  OpDialer,
+  OpCtrl;
+
+const
+  Colors : ColorSet = (
+    TextColor       : $70; TextMono        : $70;
+    CtrlColor       : $3A; CtrlMono        : $08;
+    FrameColor      : $7F; FrameMono       : $70;
+    HeaderColor     : $7F; HeaderMono      : $70;
+    ShadowColor     : $08; ShadowMono      : $00;
+    HighlightColor  : $4F; HighlightMono   : $70;
+    PromptColor     : $70; PromptMono      : $70;
+    SelPromptColor  : $7F; SelPromptMono   : $70;
+    ProPromptColor  : $70; ProPromptMono   : $07;
+    FieldColor      : $1E; FieldMono       : $07;
+    SelFieldColor   : $1F; SelFieldMono    : $0F;
+    ProFieldColor   : $70; ProFieldMono    : $07;
+    ScrollBarColor  : $17; ScrollBarMono   : $07;
+    SliderColor     : $17; SliderMono      : $0F;
+    HotSpotColor    : $17; HotSpotMono     : $0F;
+    BlockColor      : $1E; BlockMono       : $0F;
+    MarkerColor     : $1F; MarkerMono      : $70;
+    DelimColor      : $7E; DelimMono       : $0F;
+    SelDelimColor   : $11; SelDelimMono    : $0F;
+    ProDelimColor   : $7E; ProDelimMono    : $0F;
+    SelItemColor    : $2F; SelItemMono     : $70;
+    ProItemColor    : $77; ProItemMono     : $07;
+    HighItemColor   : $7F; HighItemMono    : $0F;
+    AltItemColor    : $3E; AltItemMono     : $0F;
+    AltSelItemColor : $2F; AltSelItemMono  : $70;
+    FlexAHelpColor  : $7F; FlexAHelpMono   : $0F;
+    FlexBHelpColor  : $7F; FlexBHelpMono   : $0F;
+    FlexCHelpColor  : $7B; FlexCHelpMono   : $70;
+    UnselXrefColor  : $7E; UnselXrefMono   : $09;
+    SelXrefColor    : $9F; SelXrefMono     : $70;
+    MouseColor      : $4F; MouseMono       : $70);
+
+  dColors : DialogColorSet = (
+    HiPromptColor   : $7E; HiPromptMono    : $0F;
+    ButtonColor     : $20; ButtonMono      : $07;
+    DefButtonColor  : $2B; DefButtonMono   : $07;
+    HiButtonColor   : $2E; HiButtonMono    : $0F;
+    SelButtonColor  : $2F; SelButtonMono   : $0F;
+    ProButtonColor  : $70; ProButtonMono   : $70;
+    BtnShadowColor  : $70; BtnShadowMono   : $70;
+    ClusterColor    : $30; ClusterMono     : $07;
+    ProClusterColor : $70; ProClusterMono  : $07;
+    HiClusterColor  : $3E; HiClusterMono   : $0F;
+    SelClusterColor : $3F; SelClusterMono  : $0F);
+
+var
+  ThePort     : UartPortPtr;
+  MyModem     : ModemPtr;
+  DialDB      : DialerDialogPtr;
+  TheCommands : ModemData;
+  Ch          : Char;
+
+{allows operation to be aborted by pressing ESC}
+function AbortIt : Boolean; far;
+var
+  Ch : Char;
+begin
+  AbortIt := False;
+  if KeyPressed then
+    Ch := ReadKey;
+    if (Ch = #0) then
+      Ch := ReadKey
+    else
+      AbortIt := (Ch = #27);
+end;
+
+begin
+  ClrScr;
+
+  {initialize default command record}
+  with TheCommands.Data do begin
+    InitCmd       := 'ATZ^M';
+    DialCmd       := 'ATDT';
+    DialCancel    := '^M';
+    DialTerm      := '^M';
+    HangupCmd     := 'DTR';
+    OkMsg         := 'OK';
+    ConnectMsg    := 'CONNECT';
+    BusyMsg       := 'BUSY';
+    NoCarrierMsg  := 'NO CARRIER';
+    NoDialToneMsg := 'NO DIALTONE';
+    ErrorMsg      := 'ERROR';
+  end;
+
+  {instantiate objects}
+  New(ThePort, InitFast(Com1, 19200));
+  if ThePort = nil then begin
+    Writeln('Error initializing port object.');
+    Halt;
+  end;
+  ThePort^.SetAbortFunc(AbortIt);
+
+  New(MyModem, Init(ThePort, TheCommands));
+  if MyModem = nil then begin
+    Writeln('Error initializing modem interface object.');
+    Dispose(ThePort, Done);
+    Halt;
+  end;
+
+  Writeln('Sending initialization command to the modem . . . ');
+  MyModem^.Initialize(True);
+  if AsyncStatus <> ecOK then begin
+    Writeln('Error sending intialization command to modem: ',
+            StatusStr(AsyncStatus));
+    Dispose(MyModem, Done);
+    Dispose(ThePort, Done);
+    Halt;
+  end;
+
+  New(DialDB, Init( 20, 6, Colors, dColors, MyModem, '260-9726',
+                    10, 10, DefExitOptions));
+  if DialDB = nil then begin
+    Writeln('Error creating dialog box.');
+    Dispose(MyModem, Done);
+    Dispose(ThePort, Done);
+    Halt;
+  end;
+
+  with DialDB^, wFrame do begin
+    SetFrameType(DblWindowFrame);
+    AddHeader(' Dialer Demo ', heTC);
+
+    {$IFDEF UseShadows}
+    AddShadow(shBR, shSeeThru);
+    {$ENDIF}
+  end;
+
+  {execute dialog box}
+  {$IFDEF UseMouse}
+  with Colors do
+    SoftMouseCursor($0000, (ColorMono(MouseColor, MouseMono) shl 8)+$04);
+  ShowMouse;
+  {$IFNDEF UseDrag}
+  DialogCommands.cpOptionsOn(cpEnableMouse);
+  {$ENDIF}
+  {$ENDIF}
+  DialDB^.Process;
+  DialDB^.Erase;
+
+  WriteLn('Dial result: ', AsyncStatus);
+
+  {dispose of objects}
+  Dispose(DialDB, Done);
+  Dispose(MyModem, Done);
+  Dispose(ThePort, Done);
+  HideMouse;
+end.
+
+This program creates a command record and a port object. It then
+creates a modem interface object associated with them. It sends the
+initialization command to the modem, creates a dialog box, and sets
+the phone number. The call to Process dials the phone number and
+waits for a response. It then disposes of the dialog box, the modem
+interface and port objects. During the call to Process, the dialog
+box reports the status of the dial attempt (seconds remaining, the
+connection speed, etc).
+
+---- OPDIALER Declarations ---------------------------------------------
+Constants
+  DefBusyWait    = 60;       {Default time in seconds between retries when busy}
+  DefDialTries   = 10;       {Default number of dial attempts}
+  DefExtendTime  = 5;        {Default number of seconds to extend dial attempt}
+  DefMsgDelay    = 3;        {Default delay between message and closing box}
+Default values for dialing operations.
+
+  ccCycle        = ccUser1;  {Command constant for Cycle button}
+  ccExtend       = ccUser2;  {Command constant for Extend button}
+  ccAbort        = ccUser3;  {Command constant for Abort button}
+  ccFinished     = ccUser4;  {bogus command for dialing finished}
+Command constants for dialer dialog box commands.
+
+  dExitVoice      = $01;      {Bit flag to exit on voice result}
+  dExitError      = $02;      {Bit flag to exit on error result}
+  dExitNoCarrier  = $04;      {Bit flag to exit on no carrier result}
+  dExitNoDialTone = $08;      {Bit flag to exit on no dialtone result}
+  dExitBusy       = $10;      {Bit flag to exit on busy result}
+Options that govern exiting the dialog box. When a flag is set,
+receiving the corresponding modem response (Voice, Error, No Carrier,
+No DialTone, and Busy, in the same order as above) exits the dialog box.
+
+  DefExitOptions : Byte = dExitVoice + dExitError + dExitNoCarrier +
+                          dExitNoDialTone;
+Default exit options.
+
+Types
+  DialerDialogPtr = ^DialerDialog;
+  DialerDialog =
+    object(DialogBox)
+    ...
+    end;
+The dialer dialog box object and a pointer to that object.
+
+
+---- OPDIALER Reference ------------------------------------------------
+This unit has a variety of routines for assigning dialing related
+values.
+
+Declaration
+  destructor DialerDialog.Done; virtual
+
+Purpose
+  Destroy a dialer dialog box.
+
+Description
+  This frees up internal memory and then calls the ancestor destructor
+  (DialogBox.Done).
+
+Example
+  See the example for Init.
+
+See Also
+  Init
+
+Declaration
+  constructor DialerDialog.Init(X, Y          : Word;
+                                Colors        : ColorSet;
+                                dColors       : DialogColorSet;
+                                AModem        : ModemPtr;
+                                APhoneNumber  : String;
+                                AMaxDialTries : Integer;
+                                ARetrySecs    : Integer;
+                                AOptions      : Integer);
+Purpose
+  Instantiate a dialer dialog box.
+
+Description
+  Init allocates some memory and associates the dialog box with a
+  modem interface object.
+
+  X and Y are the upper-left corner of the dialog box. The dialer
+  dialog box is a fixed size of 42 characters wide and 12 characters
+  high. The dialog's colors are passed in Colors and dColors.
+
+  AModem is the modem interface object that will be used to dial the
+  physical modem.
+
+  APhoneNumber is the phone number you wish the dialer to dial.
+
+  AMaxDialTries is the maximum number of attempts that the
+  DialerDialog will make to establish a connection.
+
+  ARetrySecs is the number of seconds that the DialerDialog will wait
+  between dial retries.
+
+  AOptions are are bit-mapped flags that determine which modem
+  responses cause Process to exit (see the section on Constants for
+  details).
+
+Example
+  uses
+    OoModem2;
+    ...
+  var
+    MyDialDB : DialerDialog;
+    MyModem  : Modem
+    ...
+    MyDialDB.Init( 3, 2, DefaultColorSet,
+                   DefaultDialogColors,
+                   MyModem, '260-9726',
+                   10, 60, DefaultExitOptions);
+    MyDialDB.Process;
+    MyDialDB.Done;
+
+  Creates a dialer dialog box object and processes it, destroying it
+  later.  MyDialDB.Process will attempt to dial the TurboPower BBS 10
+  times, waiting 60 seconds between each attempt.
+
+See Also
+  Done

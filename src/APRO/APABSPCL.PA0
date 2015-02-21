@@ -1,0 +1,381 @@
+const
+  indexAPABSPCL   = 100;
+  indexAPXMODEM   = 200;
+  indexAPYMODEM   = 300;
+  indexAPZMODEM   = 400;
+  indexAPKERMIT   = 500;
+  indexAPBPLUS    = 600;
+  indexAPASCII    = 700;
+
+  {Compile-time options}
+  FileBufferSize    = 8192; {Size of working buffer for receive/xmit files}
+  DefHandshakeWait  = 182;  {Wait time for resp during handshake (10 sec)}
+  DefHandshakeRetry = 10;   {Number of times to retry handshake}
+  DefTransTimeout   = 1092; {Tics to wait for receiver flow control release}
+  DefStatusInterval = 91;   {5 seconds between status updates}
+
+  {Run-time options}
+  BlockFillChar : Char = ^Z;     {Fill character for partial protocol blocks}
+  GmtHourOffset : Integer = 0;   {Default no GMT adjustments}
+  TelixDelay    : Byte = 9;      {Delay handshake for 9 tics (for Telix)}
+
+  {---- Option codes for protocols ----}
+  apIncludeDirectory   = $0001;  {True to include directory in file names}
+  apHonorDirectory     = $0002;  {True to honor directory in file names}
+  apRTSLowForWrite     = $0004;  {True to lower RTS during disk writes}
+  apKermitNoStripName  = $0008;  {True to *not* strip Kermit filenames}
+  apKermitDisplay      = $1000;  {True to honor KDisplay packets}
+  apKermitLongPackets  = $2000;  {True to support long packets}
+  apKermitSWC          = $4000;  {True to support SWC}
+  apZmodem8K           = $8000;  {True to support 8K blocks}
+  apBP2KTransmit       = $0100;  {True if 2K B+ transmit desired}
+
+  {---- Default options for AbstractProtocol ----}
+  DefProtocolOptions    : Word = 0;
+  BadProtocolOptions    : Word = apKermitLongPackets+apKermitSWC+apZmodem8K;
+
+  {Block check codes}
+  bcNone      = 0;        {No block checking}
+  bcChecksum1 = 1;        {Basic checksum}
+  bcChecksum2 = 2;        {Two byte checksum}
+  bcCrc16     = 3;        {16 bit Crc}
+  bcCrc32     = 4;        {32 bit Crc}
+  bcCrcK      = 5;        {Kermit style Crc}
+
+const
+  {Convenient blockcheck string constants}
+  bcsNone      = 'No check ';
+  bcsChecksum1 = 'Checksum ';
+  bcsChecksum2 = 'Checksum2';
+  bcsCrc16     = 'Crc16    ';
+  bcsCrc32     = 'Crc32    ';
+  bcsCrck      = 'CrcKermit';
+
+const
+  {Constants for supported protocol types}
+  Xmodem      = 0;
+  XmodemCRC   = 1;
+  Xmodem1K    = 2;
+  Xmodem1KG   = 3;
+  Ymodem      = 4;
+  YmodemG     = 5;
+  Zmodem      = 6;
+  Kermit      = 7;
+  Ascii       = 8;
+  BPlus       = 9;
+  UserProt1   = 10;
+  UserProt2   = 11;
+  UserProt3   = 12;
+
+const
+  {Convenient protocol string constants}
+  ProtocolTypeString : array[XModem..UserProt3] of String[10] = (
+    'Xmodem', 'XmodemCRC', 'Xmodem1K', 'Xmodem1KG',
+    'Ymodem', 'YmodemG', 'Zmodem', 'Kermit', 'Ascii',
+    'BPlus', 'UserProt1', 'UserProt2', 'UserProt3');
+
+type
+  {General protocol states}
+  ProtocolStateType = (
+    psReady,           {Ok to call again immediately}
+    psWaiting,         {Protocol is waiting, ok to do something else}
+    psFinished);       {Protocol is finished}
+
+  {Generic protocol record pointer}
+  ProtocolRecPtr = ^ProtocolRec;
+
+  {Action to take if not allowed to write a file}
+  WriteFailOptions =
+    (WriteFail, WriteRename, WriteAnyway, WriteResume);
+
+  {For storing received and transmitted blocks}
+  DataBlockType = array[1..1024] of Char;
+
+  {For buffering received and transmitted files}
+  FileBufferArray = array[0..FileBufferSize-1] of Byte;
+
+  {For holding lists of files to transmit}
+  FileListType = array[0..65535-1] of Char;
+  FileListPtr = ^FileListType;
+
+  {For specifying log file calls}
+  LogFileType = (lfReceiveStart,
+                 lfReceiveOk,
+                 lfReceiveFail,
+                 lfReceiveSkip,
+                 lfTransmitStart,
+                 lfTransmitOk,
+                 lfTransmitFail,
+                 lfTransmitSkip);
+
+  {User procedure types}
+  ShowStatusProc = procedure(P : ProtocolRecPtr;
+                             Starting, Ending : Boolean);
+  NextFileFunc = function(P : ProtocolRecPtr;
+                          var FName : PathStr) : Boolean;
+  LogFileProc = procedure(P : ProtocolRecPtr;
+                          LogFileStatus : LogFileType);
+  AcceptFileFunc = function(P : ProtocolRecPtr) : Boolean;
+  UserBackProc = procedure(P : ProtocolRecPtr);
+
+  {Procedure types for reading/writing protocol blocks}
+  PrepFinishProc = procedure(P : ProtocolRecPtr);
+  ReadProtProc = function (P : ProtocolRecPtr;
+                           var Block : DataBlockType;
+                           var BlockSize : Word) : Boolean;
+  WriteProtProc = function (P : ProtocolRecPtr;
+                            var Block : DataBlockType;
+                            BlockSize : Word) : Boolean;
+
+  {Standard protocol data block}
+  ProtocolDataPtr = ^ProtocolData;
+  ProtocolData = record
+    {General}
+    PR               : PortRecPtr;        {Associated port}
+    ProtType         : Byte;              {Protocol type}
+    SrcFileLen       : LongInt;           {Size of file (in bytes)}
+    SrcFileDate      : LongInt;           {Timestamp of source file}
+    UserStatus       : ShowStatusProc;    {Hook for user display}
+    BatchProtocol    : Boolean;           {True if protocol supports batch}
+    BlockCheck       : LongInt;           {Block check value}
+    CheckType        : Byte;              {Code for block check type}
+    HandshakeWait    : Word;              {Wait seconds during handshaking}
+    HandshakeRetry   : Word;              {Number of retries during handshaking}
+    HandshakeAttempt : Word;              {Current handshake attempt}
+    BlockLen         : Word;              {Either 128 or 1024}
+    BlockNum         : Word;              {Current block number}
+    apFlags          : Word;              {AbstractProtocol options}
+    TransTimeout     : Word;              {Tics to wait for trans freespace}
+    GotOneFile       : Boolean;           {True if we've received one file}
+    InitFilePos      : LongInt;           {Initial file pos during resumes}
+
+    {For getting the next file to transmit}
+    PathName         : PathStr;           {Complete path name of current file}
+    NextFile         : NextFileFunc;      {NextFile function}
+    CurRec           : SearchRec;         {NextFileMask search record}
+    SearchMask       : PathStr;           {NextFileMask search mask}
+    FindingFirst     : Boolean;           {NextFileMask flag}
+    FileList         : FileListPtr;       {NextFileList list pointer}
+    FileListIndex    : Word;              {NextFileList index}
+    FileListMax      : Word;              {Size, in bytes, of file list}
+
+    {When receiving files}
+    DestDir          : DirStr;            {Destination directory}
+
+    {Miscellaneous hooks}
+    LogFile          : LogFileProc;       {User proc to call when file received}
+    AcceptFile       : AcceptFileFunc;    {User hook to accept rcvd filename}
+    UserBack         : UserBackProc;      {Main background hook}
+
+    {Status...}
+    BytesRemaining   : LongInt;           {Bytes not yet transferred}
+    BytesTransferred : LongInt;           {Bytes already transferred}
+    BlockErrors      : Word;              {Number of tries for block}
+    TotalErrors      : Word;              {Number of total tries}
+    Timer            : EventTimer;        {Used to time a transfer}
+    ElapsedTics      : LongInt;           {Elapseds tics as of last block}
+    InProgress       : Byte;              {Non-zero if protocol in progress}
+    EotCheckCount    : Byte;              {Number of Eot retries required}
+    ActCPS           : Word;              {Port or modem CPS}
+    OverHead         : Word;              {Overhead bytes per block}
+    TurnDelay        : Word;              {MSec turnaround delay}
+    StatusTimer      : EventTimer;        {How often to show status}
+    ForceStatus      : Boolean;           {Force status update}
+    StatusInterval   : Word;              {Tics between status updates}
+
+    {File buffer managment...}
+    PrepareReading   : PrepFinishProc;    {Proc for preparing file read}
+    ReadProtocolBlock: ReadProtProc;      {Proc for reading blocks}
+    FinishReading    : PrepFinishProc;    {Proc for closing read file}
+    PrepareWriting   : PrepFinishProc;    {Proc for preparing file writes}
+    WriteProtocolBlock : WriteProtProc;   {Proc for writing blocks}
+    FinishWriting    : PrepFinishProc;    {Proc for closing write file}
+    WorkFile         : File;              {Temp file for Get/PutProtocolBlock}
+    FileBuffer       : ^FileBufferArray;  {For reading/writing files}
+    StartOfs         : LongInt;           {Holds starting offset of file}
+    EndOfs           : LongInt;           {Holds ending offset of file}
+    LastOfs          : LongInt;           {FileOfs of last Get/Put}
+    FileOfs          : LongInt;           {Current file offset}
+    EndOfDataOfs     : LongInt;           {Ofs of buffer of end-of-file}
+    EndPending       : Boolean;           {True when end-of-file is in buffer}
+    WriteFailOpt     : WriteFailOptions;  {Rules for overwriting files}
+    FileOpen         : Boolean;           {True if file open in protocol}
+    SaveMode         : Byte;              {Save FileMode}              {!!.02}
+  end;
+
+  {Generic protocol record}
+  ProtocolRec = record
+    PData : ProtocolDataPtr;
+  end;
+
+function LoCaseMac(Ch : Char) : Char;
+  {-Lowercase character macro, no international character support}
+  inline(
+    $58/                     {POP  AX}
+    $3C/$41/                 {CMP    AL,'A'}
+    $72/$06/                 {JB     No}
+    $3C/$5A/                 {CMP    AL,'Z'}
+    $77/$02/                 {JA     No}
+    $0C/$20);                {OR     AL,$20}
+
+{$IFDEF UsePModeDLL}
+
+procedure InitProtocolData(var P : ProtocolDataPtr;
+                           PortPtr : PortRecPtr;
+                           Options : Word); Export;
+procedure DoneProtocolData(var P : ProtocolDataPtr); Export;
+procedure SetShowStatusProc(P : ProtocolRecPtr; SProc : ShowStatusProc); Export;
+procedure SetNextFileFunc(P : ProtocolRecPtr; NFFunc : NextFileFunc); Export;
+procedure SetFileMask(P : ProtocolRecPtr; NewMask : PathStr); Export;
+procedure SetFileList(P : ProtocolRecPtr; FLP : FileListPtr); Export;
+procedure MakeFileList(P : ProtocolRecPtr; var FLP : FileListPtr; Size : Word); Export;
+procedure DisposeFileList(P : ProtocolRecPtr; var FLP : FileListPtr;   {!!.01}
+                          Size : Word); Export;
+procedure AddFileToList(P : ProtocolRecPtr; FLP : FileListPtr; PName : PathStr); Export;
+procedure SetDestinationDirectory(P : ProtocolRecPtr; Dir : DirStr); Export;
+procedure SetReceiveFilename(P : ProtocolRecPtr; Fname : PathStr); Export;
+procedure SetLogFileProc(P : ProtocolRecPtr; LFP : LogFileProc); Export;
+procedure SetAcceptFileFunc(P : ProtocolRecPtr; AFP : AcceptFileFunc); Export;
+procedure SetBackgroundProc(P : ProtocolRecPtr; BP : UserBackProc); Export;
+procedure SetHandshakeWait(P : ProtocolRecPtr;
+                           NewHandShake, NewRetry : Word); Export;
+procedure SetOverwriteOption(P : ProtocolRecPtr; Opt : WriteFailOptions); Export;
+procedure SetActualBPS(P : ProtocolRecPtr; BPS : LongInt); Export;
+procedure SetEfficiencyParms(P : ProtocolRecPtr;
+                             BlockOverhead, TurnAroundDelay : Word); Export;
+procedure SetProtocolPort(P : ProtocolRecPtr; PortPtr : PortRecPtr); Export;
+procedure apOptionsOn(P : ProtocolRecPtr; OptionFlags : Word); Export;
+procedure apOptionsOff(P : ProtocolRecPtr; OptionFlags : Word); Export;
+function apOptionsAreOn(P : ProtocolRecPtr; OptionFlags : Word) : Boolean; Export;
+function GetFilename(P : ProtocolRecPtr) : PathStr; Export;
+function GetPathname(P : ProtocolRecPtr) : PathStr; Export;
+function GetFileSize(P : ProtocolRecPtr) : LongInt; Export;
+function GetBytesRemaining(P : ProtocolRecPtr) : LongInt; Export;
+function GetBytesTransferred(P : ProtocolRecPtr) : LongInt; Export;
+function GetElapsedTics(P : ProtocolRecPtr) : LongInt; Export;
+function GetBlockErrors(P : ProtocolRecPtr) : Word; Export;
+function GetTotalErrors(P : ProtocolRecPtr) : Word; Export;
+function GetProtocol(P : ProtocolRecPtr) : Byte; Export;
+function GetBlockSize(P : ProtocolRecPtr) : Word; Export;
+function GetBlockNum(P : ProtocolRecPtr) : Word; Export;
+function GetCurrentBlockNum(P : ProtocolRecPtr) : Word; Export;
+function SupportsBatch(P : ProtocolRecPtr) : Boolean; Export;
+function GetCheckType(P : ProtocolRecPtr) : Byte; Export;
+function GetInitialFilePos(P : ProtocolRecPtr) : LongInt; Export;
+function EstimateTransferSecs(P : ProtocolRecPtr;
+                              Size : LongInt) : LongInt; Export;
+procedure ShowFirstStatus(P : ProtocolRecPtr); Export;
+procedure ShowLastStatus(P : ProtocolRecPtr); Export;
+procedure ResetStatus(P : ProtocolRecPtr); Export;
+function WaitForFreeSpace(P : ProtocolRecPtr; W, T : Word) :  Boolean; Export;
+function Crc32ofFile(P : ProtocolRecPtr;
+                     FName : PathStr; Len : LongInt) : LongInt; Export;
+procedure NoStatus (P : ProtocolRecPtr; Starting, Ending : Boolean); Export;
+function NoNextFile(P : ProtocolRecPtr) : Boolean; Export;
+procedure NoLogFile(P : ProtocolRecPtr; LogFileStatus : LogFileType); Export;
+function NoAcceptFile(P : ProtocolRecPtr) : Boolean; Export;
+procedure NoUserBack(P : ProtocolRecPtr); Export;
+function NextFileMask(P : ProtocolRecPtr; var FName : PathStr) : Boolean; Export;
+function NextFileList(P : ProtocolRecPtr; var FName : PathStr) : Boolean; Export;
+function AcceptOneFile(P : ProtocolRecPtr) : Boolean; Export;
+procedure apPrepareReading(P : ProtocolRecPtr); Export;
+procedure apFinishReading(P : ProtocolRecPtr); Export;
+function apReadProtocolBlock(P : ProtocolRecPtr;
+                             var Block : DataBlockType;
+                             var BlockSize : Word) : Boolean; Export;
+procedure apPrepareWriting(P : ProtocolRecPtr); Export;
+procedure apFinishWriting(P : ProtocolRecPtr); Export;
+function apWriteProtocolBlock(P : ProtocolRecPtr;
+                              var Block : DataBlockType;
+                              BlockSize : Word) : Boolean; Export;
+procedure apUserStatus(P : ProtocolRecPtr; Starting, Ending : Boolean); Export;
+{#F+}
+function TrimZeros(S : string) : string; Export;
+function OctalStr(L : LongInt) : String; Export;
+function OctalStr2Long(S : String) : LongInt; Export;
+function PackToYMTimeStamp(RawTime : LongInt) : LongInt; Export;
+function YMTimeStampToPack(YMTime : LongInt) : LongInt; Export;
+function CurrentTimeStamp : LongInt; Export;
+{#F-}
+
+{$ELSE}
+
+procedure InitProtocolData(var P : ProtocolDataPtr;
+                           PortPtr : PortRecPtr;
+                           Options : Word);
+procedure DoneProtocolData(var P : ProtocolDataPtr);
+procedure SetShowStatusProc(P : ProtocolRecPtr; SProc : ShowStatusProc);
+procedure SetNextFileFunc(P : ProtocolRecPtr; NFFunc : NextFileFunc);
+procedure SetFileMask(P : ProtocolRecPtr; NewMask : PathStr);
+procedure SetFileList(P : ProtocolRecPtr; FLP : FileListPtr);
+procedure MakeFileList(P : ProtocolRecPtr; var FLP : FileListPtr; Size : Word);
+procedure DisposeFileList(P : ProtocolRecPtr; var FLP : FileListPtr;   {!!.01}
+                          Size : Word);
+procedure AddFileToList(P : ProtocolRecPtr; FLP : FileListPtr; PName : PathStr);
+procedure SetDestinationDirectory(P : ProtocolRecPtr; Dir : DirStr);
+procedure SetReceiveFilename(P : ProtocolRecPtr; Fname : PathStr);
+procedure SetLogFileProc(P : ProtocolRecPtr; LFP : LogFileProc);
+procedure SetAcceptFileFunc(P : ProtocolRecPtr; AFP : AcceptFileFunc);
+procedure SetBackgroundProc(P : ProtocolRecPtr; BP : UserBackProc);
+procedure SetHandshakeWait(P : ProtocolRecPtr;
+                           NewHandShake, NewRetry : Word);
+procedure SetOverwriteOption(P : ProtocolRecPtr; Opt : WriteFailOptions);
+procedure SetActualBPS(P : ProtocolRecPtr; BPS : LongInt);
+procedure SetEfficiencyParms(P : ProtocolRecPtr;
+                             BlockOverhead, TurnAroundDelay : Word);
+procedure SetProtocolPort(P : ProtocolRecPtr; PortPtr : PortRecPtr);
+procedure apOptionsOn(P : ProtocolRecPtr; OptionFlags : Word);
+procedure apOptionsOff(P : ProtocolRecPtr; OptionFlags : Word);
+function apOptionsAreOn(P : ProtocolRecPtr; OptionFlags : Word) : Boolean;
+function GetFilename(P : ProtocolRecPtr) : PathStr;
+function GetPathname(P : ProtocolRecPtr) : PathStr;
+function GetFileSize(P : ProtocolRecPtr) : LongInt;
+function GetBytesRemaining(P : ProtocolRecPtr) : LongInt;
+function GetBytesTransferred(P : ProtocolRecPtr) : LongInt;
+function GetElapsedTics(P : ProtocolRecPtr) : LongInt;
+function GetBlockErrors(P : ProtocolRecPtr) : Word;
+function GetTotalErrors(P : ProtocolRecPtr) : Word;
+function GetProtocol(P : ProtocolRecPtr) : Byte;
+function GetBlockSize(P : ProtocolRecPtr) : Word;
+function GetBlockNum(P : ProtocolRecPtr) : Word;
+function GetCurrentBlockNum(P : ProtocolRecPtr) : Word;
+function SupportsBatch(P : ProtocolRecPtr) : Boolean;
+function GetCheckType(P : ProtocolRecPtr) : Byte;
+function GetInitialFilePos(P : ProtocolRecPtr) : LongInt;
+function EstimateTransferSecs(P : ProtocolRecPtr;
+                              Size : LongInt) : LongInt;
+procedure ShowFirstStatus(P : ProtocolRecPtr);
+procedure ShowLastStatus(P : ProtocolRecPtr);
+procedure ResetStatus(P : ProtocolRecPtr);
+function WaitForFreeSpace(P : ProtocolRecPtr; W, T : Word) :  Boolean;
+function Crc32ofFile(P : ProtocolRecPtr;
+                     FName : PathStr; Len : LongInt) : LongInt;
+procedure NoStatus (P : ProtocolRecPtr; Starting, Ending : Boolean);
+function NoNextFile(P : ProtocolRecPtr) : Boolean;
+procedure NoLogFile(P : ProtocolRecPtr; LogFileStatus : LogFileType);
+function NoAcceptFile(P : ProtocolRecPtr) : Boolean;
+procedure NoUserBack(P : ProtocolRecPtr);
+function NextFileMask(P : ProtocolRecPtr; var FName : PathStr) : Boolean;
+function NextFileList(P : ProtocolRecPtr; var FName : PathStr) : Boolean;
+function AcceptOneFile(P : ProtocolRecPtr) : Boolean;
+procedure apPrepareReading(P : ProtocolRecPtr);
+procedure apFinishReading(P : ProtocolRecPtr);
+function apReadProtocolBlock(P : ProtocolRecPtr;
+                             var Block : DataBlockType;
+                             var BlockSize : Word) : Boolean;
+procedure apPrepareWriting(P : ProtocolRecPtr);
+procedure apFinishWriting(P : ProtocolRecPtr);
+function apWriteProtocolBlock(P : ProtocolRecPtr;
+                              var Block : DataBlockType;
+                              BlockSize : Word) : Boolean;
+procedure apUserStatus(P : ProtocolRecPtr; Starting, Ending : Boolean);
+{#F+}
+function TrimZeros(S : string) : string;
+function OctalStr(L : LongInt) : String;
+function OctalStr2Long(S : String) : LongInt;
+function PackToYMTimeStamp(RawTime : LongInt) : LongInt;
+function YMTimeStampToPack(YMTime : LongInt) : LongInt;
+function CurrentTimeStamp : LongInt;
+{#F-}
+
+{$ENDIF}

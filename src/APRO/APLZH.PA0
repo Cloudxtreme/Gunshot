@@ -1,0 +1,158 @@
+const
+  {compression method codes}
+  cmcStored    = '0';             {stored (no compression)}
+  cmcFrozen1   = '1';             {shrunk1}
+  cmcFrozen2   = '5';             {shrunk2}
+  OSID         = 'M';             {for MS-DOS - internal}
+
+var
+  NextDisplayInc : Word;          {Increment value for displays}
+  Crc            : Word;          {Working CRC value}
+
+type
+  CompressionMode  = (cmBestMethod, cmStored, cmFrozen1, cmFrozen2);
+
+  OS               = record
+      O, S : Word;
+  end;
+
+  HeadIdType       = array[1..5] of Char;  {A five charcter string that
+                     indicates what version was used to compress the file,
+                     such as -lh1-, -lh5-, ...}
+
+  {LZH header}
+  LzhHeader =
+    record
+      HeadSize      : Byte;           {size of header}
+      HeadChk       : Byte;           {checksum for header}
+      HeadID        : HeadIdType;     {compression type tag}
+      NewSize       : LongInt;        {compressed size}
+      OrigSize      : LongInt;        {original size}
+      Time          : Word;           {packed time}
+      Date          : Word;           {packed date}
+      Attr          : Byte;           {file attributes}
+      Level         : Byte;           {=0 LZH method, =1 LHA method}
+      FName         : PathStr;        {filename (variable length)}
+      CRC           : Word;           {16-bit CRC (immediately follows FName)}
+      OSID          : Char;           {=M for DOS - LHA method}
+      PathHdrSize   : Word;           {path extended header size}
+      PathHdrID     : Byte;           {=2 "Path" extended header flag}
+      ExtFPath      : PathStr;        {pathname (variable length)}
+      AttrHdrSize   : Word;
+      AttrHdrID     : Byte;
+      ExtAttr       : Word;
+      FNameHdrSize  : Word;           {filename extended header size}
+      FNameHdrID    : Byte;           {=$01 "FileName" extended header}
+      ExtFName      : PathStr;        {filename (vriable length)}
+      CRCHdrSize    : Word;           {=5 extended CRC Header}
+      CRCHdrID      : Byte;           {=0 "CRC" extended header flag}
+      ExtCRC        : Word;           {extended Header CRC value}
+      NextHdrSize   : Word;           {=0 No more extended headers}
+    end;
+
+  LzhNodePtr = ^LzhNode;
+  LzhNode =
+    record
+      Next    : LzhNodePtr;
+      LH      : LzhHeader;
+      FileOfs : LongInt;
+      Tagged  : Boolean;
+    end;
+
+  LzhFileList =
+    record
+      Head, Tail : LzhNodePtr;
+      Count : Word;
+    end;
+
+  ShowMethodProc = procedure(Method : Char; FName : PathStr);
+  ExtractSuccessFunc = function(var LH : LzhHeader; FName : PathStr;
+                                ErrCode : Word) : Boolean;
+  OkToWriteFunc = function(var LH : LzhHeader; var FName : PathStr) : Boolean;
+  ShowNameProc = procedure(FName : PathStr);
+  ShowProgressFunc = function(BytesWritten, TotalBytes : LongInt) : Boolean;
+  CompressSuccessFunc = function(var LH : LzhHeader;
+                                 ErrCode : Word) : Boolean;
+  OkToCompressFunc = function(NewFile : PathStr;
+                              LH : LzhHeader) : Boolean;
+
+{$IFDEF UsePModeDLL}
+
+procedure InitLzhFile(LzhName : PathStr); Export;
+procedure CreateLzhFile(LzhName : PathStr); Export;
+procedure DoneLzhFile; Export;
+procedure ExtractLzh(Mask : PathStr); Export;
+procedure ExtractFileMaskListLzh(var FML : FileMaskList); Export;
+procedure CompressLzh(Mask : PathStr); Export;
+procedure CompressFileMaskListLzh(var FML : FileMaskList); Export;
+procedure DeleteFilesLzh(Mask : PathStr); Export;
+procedure DeleteFileMaskListLzh(var FML : FileMaskList); Export;
+procedure FreshenArchiveLzh; Export;
+procedure SetCompressionModeLzh(CM : CompressionMode); Export;
+function lhaMemRequired(Compressing : Boolean) : LongInt; Export;
+procedure InitLzhFileList(var LFL : LzhFileList); Export;
+procedure BuildLzhFileList(var LFL : LzhFileList; var FML : FileMaskList); Export;
+procedure DeleteLzhFileListNode(var LFL : LzhFileList; LNP : LzhNodePtr); Export;
+procedure ExtractLzhFileList(var LFL : LzhFileList); Export;
+procedure DoneLzhFileList(var LFL : LzhFileList); Export;
+procedure SetOkToWriteFuncLzh(OKF : OkToWriteFunc); Export;
+procedure SetShowNameProcLzh(SNP : ShowNameProc); Export;
+procedure SetShowMethodProcLzh(SMP : ShowMethodProc); Export;
+procedure SetExtractSuccessFuncLzh(ESF : ExtractSuccessFunc); Export;
+procedure SetShowProgressFuncLzh(SPF : ShowProgressFunc); Export;
+procedure SetOkToCompressFuncLzh(OKC : OkToCompressFunc); Export;
+procedure SetCompressSuccessFuncLzh(CSF : CompressSuccessFunc); Export;
+procedure SetProgressWidth(Width : Word); Export;
+procedure DefShowMethodProcLzh(Method : Char; FName : PathStr); Export;
+function DefExtractSuccessFuncLzh(var LH  : LzhHeader;
+                                  FName   : PathStr;
+                                  ErrCode : Word) : Boolean; Export;
+function DefCompressSuccessFuncLzh(var LH  : LzhHeader;
+                                   ErrCode : Word) : Boolean; Export;
+function DefOkToWriteFuncLzh(var LH : LzhHeader; var FName : PathStr) : Boolean; Export;
+procedure DefShowNameProcLzh(FName : PathStr); Export;
+function DefShowProgressFuncLzh(BytesWritten, TotalBytes : LongInt) : Boolean; Export;
+function DefOkToCompressFuncLzh(NewFile : PathStr;
+                                LH : LzhHeader) : Boolean; Export;
+
+{$ELSE}
+
+procedure InitLzhFile(LzhName : PathStr);
+procedure CreateLzhFile(LzhName : PathStr);
+procedure DoneLzhFile;
+procedure ExtractLzh(Mask : PathStr);
+procedure ExtractFileMaskListLzh(var FML : FileMaskList);
+procedure CompressLzh(Mask : PathStr);
+procedure CompressFileMaskListLzh(var FML : FileMaskList);
+procedure DeleteFilesLzh(Mask : PathStr);
+procedure DeleteFileMaskListLzh(var FML : FileMaskList);
+procedure FreshenArchiveLzh;
+procedure SetCompressionModeLzh(CM : CompressionMode);
+function lhaMemRequired(Compressing : Boolean) : LongInt;
+procedure InitLzhFileList(var LFL : LzhFileList);
+procedure BuildLzhFileList(var LFL : LzhFileList; var FML : FileMaskList);
+procedure DeleteLzhFileListNode(var LFL : LzhFileList; LNP : LzhNodePtr);
+procedure ExtractLzhFileList(var LFL : LzhFileList);
+procedure DoneLzhFileList(var LFL : LzhFileList);
+procedure SetOkToWriteFuncLzh(OKF : OkToWriteFunc);
+procedure SetShowNameProcLzh(SNP : ShowNameProc);
+procedure SetShowMethodProcLzh(SMP : ShowMethodProc);
+procedure SetExtractSuccessFuncLzh(ESF : ExtractSuccessFunc);
+procedure SetShowProgressFuncLzh(SPF : ShowProgressFunc);
+procedure SetOkToCompressFuncLzh(OKC : OkToCompressFunc);
+procedure SetCompressSuccessFuncLzh(CSF : CompressSuccessFunc);
+procedure SetProgressWidth(Width : Word);
+procedure DefShowMethodProcLzh(Method : Char; FName : PathStr);
+function DefExtractSuccessFuncLzh(var LH  : LzhHeader;
+                                  FName   : PathStr;
+                                  ErrCode : Word) : Boolean;
+function DefCompressSuccessFuncLzh(var LH  : LzhHeader;
+                                   ErrCode : Word) : Boolean;
+function DefOkToWriteFuncLzh(var LH : LzhHeader; var FName : PathStr) : Boolean;
+procedure DefShowNameProcLzh(FName : PathStr);
+function DefShowProgressFuncLzh(BytesWritten, TotalBytes : LongInt) : Boolean;
+function DefOkToCompressFuncLzh(NewFile : PathStr;
+                                LH : LzhHeader) : Boolean;
+
+{$ENDIF}
+

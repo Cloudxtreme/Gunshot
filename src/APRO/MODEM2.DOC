@@ -1,0 +1,3910 @@
+         Modem Database/ Operations Added to Async Professional
+
+              Copyright (c) 1995 TurboPower Software
+                              June 1995
+
+----- Overview ------------------------------------------------------
+These four units allow you to work with Windows-like INI files, both in
+general and as a database. They also allow you to operate a modem using
+the commands defined in a modem database. The first unit, APINI/OOINI,
+provides general INI file functions: adding, modifying, and deleting
+items and groups. The second unit, APINIDB/OOINIDB, provides INI
+database functions. It treats each group, a collection of items, as an
+entire record and allows you to modify these records. The third unit,
+APMODDB/OOMODDB, is more specific, providing an INI database
+specifically for modems where each record contains information about
+modem commands and responses, including data compression and error
+correction tags. Finally, the fourth unit, APMODEM2/OOMODEM2, provides
+a means to send commands to a modem, ranging from initializing and
+dialing to putting the modem into auto answer mode. The greatest
+feature of this unit is that it can load in a command set created with
+the APMODDB/OOMODDB unit.
+
+===== INI File Manager : APINI/OOINI ==============================
+APINI/OOINI provides routines for retrieving, changing, and deleting
+strings in Windows-style INI files. INI files consist of strings,
+organized into groups. Each group has a group header, which has the
+format '[GroupName]'. Below each group header are the individual
+strings, called items. Each item underneath the group header has the
+format 'Title=SomeVal', where SomeVal is the actual data and is
+referenced by Title.
+
+Example
+program ExIniO; {EXINIO.PAS}
+
+uses
+  ApMisc,
+  OoIni;
+
+var
+  I : IniMgrPtr;
+
+procedure Error(S : string);
+
+begin
+  Writeln(S, ': ',AsyncStatus);
+  Halt;
+end;
+
+begin
+  New(I, Init('MYINI.INI', False));
+  if I = nil then
+    Error('Error initializing Ini database');
+  I^.SetFlushMode(False);
+
+  Writeln(I^.GetProfileInt('Age', 'Jason Leveille', 55));
+  Writeln(I^.GetProfileString('FavColor', 'Bryan Slatner', 'No color'));
+
+  I^.AddProfileString('Age', 'John Leier', '32');
+  I^.SetProfileString('FavColor', 'Terry Hughes', 'turquoise');
+
+  I^.DeleteProfileString('Age', 'Julian Bucknall');
+  if AsyncStatus <> ecOK then
+    Error('Error deleting age');
+  I^.DeleteProfileGroup('Lee Inman');
+  if AsyncStatus <> ecOK then
+    Error('Error deleting group');
+
+  I^.ChangeFileName('NEWINI.INI');
+  I^.FlushFile;
+  Dispose(I, Done);
+end.
+
+This program creates an INI file object, which opens the file
+'MYINI.INI'. The second parameter of the constructor (False) is the
+read-write status of the file. A False value means the file is open in
+read-write mode. A True value would open the file in read-only mode.
+Because the file is in read-write mode, the flush mode may be changed.
+Calling SetFlushMode(False) tells the program not to update the file
+every time the data changes. (The default value for Flush mode is
+True). Thie retreives data from the file and displays it on the screen.
+
+It then starts changing the data: it adds John Leier's age and changes
+Terry Hughes's favorite color. Julian doesn't want us to know about his
+age anymore, so the program deletes it. Lee is even more reserved, so
+it deletes his record entirely.
+
+The program then changes the filename. The call to FlushFile writes the
+new data to disk. The last statement disposes of the object. The new
+modified data is now in the file 'NEWINI.INI'. The file 'MYINI.INI'
+remains unchanged since that file was never flushed.
+
+Here's the non-OOP version of the same program :
+
+program ExIni; {EXINI.PAS}
+
+uses
+{$IFDEF UsePModeDLL}
+  ApComD;
+{$ELSE}
+  ApMisc,
+  ApIni;
+{$ENDIF}
+
+var
+  I : IniMgrRecPtr;
+
+procedure Error(S : string);
+
+begin
+  Writeln(S, ': ',GetAsyncStatus);
+  Halt;
+end;
+
+begin
+  InitIniMgr(I, 'MYINI.INI', False);
+  if I = nil then
+    Error('Error initializing Ini file record');
+  SetFlushMode(I, False);
+
+  Writeln(GetProfileInt(I, 'Age', 'Jason Leveille', 55));
+  Writeln(GetProfileString(I, 'FavColor', 'Bryan Slatner', 'No color'));
+
+  AddProfileString(I, 'Age', 'John Leier', '32');
+  SetProfileString(I, 'FavColor', 'Terry Hughes', 'turquoise');
+
+  DeleteProfileString(I, 'Age', 'Julian Bucknall');
+  if GetAsyncStatus <> ecOK then
+    Error('Error deleting age');
+  DeleteProfileGroup(I, 'Lee Inman');
+  if GetAsyncStatus <> ecOK then
+    Error('Error deleting group');
+
+  ChangeFileName(I, 'NEWINI.INI');
+  FlushFile(I);
+  DoneIniMgr(I);
+end.
+
+---- EnumGroups/EnumGroupItems : Dealing With Linked Lists -------------
+APINI/OOINI provides two routines for dealing with sets of information.
+EnumGroups returns a list of all groups in the file. EnumGroupItems
+returns a list of all items under a specified group. They return this
+information in a linked list of strings. The information in this list
+is stored in an IniLinePtr structure, which has dlNext, dlPrev, and PL
+fields. The dlNext and dlPrev fields point to the next and previous
+IniLinePtr's in the list, respectively. The PL field is a StrPtr, which
+points to a String. After calling either of these two routines
+(EnumGroups or EnumGroupItems), the data is retrieved by starting at
+the head and walking through the list.
+
+var
+  Q : DoubleListPtr;
+  P : IniLinePtr;
+  ...
+  New(Q, Init);
+  if Q = nil then
+    Error('Error initializing double list');
+
+  I^.EnumGroupItems(Q, 'Names', True);
+  if AsyncStatus <> ecOK then begin
+    Writeln('Error loading items in group');
+    Halt;
+  end;
+  P := IniLinePtr(Q^.dlHead);
+  while P <> nil do begin
+    Writeln(P^.PL^);
+    P := IniLinePtr(P^.dlNext);
+  end;
+  Dispose(Q, Done);
+
+This creates a new linked list, loads all the items in the group
+"Names" from the file using EnumGroupsItems, displays them on the
+screen, and then disposes of the linked list. EnumGroups is called the
+same way except that you don't specify which group you're loading from.
+Note that you must typecast each item with IniLinePtr().
+
+Finally, EnumGroupItems has a Boolean parameter called Verbose
+(EnumGroups does not have this parameter). If it is True, the routine
+returns strings with the form "Title=SomeVal". If it's False, the
+routine returns a list loaded with only the titles.
+
+Here's the non-OOP version of the same thing :
+
+var
+  I : IniMgrRecPtr;
+  P : IniLinePtr;
+  ...
+  EnumGroupItems(I, P, 'Names');
+  if AsyncStatus <> ecOK then begin
+    Error('Error loading items from group');
+    Halt;
+  end;
+  while P <> nil do begin
+    Writeln(P^.PL^);
+    if P^.dlNext = nil then begin
+      DoneIniLinePtr(P);
+      P := nil;
+    end else
+      P := P^.dlNext;
+    if (P <> nil) and (P^.dlPrev <> nil) then
+      DoneIniLinePtr(P^.dlPrev);
+  end;
+
+
+---- APINI/OOINI Declarations -----------------------------------------
+Shared Declarations
+
+Constants
+  ecRecordExists           = 9706;  {Record already exists}
+  ecRecordNotFound         = 9707;  {Record not found in file}
+  ecGroupNotFound          = 9708;  {Group not found in file}
+  ecDatabaseEmpty          = 9710;  {No records in file}
+
+These are new AsyncStatus values.
+
+APINI Declarations
+
+  IniMgrRecPtr = ^IniMgrRec;
+  IniMgrRec = record
+    ...
+  end;
+A record structure that handles INI file manipulation, and a pointer to
+that record.
+
+OOINI Declarations
+
+Types
+  IniMgrPtr = ^IniMgr;
+  IniMgr =
+    object(DoubleList)
+      ...
+    end;
+
+An object that handles INI file manipulation and a pointer to that
+object.
+
+---- APINI/OOINI Reference ------------------------------------------
+This unit has a variety of routines for handling INI files. Below is an
+alphabetical list of all routines. The format of each reference entry
+is identical to that used in the manual.
+
+Syntax
+  procedure AddProfileString(var I : IniMgrRecPtr; Title, Group,
+                             NewVal : String);
+  procedure IniMgr.AddProfileString(Title, Group, NewVal : String);
+
+Purpose
+  Add a new item to the specified group.
+
+Description
+  This routine adds the item Title under Group. If the group does not
+  exist it is created. If there already is a group which has an item
+  Title underneath it, AsyncStatus is set to ecRecordExists. Note that
+  all values are stored as strings, although they may be retrieved as
+  different types.
+
+Example
+  var
+    I : IniMgrRecPtr;
+  ...
+    AddProfileString(I, 'Age', 'Some Guy', '32');
+
+  Adds the String "Age=32" under the group "[Some Guy]". When using
+  objects, the I parameter is omitted.
+
+See Also
+  DeleteProfileString                 SetProfileString
+
+
+Syntax
+  procedure ChangeFileName(I : IniMgrRecPtr; NewIniName : String);
+  procedure IniMgr.ChangeFileName(NewIniName : String);
+
+Purpose
+  Changes the INI manager's filename.
+
+Description
+  This routine changes the filename to NewIniName. All subsequent file
+  operations are done with the new file. It adds an extension of .INI
+  if no other extension is used.
+
+Example
+  See the example for FlushFile.
+
+See Also
+  FlushFile                           GetFileName
+
+
+Syntax
+  procedure DeleteProfileGroup(I : IniMgrRecPtr; Group: String);
+  procedure IniMgr.DeleteProfileGroup(Group: String);
+
+Purpose
+  Delete all the items in a specified group.
+
+Description
+  This will delete all items in group Group, including the group
+  header.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecGroupNotFound - The group does not exist.
+    ecDatabaseEmpty - There are no items defined in the file.
+
+Example
+  var
+    I : IniMgrRecPtr;
+  ...
+    DeleteProfileGroup(I, 'Bad Group');
+
+  This deletes the group 'Bad Group'. When using objects, the I
+  parameter is omitted.
+
+See Also
+  DeleteProfileString
+
+
+Syntax
+  procedure DeleteProfileString(I : IniMgrRecPtr; Title : String;
+                                Group : String);
+  procedure IniMgr.DeleteProfileString(Title, Group : String);
+
+Purpose
+  Delete an item from a specified group.
+
+Description
+  This procedure deletes the item Title from Group.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecRecordNotFound - The item cannot be found.
+    ecDatabaseEmpty - There are no items defined in the file.
+
+Example
+  var
+    I : IniMgrRecPtr;
+  ...
+    DeleteProfileString(I, 'Age', 'Old Person');
+
+  Deletes the item 'Age' from the group 'Old Person'. When using
+  objects, the I parameter is omitted.
+
+See Also
+  AddProfileString                    SetProfileString
+
+
+Syntax
+  destructor IniMgr.Done;
+
+Purpose
+  Destroy an IniMgr object.
+
+Description
+  This destructor disposes of the memory allocated by the IniMgr. It
+  does not write any data to disk. Call FlushFile just before calling
+  Done to save the data.
+
+Example
+  See the example for Init.
+
+See Also
+  Init                                DoneIniMgr
+
+
+Syntax
+  procedure DoneIniMgr(I : IniMgrRecPtr);
+
+Purpose
+  Deallocate memory allocated by InitIniMgr.
+
+Description
+  This procedure frees the memory allocated by the InitIniMgr procedure.
+  It does not write any data to disk. Call FlushFile just before calling
+  DoneIniMgr to save the data.
+
+Example
+  See the example for InitIniMgr.
+
+See Also
+  IniMgr.Done                         InitIniMgr
+
+Syntax
+  procedure EnumGroupItems(I : IniMgrRecPtr; var P : IniLinePtr;
+                           Group : String; Verbose : Boolean);
+  procedure IniMgr.EnumGroupItems(P : DoubleListPtr; Group : String;
+                                  Verbose : Boolean);
+
+Purpose
+  Get a list of all items in a specified group.
+
+Description
+  In the OOP version, this returns a pointer to a linked list. In the
+  non-OOP version, this is a pointer to the head of a linked list.
+  The linked list contains all the items in Group. To access the data,
+  walk through the list, accessing the dlNext fields of the nodes on
+  the list(see the part on EnumGroupItems earlier in this section).
+
+  Verbose controls the format of the data returned. If it's True, the
+  strings returned have both the title and data; otherwise, the strings
+  contain the titles only.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecGroupNotFound - The group does not exist.
+    ecOutOfMemory - There is insufficient memory to create the list of
+      items.
+
+Example
+   See the section on EnumGroups/EnumGroupItems.
+
+See Also
+  EnumGroups
+
+
+Syntax
+  procedure EnumGroups(I : IniMgrRecPtr; var P : IniLinePtr);
+  procedure IniMgr.EnumGroups(P : DoubleListPtr);
+
+Purpose
+  Return the names of all groups in the file.
+
+Description
+  In the OOP version, this returns a pointer to a linked list. In the
+  non-OOP version, this a pointer to the head of a linked list. The
+  list contains all the group headers in the file. To access the data,
+  you must walk through the list, accessing the dlNext fields of the
+  nodes on the list (see the part on EnumGroupItems earlier in this
+  section).
+
+  This routine can set AsyncStatus to one of the following values:
+    ecGroupNotFound - The group does not exist.
+    ecOutOfMemory - There is insufficient memory to create the list of
+      items.
+
+Example
+  See the section on EnumGroups/EnumGroupItems.
+
+See Also
+  EnumGroupItems
+
+
+Syntax
+  procedure FlushFile(I : IniMgrRecPtr);
+  procedure IniMgr.FlushFile;
+
+Purpose
+  Force an update of the file.
+
+Description
+  When not in "flush mode" (SetFlushMode(False) was called), this
+  procedure must be called to save changes. If items were modified
+  the entire file is rewritten; if no changes were modified this
+  call is ignored.
+
+  File errors are returned in AsyncStatus.
+
+Example
+  var
+    I : IniMgrRecPtr;
+    Ch : Char;
+  ...
+    if Modified(I) then begin
+      Writeln('File has been modified. Save changes?');
+      Readln(Ch);
+      if UpCase(Ch) = 'Y' then
+        FlushFile(I)
+    end;
+    ChangeFileName(I, 'NEWFILE.INI');
+
+  This checks to see if the data has been modified. It then prompts the
+  user to save the file before changing filenames. When using objects,
+  the I parameters are omitted.
+
+See Also
+  ChangeFileName                      ForceUpd
+  Modified                            SetFlushMode
+
+
+Syntax
+  procedure ForceUpd(I : IniMgrRecPtr);
+  procedure IniMgr.ForceUpd;
+
+Purpose
+  Write data to disk even if changes have not been made.
+
+Description
+  This procedure works exactly like FlushFile, except that it does not
+  check to see if changes have been made to the file before saving.
+
+Example
+  var
+    I : IniMgrRecPtr;
+    Ch : Char;
+  ...
+    ForceUpd(I);
+
+  This writes the data to the file. When using objects, the I parameter
+  is omitted.
+
+See Also
+  FlushFile
+
+
+Syntax
+  function GetFileName(I : IniMgrRecPtr);
+  function IniMgr.GetFileName : String;
+
+Purpose
+  Return the INI file's name.
+
+Description
+  This routine returns the name of the INI file.
+
+Example
+  var
+    I : IniMgrRecPtr
+  ...
+    Writeln('You are currently editing: ', GetFileName(I));
+
+  This displays the current file's name on the screen. When using
+  objects, the I parameter is omitted.
+
+See Also
+  ChangeFileName                      FlushFile
+
+
+Syntax
+  function GetProfileBool(I : IniMgrRecPtr; Title, Group : String;
+                          Default : Boolean) : Boolean;
+  function IniMgr.GetProfileBool(Title, Group : String;
+                                 Default : Boolean) : Boolean;
+
+Purpose
+  Return an item under the specified group as a boolean.
+
+Description
+  This routine returns the profile string Title underneath Group as a
+  boolean. It returns Default if the item is not found.
+
+Example
+  var
+    I : IniMgrRecPtr;
+    YesNo : Boolean;
+  ...
+    YesNo := GetProfileBool(I, 'Will Work', 'Toaster Oven', False);
+
+  Returns a boolean value of whether the toaster oven will work. It
+  assumes that it won't. (Sorry it's pessimistic.)  When using objects,
+  the I parameter is omitted.
+
+See Also
+  GetProfileByte                      GetProfileInt
+  GetProfileLong                      GetProfileWord
+  GetProfileString
+
+
+Syntax
+  function GetProfileByte(I : IniMgrRecPtr; Title, Group : String;
+                          Default : Byte) : Byte;
+  function IniMgr.GetProfileByte(Title, Group : String;
+                                 Default : Byte) : Byte;
+
+Purpose
+  Return an item under the specified group as a byte.
+
+Description
+  This routine returns the profile string Title underneath Group as a
+  byte. It returns Default if the item is not found.
+
+Example
+  var
+    I : IniMgrRecPtr;
+    SmallVal: Byte;
+  ...
+    SmallVal := GetProfileByte(I, 'Small Change', 'Local Bank', 15);
+
+  Returns the value of small change at local bank in a byte variable.
+  If the item cannot be found, 15 is returned. When using objects, the I
+  parameter is omitted.
+
+See Also
+  GetProfileBool                      GetProfileInt
+  GetProfileLong                      GetProfileWord
+  GetProfileString
+
+Syntax
+  function GetProfileInt(I : IniMgrRecPtr; Title, Group : String;
+                         Default : Integer) : Integer;
+  function IniMgr.GetProfileInt(Title, Group : String;
+                                Default : Integer) : Integer;
+
+Purpose
+  Return an item under the specified group as an integer.
+
+Description
+  This routine returns the profile string Title underneath Group as a
+  integer. It returns Default if the item is not found.
+
+Example
+  var
+    I : IniMgrRecPtr;
+    MathVal: Integer;
+  ...
+    MathVal := GetProfilel(I, 'Problem 30', 'Math Answers', 0);
+
+  Return the value of the math answer to Problem 30. If the item cannot
+  be found, 0 is returned. When using objects, the I parameter is
+  omitted.
+
+See Also
+  GetProfileBool                      GetProfileByte
+  GetProfileLong                      GetProfileWord
+  GetProfileString
+
+
+Syntax
+  function GetProfileLong(I : IniMgrRecPtr; Title, Group : String;
+                          Default : LongInt) : LongInt;
+  function IniMgr.GetProfileLong(Title, Group : String;
+                                 Default : LongInt) : LongInt;
+
+Purpose
+  Return an item under the specified group as a longint.
+
+Description
+  This routine returns the profile string Title underneath Group as a
+  longint. It returns Default if the item is not found.
+
+Example
+  var
+    I : IniMgrRecPtr;
+    BigNum: LongInt;
+  ...
+    BigNum := GetProfileLong(I, 'People', 'China', 1250000000);
+
+  Returns the number of the people in China. If the item cannot be
+  found, 1250000000. When using objects, the I parameter is omitted.
+
+See Also
+  GetProfileBool                      GetProfileByte
+  GetProfileInt                       GetProfileWord
+  GetProfileString
+
+
+Syntax
+  function GetProfileString(I : IniMgrRecPtr; Title, Group,
+                            Default : String) : String;
+  function IniMgr.GetProfileString(Title, Group : String;
+                                   Default : String) : String;
+
+Purpose
+  Return an item under the specified group as a string.
+
+Description
+  This routine returns the profile string Title underneath Group as a
+  string. It returns Default if the item is not found.
+
+Example
+  var
+    I : IniMgrRecPtr;
+    OneFact : String;
+  ...
+    OneFact := GetProfileLong(I, 'Greeks', 'Warrior Names', 'Hercules');
+
+  Return the value of the Greeks under Warrior Name. If the item cannot
+  be found, 'Hercules' is returned. When using objects, the I parameter
+  is omitted.
+
+See Also
+  AddProfileString                    GetProfileBool
+  GetProfileByte                      GetProfileInt
+  GetProfileLong                      GetProfileWord
+  SetProfileString
+
+
+Syntax
+  function GetProfileWord(I : IniMgrRecPtr; Title, Group : String;
+                          Default : Word) : Word;
+  function IniMgr.GetProfileWord(Title, Group : String;
+                                 Default : Word) : Word;
+
+Purpose
+  Return an item under the specified group as a word.
+
+Description
+  This routine returns the profile string Title underneath Group as a
+  word. It returns Default if the item is not found.
+
+Example
+  var
+    I : IniMgrRecPtr;
+    ChemNum : String;
+  ...
+    ChemNum := GetProfileLong(I, 'Grams', 'Mole', 32);
+
+  Returns the value of Grams in Mole. If the item cannot be found, 32 is
+  returned. When using objects, the I parameter is omitted.
+
+See Also
+  GetProfileBool                      GetProfileByte
+  GetProfileInt                       GetProfileLong
+  GetProfileString
+
+
+Syntax
+  constructor IniMgr.Init(FN : String; Sparse : Boolean);
+
+Purpose
+  Construct the INI file object.
+
+Description
+  If Sparse is True, the file is opened as read-only. If Sparse
+  is False, the file is opened in read-write mode and always updates on
+  changes; call SetFlushMode to change it to update only on demand. The
+  constructor loads the data from the file name if it exists. If there
+  is an error in loading the file, AsyncStatus is set to IOResult;
+  otherwise the data is loaded into memory. If there is not enough
+  memory for this operation, AsyncStatus is set to ecOutOfMemory.
+
+Example
+  var
+    I : IniMgr;
+    ...
+    if not I.Init('MYFILE.INI', False) then
+      {handle errors}
+    SetFlushMode(False);
+    ...
+    I.Done;
+
+  This opens the file 'MYFILE.INI'. The file is in read-write mode
+  because of the False parameter. The call to SetFlushMode(False) means
+  the file is updated only when FlushFile is called.
+
+See Also
+  Done                                SetFlushMode
+
+Syntax
+  procedure InitIniMgr(var I : IniMgrRecPtr; FN : String;
+                       Sparse : Boolean);
+
+Purpose
+  Initialize the IniMgr record.
+
+Description
+  If Sparse is True, the file is opened in read-only mode. If
+  Sparse is False, the file is in read-write mode and always updates on
+  changes; call SetFlushMode to change the update frequency. The
+  procedure loads the data from the file name if it exists. If there is
+  an error in loading the file, AsyncStatus is set to IOResult. If the
+  file is not read-only, it loads the data into memory. If there is not
+  enough memory for this operation, AsyncStatus is set to
+  ecOutOfMemory.
+
+Example
+  var
+    I : IniMgrRecPtr;
+    ...
+    InitIniMgr(I, 'MYFILE.INI', False);
+    if I = nil then
+      {handle errors}
+    SetFlushMode(I, False);
+    ...
+    DoneIniMgr(I);
+
+  This creates an IniMgr object associated with the file 'MYFILE.INI'.
+  The file is read-writable because of the False parameter. The call to
+  SetFlushMode(I, False) means the file is updated only when FlushFile
+  is called.
+
+See Also
+  DoneIniMgr                          SetFlushMode
+
+
+Syntax
+  function Modified(I : IniMgrRecPtr) : Boolean;
+  function IniMgr.Modified : Boolean;
+
+Purpose
+  Return a value stating whether or not the file has been modified.
+
+Description
+  This function returns True if any data has been changed; otherwise it
+  returns False.
+
+Example
+  See the example for FlushFile.
+
+See Also
+  FlushFile                           ForceUpd
+
+
+Syntax
+  procedure SetFlushMode(I : IniMgrRecPtr; Always : Boolean);
+  procedure IniMgr.SetFlushMode(Always : Boolean);
+
+Purpose
+  Turn on/off auto-updating of the file when an item is modified.
+
+Description
+  This procedure needs to be called only if Init was called with Sparse
+  set to False. If Always is True, FlushFile is automatically called
+  any time changes are made. If Always is False, the data is written to
+  disk only when FlushFile is explicitly called. Since FlushFile writes
+  the entire file to disk, passing False to this procedure can speed up
+  the program, because it no longer writes the entire file whenever
+  changes are made.
+
+Example
+  See the examples under Init and InitIniMgr.
+
+See Also
+  Init                                InitIniMgr
+  FlushFile
+
+
+Syntax
+  procedure SetProfileString(I : IniMgrRecPtr; Title, Group : String;
+                             NewVal : String);
+  procedure IniMgr.SetProfileString(Title, Group, NewVal : String);
+
+Purpose
+  Change an existing item under the specified group.
+
+Description
+  The profile string Title under Group is assigned the value NewVal. If
+  the item or group does not exist, it is created. Note that all values
+  are stored as strings, although they may be retrieved as different
+  types. AsyncStatus is set to ecOutOfMemory if there's insufficient
+  memory for internal processes.
+
+Example
+  var
+    I : IniMgrRecPtr;
+  ...
+    SetProfileString(I, 'Favorite Food', 'Picky Person', 'pizza');
+
+  Changes the Favorite Food in Picky Person to 'pizza' and makes a new
+  Favorite Food item under Picky Person if it is not already there. When
+  using objects, the I parameter is omitted.
+
+See Also
+  AddProfileString                    GetProfileString
+
+
+===== INI Database Manager : APINIDB/OOINIDB ===========================
+APINIDB/OOINIDB builds upon the APINI/OOINI unit by adding routines to
+handle the entries in an INI file as complete records. All of the groups
+are now listed in an index portion of the file.
+
+To access an individual record, routines which perform different
+operations on that record are passed a group name(called a key). Each
+record has a series of fields, which are created by calling
+AddIniDBStringField and AddIniDBInitField (hereafter collectively
+referred to as AddField routines). One of these fields is an index
+field, which contains the key strings by which the records are accessed.
+
+The INI file has a transfer buffer, which is a record that has the same
+format of a record in the database. For example, creating these fields
+with the AddField routines:
+
+AddIniDBStringField(I, 'Name', 21, True)
+AddIniDBIntField(I, 'Age')
+AddIniDBStringField(I, 'FavColor', 8, False);
+AddIniDBStringField(I, 'PhoneNum', 7, False);
+
+creates a data record of the following format:
+
+Name     (string of maximum length 21 chars)
+Age      (integer)
+FavColor (string of maximum length 8 chars)
+PhoneNum (string of maximum length 7 chars)
+
+A properly formatted transfer buffer for this database has the format:
+
+IniXFer= record
+  Name     : string[21];
+  Age      : Integer;
+  FavColor : string[8];
+  PhoneNum : string[7];
+end;
+
+It is very important that the order the fields are added to the database
+and the order of the record's fields be the same. In addition, a default
+record can be created, which fills in any blank items of a record with
+default values. It also keeps track of the number of entries in the
+database. An INI database has the following format:
+[Index]
+IndexValue1=#
+IndexValue2=#
+
+[Defaults]
+_Entries=Number of entries in the database
+Field1=Default value for field 1
+Field2=Default value for field 2
+Field3=Default value for field 3
+
+[IndexValue1]
+Field1=Field1 value
+Field2=Field2 value
+Field3=Field3 value
+
+[IndexValue2]
+Field1=Field1 value
+Field2=Field2 value
+Field3=Field3 value
+
+Example:
+program ExIniDBO; {EXINIDBO.PAS}
+
+uses
+  OoIni,
+  OoIniDB,
+  ApMisc;
+
+type
+  TempRecType = record
+    Name : String[21];
+    Age : Integer;
+    FavColor : String[15];
+  end;
+
+var
+  DB : IniDataBasePtr;
+  TempRec, DefRec : TempRecType;
+
+procedure ErrorChk(S : String);
+
+begin
+  if AsyncStatus <> ecOK then begin
+    Writeln(S, ': ',StatusStr(AsyncStatus));
+    Halt;
+  end;
+end;
+
+begin
+  New(DB, Init('MYINI.INI', False, False));
+  if DB = nil then begin
+    Writeln('Error initializing database : ', AsyncStatus);
+    Halt;
+  end;
+
+  DB^.AddIniDBStringField('Name', 21, True);
+  ErrorChk('Error creating name field');
+  DB^.AddIniDBIntField('Age');
+  ErrorChk('Error creating age field');
+  DB^.AddIniDBStringField('FavColor', 15, False);
+  ErrorChk('Error creating favorite color field');
+  DB^.PrepareIniDataBase(nil);
+  ErrorChk('Error preparing database');
+
+  with TempRec do begin
+    Name := 'Joe Schmo';
+    Age := 18;
+    FavColor := 'ebony';
+  end;
+
+  DB^.AddIniRecord(TempRec);
+  ErrorChk('Failed to add record');
+
+  DB^.GetIniRecord('Jason Leveille', TempRec);
+  ErrorChk('Failed to get record');
+
+  Writeln('Record information : ');
+  with TempRec do begin
+    Writeln(Name);
+    Writeln(Age);
+    Writeln(FavColor);
+  end;
+
+  DB^.FlushFile;
+  Dispose(DB, Done);
+end.
+
+This program initializes the database and adds a couple of fields. It
+then prepares the database and creates a record with some information
+on a new person. It adds that data to the database. It then retrieves
+the information for another person and displays it on the screen. It
+then writes the data to the file using FlushFile and then disposes of
+the object.
+
+Here's the same program, but in non-OOP format:
+
+program ExIniDB; {EXINIDB.PAS}
+
+uses
+{$IFDEF UsePModeDLL}
+  ApComD;
+{$ELSE}
+  ApIni,
+  ApIniDB,
+  ApMisc;
+{$ENDIF}
+
+type
+  TempRecType = record
+    Name : String[21];
+    Age : Integer;
+    FavColor : String[15];
+  end;
+
+var
+  DB : IniDataBaseRecPtr;
+  TempRec, DefRec : TempRecType;
+
+procedure ErrorChk(S : String);
+begin
+  if GetAsyncStatus <> ecOK then begin
+    Writeln(S, ': ',GetAsyncStatus);
+    Halt;
+  end;
+end;
+
+begin
+  InitIniDataBase(DB, 'MYINI.INI', False, False);
+  ErrorChk('Error initializing database');
+
+  AddIniDBStringField(DB, 'Name', 21, True);
+  ErrorChk('Error creating name field');
+  AddIniDBIntField(DB, 'Age');
+  ErrorChk('Error creating age field');
+  AddIniDBStringField(DB, 'FavColor', 15, False);
+  ErrorChk('Error creating favorite color field');
+  PrepareIniDataBase(DB, nil);
+  ErrorChk('Error preparing database');
+
+  with TempRec do begin
+    Name := 'Joe Schmo';
+    Age := 18;
+    FavColor := 'ebony';
+  end;
+
+  AddIniRecord(DB, TempRec);
+  ErrorChk('Failed to add record');
+
+  GetIniRecord(DB, 'Jason Leveille', TempRec);
+  ErrorChk('Failed to get record');
+
+  Writeln;
+  Writeln('Record information : ');
+  with TempRec do begin
+    Writeln(Name);
+    Writeln(Age);
+    Writeln(FavColor);
+  end;
+
+  FlushIniDBFile(DB);
+  DoneIniDataBase(DB);
+end.
+
+There are a few things worth mentioning here. First, the order of
+procedures is very important. The data structure is first initialized.
+Then fields are added to the database and finally it is prepared.
+Unless all of these routines are called in this order, the database
+will not function. Also remember the transfer buffer's format: it must
+have the same order and format as the fields of the database.
+
+In these examples, PrepareIniDataBase was called with a nil Defaults
+parameter. However, if you want the database value to have default
+values, pass in a pointer to a properly formatted transfer buffer. If a
+database has default values, any operations performed on a record will
+fill the record's undefined fields with the values in the default
+record.
+
+
+---- APINIDB/OOINIDB Declarations --------------------------------------
+Shared Declarations
+
+Constants
+  ecKeyTooLong             = 9701;  {Key string too long}
+  ecIndexDataTooLarge      = 9702;  {Index string data too large}
+  ecDataTooLarge           = 9703;  {Data record too large}
+  ecNoFieldsDefined        = 9704;  {No fields defined in database}
+  ecNoIndexKey             = 9705;  {No index defined for database}
+  ecDatabaseFull           = 9709;  {Maximum database records reached}
+  ecDatabaseNotPrepared    = 9711;  {PrepareIniDatabase not called}
+
+These are values AsyncStatus can be set to by routines in this unit.
+
+  MaxDBRecs      = 999;
+
+This is the maximum number of records that can be in the database.
+
+  MaxNameLen     = 21;
+
+This is the maximum length of an item that can be in the database.
+
+  MaxIndexLen    = 31;
+
+This is the maximum length of a group header that can be in the index.
+
+  DbIndex        = 'Index';
+  DbDefaultTitle = 'Defaults';
+
+These are the names of the index and defaults sections, respectively.
+The index section contains the key strings of all records in the file
+and the defaults section contains the default values.
+
+APINIDB Declarations
+
+Types
+  IniDataBaseRecPtr = ^IniDataBaseRec;
+  IniDataBaseRec = record
+    ...
+  end;
+
+This is the record which handles database manipulation and a pointer to
+that record.
+
+OOINIDB Declarations
+
+Types
+  IniDataBasePtr = ^IniDataBase;
+  IniDataBase = object (IniMgr)
+    ...
+  end;
+
+This is the object which handles database manipulation and a pointer to
+that object.
+
+---- APINIDB/OOINIDB Reference -----------------------------------------
+This unit has routines for adding fields to the database, as well as
+creating, modifying, and deleting records.
+
+Syntax
+  procedure AddIniDBIntField(D : IniDataBaseRecPtr; FieldName : String);
+  procedure IniDataBase.AddIniDBIntField(FieldName : String);
+
+Purpose
+  Add an integer field to the .INI file database.
+
+Description
+  Calling this function defines an integer field that is stored under
+  the name FieldName. Integer values are stored in the following format:
+
+  [IndexData]
+  FieldName=1
+
+  This routine can set AsyncStatus to one of the following values:
+    ecKeyTooLong - The length of FieldName exceeds MaxNameLen.
+    ecOutOfMemory - There's not enough memory to add the field.
+    ecDataTooLarge - Adding the field makes the transfer buffer too
+      large.
+
+Example
+  See the example under InitIniDataBase.
+
+See Also
+  AddIniDBStringField                 InitIniDataBase
+
+Syntax
+  procedure AddIniDBStringField(D         : IniDataBaseRecPtr;
+                                FieldName : String;
+                                MaxLen    : Word;
+                                Index     : Boolean);
+  procedure IniDataBase.AddIniDBStringField(FieldName : String;
+                                            MaxLen    : Word;
+                                            Index     : Boolean);
+
+Purpose
+  Add a string field to the .INI file database.
+
+Description
+  Calling this function defines a string field of MaxLen characters that
+  is stored under the name FieldName. If the Index parameter is set to
+  True, this field is used for index operations. An indexed field is
+  stored in the INI file as the section header for the record; a non-
+  indexed field is stored as the label for a data value, as follows:
+
+  [Index Data]
+  FieldName=StringData
+
+  Only one string in the database can be an indexed field. An error is
+  not generated if more than one indexed field is specified, but only
+  the first field is treated as an index.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecKeyTooLong - The length of FieldName exceeds MaxNameLen.
+    ecOutOfMemory - There's not enough memory to add the field.
+    ecIndexDataTooLarge - Index is True and the FieldName is longer than
+      MaxIndexLen.
+    ecDataTooLarge - Adding the field makes the transfer buffer too
+      large.
+
+Example
+  See the example under InitIniDatabase.
+
+See Also
+  AddIniDBIntField                    InitIniDataBase
+
+
+Syntax
+  procedure AddIniRecord(D : IniDataBaseRecPtr; var Rec);
+  procedure IniDataBase.AddIniRecord(var Rec);
+
+Purpose
+  Add a record to the database.
+
+Description
+  This routine adds a record to the database. Rec should be a properly
+  formatted transfer buffer.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecNoFieldsDefined - No AddField routines have been called.
+    ecDatabaseNotPrepared - PrepareIniDataBase has not been called.
+    ecDataBaseFull - The database already has MaxDBRecs records.
+    ecRecordExists - The record already exists (use UpdIniRecord
+      instead).
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  type
+    IniXFerRec = record
+      Name : String[20];
+      Age : Integer;
+    end;
+  ...
+  var
+    I : IniDataBaseRecPtr;
+    IniXFer : IniXFerRec;
+  ...
+    Write('Enter name : ');
+    Readln(IniXFer.Name);
+    Write('Enter age : ');
+    Readln(IniXFer.Age);
+    AddIniRecord(I, IniXFer);
+
+  Asks for a record from the user and adds it to the database.
+
+See Also
+  UpdIniRecord                        GetIniRecord
+  DelIniRecord
+
+
+Syntax
+  procedure ChangeIniDefaults(D : IniDataBaseRecPtr; var DefaultRec);
+  procedure IniDataBase.ChangeIniDefaults(var DefaultRec);
+
+Purpose
+  Change the default values for record fields.
+
+Description
+  Use this routine to modify the default values for the database.
+  DefaultRec is a properly formatted transfer buffer.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecNoFieldsDefined - No AddField routines have been called.
+    ecDatabaseNotPrepared - PrepareIniDataBase has not been called.
+
+Example
+  See the example for InitIniDatabase.
+
+See Also
+  InitIniDataBase
+
+
+Syntax
+  procedure DelIniRecord(D : IniDataBaseRecPtr; Key : String);
+  procedure IniDataBase.DelIniRecord(Key : String);
+
+Purpose
+  Remove a record from a database.
+
+Description
+  This removes the record specified by Key from the database.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecNoFieldsDefined - No AddField routines have been called.
+    ecDatabaseNotPrepared - PrepareIniDataBase hasn't been called.
+    ecRecordNotFound - There is no key in the index which matches Key.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    D : IniDataBaseRecPtr;
+  ...
+    DelIniRecord(D, 'Jason Leveille');
+
+  Removes the record indexed by the key 'Jason Leveille' from the
+  database. When using objects, the D parameter is omitted.
+
+See Also
+  AddIniRecord                        GetIniRecord
+  UpdIniRecord
+
+
+Syntax
+  procedure DoneIniDatabase(D : IniDataBaseRecPtr);
+  destructor IniDataBase.Done;
+
+Purpose
+  Deestroy an INI database.
+
+Description
+  This procedure deallocates the memory allocated by
+  InitIniDataBase/Init.
+
+Example
+  var
+    D : IniDataBaseRecPtr;
+  ...
+    InitIniDataBase(D, 'names.ini', False, False);
+    ...
+    DoneIniDataBase(D);
+
+  Creates a database and later destroys it. When using objects, the D
+  parameter is omitted.
+
+See Also
+  InitIniDataBase
+
+Syntax
+  procedure FlushIniDBFile(D : IniDataBaseRecPtr);
+
+Purpose
+  Write an INI database to disk.
+
+Description
+  If the Ini database is set to not update the file every time changes
+  are made (by calling InitIniDatabase with an AlwaysRW parameter of
+  False), this procedure needs to be called to save changes. This will
+  not write to disk unless changes have been made. Be wary of calling
+  this procedure, however: it writes the entire file to disk, not just
+  what has been changed. If anything goes wrong when saving the file,
+  AsyncStatus is set to IOResult.
+
+Example
+  var
+    D : IniDataBaseRecPtr;
+    XFer : IniXFer;
+    ...
+    UpdIniRecord(D, 'Modified Record', XFer);
+    FlushIniDBFile(D);
+  Updates a record and then writes the data to disk.
+
+See Also
+  FlushFile(APINI)                    InitIniDataBase
+
+Syntax
+  procedure GetIniRecord(D : IniDataBaseRecPtr; Key : String; var Rec);
+  procedure IniDataBase.GetIniRecord(Key : String; var Rec);
+
+Purpose
+  Get a record from a database.
+
+Description
+  This procedure retrieves a record from the database and stores the
+  data in Rec. Key is the key string for the record to be retrieved. Rec
+  is a properly formatted transfer buffer.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecNoFieldsDefined - No AddField routines have been called.
+    ecDatabaseNotPrepared - PrepareIniDataBase hasn't been called.
+    ecRecordNotFound - There is no key in the index which matches Key.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  type
+    IniXFer = record
+      Name : String[20];
+      Age : Integer;
+    end;
+  ...
+  var
+    D : IniDataBaseRecPtr;
+    XFer : IniXFerRec;
+  ...
+    GetIniRecord(D, 'Jason Leveille', XFer);
+    with XFer do begin
+      Writeln('Name : ', Name);
+      Writeln('Age : ', Age);
+    end;
+
+  Loads the record indexed by the key 'Jason Leveille' into ThisRec and
+  displays it on the screen. When using objects, the D parameter is
+  omitted.
+
+See Also
+  AddIniRecord                        DelIniRecord
+  UpdIniRecord
+
+Syntax
+  procedure InitIniDataBase(var D : PIniDataBase; FName : String;
+                            ReadOnly : Boolean; AlwaysRW: Boolean);
+  constructor Init(FName : String; ReadOnly : Boolean;
+                   AlwaysRW: Boolean);
+
+Purpose
+  Initialize an .INI file database.
+
+Description
+  Initializes an INI file database. This routine loads data into memory
+  and initializes its fields. FName is the database's file name. If
+  ReadOnly is True, the file cannot be modified. If AlwaysRW is True,
+  the file is updated anytime changes are made. Otherwise, FlushFile
+  (defined in the APINI/OOINI unit) must be called to save data. The
+  AlwaysRW parameter is irrelevant if the file is read-only. This
+  routine sets AsyncStatus to ecOutOfMemory if there is insufficient
+  memory to load the database. If an I/O error occurs, it's set to
+  IOResult.
+
+Example
+  type
+    IniXFer =
+      record
+        Name : String[20];
+        Age : Integer;
+      end;
+  ...
+  const
+    FirstDefaults : IniXFer (Name : 'Jason Leveille'; Age : 18);
+    SecondDefaults : IniXFer (Name : 'A Wise Guy'; Age : 1600);
+  var
+    D : IniDataBaseRecPtr;
+  ...
+    InitIniDataBase(D, 'DBASE.INI', False, False);
+    if AsyncStatus <> ecOK then
+      {error checking}
+
+    AddIniDBStringField(D, 'Name', 21, True);
+    if AsyncStatus <> ecOK then
+      {error checking}
+    AddIniDBIntField(D, 'Age');
+    if AsyncStatus <> ecOK then
+      {error checking}
+    PrepareIniDataBase(D, @FirstDefaults);
+    if AsyncStatus <> ecOK then
+      {error checking}
+    ...
+    ChangeIniDefaults(D, @SecondDefaults);
+    ...
+    DoneIniDataBase(D, Done);
+
+  This initializes a database, adds two fields (the index field is
+  called 'Name'), and prepares the database with FirstDefaults. Later,
+  it changes the defaults. Finally, the INI database is destroyed. When
+  using objects, the D parameters are omitted.
+
+See Also
+  AddIniDBIntField                    AddIniDBStringField
+  ChangeIniDefaults                   DoneIniDataBase
+  PrepareIniDataBase
+
+
+Syntax
+  function KeyExists(D : IniDataBaseRecPtr; Key : String) : Boolean;
+  function IniDataBase.KeyExists(Key : String) : Boolean;
+
+Purpose
+  See if an entry with the specified key exists.
+
+Description
+  This function returns True if an entry with an index of Key exists.
+
+Example
+  var
+    D : IniDataBaseRecPtr;
+  ...
+    if KeyExists(D, 'Jason Leveille') then
+      Writeln('Can perform operations to record ''Jason Leveille''');
+
+  Checks to see if there's an entry indexed by 'Jason Leveille' and lets
+  the user know there is. When using objects, the D parameter is
+  omitted.
+
+See Also
+  DelIniRecord                        GetIniRecord
+  UpdIniRecord
+
+
+Syntax
+  function NumIniRecs(D : IniDataBaseRecPtr) : Integer;
+  function IniDataBase.NumIniRecs : Integer;
+
+Purpose
+  Return the number of records in an INI database.
+
+Description
+  This function returns the number of records in the database.
+
+Example
+  var
+    D : IniDataBaseRecPtr;
+  ...
+    if NumIniRecs(D) > 980 then
+      Writeln('Warning : close to maximum number of records!');
+  Lets the user know if there are more than 980 records in the database.
+
+
+Syntax
+  procedure PrepareIniDataBase(D : IniDataBaseRecPtr;
+                               Defaults : Pointer);
+  procedure IniDataBase.PrepareIniDatabase(Defaults : Pointer);
+
+Purpose
+  Prepare the databse for reading/writing.
+
+Description
+  This routine must be called after the database has been initialized
+  and fields have been added. If the database file exists, it loads the
+  default record and the number of records. If the dataabse file does
+  not exist, a new, empty database is created with the default values
+  specified by Defaults.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecNoFieldsDefined - No AddField routines have been called.
+    ecNoIndexKey - No Index field was created (no AddIniDBStringField
+      routine was called with a True Index parameter).
+    ecOutOfMemory - There was insufficient available memory to load the
+      default record.
+
+Example
+  type
+    IniXFer =
+      record
+        Name : String[20];
+        Age : Integer;
+      end;
+  ...
+  const
+    TheDefaults : IniXFer (Name : 'Jason Leveille'; Age : 18);
+  var
+    D : IniDataBaseRecPtr;
+  ...
+    InitIniDataBase(D, 'DBASE.INI', False, False);
+    {AddField routines}
+    PrepareIniDataBase(D, @TheDefaults);
+
+  Initializes and prepares an INI database with defaults specified by
+  TheDefaults. When using objects, the D parameters are omitted.
+
+See Also
+  ChangeIniDefaults                   InitIniDataBase
+
+Syntax
+  procedure ReadFromIni(D : IniDataBaseRecPtr; var Rec; Section,
+                        IniFile : String);
+  procedure IniDataBase.ReadFromIni(var Rec; Section, IniFile : String);
+
+Purpose
+  Read a record from a user-specified .INI file.
+
+Description
+  This routine works much like GetIniRecord, except that a record is
+  retrieved from an external INI file. Rec must be a properly formatted
+  transfer buffer. Group is the group header of the record to be read.
+  IniFile is the name of the file to be read from. This is a useful
+  routine for getting records from other INI files, perhaps
+  configuration files.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecNoFieldsDefined - No AddField routines have been called.
+    ecDatabaseNotPrepared - PrepareIniDataBase hasn't been called.
+    ecOutOfMemory - There is insufficient memory available.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    XFer : IniXFer;
+    D : IniDataBaseRecPtr;
+    ...
+    ReadFromIni(D, XFer, 'Main Person', 'POP.INI');
+
+  Reads the record in the group 'Main Person' from 'POP.INI' and puts it
+  into XFer.  When using objects, the D parameter is omitted.
+
+See Also
+  WriteToIni
+
+
+Syntax
+  procedure UpdIniRecord(D : IniDataBaseRecPtr; Key : String; var Rec);
+  procedure IniDataBase.UpdIniRecord(Key : String; var Rec);
+
+Purpose
+  Update a record in the database.
+
+Description
+  This routine changes the data in the record indexed by Key to the data
+  in Rec. Rec is a properly formatted transfer buffer.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecNoFieldsDefined - No AddField routines have been called.
+    ecDatabaseNotPrepared - PrepareIniDataBase hasn't been called.
+    ecRecordNotFound - There is no record indexed by Key.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  type
+    IniXFer = record
+      Name : string[20];
+      Age : Integer;
+    end;
+  var
+    XFer : IniXFer;
+    D : IniDataBaseRecPtr;
+    ...
+    GetIniRecord(D, 'Jason Leveille', XFer);
+    XFer.Age := 19;
+    UpdIniRecord(D, 'Jason Leveille', XFer);
+  Loads the record indexed by 'Jason Leveille' into XFer, changes his
+  age (it's his birthday) and then updates the record. When using
+  objects, the D parameters are omitted.
+
+See Also
+  AddIniRecord                        DelIniRecord
+  GetIniRecord
+
+
+Syntax
+  procedure WriteToIni(D : IniDataBaseRecPtr; var Rec; Group,
+                       IniFile : String);
+  procedure IniDataBase.WriteToIni(var Rec; Group, IniFile : String);
+
+Purpose
+  Write the record to a user-specified .INI file.
+
+Description
+  The routine writes the data in Rec into the INI file IniFile. Rec is a
+  properly formatted transfer buffer. Group is the group header of the
+  .INI file to be written to. The data in the specified section must
+  contain fields in the same order and of the same type as that of the
+  transfer buffer.
+
+  This routine is useful for storing configuration data obtained from an
+  INI database.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecNoFieldsDefined - No AddField routines have been called.
+    ecDatabaseNotPrepared - PrepareIniDataBase hasn't been called.
+    ecOutOfMemory - There is insufficient available memory for internal
+      operations to save the database.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    XFer : IniXFer;
+    D : IniDataBaseRecPtr;
+    ...
+    WriteToIni(D, XFer, 'This Guy', 'POP.INI');
+
+  This writes the data in XFer to the group 'This Guy' in the file
+  'POP.INI'. When using objects, the D parameter is omitted.
+
+See Also
+  AddIniDBStringField                 ReadFromIni
+
+
+===== Modem Database : APMODDB/OOMODDB ==============================
+APMODDB/OOMODDB contains routines for handling an INI database
+specifically for modems. This unit allows adding, changing, creating,
+and deleting from a database. In addition, it provides routines for
+writing and reading a modem record to another .INI file. Like INI
+databass, modem databases have a transfer buffer. The transfer buffer
+used with modem databases has the following format:
+
+  ModemBaseDataPtr = ^ModemBaseData;
+  ModemBaseData = record
+    Name          : ModemNameType;
+    InitCmd       : CmdStrType;
+    DialCmd       : CmdStrType;
+    DialTerm      : CmdStrType;
+    DialCancel    : CmdStrType;
+    HangupCmd     : CmdStrType;
+    ConfigCmd     : ConfigStringType;
+    AnswerCmd     : CmdStrType;
+    OkMsg         : RspStringType;
+    ConnectMsg    : RspStringType;
+    BusyMsg       : RspStringType;
+    VoiceMsg      : RspStringType;
+    NoCarrierMsg  : RspStringType;
+    NoDialToneMsg : RspStringType;
+    ErrorMsg      : RspStringType;
+    RingMsg       : RspStringType;
+  end;
+
+  ModemDataPtr = ^ModemData;
+  ModemData = record
+    Data         : ModemBaseData;
+    NumErrors    : Word;
+    Errors       : TTagArray;
+    NumComps     : Word;
+    Compression  : TTagArray;
+    LockDTE      : Boolean;
+    DefBaud      : LongInt;
+  end;
+ModemBaseData contains strings for the basic modem commands. The modem
+database's transfer buffer has the format of ModemData.
+
+The Name field in the base data is the name of a modem and is used to
+index the database. It can be up to 31 characters long.
+
+The next seven fields in the base data contain the standard commands
+sent to a modem (hereafter called command strings): initialize, dial,
+answer, hangup, and configure (which are stored in InitCmd, DialCmd,
+AnswerCmd, HangupCmd, and ConfigCmd, respectively). If the hangup
+command is 'DTR', the modem briefly lowers and then raises the DTR to
+hang up. DialTerm is the command sent to the modem after the dial
+command and number have been sent. DialCancel is the command sent to the
+modem to cancel to connection attempt.  Each of the command strings may
+be up to 41 characters long, except the configuration string, which can
+be 255 characters long. The configuration string is longer because it
+can have multiple commands strung together (which must be separated by
+the CmdSepChar, a pipe ('|') character).
+
+To send control characters to the modem, use a '^' and then the
+associated control character (a capital 'M' in the case of a carriage
+return, for example.) in the command string. The command 'ATZ^M' is sent to the modem as
+'ATZ[CR]' where [CR] is a carriage return character.
+
+Some modems need to delay between characters or commands. To have this
+action performed, put a tilde ('~') in the command string. This has the
+modem control unit (APMODEM2/OOMODEM2) delay 9 tics (about 1/2 of a
+second).
+
+The rest of the base data fields contain the standard responses a modem
+can return(OK, connect, busy, voice, no carrier, no dialtone, error, and
+ring). They assume "verbal", not "numeric", responses ('OK', not '0').
+These can be up to 21 characters long.
+
+The errors and compression fields contain the error correction and data
+correction strings that some modem send to establish error correction
+and data compression. The modem interface unit compares these strings
+with the ones it recieves to determine if data compression or error
+correction is present. These fields are made up of up to 5 separate
+strings, called "feature tags", up to 21 characters long. The NumErrors
+and NumComps fields contain the number of these "tags".
+
+DefBaud contains the initial baud rate when the serial port is opened
+with this modem. The information in LockDTE is handled as follows when
+connecting: a True value means the baud rate is not adjusted to the rate
+of the connection, whereas a False value means the baud rate is
+adjusted.
+
+A modem database has the following format:
+
+[Index]
+1200 baud Hayes clone=#
+
+[Defaults]
+_Entries=1
+InitCmd=ATZ^M
+DialCmd=ATD
+DialTerm=^M
+DialCancel=^M
+HangupCmd=+++~~~ATH0^M
+ConfigCmd=ATE1Q0M1X1V1^M
+AnswerCmd=ATA^M
+OkMsg=OK
+ConnectMsg=CONNECT
+BusyMsg=BUSY
+VoiceMsg=VOICE
+NoCarrierMsg=NO CARRIER
+NoDialToneMsg=NO DIAL
+ErrorMsg=ERROR
+RingMsg=RING
+ErrorCheckTags=
+CompressTags=
+LockDTE=TRUE
+DefaultBaud=2400
+
+[1200 baud Hayes clone]
+InitCmd=ATE1Q0M1X4V1^M
+DialCmd=ATDT
+DialTerm=^M
+DialCancel=^M
+HangupCmd=~~~+++~~~ATH0^M
+AnswerCmd=ATA^M
+OkMsg=OK
+ConnectMsg=CONNECT
+BusyMsg=BUSY
+VoiceMsg=VOICE
+NoCarrierMsg=NO CARRIER
+NoDialToneMsg=NO DIAL
+RingMsg=RING
+LockDTE=FALSE
+DefaultBaud=1200
+
+The first section, [Index], contains a list of all of the modems in the
+database.
+
+The second section, [Defaults], contains the number of entries in the
+'_Entries' field, and contains default values for all basic commands.
+
+The other sections contain the actual modem data. The modem's name--1200
+baud Hayes Clone--is used as the group header.
+
+Example:
+program ExModDBO; {EXMODDBO.PAS}
+
+uses
+  OoIni,
+  OoIniDB,
+  OoModDB,
+  ApMisc;
+
+var
+  DB : ModemDBasePtr;
+  TempModem : ModemData;
+
+procedure ErrorChk(S : string);
+begin
+  if AsyncStatus <> ecOK then begin
+    Writeln(S, ': ',AsyncStatus);
+    Halt;
+  end;
+end;
+
+begin
+  New(DB, Init('AWMODEM.INI', False, False));
+  if DB = nil then begin
+    Writeln('Error initializing modem database : ', AsyncStatus);
+    Halt;
+  end;
+
+  DB^.RetrieveModem('GVC 9600 V.42', TempModem);
+  ErrorChk('Error retrieving modem from database');
+  Writeln('The dial command for the ', TempModem.Data.Name, ' is ',
+          TempModem.Data.DialCmd);
+
+  TempModem.Data.Name := 'GVC 9600 V.42 Copy';
+  DB^.AddModem(TempModem);
+  ErrorChk('Error adding modem copy');
+
+  DB^.FlushFile;
+  Dispose(DB, Done);
+end.
+This program initializes a modem database, gets a modem from it, and
+displays its dial command. It then changes the name of the modem, adds
+it to the database, writes the changed file to disk, and disposes of the
+object.
+
+Here's the non-OOP version of the same program:
+
+program ExModDB; {EXMODDB.PAS}
+
+uses
+{$IFDEF UsePModeDLL}
+  ApComD;
+{$ELSE}
+  ApIni,
+  ApIniDB,
+  ApModDB,
+  ApMisc;
+{$ENDIF}
+
+var
+  DB : ModemDBaseRecPtr;
+  TempModem : ModemData;
+
+procedure ErrorChk(S : string);
+begin
+  if GetAsyncStatus <> ecOK then begin
+    Writeln(S, ': ',GetAsyncStatus);
+    Halt;
+  end;
+end;
+
+begin
+  InitModemDB(DB, 'AWMODEM.INI', False, False);
+  ErrorChk('Error initializing modem database');
+
+  RetrieveModem(DB, 'GVC 9600 V.42', TempModem);
+  ErrorChk('Error retrieving modem from database');
+  Writeln('The dial command for the ', TempModem.Data.Name, ' is ',
+          TempModem.Data.DialCmd);
+
+  TempModem.Data.Name := 'GVC 9600 V.42 Copy';
+  AddModem(DB, TempModem);
+  ErrorChk('Error adding modem copy');
+
+  FlushModDBFile(DB);
+  DoneModemDB(DB);
+end.
+
+
+---- APMODDB/OOMODDB Declarations --------------------------------------
+Shared Declarations
+
+Constants
+  MaxTags      = 5;
+This is the maximum number of error correction or data compression tags
+per modem.
+
+  TagSepChar   = ',';
+This character separates error correction and data compression tags.
+Tags are stored in this format:
+CompressTags=MNP5,LAP-M,V.42BIS
+
+  ModemNameLen = 31;    {Length of a modem name string}
+  CmdLen       = 41;    {Maximum length of a modem command}
+  RspLen       = 21;    {Maximum length of a modem response}
+  TagLen       = 21;    {Maximum length of a tag string}
+  TagProfLen   = 105;   {Maximum length of a tag profile string}
+  BoolLen      = 5;     {Maximum length of a boolean string}
+  BaudLen      = 7;     {Maximum length of a baud rate string}
+  ConfigLen    = 255;   {Maximum length of a configuration string}
+Maximum lengths for modem data strings.
+
+Types
+  ModemNameType    = String[ModemNameLen];
+  CmdStrType       = String[CmdLen];
+  RspStringType    = String[RspLen];
+  TagStringType    = String[TagLen];
+  TagProfStrType   = String[TagProfLen];
+  ConfigStringType = String[ConfigLen];
+  BooleanStrType   = String[BoolLen];
+  BaudStrType      = String[BaudLen];
+Various modem data string types.
+
+  TTagArray = array[1..MaxTags] of TagStringType;
+Data structure for storing error correction and data compression tags.
+
+  ModemBaseDataPtr = ^ModemBaseData;
+  ModemBaseData = record
+    ...
+  end;
+Data structure for base modem data. See earlier in this section for an
+explanation on the fields.
+
+  ModemDataPtr = ^ModemData;
+  ModemData = record
+    ...
+  end;
+Modem data structure. This is the transfer buffer type to use
+with a modem database.
+
+APMODDB Declarations
+  ModemDBaseRecPtr = ^ModemDBaseRec;
+  ModemDBaseRec = record
+    ...
+  end;
+A record for manipulating modem databases and a pointer to that record.
+
+OOMODDB Declarations
+  ModemDBasePtr = ^ModemDBase;
+  ModemDBase =
+    object (IniDataBase)
+    ...
+    end;
+An object for manipulating modem databases and a pointer to that object.
+
+
+---- APMODDB/OOMODDB Reference -----------------------------------------
+
+Syntax
+  procedure AddModem(D : ModemDBaseRecPtr; Modem : ModemData);
+  procedure ModemDBase.AddModem(Modem : ModemData);
+
+Purpose
+  Add a modem to a database.
+
+Description
+  This routine adds a modem record to the database. Modem is a transfer
+  buffer containing the data for the new modem.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecRecordExists - There is already a modem record with the same name
+      in the database.
+    ecDatabaseFull - The database has the maximum number of modems.
+    ecNoFieldsDefined - No fields defined for the database. Since the
+      initialization routine defines the fields for the database, this
+      indicates a memory overwrite.
+    ecDataBaseNotPrepared - The underlying PrepareIniDataBase routine
+      was not called. Since the initialization routine calls this
+      routine, this indicates a memory overwrite.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    ModemXFer : ModemData;
+    D : PIniDataBase;
+    ...
+    FillChar(ModemXFer, SizeOf(ModemXfer), 0);
+    ModemXFer.Data.Name := 'My modem';
+    ModemXFer.Data.InitCmd := 'ATZ^M';
+    AddModem(D, ModemXFer);
+
+  Creates a minimal modem record and adds it to the database. When using
+  objects, the D parameter is omitted.
+
+See Also
+  AddIniRecord (APINIDB/OOINIDB)      DelModem
+  RetrieveModem                       UpdModem
+
+
+Syntax
+  procedure DelModem(D : ModemDBaseRecPtr; ModemName : ModemNameType);
+  procedure ModemDBase.DelModem(ModemName : ModemNameType);
+
+Purpose
+  Delete a modem from a database.
+
+Description
+  This routine deletes a modem named ModemName.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecRecordNotFound - There are no modems named ModemName in the
+      database.
+    ecNoFieldsDefined - No fields defined for the database. Since the
+      initialization routine defines the fields for the database, this
+      indicates a memory overwrite.
+    ecDataBaseNotPrepared - The underlying PrepareIniDataBase routine
+      was not called. Since the initialization routine calls this
+      routine, this indicates a memory overwrite.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    D : ModemDBaseRecPtr;
+    ...
+    DelModem(D, 'Naughty Modem');
+
+  Deletes 'Naughty Modem' from the database. When using objects, the
+  D parameter is omitted.
+
+See Also
+  AddModem                            DelIniRecord (APINIDB/OOINIDB)
+  RetrieveModem                       UpdModem
+
+
+Syntax
+  destructor ModemDBase.Done;
+
+Purpose
+  Destroy a modem database.
+
+Description
+  This deallocates the internal memory allocated by the constructor and
+  disposes of the object.
+
+Example
+  var
+    DB : ModemDBase;
+    ...
+    DB.Init('MYMODEMS.INI', False, False);
+    ...
+    DB.Done;
+  Instantiates a ModemDBase and later disposes of it.
+
+See Also
+  DoneModemDB                         Init
+
+
+Syntax
+  procedure DoneModemDB(D : ModemDBaseRecPtr);
+
+Purpose
+  Dispose of a modem database.
+
+Description
+  This deallocates the internal memory allocated by InitModemDB.
+
+Example
+  var
+    D : ModemDBaseRecPtr;
+    ...
+    D.Init('MYMODEMS.INI', False, False);
+    ...
+    D.Done;
+
+  Initializes a modem database and later disposes of it.
+
+See Also
+  InitModemDB                         ModemDBase.Done
+
+Syntax
+  procedure FlushModDBFile(D : ModemDBaseRecPtr);
+
+Purpose
+  Write a modem database to disk.
+
+Description
+  If the modem database is set to not update the file every time changes
+  are made (by calling InitModemDB with an AlwaysRW parameter of False),
+  this procedure needs to be called to save changes. This will not write
+  to disk unless changes have been made. Be wary of calling this
+  procedure, however: it writes the entire file to disk, not just what
+  has been changed. If anything goes wrong when saving the file,
+  AsyncStatus is set to IOResult.
+
+Example
+  var
+    D : IniDataBaseRecPtr;
+    XFer : ModemData;
+    ...
+    UpdModem(D, 'Changed Modem', XFer);
+    FlushIniDBFile(D);
+
+  Updates a modem and then writes the data to disk.
+
+See Also
+  FlushFile(APINI)                    InitIniDataBase
+
+
+Syntax
+  constructor ModemDBase.Init(FName : String; ReadOnly : Boolean;
+                              AlwaysRW: Boolean);
+
+Purpose
+  Initialize a modem database.
+
+Description
+  This routine creates an INI database, adds the necessary fields to it,
+  and then calls PrepareIniDatabase(defined in OOINIDB). It associates
+  the database with the file FName. If ReadOnly is True, the file is
+  considered read-only. If AlwaysRW is True, the file is updated
+  whenever changes are made.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecOutOfMemory - There is not enough memory to load the database.
+    ecNoFieldsDefined - No fields defined for the database. Since the
+      initialization routine defines the fields for the database, this
+      indicates a memory overwrite.
+    ecDataBaseNotPrepared - The underlying PrepareIniDataBase routine
+      was not called. Since the initialization routine calls this
+      routine, this indicates a memory overwrite.
+    ecKeyTooLong - A field name string is too long. Since this
+      constructor defines all fields within specified constraints, this
+      indicates a memory overwrite.
+    ecNoIndexKey - There's no index field. Since this constructor
+      creates an index, this indicates a memory overwrite.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    DB : ModemDBase;
+  ...
+    DB.Init('MYMODEMS.INI', False, False);
+
+  Creates a modem database named 'MYMODEMS.INI'.  The file is
+  read-writable and is not updated on disk when changed.
+
+See Also
+  Done                                DoneModemDB
+  InitModemDB
+
+
+Syntax
+  procedure InitModemDB(D : ModemDBaseRecPtr; FName : String;
+                        ReadOnly : Boolean; AlwaysRW: Boolean);
+
+Purpose
+  Initialize a modem database.
+
+Description
+  This routine creates an INI database, adds the necessary fields to it,
+  and then calls PrepareIniDatabase(defined in OOINIDB). It associates
+  the database with the file FName. If ReadOnly is True, the file is
+  considered read-only. If AlwaysRW is True, the file is updated
+  whenever changes are made.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecOutOfMemory - There is not enough memory to load the database.
+    ecNoFieldsDefined - No fields defined for the database. Since the
+      initialization routine defines the fields for the database, this
+      indicates a memory overwrite.
+    ecDataBaseNotPrepared - The underlying PrepareIniDataBase routine
+      was not called. Since the initialization routine calls this
+      routine, this indicates a memory overwrite.
+    ecKeyTooLong - A field name string is too long. Since this
+      procedure defines all fields within specified constraints, this
+      indicates a memory overwrite.
+    ecNoIndexKey - There's no index field. Since this procedure creates
+      an index, this indicates a memory overwrite.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    DB : ModemDBaseRecPtr;
+  ...
+    InitModemDB(D, 'MYMODEMS.INI', False, False);
+  Creates a modem database called 'MYMODEMS.INI'.  The file is
+  read-writable and is not updated on disk when changed.
+
+See Also
+  Done                                DoneModemDB
+  Init
+
+
+Syntax
+  function NumModems(D : ModemDBaseRecPtr);
+  function ModemDBase.NumModems : Integer;
+
+Purpose
+  Return the number of modems in a database.
+
+Description
+  This returns the number of modems currently in the database.
+
+Example
+  var
+    D : ModemDBaseRecPtr;
+    ...
+    Writeln('There are ', NumModems(D), 'modems in the database.');
+
+  Displays the number of modems in the database.  When using objects,
+  the D parameter is omitted.
+
+See Also
+  NumRecs(APINIDB/OOINIDB)
+
+
+Syntax
+  procedure ReadModemFromIni(D : ModemDBaseRecPtr; var Rec : ModemData;
+                             Group : String; IniFile : String);
+  procedure ModemDBase.ReadModemFromIni(var Rec : ModemData;
+                                        Group : String;
+                                        IniFile : String);
+
+Purpose
+  Read the modem from a user-specified .INI file.
+
+Description
+  This routine reads a modem record from the group heading Group from
+  the file IniFile and puts it into Rec. Undefined fields are filled
+  from the modem database's default record. This is a useful routine for
+  getting modem data from INI files outside the modem database, such as
+  configuration files.
+  This routine can set AsyncStatus to one of the following values:
+    ecOutOfMemory - There is not enough memory to load the database.
+    ecNoFieldsDefined - No fields defined for the database. Since the
+      initialization routine defines the fields for the database, this
+      indicates a memory overwrite.
+    ecDataBaseNotPrepared - The underlying PrepareIniDataBase routine
+      was not called. Since the initialization routine calls this
+      routine, this indicates a memory overwrite.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    ModemXFer : ModemData;
+    D : ModemDBaseRecPtr;
+    ...
+    ReadModemFromIni(D, ModemXFer, 'Current Modem', 'COMPROG.INI');
+
+  This reads the modem record under the heading 'Current Modem' in the
+  file 'COMPROG.INI' and puts it into ModemXFer.  When using objects,
+  the D parameter is omitted.
+
+See Also
+  ReadFromIni (APINIDB/OOINIDB)       WriteModemToIni
+
+
+Syntax
+  procedure RetrieveModem(D : ModemDBaseRecPtr;
+                          ModemName : ModemNameType;
+                          var Modem : ModemData);
+  procedure ModemDBase.RetrieveModem(ModemName : ModemNameType;
+                                     var Modem : ModemData);
+
+Purpose
+  Retrieve a modem from a database.
+
+Description
+  This loads a modem named ModemName into the record Modem.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecRecordNotFound - There are no modems named ModemName in the
+      database.
+    ecNoFieldsDefined - No fields defined for the database. Since the
+      initialization routine defines the fields for the database, this
+      indicates a memory overwrite.
+    ecDataBaseNotPrepared - The underlying PrepareIniDataBase routine
+      was not called. Since the initialization routine calls this
+      routine, this indicates a memory overwrite.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    ModemXFer : ModemData;
+    D : ModemDBaseRecPtr;
+    ...
+    GetIniRecord(D, 'Nifty Modem', ModemXFer);
+  Gets the modem called 'Nifty Modem' from the database and puts its
+  data into ModemXFer. When using objects, the D parameter is omitted.
+
+See Also
+  AddModem                            DelModem
+  GetIniRecord(APINIDB/OOINIDB)       UpdModem
+
+
+Syntax
+  procedure UpdModem(D : ModemDBaseRecPtr; ModemName : ModemNameType;
+                     Modem : ModemData);
+  procedure ModemDBase.UpdModem(ModemName : ModemNameType;
+                                Modem : ModemData);
+
+Purpose
+  Update a modem's record in a database.
+
+Description
+  This changes the existing data for modem ModemName to the data in
+  Modem.
+
+  This routine can set AsyncStatus to one of the following values:
+
+    ecRecordNotFound - There are no modems named ModemName in the
+      database.
+    ecNoFieldsDefined - No fields defined for the database. Since the
+      initialization routine defines the fields for the database, this
+      indicates a memory overwrite.
+    ecDataBaseNotPrepared - The underlying PrepareIniDataBase routine
+      was not called. Since the initialization routine calls this
+      routine, this indicates a memory overwrite.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    ModemXFer : ModemData;
+    D : ModemDBaseRecPtr;
+    ...
+    RetrieveModem(D, 'Jason Modem', ModemXFer);
+    ModemXFer.Data.InitCmd := 'ATZ^M';
+    UpdModem(D, 'Jason Modem', ModemXFer);
+
+  Retrieves a modem from the database, changes it initialization command
+  and updates the record. When using objects, the D parameters are
+  omitted.
+
+See Also
+  AddModem                            DelModem
+  RetrieveModem                       UpdIniRecord (APINIDB/OOINIDB)
+
+
+Syntax
+  procedure WriteModemToIni(D : ModemDBaseRecPtr; Rec : ModemData;
+                            Group : String; IniFile : String);
+  procedure ModemDBase.WriteModemToIni(Rec     : ModemData;
+                                       Group : String;
+                                       IniFile : String);
+
+Purpose
+  Write the modem to a user-specified .INI file.
+
+Description
+  This routine writes the data in Rec into an INI file IniFile. Group is
+  the group header in the file IniFile. IniFile which the data is being
+  saved. This routine is useful for saving a modem from the database
+  into a configuration file.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecOutOfMemory - There is insufficient available memory for internal
+      operations to save the database.
+    ecNoFieldsDefined - No fields defined for the database. Since the
+      initialization routine defines the fields for the database, this
+      indicates a memory overwrite.
+    ecDataBaseNotPrepared - The underlying PrepareIniDataBase routine
+      was not called. Since the initialization routine calls this
+      routine, this indicates a memory overwrite.
+    If an I/O error occurs, AsyncStatus is set to IOResult.
+
+Example
+  var
+    ModemXFer : ModemData;
+    D : ModemDBaseRecPtr;
+    ...
+    RetrieveModem(D, 'A Modem', ModemXFer);
+    WriteModemToIni(D, ModemXFer, 'The Modem', 'CONFIG.INI');
+
+  Retrieves a modem from the database and saves it under the heading
+  'The Modem' in the file 'CONFIG.INI'. When using objects, the D
+  parameters are omitted.
+
+See Also
+  ReadModemFromIni                    WriteToIni (APINIDB/OOINIDB)
+
+
+===== Modem Control : APMODEM2/OOMODEM2 ================================
+This unit has routines for sending commands to a modem and processing
+modem command responses. The greatest feature of this unit is
+that it uses a modem record like the one defined in APMODDB/OOMODDB for
+its command and response set. This unit and a modem database easily
+interact becuase a modem record retrieved from the database can be used
+for a command and response set.
+
+Example:
+{$I APDEFINE.INC}
+program ExDialO; {EXDIALO.PAS}
+
+uses
+{$IFDEF UseOPro}
+  OpCrt,
+{$ENDIF}
+{$IFDEF UseTPro}
+    TpCrt,
+{$ENDIF}
+{$IFDEF StandAlone}
+    Crt,
+{$ENDIF}
+  OoCom,
+  ApMisc,
+  ApPort,
+  OoModem2,
+  OoModDB;
+
+const
+  {default modem parameters}
+  DefModemData : ModemData =
+    (Data            : (
+      Name          : '';
+      InitCmd       : 'ATZ^M';
+      DialCmd       : 'ATD';
+      DialTerm      : '^M';
+      DialCancel    : '^M';
+      HangupCmd     : '+++~~~ATH0^M';
+      ConfigCmd     : 'ATE1Q0X1V1^M';
+      AnswerCmd     : 'ATA^M';
+      OkMsg         : 'OK';
+      ConnectMsg    : 'CONNECT';
+      BusyMsg       : 'BUSY';
+      VoiceMsg      : 'VOICE';
+      NoCarrierMsg  : 'NO CARRIER';
+      NoDialToneMsg : 'NO DIALTONE';
+      ErrorMsg      : 'ERROR';
+      RingMsg       : 'RING'
+    );
+    NumErrors       : 0;
+    Errors          : ('', '', '', '', '');
+    NumComps        : 0;
+    Compression     : ('', '', '', '', '');
+    LockDTE         : True;
+    DefBaud         : 19200
+  );
+
+var
+  ThePort : UartPortPtr;
+  ModemObj : ModemPtr;
+
+{allows operation to be aborted by pressing ESC}
+function AbortIt : Boolean; far;
+var
+  Ch : Char;
+begin
+  AbortIt := False;
+  if KeyPressed then
+    Ch := ReadKey;
+    if (Ch = #0) then
+      Ch := ReadKey
+    else
+      AbortIt := (Ch = #27);
+end;
+
+{handles displaying status information}
+procedure SayStatus(P : ModemPtr; MsgType, SecsRemaining : Word);
+begin
+  case MsgType of
+    ecTimeUpd :
+      Writeln('Time remaining : ', SecsRemaining,' seconds.');
+    ecConnect :
+      Writeln('Connection established.');
+    ecGotBaud :
+      Writeln('Baud rate is ', P^.GetConnectSpeed);
+    ecGotDataCompression :
+      Writeln('Data compression is now ', P^.GetDataCompression);
+    ecGotErrorCorrection :
+      Writeln('Error correction is now ', P^.GetErrorCorrection)
+    else
+      Writeln(StatusStr(MsgType));
+  end;
+end;
+
+begin
+  {creates a new port}
+  New(ThePort, InitFast(Com2, 19200));
+  if ThePort = nil then begin
+    Writeln('Error initializing port.');
+    Halt;
+  end;
+  ThePort^.SetAbortFunc(AbortIt);
+
+  {creates a new modem object, connected with the port specified above}
+  New(ModemObj, Init(ThePort, DefModemData));
+  if ModemObj = nil then begin
+    Writeln('Error initializing modem object : ');
+    Halt;
+  end;
+  ModemObj^.SetStatusProc(SayStatus);
+
+  {initializes the modem}
+  ModemObj^.Initialize(True);
+  if AsyncStatus <> ecOk then begin
+    Writeln('Error initializing modem : ', StatusStr(AsyncStatus));
+    Halt;
+  end;
+  Writeln('Modem initialized.');
+
+  {dials the modem}
+  Writeln('Beginning dial attempt...');
+  ModemObj^.Dial('260-9726', True);
+  if AsyncStatus <> ecConnect then begin
+    Writeln('Error dialing modem : ', StatusStr(AsyncStatus));
+    Halt;
+  end;
+
+  {disposes of objects}
+  Dispose(ModemObj, Done);
+  Dispose(ThePort, Done);
+end.
+
+This program initializes a port, sets an abort function which allows the
+user to abort any operation by pressing ESC, and then initializes a
+modem object which is connected with the port. SetStatusProc gives the
+modem the address of a status routine, SayStatus, which is called often
+to display the status of modem operations. The program then sends an
+initialization command to the modem and dials a number. Finally, it
+disposes of the port and modem objects.
+
+Here's the non-OOP version of the same program:
+
+{$I APDEFINE.INC}
+program ExDial; {EXDIAL.PAS}
+
+uses
+{$IFDEF UseOPro}
+  OpCrt,
+{$ENDIF}
+{$IFDEF UseTPro}
+    TpCrt,
+{$ENDIF}
+{$IFDEF StandAlone}
+    Crt,
+{$ENDIF}
+{$IFDEF UsePModeDLL}
+  ApComD;
+{$ELSE}
+  ApUart,
+  ApCom,
+  ApMisc,
+  ApPort,
+  ApModem2,
+  ApModDB;
+{$ENDIF}
+
+const
+  {default modem parameters}
+  DefModemData : ModemData =
+    (Data            : (
+      Name          : '';
+      InitCmd       : 'ATZ^M';
+      DialCmd       : 'ATD';
+      DialTerm      : '^M';
+      DialCancel    : '^M';
+      HangupCmd     : '+++~~~ATH0^M';
+      ConfigCmd     : 'ATE1Q0X1V1^M';
+      AnswerCmd     : 'ATA^M';
+      OkMsg         : 'OK';
+      ConnectMsg    : 'CONNECT';
+      BusyMsg       : 'BUSY';
+      VoiceMsg      : 'VOICE';
+      NoCarrierMsg  : 'NO CARRIER';
+      NoDialToneMsg : 'NO DIALTONE';
+      ErrorMsg      : 'ERROR';
+      RingMsg       : 'RING'
+    );
+    NumErrors       : 0;
+    Errors          : ('', '', '', '', '');
+    NumComps        : 0;
+    Compression     : ('', '', '', '', '');
+    LockDTE         : True;
+    DefBaud         : 19200
+  );
+
+var
+  ThePort : PortRecPtr;
+  YourModem : ModemRecPtr;
+
+{allows operation to be aborted by pressing ESC}
+function AbortIt : Boolean;
+  {$IFDEF UsePModeDLL} export; {$ELSE} far; {$ENDIF}
+var
+  Ch : Char;
+begin
+  AbortIt := False;
+  if KeyPressed then
+    Ch := ReadKey;
+    if (Ch = #0) then
+      Ch := ReadKey
+    else
+      AbortIt := (Ch = #27);
+end;
+
+{handles displaying of status messages}
+procedure SayStatus(P : ModemRecPtr; MsgType, SecsRemaining : Word);
+  {$IFDEF UsePModeDLL} export; {$ELSE} far; {$ENDIF}
+begin
+  case MsgType of
+    ecTimeUpd :
+      Writeln('Time remaining : ', SecsRemaining,' seconds.');
+    ecConnect :
+      Writeln('Connection established.');
+    ecGotBaud :
+      Writeln('Baud rate is ', GetConnectSpeed(P));
+    ecGotDataCompression :
+      Writeln('Data compression is now ', GetDataCompression(P));
+    ecGotErrorCorrection :
+      Writeln('Error correction is now ', GetErrorCorrection(P));
+    else
+      Writeln(StatusStr(MsgType));
+  end;
+end;
+
+begin
+  {creates a new port}
+  InitPortFast(ThePort, Com2, 19200);
+  if ThePort = nil then begin
+    Writeln('Error initializing port.');
+    Halt;
+  end;
+  SetAbortFunc(ThePort, AbortIt);
+
+  {creates a new modem object, connected with the port specified above}
+  InitModem(YourModem, ThePort, DefModemData);
+  if YourModem = nil then begin
+    Writeln('Error initializing modem object : ', GetAsyncStatus);
+    Halt;
+  end;
+  SetStatusProc(YourModem, SayStatus);
+
+  {initializes the modem}
+  Initialize(YourModem, True);
+  if GetAsyncStatus <> ecOk then begin
+    Writeln('Error initializing modem : ', StatusStr(GetAsyncStatus));
+    Halt;
+  end;
+  Writeln('Modem initialized.');
+
+  {dials a number}
+  Writeln('Beginning dial attempt...');
+  Dial(YourModem, '260-9726', True);
+  if GetAsyncStatus <> ecConnect then begin
+    Writeln('Error dialing modem : ', StatusStr(GetAsyncStatus));
+    Halt;
+  end;
+
+  {done with data structures}
+  DoneModem(YourModem);
+  DonePort(ThePort);
+end.
+
+Note the inclusion of the SayStatus procedure. The SayStatus procedure
+is called during a connection operation(dial or answer), and will either
+update the time remaining or a change in status. The MsgType parameter
+contains an error code (ecXxx) which reflects the current status. The
+SecsRemaining parameter returns how many seconds are left before the
+current operation times out.
+
+Here's an example of how to set up the modem to auto answer:
+
+program ExAnswerO; {EXANSWRO.PAS}
+
+uses
+  Crt,
+  OoCom,
+  ApMisc,
+  ApPort,
+  OoModem2,
+  OoModDB;
+
+const
+  {modem defaults}
+  DefModemData : ModemData =
+    (Data            : (
+      Name          : '';
+      InitCmd       : 'ATZ^M';
+      DialCmd       : 'ATD';
+      DialTerm      : '^M';
+      DialCancel    : '^M';
+      HangupCmd     : '+++~~~ATH0^M';
+      ConfigCmd     : 'ATE1Q0X1V1^M';
+      AnswerCmd     : 'ATA^M';
+      OkMsg         : 'OK';
+      ConnectMsg    : 'CONNECT';
+      BusyMsg       : 'BUSY';
+      VoiceMsg      : 'VOICE';
+      NoCarrierMsg  : 'NO CARRIER';
+      NoDialToneMsg : 'NO DIALTONE';
+      ErrorMsg      : 'ERROR';
+      RingMsg       : 'RING'
+    );
+    NumErrors       : 0;
+    Errors          : ('', '', '', '', '');
+    NumComps        : 0;
+    Compression     : ('', '', '', '', '');
+    LockDTE         : True;
+    DefBaud         : 19200
+  );
+
+var
+  ThePort : UartPortPtr;
+  ModemObj : ModemPtr;
+
+{allows operation to be halted with pressing of ESC}
+function AbortIt : Boolean; far;
+begin
+  AbortIt := False;
+  if KeyPressed then
+    if ReadKey = #27 then
+      AbortIt := True;
+end;
+
+{handles status checking}
+procedure SayStatus(P : ModemPtr; MsgType, SecsRemaining : Word); far;
+begin
+  case MsgType of
+    ecTimeUpd :
+      Writeln('Time remaining : ', SecsRemaining,' seconds.');
+    ecConnect :
+      Writeln('Connection established.');
+    ecGotBaud :
+      Writeln('Baud rate is ', P^.GetConnectSpeed);
+    ecGotDataCompression :
+      Writeln('Data compression is now ', P^.GetDataCompression);
+    ecGotErrorCorrection :
+      Writeln('Error correction is now ', P^.GetErrorCorrection)
+    else
+      Writeln(StatusStr(MsgType));
+  end;
+end;
+
+begin
+  {creates a new port}
+  New(ThePort, InitFast(Com2, 19200));
+  if ThePort = nil then begin
+    Writeln('Error initializing port.');
+    Halt;
+  end;
+  ThePort^.SetAbortFunc(AbortIt);
+
+  {creates a new modem object, connected with the port specified above}
+  New(ModemObj, Init(ThePort, DefModemData));
+  if ModemObj = nil then begin
+    Writeln('Error initializing modem object : ');
+    Halt;
+  end;
+  ModemObj^.SetStatusProc(SayStatus);
+
+  {initializes the modem}
+  ModemObj^.Initialize(True);
+  if AsyncStatus <> ecOk then begin
+    Writeln('Error initializing modem : ', StatusStr(AsyncStatus));
+    Halt;
+  end;
+  Writeln('Modem initialized.');
+
+  {answers the modem}
+  Writeln('Entering auto answer mode ...');
+  Writeln('(Press ESC to abort wait.)');
+  ModemObj^.AutoAnswer(2);
+
+  {disposes of objects when done}
+  Dispose(ModemObj, Done);
+  Dispose(ThePort, Done);
+end.
+
+The only differences between this program and EXDIAL are the three
+lines after the modem is initialized. These informs the user to press
+ESC to stop waiting for an incoming call and to answer the phone after
+two rings. There's still a UserAbort and status procedure in this
+program.
+
+Here's the non-OOP version:
+
+{$I APDEFINE.INC}
+program ExAnswer;
+
+uses
+{$IFDEF UseOPro}
+  OpCrt,
+{$ENDIF}
+{$IFDEF UseTPro}
+    TpCrt,
+{$ENDIF}
+{$IFDEF StandAlone}
+    Crt,
+{$ENDIF}
+{$IFDEF UsePModeDLL}
+  ApComD;
+{$ELSE}
+  ApUart,
+  ApCom,
+  ApMisc,
+  ApPort,
+  ApModem2,
+  ApModDB;
+{$ENDIF}
+
+const
+  DefModemData : ModemData =
+    (Data            : (
+      Name          : '';
+      InitCmd       : 'ATZ^M';
+      DialCmd       : 'ATD';
+      DialTerm      : '^M';
+      DialCancel    : '^M';
+      HangupCmd     : '+++~~~ATH0^M';
+      ConfigCmd     : 'ATE1Q0X1V1^M';
+      AnswerCmd     : 'ATA^M';
+      OkMsg         : 'OK';
+      ConnectMsg    : 'CONNECT';
+      BusyMsg       : 'BUSY';
+      VoiceMsg      : 'VOICE';
+      NoCarrierMsg  : 'NO CARRIER';
+      NoDialToneMsg : 'NO DIALTONE';
+      ErrorMsg      : 'ERROR';
+      RingMsg       : 'RING'
+    );
+    NumErrors       : 0;
+    Errors          : ('', '', '', '', '');
+    NumComps        : 0;
+    Compression     : ('', '', '', '', '');
+    LockDTE         : True;
+    DefBaud         : 19200
+  );
+
+var
+  ThePort : PortRecPtr;
+  YourModem : ModemRecPtr;
+
+function AbortIt : Boolean;
+  {$IFDEF UsePModeDLL} export; {$ELSE} far; {$ENDIF}
+begin
+  AbortIt := False;
+  if KeyPressed then
+    if ReadKey = #27 then
+      AbortIt := True;
+end;
+
+procedure SayStatus(P : ModemRecPtr; MsgType, SecsRemaining : Word);
+  {$IFDEF UsePModeDLL} export; {$ELSE} far; {$ENDIF}
+begin
+  case MsgType of
+    ecTimeUpd :
+      Writeln('Time remaining : ', SecsRemaining,' seconds.');
+    ecConnect :
+      Writeln('Connection established.');
+    ecGotBaud :
+      Writeln('Baud rate is ', GetConnectSpeed(P));
+    ecGotDataCompression :
+      Writeln('Data compression is now ', GetDataCompression(P));
+    ecGotErrorCorrection :
+      Writeln('Error correction is now ', GetErrorCorrection(P));
+    else
+      Writeln(StatusStr(MsgType));
+  end;
+end;
+
+begin
+  {creates a new port}
+  InitPortFast(ThePort, Com2, 19200);
+  if ThePort = nil then begin
+    Writeln('Error initializing port.');
+    Halt;
+  end;
+  SetAbortFunc(ThePort, AbortIt);
+
+  {creates a new modem object, connected with the port specified above}
+  InitModem(YourModem, ThePort, DefModemData);
+  if YourModem = nil then begin
+    Writeln('Error initializing modem object : ');
+    Halt;
+  end;
+  SetStatusProc(YourModem, SayStatus);
+
+  {initializes the modem}
+  Initialize(YourModem, True);
+  if GetAsyncStatus <> ecOk then begin
+    Writeln('Error initializing modem : ', StatusStr(GetAsyncStatus));
+    Halt;
+  end;
+  Writeln('Modem initialized.');
+
+  {answers the modem}
+  Writeln('Entering auto answer mode ...');
+  Writeln('(Press ESC to abort wait.)');
+  AutoAnswer(YourModem, 2);
+  DoneModem(YourModem);
+  DonePort(ThePort);
+end.
+
+---- Wait vs. No-Wait Modem Routines: Using ProcessXxxResponse ---------
+All routines that send commands to the modem have a parameter called
+Wait. This controls whether or not the routine waits for a modem
+response before returning to the caller. Any routine called with a Wait
+parameter of True has the routine wait for a modem response or a timeout
+before returning, whereas any routine called with a Wait parameter of
+False (hereafter called a no-wait routine) exits immediately. This is
+useful for letting your program do something else while waiting for
+responses.
+
+Note that it's possible, when using no-wait routines, to call another
+routine that sends commands to the modem before the last command has
+been handled completely. If that happens, AsyncStatus is set to
+ecModemBusy. To see if the modem is processing a command, call the
+function ModemBusy. If it returns True, the modem is still processing a
+command. Even if the modem has finished processing the last command, a
+ProcessXxxResponse (ProcessCommandResponse or ProcessConnectResponse)
+routine must be called before additional commands may be sent.
+
+To process modem responses after calling a no-wait routine, call
+ProcessConnectResponse for connection commands (dial or answer) and
+ProcessCommandResponse for all other commands. These routines set
+AsyncStatus to ecTimeOut if the related timeout occurs.
+
+Example:
+  var
+    M : ModemRecPtr;
+    ...
+    Initialize(M, False);
+    repeat
+      {do cool stuff in the meantime}
+      ...
+    until ProcessCommandResponse(M);
+    Dial(M, '260-9726', False);
+    repeat
+      {entertain user while waiting for modem to connect}
+      ...
+      ProcessConnectResponse(M);
+    until not ModemWorking;
+Note that all routines that send commands have a Wait parameter of
+False. The body of the repeat/until loop would contain code to handle
+processing of idle time--for instance, a countdown could be displayed,
+or keystrokes could be pressed. The ProcessXxxResponse routines check to
+see if the modem has returned a response string and set AsyncStatus if
+it has. ProcessCommandResponse returns True only if a timeout has
+occured or a response has been returned. When using objects, omit the M
+parameters.
+
+
+---- APMODEM2/OOMODEM2 Declarations ------------------------------------
+Shared Declarations
+
+Constants
+  ecTimeUpd                = 9951;  {Message reporting time remaining}
+  ecGotBaud                = 9952;  {Received the baud rate}
+  ecGotErrorCorrection     = 9953;  {Received an error correction tag}
+  ecGotDataCompression     = 9954;  {Received a data compression tag}
+
+Some of the AsyncStatus values sent to the status procedure to report
+the current status.
+
+  ecModemBusy              = 9955;  {Modem processing command}
+  ecModemNotBusy           = 9956;  {Modem not doing anything}
+
+AsyncStatus values returned when using no-wait functions.
+
+  TicsPerSec           = 18;     {Default number of Tics in a second}
+  DefDialTimeout       = 60;     {Default seconds for dial timeout}
+  DefAnswerTimeout     = 60;     {Default seconds for answer timeout}
+  DefDelayFactor       = 2;      {Default Tics for inter-cmd delay}
+  DefCmdTimeout        = 182;    {Default Tics for command timeout}
+  DefDTRDropHold       = 8;      {Default Tics for DTR low in hangup}
+  DefModemCharDelay    = 0;      {Default Tics between outgoing chars}
+  DefTildeDelay        = 9;      {Default Tics to delay for ~'s}
+  DefRingWaitTimeout   = 182;    {Default Tics before auto answer reset}
+  DefBaudWait          = 36;     {Default number of Tics for BPS wait}
+  DefFeatureWait       = 9;      {Default number of Tics to wait for
+                                  features}
+
+Default values for various timeouts if SetXxxTimeOut is not called.
+
+  CmdSepChar           = '|';
+
+Character to separate multiple commands in a configuration string.
+
+APMODEM2 Declarations
+
+Types
+  ModemRecPtr = ^ModemRec;
+  ModemRec = record
+    ...
+  end;
+
+Modem interface record and a pointer to that record.
+
+OOMODEM2 Declarations
+
+Types
+  ModemPtr = ^Modem
+  Modem = object
+    ...
+  end;
+
+Modem interface object and a pointer to that object.
+
+
+---- APMODEM2/OOMODEM2 Reference ---------------------------------------
+
+Syntax
+  procedure Answer(M : ModemRecPtr; Wait : Boolean);
+  procedure Modem.Answer(Wait : Boolean);
+
+Purpose
+  Answer a modem.
+
+Description
+  This routine sends the string in the AnswerCmd field of the Modem's
+  data record to the modem. If Wait is True, it then waits 60 seconds
+  (or the value set by SetAnswerTimeOut) for the modem to return a
+  response string. It also looks for data compression and error
+  correction tags. If a connection is established, it attempts to
+  determine the connection speed before returning. If Wait is False, it
+  returns immediately and ProcessConnectResponse should be called
+  periodically to check the status of the answer attempt.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecTimeOut - A connection was not made in the time set by
+      SetAnswerTimeout.
+    ecVoice - The modem returned a voice response.
+    ecNoCarrier - The modem returned a no carrier response.
+    ecNoDialTone - The modem returned a no dialtone response.
+    ecBusy - The modem returned a busy response.
+    ecError - The modem returned an error response.
+    ecConnect - The modem established a connection.
+    ecUserAbort - The UserAbort procedure returned True.
+    ecBufferIsFull - The modem buffer was full when the answer command
+      was sent.
+    ecModemBusy - The modem is still processing the last command.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    Answer(M, True);
+  Sends the answer command to the modem and waits for a response. When
+  using objects, the M parameter is omitted.
+
+See Also
+  AutoAnswer                          Dial
+  ProcessConnectResponse              SetAnswerTimeOut
+
+
+Syntax
+  procedure AutoAnswer(M : ModemRecPtr; Rings : Word);
+  procedure Modem.AutoAnswer(Rings : Word);
+
+Purpose
+  Answer a modem after a specified number of rings.
+
+Description
+  This routine calls Answer and waits for a response after it receives
+  Rings number of RING results. If it recieves one or more RING results
+  but fewer than Rings RING results in the time alloted by
+  SetRingWaitTimeOut, the internal counter is reset to 0.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecTimeOut - A connection was not made in the time set by
+      SetAnswerTimeout.
+    ecVoice - The modem returned a voice response.
+    ecNoCarrier - The modem returned a no carrier response.
+    ecNoDialTone - The modem returned a no dialtone response.
+    ecBusy - The modem returned a busy response.
+    ecError - The modem returned an error response.
+    ecConnect - The modem established a connection.
+    ecUserAbort - The UserAbort procedure returned True.
+    ecBufferIsFull - The modem buffer was full when the answer command
+      was sent.
+    ecModemBusy - The modem is still processing the last command.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    AutoAnswer(M, 4);
+  Sets the modem to answer if it receives four rings. When using
+  objects, the M parameter is omitted.
+
+See Also
+  Answer                              Dial
+
+
+Syntax
+  procedure Configure(M : ModemRecPtr);
+  procedure Modem.Configure;
+
+Purpose
+  Send the configuration string to the modem.
+
+Description
+  This routine sends the commands in the configuration string of the
+  Modem's data record to a modem. Each command, separated by CmdSepChar
+  ('|'), is sent and verified individually. No other routine can handle
+  CmdSepChar. All commands are sent, even if the modem returns an error
+  response to one or more of them. There is no Wait parameter for this
+  command: it waits for a response from the modem or until the time set
+  by SetCmdTimeout has elapsed. The no-wait equivalent of this command
+  uses a combination of NumConfigStrings and GetConfigString.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecTimeOut - The time set by SetCmdTimeOut elapsed before a response
+      was received.
+    ecError - The modem returned an error response to any of the
+      commands sent.
+    ecBufferIsFull - The modem buffer was full when a configuration
+      command was sent.
+
+Example
+  uses
+    ApTimer;
+    ...
+  var
+    M : Modem;
+    ResponseTimer : EventTimer;
+    ...
+    Configure(M);
+
+  Sends the configuration string(s) to the modem. When using objects,
+  the M parameter is omitted.
+
+See Also
+  GetConfigString                     NumConfigStrings
+  ProcessCommandResponse              PutCommand
+
+
+Syntax
+  procedure Dial(M : ModemRecPtr; Number : String; Wait : Boolean);
+  procedure Modem.Dial(Number : String; Wait : Boolean);
+
+Purpose
+  Dial a modem.
+
+Description
+  This routine sends the string in the DialCmd field of the Modem's data
+  record to a modem and attempts to establish a connection. If Wait is
+  True, it then waits 60 seconds (or the value set by SetDialTimeOut)
+  for the modem to return a response string (which are contained in the
+  OKMsg, ConnectMsg, VoiceMsg, ErrorMsg, NoDialToneMsg, and NoCarrierMsg
+  fields of the Modem's data record). It looks for data compression and
+  error correction tags. It also attempts to get the connection speed
+  before returning. If Wait is False, it returns immediately and
+  ProcessConnectResponse should be called periodically to check the
+  status of the dial attempt.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecTimeOut - A connection was not made in the time set by
+      SetDialTimeout.
+    ecVoice - The modem returned a voice response.
+    ecNoCarrier - The modem returned a no carrier response.
+    ecNoDialTone - The modem returned a no dialtone response.
+    ecBusy - The modem returned a busy response.
+    ecError - The modem returned an error response.
+    ecConnect - The modem established a connection.
+    ecUserAbort - The UserAbort procedure returned True.
+    ecBufferIsFull - The modem buffer was full when the dial command
+      was sent.
+    ecModemBusy - The modem is still processing the last command.
+
+Example
+  uses
+    ApTimer;
+    ...
+  var
+    M : ModemRecPtr;
+    I : Word;
+    ...
+    Dial(M, '260-9726', False);
+    for I := 1 to 12 do begin
+      DelayTics(91);
+      ProcessConnectResponse(M);
+    end;
+
+  Dials '260-9726' and tries to establish a connection. It checks the
+  status of the modem every 91 tics(about five seconds). When using
+  objects, the M parameters are omitted.
+
+See Also
+  Answer                              AutoAnswer
+  SetDialTimeOut
+
+
+Syntax
+  destructor Modem.Done;
+
+Purpose
+  Destroy a modem.
+
+Description
+  Frees all memory allocated by the Init constructor. It does nothing to
+  the associated port object.
+
+Example
+  See the example for Init.
+
+See Also
+  DoneModem                           Init
+
+
+Syntax
+  procedure DoneModem(M : ModemRecPtr);
+
+Purpose
+  Frees all memory allocated by the InitModem procedure.
+
+Description
+  Free memory allocated for a modem. It does nothing to the associated
+  port record.
+
+Example
+  See the example for InitModem.
+
+See Also
+  InitModem                           Modem.Done
+
+
+Syntax
+  function GetConfigString(M : ModemRecPtr; StrNum : Word) : CmdStrType;
+  function Modem.GetConfigString(StrNum : Word) : CmdStrType;
+
+Purpose
+  Extract a configuration string.
+
+Description
+  This routine returns one command string from the configuration string.
+  StrNum is the number of the configuration string. For example, to get
+  the first command string, pass 1 in for StrNum. If StrNum is greater
+  than the number of command strings, the function returns an empty
+  string. Use this to perform no-wait version of Configure.
+
+Example
+  var
+    M : ModemRecPtr;
+    I : Integer;
+    ...
+    for I := 1 to NumConfigStrings(M) do begin
+      PutCommand(GetConfigString(M, I), False);
+      while not ProcessCommandResponse do
+        {amuse user with dazzling routines while waiting for a response}
+        ...
+    end;
+
+  Sends all of the command strings in the configuration string to the
+  modem. When using objects, the M parameters are omitted.
+
+See Also
+  Configure                           NumConfigStrings
+  ProcessCommandResponse              PutCommand
+
+Syntax
+  function GetConnectSpeed(M : ModemRecPtr) : LongInt;
+  function Modem.GetConnectSpeed : LongInt;
+
+Purpose
+  Get the actual speed of a connection.
+
+Description
+  After a connection has been established, most modems return a string
+  indicating the connect speed. This function will return that value.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    Modem.Dial(M, '260-9726');
+    if AsyncStatus = ecConnect then
+      Writeln('The connection is established at ', GetConnectSpeed(M));
+  Dials a number and then writes out the connection speed. When using
+  objects, the M parameter is omitted.
+
+
+Syntax
+  function GetDataCompression(M : ModemRecPtr) : Boolean;
+  function Modem.GetDataCompression : Boolean;
+
+Purpose
+  Return True if a connection has data compression features.
+
+Description
+  This function return True if a data compression tag has been
+  recieved, otherwise it returns False.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    Dial(M, '260-9726');
+    if AsyncStatus = ecConnect then
+      Writeln('Data compression is ', GetDataCompression(M));
+
+  Dials a number, and displays the value of data compression on the
+  screen if a connection was made. When using objects, the M parameters
+  are omitted.
+
+See Also
+  GetErrorCorrection
+
+
+Syntax
+  function GetErrorCorrection(M : ModemRecPtr) : Boolean;
+  function Modem.GetErrorCorrection : Boolean;
+
+Purpose
+  Return True if a connection has error correction features.
+
+Description
+  This function returns True if an error correction tag has been
+  received.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    Dial(M, '260-9726');
+    if AsyncStatus = ecConnect then
+      Writeln('Error correction is ', GetErrorCorrection(M));
+
+  Dials a number and reports the status of error correction if a
+  connection has been made. When using objects, the M parameters are
+  omitted.
+
+See Also
+  GetDataCompression
+
+
+Syntax
+  procedure Hangup(M : ModemRecPtr.; Wait : Boolean);
+  procedure Modem.HangUp(Wait : Boolean);
+
+Purpose
+  Send the hangup string to a modem.
+
+Description
+  This routine sends the string in the HangupCmd field of the Modem's
+  data record to a modem. If Wait is True, Hangup waits for a response
+  from the modem (OK or error). If Wait is false, Hangup returns
+  immediately and ProcessCommandResponse should be called to handle the
+  modem's responses. If the HangupCmd is 'DTR', Wait has no effect:
+  Hangup does not return until it has lowered the DTR signal for a
+  number of tics equal to DTRDropHold and raised it afterward.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecTimeOut - The time set by SetCmdTimeOut elapsed before a response
+      was received.
+    ecError - The modem returned an error response.
+    ecBufferIsFull - The modem buffer was full when the hangup command
+      was sent.
+    ecModemBusy - The modem is still processing the last command.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    Hangup(M, True);
+
+  Sends the hangup command to the modem and waits for a response. When
+  using objects, the M parameter is omitted.
+
+See Also
+  ProcessCommandResponse              PutCommand
+
+
+Syntax
+  constructor Init(Port : AbstractPortPtr; var Data : ModemData);
+
+Purpose
+  Initialize a modem interface object.
+
+Description
+  This allocates the necessary memory for all of the object's fields and
+  initializes all the fields. It does nothing to Port. Data is used to
+  determine the command strings to send to the modem. AsyncStatus is set
+  to ecOutOfMemory if there's insufficient available memory.
+
+Example
+  var
+    P : UartPortPtr;
+    M : Modem;
+    ModemCmdRec : ModemData;
+    ...
+    ThePort.InitFast(Com2, 19200);
+    ...
+    if not Modem.Init(P, ModemCmdRec) then
+      {error handling}
+    ...
+    Modem.Done;
+  Creates a modem object and later destroys it.
+
+See Also
+  Done                                InitModem
+
+
+Syntax
+  procedure InitModem(Port : PortRecPtr; var Data : ModemData);
+
+Purpose
+  Initialize a modem interface object.
+
+Description
+  This allocates the necessary memory for all of the record's fields and
+  initializes all the fields. It does nothing to Port. Data is used to
+  determine the command strings to send to the modem. AsyncStatus is set
+  to ecOutOfMemory if there's insufficient available memory.
+
+Example
+  var
+    M : ModemRecPtr;
+    P : PortRecPtr;
+    TheCommands : ModemData;
+    ...
+    InitPortFast(P, Com2, 19200);
+    ...
+    InitModem(M, P, TheCommands);
+    if (AsyncStatus <> ecOK) then
+      {error handling}
+    ...
+    Modem.Done;
+
+  Creates a modem record and later destroys it.
+
+See Also
+  DoneModem                           Init
+
+
+Syntax
+  procedure Initialize(M : ModemRecPtr; Wait : Boolean);
+  procedure Modem.Initialize(Wait : Boolean);
+
+Purpose
+  Send the initialization string to a modem.
+
+Description
+  This routine sends the string stored in the InitCmd field of the
+  Modem's data record to the modem. If Wait is True, it waits for a
+  response; otherwise, this procedure returns immediately and
+  ProcessCommandResponse should be called periodically to check the
+  modem's status.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecTimeOut - A connection was not made in the time set by
+      SetCmdTimeOut.
+    ecError - The modem returned an error response.
+    ecBufferIsFull - The modem buffer was full when the initialization
+      command was sent.
+    ecModemBusy - The modem is still processing the last command.
+
+Example
+  uses
+    ApTimer;
+  var
+    M : ModemRecPtr;
+    ...
+    Initialize(M, False);
+    DelayTics(36);
+    if ProcessCommandResponse(M) then
+      Writeln('Response received: ', AsyncStatus)
+    else
+      Writeln('Response not received!');
+
+  Sends the initialization command to a modem, and checks for a response
+  after 36 tics(about two seconds). When using objects, the M parameter
+  is omitted.
+
+See Also
+  ProcessCommandResponse              PutCommand
+
+Syntax
+  function ModemWorking(M : ModemRecPtr) : Boolean;
+  function Modem.ModemWorking: Boolean;
+
+Purpose
+  See if a modem is processing any commands.
+
+Description
+  This checks to see if the last command has been processed. This
+  routine is used with no-wait commands.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    while ModemWorking(M) do
+      {dazzling routines to distract user while they wait}
+      ...
+    Initialize(M, False);
+
+  Sends the initialization command once the modem has processed its last
+  command.
+
+See Also
+  ProcessCommandResponse              ProcessConnectResponse
+
+Syntax
+  function NumConfigStrings(M : ModemRecPtr) : Word;
+  function Modem.NumConfigStrings : Word;
+
+Purpose
+  Return number of configuration strings.
+
+Description
+  This routine returns the number of command strings in the ConfigCmd
+  field of the Modem's data record.
+
+Example
+  See the example under GetConfigString.
+
+See Also
+  Configure                           GetConfigString
+
+Syntax
+  function ProcessCommandResponse(M : ModemRecPtr) : Boolean;
+  function Modem.ProcessCommandResponse : Boolean;
+
+Purpose
+  Check for responses from a modem.
+
+Description
+  This routine should be called after an no-wait command routine
+  (PutCommand, Initialize, Configure, Hangup) has been called. This
+  routine checks to see if the modem has sent a response string. This
+  routine (or ProcessConnectResponse) must be called before any more
+  commands may be sent to a modem. This function returns True if a
+  response string is received or a timeout occurs.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecParityError - A parity error occured.
+    ecOverrunError - An overrun error occured.
+    ecFramingError - A framing error occured.
+    ecTimeOut - The time set by SetCmdTimeOut elapsed before a response
+      was received.
+    ecError - The modem returned an error response.
+    ecBufferIsFull - The modem buffer is full.
+    ecModemNotBusy - The modem is not processing any commands.
+    ecUserAbort - The user abort function returned True.
+
+Example
+  uses
+    ApTimer;
+    ...
+  var
+    M : ModemRecPtr;
+    ...
+    PutCommand(M, 'ATZ', False);
+    DelayTics(36);
+    if ProcessCommandResponse(M) then
+      case AsyncStatus of
+        ecOK : Writeln('OK response received.');
+        ecError : Writeln('Error response received.');
+        ecTimeOut : Writeln('Our command timeout is under two seconds!');
+      end
+    else
+      Writeln('No response');
+
+   Sends 'ATZ' to the modem and checks 36 tics (about two seconds) later
+   to see if the modem sent a response. When using objects, the M
+   parameters are omitted.
+
+See Also
+  Configure                           Hangup
+  Initialize                          PutCommand
+  ProcessConnectResponse
+
+Syntax
+  procedure ProcessConnectResponse(M : ModemRecPtr);
+  procedure Modem.ProcessConnectResponse;
+
+Purpose
+  Check for responses from the modem.
+
+Description
+  This routine should be called after an no-wait connection routine
+  (Dial or Answer) has been called. This routine checks to see if the
+  modem has sent a response string. To send more commands to the modem,
+  this routine (or ProcessCommandResponse) must be called. If a
+  connection has been established, this routine attempts to get the
+  speed of the connection and checks for any additional feature tags
+  before returning.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecTimeOut - A connection was not made in the time set by
+      SetAnswerTimeout/SetDialTimeOut.
+    ecVoice - The modem returned a voice response.
+    ecNoCarrier - The modem returned a no carrier response.
+    ecNoDialTone - The modem returned a no dialtone response.
+    ecBusy - The modem returned a busy response.
+    ecError - The modem returned an error response.
+    ecConnect - The modem established a connection.
+    ecUserAbort - The UserAbort procedure returned True.
+    ecBufferIsFull - The modem buffer was full when the answer command
+      was sent.
+    ecModemNotBusy - The modem is not processing any commands.
+    ecParityError - A parity error occured.
+    ecOverrunError - An overrun error occured.
+    ecFramingError - A framing error occured.
+
+Example
+  uses
+    ApTimer;
+    ...
+  var
+    M : ModemRecPtr;
+    ...
+    Dial(M, '260-9726');
+    while ModemWorking(M) do begin
+      {amuse the user with splendid routines}
+      ...
+      ProcessConnectResponse(M);
+    end;
+    case AsyncStatus of
+      ecConnect : Writeln('Connection established.');
+      ecError : Writeln('Error response received.');
+      ecBusy : Writeln('Busy signal.');
+      ...
+    end;
+
+   Dials '260-9726' and waits until a response or timeout(the only
+   way ModemWorking returns False) to check the status. When using
+   objects, the M parameters are omitted.
+
+See Also
+  Answer                              Dial
+  ProcessCommandResponse
+
+Syntax
+  procedure PutCommand(M : ModemRecPtr; Cmd : String; Wait : Boolean);
+  procedure Modem.PutCommand(Cmd : String; Wait : Boolean);
+
+Purpose
+  Send a command to a modem.
+
+Description
+  This routine sends the command string Cmd to the modem. Tilde ('~')
+  characters in the command string cause the program to delay 9 tics
+  (or the value set by SetTildeDelay) when encountered. Carats ('^') are
+  interpreted as command characters in conjuction with the character
+  immediately following them. If Wait is True, it waits for a response
+  from the modem, otherwise it returns immediately and
+  ProcessCommandResponse should be called to handle modem responses.
+
+  This routine can set AsyncStatus to one of the following values:
+    ecTimeOut - The time set by SetCmdTimeOut elapsed before a response
+      was received.
+    ecError - The modem returned an error response.
+    ecBufferIsFull - The modem buffer was full when the command was
+      sent.
+    ecModemBusy - The modem is still processing the last command.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    PutCommand(M, 'AT~~Z^M', True);
+
+  Sends the characters AT to the modem, waits one second, and then sends
+  'Z' followed by a carriage return. It waits for a response afterward.
+  When using objects, the M parameter is omitted.
+
+See Also
+  Configure                           Initialize
+  Hangup
+
+
+Syntax
+  procedure SetAnswerTimeOut(Modem : ModemRecPtr; Secs : Word);
+  procedure Modem.SetAnswerTimeout(Secs : Word);
+
+Purpose
+  Set the number of seconds before an answer attempt times out.
+
+Description
+  This routine assigns a certain number of seconds to wait after
+  Answer(True) is called before timing out. The default value is 60
+  seconds. Secs is the new number of seconds to wait before timing out.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    SetAnswerTimeOut(M, 30);
+
+  Sets the number of seconds to wait before timing out during an answer
+  attempt to 30 seconds. When using objects, the M parameter is omitted.
+
+See Also
+  Answer                              AutoAnswer
+  SetDialTimeOut
+
+
+Syntax
+  procedure SetCharDelay(M : ModemRecPtr; Tics : Word);
+  procedure Modem.SetCharDelay(Tics : Word);
+
+Purpose
+  Set the number of tics a Modem will delay between each command
+  character sent to the modem.
+
+Description
+  Some modems require that there be a short delay between each character
+  that is sent to it. Use this command to set that value. By default,
+  there is no delay between characters.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    SetCharDelay(M, 5);
+
+  The Modem now delays 5 tics between sending command characters.  When
+  using objects, the M parameter is omitted.
+
+See Also
+  PutCommand                          SetDelayFactor
+
+
+Syntax
+  procedure SetCmdTimeOut(M : ModemRecPtr; Tics : Word);
+  procedure Modem.SetCmdTimeout(Tics : Word);
+
+Purpose
+  Set the number of tics to wait for a modem response.
+
+Description
+  This sets the number of tics the Modem waits for a response after
+  sending commands. Tics is the number of tics the Modem waits for a
+  response. By default, the value is 182 tics (10 seconds).
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    SetCmdTimeOut(M, 91);
+
+  The Modem now waits 91 tics (about 5 seconds) for a response after a
+  command has been sent. When using objects, the M parameter is omitted.
+
+See Also
+  PutCommand
+
+
+Syntax
+  procedure SetDelayFactor(M : ModemRecPtr; Tics : Word);
+  procedure Modem.SetDelayFactor(Tics : Word);
+
+Purpose
+  Set the number of tics to wait between commands sent to the modem.
+
+Description
+  Some modems require a short delay between commands in order to
+  function properly. Use this command to set that value. Tics is the
+  new number of tics the modem waits between commands. The default value
+  is two tics.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    SetDelayFactor(M, 18);
+
+  This has the Modem wait 18 tics (about one second) between commands.
+  When using objects, the M parameter is omitted.
+
+See Also
+  PutCommand                          SetCharDelay
+
+
+Syntax
+  procedure SetDialTimeOut(M : ModemRecPtr; Secs : Word);
+  procedure Modem.SetDialTimeout(Secs : Word);
+
+Purpose
+  Set the number of seconds before a dial attempt times out.
+
+Description
+  If Dial(True) is called, the Modem waits a certain number of seconds
+  (the default is 60) before timing out. Use this routine to change that
+  value. Secs is the new number of seconds before AsyncStatus is set to
+  ecTimeOut on a dial attempt.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    SetDialTimeOut(M, 45);
+  Tells the Modem to wait 45 seconds before timing out on a dial
+  attempt. When using objects, the M parameter is omitted.
+
+See Also
+  Dial                                SetAnswerTimeOut
+
+
+Syntax
+  procedure SetDTRDropHold(M : ModemRecPtr; Tics : Word);
+  procedure Modem.SetDTRDropHold(Tics : Word);
+
+Purpose
+  Set the number of tics to hold DTR low during hangup.
+
+Description
+  If the HangupCmd string is 'DTR' (case sensetive), the modem will
+  lower the DTR briefly and then raise it to hang up. Tics is the number
+  of tics the Modem keeps the DTR signal low before raising it. The
+  default value is eight tics.
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    SetDTRDropHold(M, 18);
+
+  Tells the Modem to hold the DTR low for 18 tics (about 1 second) when
+  hanging up.
+
+See Also
+  Hangup
+
+
+Syntax
+  procedure SetRingWaitTimeout(M : ModemRecPtr; Tics : Word);
+  procedure Modem.SetRingWaitTimeout(Tics : Word);
+
+Purpose
+  Set the number of tics to wait before AutoAnswer's counter resets.
+
+Description
+  This changes the number of Tics the Modem waits before resetting the
+  internal ring count during an auto-answer attempt. The default value
+  is 182 tics (about ten seconds).
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    SetRingWaitTimeOut(M, 18);
+
+  Tells the modem to reset the internal ring counter to zero if 18 tics
+  (about 1 second) elapse between RING results. When using objects, the
+  M parameter is omitted.
+
+See Also
+  AutoAnswer
+
+
+Syntax
+  procedure SetStatusProc(M : ModemRecPtr; MSP : ModemStatusProc);
+  procedure Modem.SetStatusProc(MSP : ModemStatusProc);
+
+Purpose
+  Assign a status procedure.
+
+Description
+  During connection attempts the Modem sends progress information to a
+  status procedure. This routine assigns the status procedure that will
+  be called. The status procedure must be far, global, and have the
+  format:
+
+  procedure(P : ModemPtr; MsgType, SecsRemaining : Word);{(OOP version)}
+  procedure(P : ModemRecPtr; MsgType, SecsRemaining : Word); {(non-OOP)}
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    procedure MyStatusProc(P : ModemRecPtr; MsgType : Word;
+                            SecsRemaining : Word); far;
+    ...
+    SetStatusProc(M, MyStatusProc);
+
+  Sets the status procedure to MyStatusProc. When using objects, the M
+  parameter is omitted and P would be a ModemPtr.
+
+See Also
+  ShowStatus
+
+
+Syntax
+  procedure SetTildeDelay(M : ModemRecPtr; Tics : Word);
+  procedure Modem.SetTildeDelay(Tics : Word);
+
+Purpose
+  Set the number of tics to wait when a '~' is encountered in a command.
+
+Description
+  This routine sets the number of tics to delay whenever a tilde ('~')
+  is encountered in a command. Tics is the number of tics to wait when
+  a tilde is encountered. By default, this value is 9 tics (1/2 second).
+
+Example
+  var
+    M : ModemRecPtr;
+    ...
+    SetTildeDelay(M, 18);
+
+  Has the modem delay 18 tics (about a second) whenever a tilde is found
+  in a command. When using objects, the M parameter is omitted.
+
+See Also
+  Configure                           PutCommand
+
+
+Syntax
+  procedure Modem.ShowStatus(MsgType, SecsRemaining : Word); virtual;
+
+Purpose
+  Process connection status information.
+
+Description
+  This is a virtual method of the Modem object which can be overridden
+  to display status information. By default, this routine calls the
+  proceudre defined by SetStatusProc, so this method should not be
+  overridden if SetStatusProc is used.
+
+Example
+  type
+    MyModem =
+      object(Modem)
+        procedure ShowStatus(MsgType, SecsRemaining : Word); virtual;
+        ...
+      end;
+      ...
+      procedure MyModem.ShowStatus(MsgType, SecsRemaining : Word);
+      ...
+  Creates a ShowStatus method in the object MyModem, which descends from
+  Modem.
+
+See Also
+  SetStatusProc
+

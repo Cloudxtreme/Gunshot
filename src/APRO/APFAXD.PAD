@@ -1,0 +1,223 @@
+{$S-,R-,V-,I-}
+
+{$I APDEFINE.INC}
+
+{$IFNDEF UsePModeDLL}
+  !! STOP COMPILE - UsePModeDLL must be defined to compile this library
+{$ENDIF}
+
+{$IFDEF UseOPRO}
+  !! STOP COMPILE - UseOPRO must be undefined to compile this library
+{$ENDIF}
+
+{$IFDEF UseTPRO}
+  !! STOP COMPILE - UseTPRO must be undefined to compile this library
+{$ENDIF}
+
+{*********************************************************}
+{*                  APFAXD.PAD 2.03                      *}
+{*     Copyright (c) TurboPower Software 1993.           *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+library ApFaxD;
+
+uses
+  ApFaxCvt,
+  ApAbsFax,
+  ApFax12,
+  ApFaxCas;
+
+Exports
+  {from APFAXCVT}
+  InitConverterData           index indexAPFAXCVT + 01,
+  DoneConverterData           index indexAPFAXCVT + 02,
+  InitAbsConverter            index indexAPFAXCVT + 03,
+  DoneAbsConverter            index indexAPFAXCVT + 04,
+  acCompressStringRow         index indexAPFAXCVT + 05,                 {!!.01}
+  acMakeEndOfPage             index indexAPFAXCVT + 06,
+  fcOptionsOn                 index indexAPFAXCVT + 07,
+  fcOptionsOff                index indexAPFAXCVT + 08,
+  fcOptionsAreOn              index indexAPFAXCVT + 09,
+  SetStatusFunc               index indexAPFAXCVT + 10,
+  LoadFont                    index indexAPFAXCVT + 11,
+  LoadHPFont                  index indexAPFAXCVT + 12,
+  SetPageSize                 index indexAPFAXCVT + 13,
+  SetResolutionMode           index indexAPFAXCVT + 14,
+  SetFaxPath                  index indexAPFAXCVT + 15,
+  SetResolutionWidth          index indexAPFAXCVT + 16,
+  SetStationIDCvt             index indexAPFAXCVT + 17,
+  SetMargins                  index indexAPFAXCVT + 18,
+  GetStatusInfo               index indexAPFAXCVT + 19,
+  GetFileName                 index indexAPFAXCVT + 20,
+  InitTextConverter           index indexAPFAXCVT + 21,
+  DoneTextConverter           index indexAPFAXCVT + 22,
+  ConvertFaxText              index indexAPFAXCVT + 23,
+  InitPcxConverterData        index indexAPFAXCVT + 24,
+  DonePcxConverterData        index indexAPFAXCVT + 25,
+  InitPcxConverter            index indexAPFAXCVT + 26,
+  DonePcxConverter            index indexAPFAXCVT + 27,
+  ConvertFaxPcx               index indexAPFAXCVT + 28,
+  InitDcxConverter            index indexAPFAXCVT + 29,
+  DoneDcxConverter            index indexAPFAXCVT + 30,
+  ConvertFaxDcx               index indexAPFAXCVT + 31,
+  InitTiffConverter           index indexAPFAXCVT + 32,
+  DoneTiffConverter           index indexAPFAXCVT + 33,
+  ConvertFaxTiff              index indexAPFAXCVT + 34,
+  InitUnpacker                index indexAPFAXCVT + 35,
+  DoneUnpacker                index indexAPFAXCVT + 36,
+  ufOptionsOn                 index indexAPFAXCVT + 37,
+  ufOptionsOff                index indexAPFAXCVT + 38,
+  ufOptionsAreOn              index indexAPFAXCVT + 39,
+  GetFaxHeader                index indexAPFAXCVT + 40,
+  GetPageHeader               index indexAPFAXCVT + 41,
+  SetOutputLineFunc           index indexAPFAXCVT + 42,
+  UnpackPage                  index indexAPFAXCVT + 43,
+  UnpackFile                  index indexAPFAXCVT + 44,
+  InitPcxUnpackData           index indexAPFAXCVT + 45,
+  DoneUnpackPcxData           index indexAPFAXCVT + 46,
+  InitUnpackToPcx             index indexAPFAXCVT + 47,
+  DoneUnpackToPcx             index indexAPFAXCVT + 48,
+  UnpackFileToPcx             index indexAPFAXCVT + 49,
+  InitUnpackToDcx             index indexAPFAXCVT + 50,
+  DoneUnpackToDcx             index indexAPFAXCVT + 51,
+  UnpackFileToDcx             index indexAPFAXCVT + 52,
+  TodayString                 index indexAPFAXCVT + 53,
+  NowString                   index indexAPFAXCVT + 54,
+  Merge                       index indexAPFAXCVT + 55,
+  Trim                        index indexAPFAXCVT + 56,
+  TrimStationID               index indexAPFAXCVT + 57,
+  StripPrefix                 index indexAPFAXCVT + 58,
+  ForceExtension              index indexAPFAXCVT + 59,
+  GetPackedDateTime           index indexAPFAXCVT + 60,
+  acAddData                   index indexAPFAXCVT + 61,
+  acCreateOutputFile          index indexAPFAXCVT + 62,
+  acUpdateMainHeader          index indexAPFAXCVT + 63,
+  acUpdatePageHeader          index indexAPFAXCVT + 64,
+  acAddCodePrim               index indexAPFAXCVT + 65,
+  acAddCode                   index indexAPFAXCVT + 66,
+  acCompressRasterLine        index indexAPFAXCVT + 67,
+  pcOpenPcxFile               index indexAPFAXCVT + 68,
+  pcValidatePcxHdr            index indexAPFAXCVT + 69,
+  pcReadRasterLine            index indexAPFAXCVT + 70,
+  tcReadRasterLine            index indexAPFAXCVT + 71,
+  tcValidTIFF                 index indexAPFAXCVT + 72,
+  tcOpenTiffFile              index indexAPFAXCVT + 73,
+  tcSeek                      index indexAPFAXCVT + 74,
+  tcReadTagDir                index indexAPFAXCVT + 75,
+  tcGetLong                   index indexAPFAXCVT + 76,
+  tcLoadStripInfo             index indexAPFAXCVT + 77,
+  acAddLine                   index indexAPFAXCVT + 78,                {!!.01}
+  acAddBlankLines             index indexAPFAXCVT + 79,                {!!.01}
+  InitBmpConverter            index indexAPFAXCVT + 80,                {!!.03}
+  DoneBmpConverter            index indexAPFAXCVT + 81,                {!!.03}
+  ConvertFaxBmp               index indexAPFAXCVT + 82,                {!!.03}
+  bcOpenBmpFile               index indexAPFAXCVT + 83,                {!!.03}
+  bcReadRasterLine            index indexAPFAXCVT + 84,                {!!.03}
+
+  {from APABSFAX}
+  InitFaxData                 index indexAPABSFAX + 1,
+  DoneFaxData                 index indexAPABSFAX + 2,
+  afOptionsOn                 index indexAPABSFAX + 3,
+  afOptionsOff                index indexAPABSFAX + 4,
+  afOptionsAreOn              index indexAPABSFAX + 5,
+  SetFaxStatusProc            index indexAPABSFAX + 6,
+  SetTitle                    index indexAPABSFAX + 7,
+  SetRecipientName            index indexAPABSFAX + 8,
+  SetSenderName               index indexAPABSFAX + 9,
+  SetDestinationDir           index indexAPABSFAX + 10,
+  SetStationID                index indexAPABSFAX + 11,
+  SetConnectAttempts          index indexAPABSFAX + 12,
+  SetNextFaxFunc              index indexAPABSFAX + 13,
+  SetFaxLogProc               index indexAPABSFAX + 14,
+  SetFaxNameFunc              index indexAPABSFAX + 15,
+  SetAcceptFaxFunc            index indexAPABSFAX + 16,
+  FaxStatus                   index indexAPABSFAX + 17,
+  AddFaxEntry                 index indexAPABSFAX + 18,
+  ClearFaxEntries             index indexAPABSFAX + 19,
+  GetFaxName                  index indexAPABSFAX + 20,
+  GetFaxProgress              index indexAPABSFAX + 21,
+  NextFax                     index indexAPABSFAX + 22,
+  LogFax                      index indexAPABSFAX + 23,
+  FaxName                     index indexAPABSFAX + 24,
+  AcceptFax                   index indexAPABSFAX + 25,
+  afConvertHeaderString       index indexAPABSFAX + 26,
+  NextFaxList                 index indexAPABSFAX + 27,
+  FaxNameMD                   index indexAPABSFAX + 28,
+  FaxNameCount                index indexAPABSFAX + 29,
+
+  {from APFAX12}
+  InitC12AbsData              index indexAPFAX12 + 1,
+  DoneC12AbsData              index indexAPFAX12 + 2,
+  SetFaxPort                  index indexAPFAX12 + 3,
+  SetModemInit                index indexAPFAX12 + 4,
+  SetClassType                index indexAPFAX12 + 5,
+  SetInitBaudRate             index indexAPFAX12 + 6,
+  GetModemClassSupport        index indexAPFAX12 + 7,
+  GetModemInfo                index indexAPFAX12 + 8,
+  GetModemFeatures            index indexAPFAX12 + 9,
+  SetModemFeatures            index indexAPFAX12 + 10,
+  GetLastPageStatus           index indexAPFAX12 + 11,
+  GetRemoteID                 index indexAPFAX12 + 12,
+  GetSessionParams            index indexAPFAX12 + 13,
+  GetHangupResult             index indexAPFAX12 + 14,
+  GetPageInfoC12              index indexAPFAX12 + 15,
+  InitC12SendFax              index indexAPFAX12 + 16,
+  DoneC12SendFax              index indexAPFAX12 + 17,
+  SetToneDial                 index indexAPFAX12 + 18,
+  SetDialPrefix               index indexAPFAX12 + 19,
+  SetDialTime                 index indexAPFAX12 + 20,
+  SetHeaderText               index indexAPFAX12 + 21,
+  SetMaxRetries               index indexAPFAX12 + 22,
+  FaxTransmitPartC12          index indexAPFAX12 + 23,
+  PrepareFaxTransmitPartC12   index indexAPFAX12 + 24,
+  FaxTransmitC12              index indexAPFAX12 + 25,
+  InitC12ReceiveFax           index indexAPFAX12 + 26,
+  DoneC12ReceiveFax           index indexAPFAX12 + 27,
+  InitModemForFaxReceive      index indexAPFAX12 + 28,
+  SetAnswerOnRing             index indexAPFAX12 + 29,
+  SetFaxAndData               index indexAPFAX12 + 30,
+  SetConnectState             index indexAPFAX12 + 31,
+  SetOneFax                   index indexAPFAX12 + 32,
+  PrepareFaxReceivePartC12    index indexAPFAX12 + 33,
+  FaxReceivePartC12           index indexAPFAX12 + 34,
+  FaxReceiveC12               index indexAPFAX12 + 35,
+
+  {from APFAXCAS}
+  InitCasFax                  index indexAPFAXCAS + 1,
+  DoneCasFax                  index indexAPFAXCAS + 2,
+  SubmitTask                  index indexAPFAXCAS + 3,
+  AbortCurrentEvent           index indexAPFAXCAS + 4,
+  FindFirstCAS                index indexAPFAXCAS + 5,
+  FindNextCAS                 index indexAPFAXCAS + 6,
+  OpenFile                    index indexAPFAXCAS + 7,
+  CloseFile                   index indexAPFAXCAS + 8,
+  DeleteFile                  index indexAPFAXCAS + 9,
+  DeleteAllFiles              index indexAPFAXCAS + 10,
+  GetEventDate                index indexAPFAXCAS + 11,
+  SetTaskDate                 index indexAPFAXCAS + 12,
+  GetEventTime                index indexAPFAXCAS + 13,
+  SetTaskTime                 index indexAPFAXCAS + 14,
+  GetExternalDataBlock        index indexAPFAXCAS + 15,
+  GetSetAutoReceive           index indexAPFAXCAS + 16,
+  GetEventStatus              index indexAPFAXCAS + 17,
+  GetQueueStatus              index indexAPFAXCAS + 18,
+  GetHardwareStatus           index indexAPFAXCAS + 19,
+  RunDiagnostics              index indexAPFAXCAS + 20,
+  MoveReceivedFile            index indexAPFAXCAS + 21,
+  SubmitSingleFile            index indexAPFAXCAS + 22,
+  SetLogoFile                 index indexAPFAXCAS + 23,
+  GetPageInfoCAS              index indexAPFAXCAS + 24,
+  SetCASAbortFunc             index indexAPFAXCAS + 25,
+  GetAllStatus                index indexAPFAXCAS + 26,
+  SetCASResolution            index indexAPFAXCAS + 27,
+  PrepareFaxTransmitPartCas   index indexAPFAXCAS + 28,
+  FaxTransmitPartCas          index indexAPFAXCAS + 29,
+  FaxTransmitCas              index indexAPFAXCAS + 30,
+  PrepareFaxReceivePartCas    index indexAPFAXCAS + 31,
+  FaxReceivePartCas           index indexAPFAXCAS + 32,
+  FaxReceiveCas               index indexAPFAXCAS + 33,
+  CASInstalled                index indexAPFAXCAS + 34;
+
+begin
+end.

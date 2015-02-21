@@ -1,0 +1,1133 @@
+;-------------------------------------------------------------------
+!TOPIC 50 ApAbsPcl
+ApAbsPcl provides the abstract data and procedure declarations for all
+protocols. It also implements those procedures that will be common to all
+derived protocols (e.g., file I/O and status reporting). In fact, most of
+the routines you will use with protocols will be defined in this unit.
+You'll need to include this unit in any program that uses protocols.
+
+ApAbsPcl provides the following transmit/receive routines:
+
+  0129PrepareReceivePart             0127PrepareTransmitPart
+  0090ProtocolReceive                0130ProtocolReceivePart
+  0089ProtocolTransmit               0128ProtocolTransmitPart
+
+ApAbsPcl provides routines in the following categories:
+
+  0121Declarations                   0124Optional settings
+  0125Transfer status                0123User hooks
+;
+;-------------------------------------------------------------------
+!TOPIC 51 SetShowStatusProc
+!NOINDEX
+procedure 0050ApAbsPcl.SetShowStatusProc(P : ProtocolRecPtr;
+                                     SProc : 0114ShowStatusProc);
+!LINE
+procedure 0086AbstractProtocol.SetShowStatusProc(SProc : 0120ShowStatusProc);
+
+Set a user status function.
+;
+;-------------------------------------------------------------------
+!TOPIC 52 SetNextFileFunc
+!NOINDEX
+procedure 0050ApAbsPcl.SetNextFileFunc(P : ProtocolRecPtr;
+                                   NFFunc : 0113NextFileFunc);
+!LINE
+procedure 0086AbstractProtocol.SetNextFileFunc(NFFunc : 0119NextFileFunc);
+
+Set a function for batch protocols to call to get a file to transmit.
+
+See also:  0054SetFileList           0053SetFileMask
+;
+;-------------------------------------------------------------------
+!TOPIC 53 SetFileMask
+!NOINDEX
+procedure 0050ApAbsPcl.SetFileMask(P : ProtocolRecPtr; NewMask : PathStr);
+!LINE
+procedure 0086AbstractProtocol.SetFileMask(NewMask : PathStr);
+
+Set the directory/file mask for the built-in NextFileMask function.
+
+See also:  0052SetNextFileFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 54 SetFileList
+!NOINDEX
+procedure 0050ApAbsPcl.SetFileList(P : ProtocolRecPtr; FLP : FileListPtr);
+!LINE
+procedure 0086AbstractProtocol.SetFileList(FLP : FileListPtr);
+
+Set the file list to use for the built-in NextFileList function.
+
+See also:  0057AddFileToList         0056DisposeFileList
+           0107FileListType          0055MakeFileList
+           0052SetNextFileFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 55 MakeFileList
+!NOINDEX
+procedure 0050ApAbsPcl.MakeFileList(P : ProtocolRecPtr; var FLP : FileListPtr;
+                                Size : Word);
+!LINE
+procedure 0086AbstractProtocol.MakeFileList(var FLP : FileListPtr;
+                                        Size : Word);
+
+Allocate a new file list.
+
+See also:  0057AddFileToList         0056DisposeFileList
+           0107FileListType          0054SetFileList
+           0052SetNextFileFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 56 DisposeFileList
+!NOINDEX
+procedure 0050ApAbsPcl.DisposeFileList(P : ProtocolRecPtr; FLP : FileListPtr;
+                                   Size : Word);
+!LINE
+procedure 0086AbstractProtocol.DisposeFileList(FLP : FileListPtr; Size : Word);
+
+Dispose of a file list.
+
+See also:  0057AddFileToList         0107FileListType
+           0055MakeFileList          0054SetFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 57 AddFileToList
+!NOINDEX
+procedure 0050ApAbsPcl.AddFileToList(P : ProtocolRecPtr; FLP : FileListPtr;
+                                 PName : PathStr);
+!LINE
+procedure 0086AbstractProtocol.AddFileToList(FLP : FileListPtr;
+                                         PName : PathStr);
+
+Add filename to a file list.
+
+See also:  0056DisposeFileList       0107FileListType
+           0055MakeFileList          0054SetFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 58 SetDestinationDirectory
+!NOINDEX
+procedure 0050ApAbsPcl.SetDestinationDirectory(P : ProtocolRecPtr;
+                                           Dir : DirStr);
+!LINE
+procedure 0086AbstractProtocol.SetDestinationDirectory(Dir : DirStr);
+
+Set the destination directory for received files.
+
+See also:  0059SetReceiveFilename
+;
+;-------------------------------------------------------------------
+!TOPIC 59 SetReceiveFilename
+!NOINDEX
+procedure 0050ApAbsPcl.SetReceiveFilename(P : ProtocolRecPtr; Fname : PathStr);
+!LINE
+procedure 0086AbstractProtocol.SetReceiveFilename(Fname : PathStr);
+
+Give a name to the file to be received.
+
+See also:  0058SetDestinationDirectory
+;
+;-------------------------------------------------------------------
+!TOPIC 60 SetLogFileProc
+!NOINDEX
+procedure 0050ApAbsPcl.SetLogFileProc(P : ProtocolRecPtr; LFP : 0112LogFileProc);
+!LINE
+procedure 0086AbstractProtocol.SetLogFileProc(LFP : 0118LogFileProc);
+
+Set a procedure to log file transfers.
+;
+;-------------------------------------------------------------------
+!TOPIC 61 SetAcceptFileFunc
+!NOINDEX
+procedure 0050ApAbsPcl.SetAcceptFileFunc(P : ProtocolRecPtr;
+                                     AFP : 0111AcceptFileFunc);
+!LINE
+procedure 0086AbstractProtocol.SetAcceptFileFunc(AFP : 0117AcceptFileFunc);
+
+Set a function to be called when a file is received.
+
+See also:  0071GetPathname           0063SetOverwriteOption
+           0059SetReceiveFilename
+;
+;-------------------------------------------------------------------
+!TOPIC 62 SetHandshakeWait
+!NOINDEX
+procedure 0050ApAbsPcl.SetHandshakeWait(P : ProtocolRecPtr;
+                                    NewHandShake, NewRetry : Word);
+!LINE
+procedure 0086AbstractProtocol.SetHandshakeWait(NewHandshake, NewRetry : Word);
+
+Set the wait times for the initial handshaking.
+
+See also:  0095DefHandshakeRetry     0096DefHandshakeWait
+           0954RelaxedHandShakeWait  0943SetBlockWait
+;
+;-------------------------------------------------------------------
+!TOPIC 63 SetOverwriteOption
+!NOINDEX
+procedure 0050ApAbsPcl.SetOverwriteOption(P : ProtocolRecPtr;
+                                      Opt : 0109WriteFailOptions);
+!LINE
+procedure 0086AbstractProtocol.SetOverwriteOption(Opt : 0109WriteFailOptions);
+
+Set option for what to do when the destination file already exists.
+
+See also:  0061SetAcceptFileFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 64 SetActualBPS
+!NOINDEX
+procedure 0050ApAbsPcl.SetActualBPS(P : ProtocolRecPtr; BPS : LongInt);
+!LINE
+procedure 0086AbstractProtocol.SetActualBPS(BPS : LongInt);
+
+Set the actual BPS rate (needed only if modem differs from port).
+
+See also:  0749SetDataCompression
+;
+;-------------------------------------------------------------------
+!TOPIC 65 SetEfficiencyParms
+!NOINDEX
+procedure 0050ApAbsPcl.SetEfficiencyParms(P : ProtocolRecPtr;
+                                      BlockOverhead : Word;
+                                      TurnAroundDelay : Word);
+!LINE
+procedure 0086AbstractProtocol.SetEfficiencyParms(BlockOverhead : Word;
+                                              TurnAroundDelay : Word);
+
+Set the efficiency parameters for 0084EstimateTransferSecs.
+;
+;-------------------------------------------------------------------
+!TOPIC 66 SetProtocolPort
+!NOINDEX
+procedure 0050ApAbsPcl.SetProtocolPort(P : ProtocolRecPtr;
+                                   PortPtr : PortRecPtr);
+!LINE
+procedure 0086AbstractProtocol.SetProtocolPort(AP : AbstractPortPtr);
+
+Set the port for this protocol.
+;
+;-------------------------------------------------------------------
+!TOPIC 67 apOptionsOn
+!NOINDEX
+procedure 0050ApAbsPcl.apOptionsOn(P : ProtocolRecPtr; OptionFlags : Word);
+!LINE
+procedure 0086AbstractProtocol.apOptionsOn(OptionFlags : Word);
+
+Activate multiple protocol options.
+
+See also:  0091Protocol options
+;
+;-------------------------------------------------------------------
+!TOPIC 68 apOptionsOff
+!NOINDEX
+procedure 0050ApAbsPcl.apOptionsOff(P : ProtocolRecPtr; OptionFlags : Word);
+!LINE
+procedure 0086AbstractProtocol.apOptionsOff(OptionFlags : Word);
+
+Deactivate multiple protocol options.
+
+See also:  0091Protocol options
+;
+;-------------------------------------------------------------------
+!TOPIC 69 apOptionsAreOn
+!NOINDEX
+function 0050ApAbsPcl.apOptionsAreOn(P : ProtocolRecPtr;
+                                 OptionFlags : Word) : Boolean;
+!LINE
+function 0086AbstractProtocol.apOptionsAreOn(OptionFlags : Word) : Boolean;
+
+Return True if all specified protocol options are on.
+
+See also:  0091Protocol options
+;
+;-------------------------------------------------------------------
+!TOPIC 70 GetFileName,ApAbsPcl/OoAbsPcl
+!NOINDEX
+function 0050ApAbsPcl.GetFileName(P : ProtocolRecPtr) : PathStr;
+!LINE
+function 0086AbstractProtocol.GetFileName : PathStr;
+
+Return the name of the current file.
+
+See also:  0071GetPathname
+;
+;-------------------------------------------------------------------
+!TOPIC 71 GetPathname
+!NOINDEX
+function 0050ApAbsPcl.GetPathname(P : ProtocolRecPtr) : PathStr;
+!LINE
+function 0086AbstractProtocol.GetPathname : PathStr;
+
+Return the complete pathname of the current file (if known).
+
+See also:  0070GetFilename           0061SetAcceptFileFunc
+           0051SetShowStatusProc
+;
+;-------------------------------------------------------------------
+!TOPIC 72 GetFileSize
+!NOINDEX
+function 0050ApAbsPcl.GetFileSize(P : ProtocolRecPtr) : LongInt;
+!LINE
+function 0086AbstractProtocol.GetFileSize : LongInt;
+
+Return the current file size (0 if no file active).
+
+See also:  0084EstimateTransferSecs  0073GetBytesRemaining
+           0074GetBytesTransferred
+;
+;-------------------------------------------------------------------
+!TOPIC 73 GetBytesRemaining
+!NOINDEX
+function 0050ApAbsPcl.GetBytesRemaining(P : ProtocolRecPtr) : LongInt;
+!LINE
+function 0086AbstractProtocol.GetBytesRemaining : LongInt;
+
+Return the number of bytes not yet transferred.
+
+See also:  0084EstimateTransferSecs  0074GetBytesTransferred
+           0072GetFileSize
+;
+;-------------------------------------------------------------------
+!TOPIC 74 GetBytesTransferred
+!NOINDEX
+function 0050ApAbsPcl.GetBytesTransferred(P : ProtocolRecPtr) : LongInt;
+!LINE
+function 0086AbstractProtocol.GetBytesTransferred : LongInt;
+
+Return the number of bytes already transferred.
+
+See also:  0073GetBytesRemaining     0076GetElapsedTics
+;
+;-------------------------------------------------------------------
+!TOPIC 75 GetCurrentBlockNum
+!NOINDEX
+function 0050ApAbsPcl.GetCurrentBlockNum(P : ProtocolRecPtr) : Word;
+!LINE
+function 0086AbstractProtocol.GetCurrentBlockNum : Word;
+
+Return the number of the block being transferred.
+
+See also:  0081GetBlockNum
+;
+;-------------------------------------------------------------------
+!TOPIC 76 GetElapsedTics
+!NOINDEX
+function 0050ApAbsPcl.GetElapsedTics(P : ProtocolRecPtr) : LongInt;
+!LINE
+function 0086AbstractProtocol.GetElapsedTics : LongInt;
+
+Return the number of clock ticks since first block was sent (or received).
+
+See also:  0074GetBytesTransferred
+;
+;-------------------------------------------------------------------
+!TOPIC 77 GetBlockErrors
+!NOINDEX
+function 0050ApAbsPcl.GetBlockErrors(P : ProtocolRecPtr) : Word;
+!LINE
+function 0086AbstractProtocol.GetBlockErrors : Word;
+
+Return the number of errors received during this block.
+
+See also:  0078GetTotalErrors
+;
+;-------------------------------------------------------------------
+!TOPIC 78 GetTotalErrors
+!NOINDEX
+function 0050ApAbsPcl.GetTotalErrors(P : ProtocolRecPtr) : Word;
+!LINE
+function 0086AbstractProtocol.GetTotalErrors : Word;
+
+Return the number of errors received during this transfer.
+
+See also:  0077GetBlockErrors
+;
+;-------------------------------------------------------------------
+!TOPIC 79 GetProtocol
+!NOINDEX
+function 0050ApAbsPcl.GetProtocol(P : ProtocolRecPtr) : Byte;
+!LINE
+function 0086AbstractProtocol.GetProtocol : Byte;
+
+Return the current protocol type.
+
+See also:  0083GetCheckType          0104Protocol types
+           0082SupportsBatch
+;
+;-------------------------------------------------------------------
+!TOPIC 80 GetBlockSize
+!NOINDEX
+function 0050ApAbsPcl.GetBlockSize(P : ProtocolRecPtr) : Word;
+!LINE
+function 0086AbstractProtocol.GetBlockSize : Word;
+
+Return the current block size.
+
+See also:  0081GetBlockNum           0072GetFileSize
+;
+;-------------------------------------------------------------------
+!TOPIC 81 GetBlockNum
+!NOINDEX
+function 0050ApAbsPcl.GetBlockNum(P : ProtocolRecPtr) : Word;
+!LINE
+function 0086AbstractProtocol.GetBlockNum : Word;
+
+Return the current block number.
+
+See also:  0080GetBlockSize
+;
+;-------------------------------------------------------------------
+!TOPIC 82 SupportsBatch
+!NOINDEX
+function 0050ApAbsPcl.SupportsBatch(P : ProtocolRecPtr) : Boolean;
+!LINE
+function 0086AbstractProtocol.SupportsBatch : Boolean;
+
+Return True if this protocol supports batch file transfers.
+
+See also:  0079GetProtocol
+;
+;-------------------------------------------------------------------
+!TOPIC 83 GetCheckType
+!NOINDEX
+function 0050ApAbsPcl.GetCheckType(P : ProtocolRecPtr) : Byte;
+!LINE
+function 0086AbstractProtocol.GetCheckType : Byte;
+
+Return the code for the block check type.
+
+See also:  0093Checksum types        0094Checksum type strings
+           0079GetProtocol
+;
+;-------------------------------------------------------------------
+!TOPIC 84 EstimateTransferSecs
+!NOINDEX
+function 0050ApAbsPcl.EstimateTransferSecs(P : ProtocolRecPtr;
+                                       Size : LongInt) : LongInt;
+!LINE
+function 0086AbstractProtocol.EstimateTransferSecs(Size : LongInt) : LongInt;
+                                                                  virtual;
+
+Return the estimated time to transfer the specified number of bytes.
+
+See also:  0073GetBytesRemaining     0072GetFileSize
+           0065SetEfficiencyParms
+;
+;-------------------------------------------------------------------
+!TOPIC 85 OoAbsPcl
+OoAbsPcl provides, in the AbstractProtocol object, the data and method
+declarations common to all protocol objects, as the following hierarchy
+diagram illustrates:
+
+  0086AbstractProtocol
+    [0945XmodemProtocol]
+      [0966YmodemProtocol]
+    [1050ZmodemProtocol]
+    [0562KermitProtocol]
+    [0212BPlusProtocol]
+    [0194AsciiProtocol]
+
+See also: 0122Declarations
+;
+;-------------------------------------------------------------------
+!TOPIC 86 AbstractProtocol
+!NOINDEX
+AbstractProtocolPtr = ^AbstractProtocol;
+!LINE
+AbstractProtocol = object(0651Root)
+
+AbstractProtocol does all of the "boilerplate" work of a protocol. This
+includes the file I/O (reading data to transmit, and writing data that's
+been received). It also has the routines for retrieving status information,
+managing the list of files to transmit, handling the various hooks that
+Async Professional provides and controlling the various protocol options.
+
+AbstractProtocol provides the following methods:
+
+  0088Done                           0087InitCustom
+  0129PrepareReceivePart             0127PrepareTransmitPart
+  0090ProtocolReceive                0130ProtocolReceivePart
+  0089ProtocolTransmit               0128ProtocolTransmitPart
+
+In addition, it provides methods in the following categories:
+
+  0122Declarations                   0124Optional settings
+  0125Transfer status                0123User hooks
+;
+;-------------------------------------------------------------------
+!TOPIC 87 InitCustom,AbstractProtocol
+!NOINDEX
+constructor 0086AbstractProtocol.InitCustom(AP : AbstractPortPtr;
+                                        Options : Word);
+
+Allocate and initialize a protocol control block.
+
+See also:  0088Done
+;
+;-------------------------------------------------------------------
+!TOPIC 88 Done,AbstractProtocol
+!NOINDEX
+destructor 0086AbstractProtocol.Done; virtual;
+
+Dispose of a protocol object.
+
+See also:  0087InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 89 ProtocolTransmit
+!NOINDEX
+!NOWRAP
+procedure 0937ApXModem.ProtocolTransmitXM(P : ProtocolRecPtr);
+procedure 0961ApYModem.ProtocolTransmitYM(P : ProtocolRecPtr);
+procedure 1042ApZModem.ProtocolTransmitZM(P : ProtocolRecPtr);
+procedure 0547ApKermit.ProtocolTransmitKM(P : ProtocolRecPtr);
+procedure 0210ApBPlus.ProtocolTransmitBP(P : ProtocolRecPtr);
+procedure 0186ApAscii.ProtocolTransmitAS(P : ProtocolRecPtr);
+procedure 0086AbstractProtocol.ProtocolTransmit; virtual;
+!WRAP
+
+Start protocol transmit.
+
+See also:  0090ProtocolReceive       0051SetShowStatusProc
+;
+;-------------------------------------------------------------------
+!TOPIC 90 ProtocolReceive
+!NOINDEX
+!NOWRAP
+procedure 0937ApXModem.ProtocolReceiveXM(P : ProtocolRecPtr);
+procedure 0961ApYModem.ProtocolReceiveYM(P : ProtocolRecPtr);
+procedure 1042ApZModem.ProtocolReceiveZM(P : ProtocolRecPtr);
+procedure 0547ApKermit.ProtocolReceiveKM(P : ProtocolRecPtr);
+procedure 0210ApBPlus.ProtocolReceiveBP(P : ProtocolRecPtr);
+procedure 0186ApAscii.ProtocolReceiveAS(P : ProtocolRecPtr);
+procedure 0086AbstractProtocol.ProtocolReceive; virtual;
+!WRAP
+
+Start protocol receive.
+
+See also:  0089ProtocolTransmit      0051SetShowStatusProc
+;
+;-------------------------------------------------------------------
+!TOPIC 91 Protocol options
+!NOINDEX
+const
+  apIncludeDirectory  = $0001; {True to include directory in file names}
+  apHonorDirectory    = $0002; {True to honor directory in file names}
+  apRTSLowForWrite    = $0004; {True to lower RTS during disk writes}
+  apKermitNoStripName = $0008; {True to not strip Kermit file names}
+  apKermitDisplay     = $1000; {True to honor KDisplay packets}
+  apKermitLongPackets = $2000; {True to support long packets enabled}
+  apKermitSWC         = $4000; {True to support SWC}
+  apZmodem8K          = $8000; {True to allow support for 8K blocks}
+
+Option codes for protocols. The apIncludeDirectory option, meaningful only
+when transmitting files, tells the protocol to send the remote the complete
+pathname for the file being transmitted. The apHonorDirectory option,
+meaningful only when receiving files, tells the protocol to try to honor
+any path specified in the name of a file being received. (Note, however,
+that no attempt will be made to create a directory that doesn't already
+exist.)
+
+Typically, apIncludeDirectory and apHonorDirectory are used only when you
+are writing both of the programs involved in the transmission (the sender
+and the receiver) and the sender needs to be able to force the receiver to
+store files in a specific directory. You do not use these options when
+communicating with a BBS or information service, for example.
+
+apRTSLowForWrite is off by default. If it is enabled via apOptionsOn(apRTSLowForWrite), all Async Professional protocols force RTS
+off while writing received data to disk, temporarily preventing the modem
+from sending additional data. RTS is turned back on as soon as the disk
+write is finished. This option might be required when running Async
+Professional programs under some multi-tasking operating systems or in
+network environments that leave interrupts disabled while writing to
+network devices.
+
+apKermitNoStripName is off by default. In this state, the Kermit protocol
+strips directory information from file names when transmitting the file name
+packet. If you want the directory information included in the filename
+packet, set this option on. Note, however, that many Kermit implementations
+do not expect to find directory information in the file name and don't
+behave predictably when they do find it.
+
+If apKermitDisplay is set, APKERMIT/OOKERMIT write the contents of Kermit
+KDisplay packets to the screen using a WriteLn statement. Kermit KDisplay
+packets are used by some hosts to return an error or status message after
+a file transfer. The WriteLn statement displays the message at the current
+cursor location using the current TextMode attribute. This is probably
+inappropriate for most windowed user interfaces, so apKermitDisplay is off
+by default.
+
+apKermitLongPackets is an "information only" option and is off initially.
+It is turned on if you make a successful call to 0581SetMaxLongPacketLen.
+Although it is primarily intended for internal use, you may want to
+reference this option in your protocol status display.
+
+apKermitSWC is used to indicate whether Kermit Sliding Windows Control is
+enabled or not. It is turned on if you make a successful call to
+0582SetMaxWindows. Although it is primarily intended for internal use, you may
+want to reference this option in your protocol status display.
+
+apZmodem8K is off by default. Turn this option on to use Zmodem with 8K
+data blocks.
+
+See also:  0092BadProtocolOptions  0097DefProtocolOptions
+;
+;-------------------------------------------------------------------
+!TOPIC 92 BadProtocolOptions
+!NOINDEX
+const
+  BadProtocolOptions : Word = apKermitLongPackets+apKermitSWC+apZmodem8K;
+
+Protocol options intended strictly for internal use by Async Professional.
+BadProtocolOptions is set to the three options that must be off when a
+protocol is instantiated.
+
+See also:  0091Protocol options
+;
+;-------------------------------------------------------------------
+!TOPIC 93 Checksum types
+!NOINDEX
+const
+  bcNone      = 0;  {No block checking}
+  bcChecksum1 = 1;  {Basic checksum}
+  bcChecksum2 = 2;  {Two byte checksum}
+  bcCrc16     = 3;  {16 bit Crc}
+  bcCrc32     = 4;  {32 bit Crc}
+  bcCrcK      = 5;  {Kermit style Crc}
+
+Values returned by 0083GetCheckType to describe the type of block
+checking being used by the current protocol.
+
+See also:  0094Checksum type strings
+;
+;-------------------------------------------------------------------
+!TOPIC 94 Checksum type strings
+!NOINDEX
+const
+  bcsNone      = 'No check ';
+  bcsChecksum1 = 'Checksum ';
+  bcsChecksum2 = 'Checksum2';
+  bcsCrc16     = 'Crc16    ';
+  bcsCrc32     = 'Crc32    ';
+  bcsCrck      = 'CrcKermit';
+
+Descriptive strings corresponding to the values bcNone..bcCrck. Intended for
+use in status routines.
+
+See also:  0093Checksum types  0083GetCheckType
+;
+;-------------------------------------------------------------------
+!TOPIC 95 DefHandshakeRetry
+!NOINDEX
+const
+  DefHandshakeRetry = 10;
+
+Default number of times to retry when handshaking fails.
+
+See also:  0096DefHandshakeWait  0062SetHandshakeWait
+;
+;-------------------------------------------------------------------
+!TOPIC 96 DefHandshakeWait
+!NOINDEX
+const
+  DefHandshakeWait = 182;
+
+Default time to wait (in clock ticks) for a response during handshaking
+(182 clock ticks = 10 seconds). See 0062SetHandshakeWait.
+;
+;-------------------------------------------------------------------
+!TOPIC 97 DefProtocolOptions
+!NOINDEX
+const
+  DefProtocolOptions : Word = 0;
+
+Default protocol options. (Currently there are no such options.)
+
+See also:  0091Protocol options
+;
+;-------------------------------------------------------------------
+!TOPIC 98 DefStatusInterval
+!NOINDEX
+const
+  DefStatusInterval = 91;
+
+The status function is called every time a block is sent or received. If no
+blocks are sent or received within DefStatusInterval ticks, the status
+function is called anyway (91 ticks = 5 seconds).
+;
+;-------------------------------------------------------------------
+!TOPIC 99 DefTransTimeout
+!NOINDEX
+const
+  DefTransTimeout   = 1092;
+
+Ticks to wait for output buffer space (1092 ticks = 60 seconds).
+;
+;-------------------------------------------------------------------
+!TOPIC 100 FileBufferSize
+!NOINDEX
+const
+  FileBufferSize = 8192;
+
+Size of the working buffer used for receiving or transmitting files.
+
+See also:  0106FileBufferArray
+;
+;-------------------------------------------------------------------
+!TOPIC 101 GmtHourOffset
+!NOINDEX
+const
+  GmtHourOffset : Byte = 0;
+
+The difference, in hours, between the current time zone and Greenwich
+Meridian Time (GMT). The specifications for Ymodem and Zmodem state that
+the file creation time stamp should be referenced to GMT. To meet this
+specification, both the receiver and the transmitter must adjust the time
+stamp by the difference between the current time zone and the GMT time
+zone. In practice, it seems that most Ymodem/Zmodem implementations ignore
+this offset.
+;
+;-------------------------------------------------------------------
+!TOPIC 102 ProtocolTypeString
+!NOINDEX
+const
+  ProtocolTypeString : array[XModem..UserProt3] of String[10] = (
+    'Xmodem', 'XmodemCRC', 'Xmodem1K', 'Xmodem1KG', 'Ymodem', 'YmodemG',
+    'Zmodem', 'Kermit', 'Ascii', 'BPlus', 'UserProt1', 'UserProt2',
+    'UserProt3');
+
+An array of strings describing all currently supported protocols. Useful in
+status routines.
+
+See also:  0104Protocol types
+;
+;-------------------------------------------------------------------
+!TOPIC 103 TelixDelay
+!NOINDEX
+const
+  TelixDelay : Byte = 9;
+
+Testing shows that when using Async Professional Zmodem with Telix's Zmodem,
+a delay is needed between files (9 ticks seems to work well). If you are not
+using Telix, set TelixDelay to 0 for slightly faster multi-file transfers.
+;
+;-------------------------------------------------------------------
+!TOPIC 104 Protocol types
+!NOINDEX
+const
+  Xmodem    = 0;
+  XmodemCRC = 1;
+  Xmodem1K  = 2;
+  Xmodem1KG = 3;
+  Ymodem    = 4;
+  YmodemG   = 5;
+  Zmodem    = 6;
+  Kermit    = 7;
+  Ascii     = 8;
+  BPlus     = 9;
+  UserProt1 = 10;
+  UserProt2 = 11;
+  UserProt3 = 12;
+
+These are the currently supported protocol types. UserProt1 through
+UserProt3 can be used by your application for new protocols that you
+implement.
+
+See also:  0079GetProtocol  0102ProtocolTypeString
+;
+;-------------------------------------------------------------------
+!TOPIC 105 DataBlockType
+!NOINDEX
+type
+  DataBlockType = array[1..1024] of Char;
+
+Data structure used for storing received and transmitted blocks.
+;
+;-------------------------------------------------------------------
+!TOPIC 106 FileBufferArray
+!NOINDEX
+type
+  FileBufferArray = array[0..FileBufferSize-1] of Byte;
+
+Working buffer used for receiving or transmitting files.
+
+See also:  0100FileBufferSize
+;
+;-------------------------------------------------------------------
+!TOPIC 107 FileListType
+!NOINDEX
+type
+  FileListPtr = ^FileListType;
+  FileListType = array[0..65535-1] of Char;
+
+Array used to hold a list of files to be transmitted.
+
+See also:  0055MakeFileList
+;
+;-------------------------------------------------------------------
+!TOPIC 108 LogFileType
+!NOINDEX
+type
+  LogFileType = (
+    lfReceiveStart, lfReceiveOk, lfReceiveFail, lfReceiveSkip,
+    lfTransmitStart, lfTransmitOk, lfTransmitFail, lfTransmitSkip);
+
+A parameter passed to a LogFile procedure to describe an event to be logged. See 0060SetLogFileProc.
+;
+;-------------------------------------------------------------------
+!TOPIC 109 WriteFailOptions
+!NOINDEX
+type
+  WriteFailOptions = (WriteFail, WriteRename, WriteAnyway, WriteResume);
+
+Describes an action to be taken if a file to be received already exists. See 0063SetOverwriteOption.
+;
+;-------------------------------------------------------------------
+!TOPIC 110 BlockFillChar
+!NOINDEX
+const
+  BlockFillChar : Char = ^Z;
+
+Character used to fill the last block received by a protocol that doesn't
+keep track of file size.
+;
+;-------------------------------------------------------------------
+!TOPIC 111 AcceptFileFunc,ApAbsPcl
+!NOINDEX
+type
+  AcceptFileFunc = function(P : ProtocolRecPtr) : Boolean;
+
+A function called by a protocol when receiving a file to allow the application
+to accept or reject the file based on its own criteria.
+
+See also:  0061SetAcceptFileFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 112 LogFileProc,ApAbsPcl
+!NOINDEX
+type
+  LogFileProc = procedure(P : ProtocolRecPtr;
+                          LogFileStatus : 0108LogFileType);
+
+A procedure called by a protocol for the purpose of logging file transfer
+events for auditing purposes.
+
+See also:  0060SetLogFileProc
+;
+;-------------------------------------------------------------------
+!TOPIC 113 NextFileFunc,ApAbsPcl
+!NOINDEX
+type
+  NextFileFunc = function(P : ProtocolRecPtr;
+                          var FName : PathStr) : Boolean;
+
+A function called by a batch protocol to return the name of the next file to
+transmit.
+
+See also:  0052SetNextFileFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 114 ShowStatusProc,ApAbsPcl
+!NOINDEX
+type
+  ShowStatusProc = procedure(P : ProtocolRecPtr;
+                             Starting, Ending : Boolean);
+
+A routine of this type is used to display status information on the screen
+while uploading or downloading files using a protocol.
+
+See also:  0051SetShowStatusProc
+;
+;-------------------------------------------------------------------
+!TOPIC 115 ProtocolData
+!NOINDEX
+type
+  ProtocolDataPtr = ^ProtocolData;
+  ProtocolData =
+    record
+      ...
+    end;
+
+Data needed by routines in ApAbsPcl to work with all supported protocols
+(file name and size, status information, etc).
+
+See also:  0116ProtocolRec
+;
+;-------------------------------------------------------------------
+!TOPIC 116 ProtocolRec
+!NOINDEX
+type
+  ProtocolRecPtr = ^ProtocolRec;
+  ProtocolRec =
+    record
+      PData : ProtocolDataPtr;
+    end;
+
+Generic protocol record.
+
+See also:  0115ProtocolData
+;
+;-------------------------------------------------------------------
+!TOPIC 117 AcceptFileFunc,OoAbsPcl
+!NOINDEX
+type
+  AcceptFileFunc = function(AP : AbstractProtocolPtr) : Boolean;
+
+A function called by a protocol when receiving a file to allow the application
+to accept or reject the file based on its own criteria.
+
+See also:  0061SetAcceptFileFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 118 LogFileProc,OoAbsPcl
+!NOINDEX
+type
+  LogFileProc = procedure(AP : AbstractProtocolPtr;
+                          LogFileStatus : 0108LogFileType);
+
+A procedure called by a protocol for the purpose of logging file transfer
+events for auditing purposes.
+
+See also:  0060SetLogFileProc
+;
+;-------------------------------------------------------------------
+!TOPIC 119 NextFileFunc,OoAbsPcl
+!NOINDEX
+type
+  NextFileFunc = function(AP : AbstractProtocolPtr;
+                          var FName : PathStr) : Boolean;
+
+A function called by a batch protocol to return the name of the next file to
+transmit.
+
+See also:  0052SetNextFileFunc
+;
+;-------------------------------------------------------------------
+!TOPIC 120 ShowStatusProc,OoAbsPcl
+!NOINDEX
+type
+  ShowStatusProc = procedure(AP : AbstractProtocolPtr;
+                             Starting, Ending : Boolean);
+
+A routine of this type is used to display status information on the screen
+while uploading or downloading files using a protocol.
+
+See also:  0051SetShowStatusProc
+;
+;-------------------------------------------------------------------
+!TOPIC 121 Declarations,ApAbsPcl
+!NOINDEX
+!NOSEARCH
+ApAbsPcl declares the following types and constants:
+
+  0111AcceptFileFunc                 0092BadProtocolOptions
+  0110BlockFillChar                  0093Checksum types
+  0094Checksum type strings          0105DataBlockType
+  0095DefHandshakeRetry              0096DefHandshakeWait
+  0097DefProtocolOptions             0098DefStatusInterval
+  0099DefTransTimeout                0106FileBufferArray
+  0100FileBufferSize                 0107FileListType
+  0101GmtHourOffset                  0112LogFileProc
+  0108LogFileType                    0113NextFileFunc
+  0091Protocol options               0104Protocol types
+  0115ProtocolData                   0116ProtocolRec
+  0131ProtocolStateType              0102ProtocolTypeString
+  0114ShowStatusProc                 0103TelixDelay
+  0109WriteFailOptions               0132UserBackProc
+;
+;-------------------------------------------------------------------
+!TOPIC 122 Declarations,OoAbsPcl
+!NOINDEX
+!NOSEARCH
+OoAbsPcl declares the following types and constants:
+
+  0117AcceptFileFunc                 0092BadProtocolOptions
+  0110BlockFillChar                  0093Checksum types
+  0094Checksum type strings          0105DataBlockType
+  0095DefHandshakeRetry              0096DefHandshakeWait
+  0097DefProtocolOptions             0098DefStatusInterval
+  0099DefTransTimeout                0106FileBufferArray
+  0100FileBufferSize                 0107FileListType
+  0101GmtHourOffset                  0118LogFileProc
+  0108LogFileType                    0119NextFileFunc
+  0091Protocol options               0131ProtocolStateType
+  0104Protocol types                 0102ProtocolTypeString
+  0120ShowStatusProc                 0103TelixDelay
+  0109WriteFailOptions               0133UserBackProc
+;
+;-------------------------------------------------------------------
+!TOPIC 123 User hooks
+!NOINDEX
+!NOSEARCH
+ApAbsPcl and OoAbsPcl provide the following routines relating to user
+hooks:
+
+  0057AddFileToList                  0056DisposeFileList
+  0055MakeFileList                   0061SetAcceptFileFunc
+  0134SetBackgroundProc              0058SetDestinationDirectory
+  0054SetFileList                    0053SetFileMask
+  0060SetLogFileProc                 0052SetNextFileFunc
+  0059SetReceiveFilename             0051SetShowStatusProc
+;
+;-------------------------------------------------------------------
+!TOPIC 124 Optional settings
+!NOINDEX
+!NOSEARCH
+ApAbsPcl and OoAbsPcl provide the following routines relating to
+optional settings:
+
+  0069apOptionsAreOn                 0068apOptionsOff
+  0067apOptionsOn                    0064SetActualBPS
+  0065SetEfficiencyParms             0062SetHandshakeWait
+  0063SetOverwriteOption             0066SetProtocolPort
+;
+;-------------------------------------------------------------------
+!TOPIC 125 Transfer status
+!NOINDEX
+!NOSEARCH
+ApAbsPcl and OoAbsPcl provide the following routines relating to the
+status of a protocol file transfer:
+
+  0084EstimateTransferSecs           0077GetBlockErrors
+  0081GetBlockNum                    0080GetBlockSize
+  0073GetBytesRemaining              0074GetBytesTransferred
+  0083GetCheckType                   0075GetCurrentBlockNum
+  0076GetElapsedTics                 0070GetFilename
+  0072GetFileSize                    0126GetInitialFilePos
+  0071GetPathname                    0079GetProtocol
+  0078GetTotalErrors                 0082SupportsBatch
+;
+;-------------------------------------------------------------------
+!TOPIC 126 GetInitialFilePos
+!NOINDEX
+function 0050ApAbsPcl.GetInitialFilePos(P : ProtocolRecPtr) : LongInt;
+!LINE
+function 0086AbstractProtocol.GetInitialFilePos : LongInt;
+
+Return the initial file position during resumed file transfers.
+
+See also:  0074GetBytesTransferred
+;
+;-------------------------------------------------------------------
+!TOPIC 127 PrepareTransmitPart
+!NOINDEX
+!NOWRAP
+procedure 0937ApXModem.PrepareTransmitPartXM(P : ProtocolRecPtr);
+procedure 0961ApYModem.PrepareTransmitPartYM(P : ProtocolRecPtr);
+procedure 1042ApZModem.PrepareTransmitPartZM(P : ProtocolRecPtr);
+procedure 0547ApKermit.PrepareTransmitPartKM(P : ProtocolRecPtr);
+procedure 0210ApBPlus.PrepareTransmitPartBP(P : ProtocolRecPtr);
+procedure 0186ApAscii.PrepareTransmitPartAS(P : ProtocolRecPtr);
+procedure 0086AbstractProtocol.PrepareTransmitPart; virtual;
+!WRAP
+
+Prepare to use the background routine 0128ProtocolTransmitPart.
+;
+;-------------------------------------------------------------------
+!TOPIC 128 ProtocolTransmitPart
+!NOINDEX
+!NOWRAP
+function 0937ApXModem.ProtocolTransmitPartXM(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 0961ApYModem.ProtocolTransmitPartYM(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 1042ApZModem.ProtocolTransmitPartZM(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 0547ApKermit.ProtocolTransmitPartKM(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 0210ApBPlus.ProtocolTransmitPartBP(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 0186ApAscii.ProtocolTransmitPartAS(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 0086AbstractProtocol.ProtocolTransmitPart : 0131ProtocolStateType; virtual;
+!WRAP
+
+Perform one increment of a background protocol transmit.
+
+See also: 0127PrepareTransmitPart    0130ProtocolReceivePart
+;
+;-------------------------------------------------------------------
+!TOPIC 129 PrepareReceivePart
+!NOINDEX
+!NOWRAP
+procedure 0937ApXModem.PrepareReceivePartXM(P : ProtocolRecPtr);
+procedure 0961ApYModem.PrepareReceivePartYM(P : ProtocolRecPtr);
+procedure 1042ApZModem.PrepareReceivePartZM(P : ProtocolRecPtr);
+procedure 0547ApKermit.PrepareReceivePartKM(P : ProtocolRecPtr);
+procedure 0210ApBPlus.PrepareReceivePartBP(P : ProtocolRecPtr);
+procedure 0186ApAscii.PrepareReceivePartAS(P : ProtocolRecPtr);
+procedure 0086AbstractProtocol.PrepareReceivePart; virtual;
+!WRAP
+
+Prepare to call the background routine 0130ProtocolReceivePart.
+;
+;-------------------------------------------------------------------
+!TOPIC 130 ProtocolReceivePart
+!NOINDEX
+!NOWRAP
+function 0937ApXModem.ProtocolReceivePartXM(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 0961ApYModem.ProtocolReceivePartYM(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 1042ApZModem.ProtocolReceivePartZM(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 0547ApKermit.ProtocolReceivePartKM(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 0210ApBPlus.ProtocolReceivePartBP(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 0186ApAscii.ProtocolReceivePartAS(P : ProtocolRecPtr)
+                                              : 0131ProtocolStateType;
+function 0086AbstractProtocol.ProtocolReceivePart : 0131ProtocolStateType; virtual;
+!WRAP
+
+Performs one increment of a background protocol receive.
+
+See also: 0129PrepareReceivePart     0128ProtocolTransmitPart
+;
+;-------------------------------------------------------------------
+!TOPIC 131 ProtocolStateType
+!NOINDEX
+type
+  ProtocolStateType = (
+    psReady,           {Ok to call again immediately}
+    psWaiting,         {Protocol is waiting, ok to do something else}
+    psFinished);       {Protocol is finished}
+
+A result of this type is returned by the functions 0128ProtocolTransmitPart and
+0130ProtocolReceivePart to indicate the current state of the protocol.
+;
+;-------------------------------------------------------------------
+!TOPIC 132 UserBackProc,ApAbsPcl
+!NOINDEX
+type
+  UserBackProc = procedure(P : ProtocolRecPtr);
+
+A procedure of this type can be specified as the user background hook
+within a protocol. Such a procedure is called by the protocol as frequently
+as possible (generally, whenever the protocol is in a psWaiting state).
+
+See also:  0134SetBackgroundProc
+;
+;-------------------------------------------------------------------
+!TOPIC 133 UserBackProc,OoAbsPcl
+!NOINDEX
+type
+  UserBackProc = procedure(AP : AbstractProtocolPtr);
+
+A procedure of this type can be specified as the user background hook
+within a protocol. Such a procedure is called by the protocol as frequently
+as possible (generally, whenever the protocol is in a psWaiting state).
+
+See also:  0134SetBackgroundProc
+;
+;-------------------------------------------------------------------
+!TOPIC 134 SetBackgroundProc
+!NOINDEX
+procedure 0050ApAbsPcl.SetBackgroundProc(P : ProtocolRecPtr;
+                                     BP : 0132UserBackProc);
+!LINE
+procedure 0086AbstractProtocol.SetBackgroundProc(BP : 0133UserBackProc);
+
+Set a background procedure to be called while a file is transferred.

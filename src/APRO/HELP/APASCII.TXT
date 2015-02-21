@@ -1,0 +1,279 @@
+;-------------------------------------------------------------------
+!TOPIC 186 ApAscii
+ApAscii provides the ability to perform what is commonly called an "ASCII
+protocol" file transfer.
+
+ApAscii implements the following routines:
+
+  0208Declarations                   0189DoneAscii
+  0192GetLineNumber                  0187InitAscii
+  0188InitCustomAscii                0129PrepareReceivePartAS
+  0127PrepareTransmitPartAS          0090ProtocolReceiveAS
+  0130ProtocolReceivePartAS          0089ProtocolTransmitAS
+  0128ProtocolTransmitPartAS         0190SetDelays
+  0191SetEOLChar
+;
+;-------------------------------------------------------------------
+!TOPIC 187 InitAscii
+!NOINDEX
+procedure 0186ApAscii.InitAscii(var P : ProtocolRecPtr; PortPtr : PortRecPtr);
+
+Allocate and initialize a protocol control block.
+
+See also:  0189DoneAscii             0188InitCustomAscii
+           0190SetDelays
+;
+;-------------------------------------------------------------------
+!TOPIC 188 InitCustomAscii
+!NOINDEX
+procedure 0186ApAscii.InitCustomAscii(var P : ProtocolRecPtr;
+                                  PortPtr : PortRecPtr;
+                                  InterCharDelay, InterLineDelay : Word;
+                                  Options : Word);
+
+Allocate and initialize a protocol control block with the specified options.
+
+See also:  0189DoneAscii             0187InitAscii
+           0190SetDelays
+;
+;-------------------------------------------------------------------
+!TOPIC 189 DoneAscii
+!NOINDEX
+procedure 0186ApAscii.DoneAscii(var P : ProtocolRecPtr);
+
+Dispose of the protocol record.
+
+See also:  0187InitAscii             0188InitCustomAscii
+;
+;-------------------------------------------------------------------
+!TOPIC 190 SetDelays
+!NOINDEX
+procedure 0186ApAscii.SetDelays(P : ProtocolRecPtr;
+                            InterCharDelay, InterLineDelay : Word);
+!LINE
+procedure 0194AsciiProtocol.SetDelays(InterCharDelay, InterLineDelay : Word);
+
+Set the delay (in milliseconds) between each character and each line.
+
+See also:  0204DefInterCharDelay         0205DefInterLineDelay
+           0196AsciiProtocol.InitCustom  0188InitCustomAscii
+;
+;-------------------------------------------------------------------
+!TOPIC 191 SetEOLChar
+!NOINDEX
+procedure 0186ApAscii.SetEOLChar(P : ProtocolRecPtr; C : Char);
+!LINE
+procedure 0194AsciiProtocol.SetEOLChar(C : Char);
+
+Set the character used to mark the end of a line.
+
+See also:  0203DefEOLChar            0192GetLineNumber
+;
+;-------------------------------------------------------------------
+!TOPIC 192 GetLineNumber
+!NOINDEX
+function 0186ApAscii.GetLineNumber(P : ProtocolRecPtr) : LongInt;
+!LINE
+function 0194AsciiProtocol.GetLineNumber : LongInt;
+
+Return the current line number.
+
+See also:  0191SetEOLChar            0051SetShowStatusProc
+;
+;-------------------------------------------------------------------
+!TOPIC 193 OoAscii
+OoAscii provides the ability to perform what is commonly called an
+"ASCII protocol" file transfer, using the AsciiProtocol object:
+
+  [0086AbstractProtocol]
+    0194AsciiProtocol
+;
+;-------------------------------------------------------------------
+!TOPIC 194 AsciiProtocol,OoAscii
+!NOINDEX
+AsciiProtocolPtr = ^AsciiProtocol;
+!LINE
+AsciiProtocol = object(0086AbstractProtocol)
+
+Object that defines the data fields and methods needed to implement the
+ASCII protocol. It provides the following methods:
+
+  0209Declarations                   0197Done
+  0192GetLineNumber                  0195Init
+  0196InitCustom                     0198Load
+  0129PrepareReceivePart             0127PrepareTransmitPart
+  0090ProtocolReceive                0130ProtocolReceivePart
+  0089ProtocolTransmit               0128ProtocolTransmitPart
+  0190SetDelays                      0191SetEOLChar
+  0199Store
+;
+;-------------------------------------------------------------------
+!TOPIC 195 Init,AsciiProtocol
+!NOINDEX
+constructor 0194AsciiProtocol.Init(APPtr : AbstractPortPtr);
+
+Allocate and initialize a protocol control block.
+
+See also:  0197Done                  0196InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 196 InitCustom,AsciiProtocol
+!NOINDEX
+constructor 0194AsciiProtocol.InitCustom(APPtr : AbstractPortPtr;
+                                     InterCharDelay : Word;
+                                     InterLineDelay : Word;
+                                     Options : Word);
+
+Allocate and initialize a protocol control block with the specified options.
+
+See also:  0197Done                  0087AbstractProtocol.InitCustom
+           0190SetDelays
+;
+;-------------------------------------------------------------------
+!TOPIC 197 Done,AsciiProtocol
+!NOINDEX
+destructor 0194AsciiProtocol.Done; virtual;
+
+Dispose of the protocol object.
+
+See also:  0195Init                  0196InitCustom
+;
+;-------------------------------------------------------------------
+!TOPIC 198 Load,AsciiProtocol
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+constructor 0194AsciiProtocol.Load(var S : IdStream);
+!WRAP
+
+Load an AsciiProtocol object from a stream. The stream registration routine
+for an AsciiProtocol object is AsciiProtocolStream.
+
+See also:  0199Store
+;
+;-------------------------------------------------------------------
+!TOPIC 199 Store,AsciiProtocol
+!NOINDEX
+!NOWRAP
+{$IFDEF UseStreams}
+procedure 0194AsciiProtocol.Store(var S : IdStream);
+!WRAP
+
+Store an AsciiProtocol object to a stream. The stream registration routine
+for an AsciiProtocol object is AsciiProtocolStream.
+
+See also:  0198Load
+;
+;-------------------------------------------------------------------
+!TOPIC 200 AsciiProtocol,ApAscii
+!NOINDEX
+type
+  AsciiProtocolPtr = ^AsciiProtocol;
+  AsciiProtocol =
+    record
+      ...
+    end;
+
+Record used to store data needed by the various routines in ApAscii to
+implement the ASCII protocol.
+;
+;-------------------------------------------------------------------
+!TOPIC 201 apSuppressCtrlZ
+!NOINDEX
+!NOSEARCH
+const
+  apSuppressCtrlZ = $0800;
+
+If this protocol option is selected and a file is being transmitted to the
+remote, the protocol stops sending characters when a ^Z character is found
+in the file (without sending the ^Z). If this option is not selected, the
+protocol continues sending data (including the final ^Z) until there is no
+more data to send. Generally, you would want to leave this option off and
+let the ^Z be transmitted, since the receiver might be able to recognize the
+^Z as the end of the file (as Async Professional does).
+
+See also:  0091Protocol options
+;
+;-------------------------------------------------------------------
+!TOPIC 202 DefBlockLen
+!NOINDEX
+const
+  DefBlockLen : Word = 60;
+
+This is mostly a convenience for status reporting. Many of the status
+routines assume that the protocol is based on block transfers. Block length
+is also required when estimating transfer times. In ASCII protocols, the
+closest equivalent of a block is one line of text. DefBlockLen assigns an
+arbitrary value of 60 as the average line length. If this turns out not to
+be a good estimate, the worst that will happen is the time estimates
+returned by 0084EstimateTransferSecs and the status information on the number of
+blocks transferred will be inaccurate.
+;
+;-------------------------------------------------------------------
+!TOPIC 203 DefEOLChar
+!NOINDEX
+const
+  DefEOLChar : Char = cCR;
+
+This is the default end-of-line character (carriage return). The ASCII
+protocol needs to know the proper end-of-line character so it can
+insert interline delays at the appropriate times. If you need to change
+this, modify the typed constant or call the 0191SetEOLChar procedure.
+;
+;-------------------------------------------------------------------
+!TOPIC 204 DefInterCharDelay
+!NOINDEX
+const
+  DefInterCharDelay : Word = 0;
+
+Default duration for delay between characters, in milliseconds. See
+0190SetDelays for more information.
+;
+;-------------------------------------------------------------------
+!TOPIC 205 DefInterLineDelay
+!NOINDEX
+const
+  DefInterLineDelay : Word = 0;
+
+Default duration for delay between lines, in milliseconds. See 0190SetDelays
+for more information.
+;
+;-------------------------------------------------------------------
+!TOPIC 206 DefRcvTimeout
+!NOINDEX
+const
+  DefRcvTimeout : Word = 364;
+
+Default timeout period (in clock ticks) used when receiving an ASCII file.
+The file transfer is assumed to end when a ^Z is received or DefRcvTimeout
+clock ticks (364 = 20 seconds) go by without receiving any characters.
+;
+;-------------------------------------------------------------------
+!TOPIC 207 DefAsciiOptions
+!NOINDEX
+const
+  DefAsciiOptions : Word = 0;
+
+Default ASCII protocol options.
+;
+;-------------------------------------------------------------------
+!TOPIC 208 Declarations,ApAscii
+!NOINDEX
+!NOSEARCH
+ApAscii declares the following types and constants:
+
+  0201apSuppressCtrlZ                0200AsciiProtocol
+  0207DefAsciiOptions                0202DefBlockLen
+  0203DefEOLChar                     0204DefInterCharDelay
+  0205DefInterLineDelay              0206DefRcvTimeout
+;
+;-------------------------------------------------------------------
+!TOPIC 209 Declarations,OoAscii
+!NOINDEX
+!NOSEARCH
+OoAscii declares the following constants:
+
+  0201apSuppressCtrlZ                0207DefAsciiOptions
+  0202DefBlockLen                    0203DefEOLChar
+  0204DefInterCharDelay              0205DefInterLineDelay
+  0206DefRcvTimeout

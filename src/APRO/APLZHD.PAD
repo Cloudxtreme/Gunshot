@@ -1,0 +1,111 @@
+{$S-,R-,V-,I-}
+
+{$I APDEFINE.INC}
+
+{$IFNDEF UsePModeDLL}
+  !! STOP COMPILE - UsePModeDLL must be defined to compile this library
+{$ENDIF}
+
+{*********************************************************}
+{*                   APLZHD.PAD 2.03                     *}
+{*     Copyright (c) TurboPower Software 1993.           *}
+{*                 All rights reserved.                  *}
+{*********************************************************}
+
+library ApLzhD;
+
+uses
+  ApMisc,
+  ApArchiv,
+  ApLzh;
+
+Exports
+  {from APMISC}
+  StatusStr                  index indexAPMISC + 1,
+  UpdateChecksum             index indexAPMISC + 2,
+  UpdateCrc                  index indexAPMISC + 3,
+  UpdateCrcKermit            index indexAPMISC + 4,
+  GlobalAllocCheck           index indexAPMISC + 5,
+  GlobalFreeCheck            index indexAPMISC + 6,
+  GetMemCheck                index indexAPMISC + 7,
+  FreeMemCheck               index indexAPMISC + 8,
+  IsLeapYear                 index indexAPMISC + 9,
+  DaysInMonth                index indexAPMISC + 10,
+  ValidDate                  index indexAPMISC + 11,
+  DMYtoDate                  index indexAPMISC + 12,
+  DateToDMY                  index indexAPMISC + 13,
+  DateTimeDiff               index indexAPMISC + 14,
+  TimeToHMS                  index indexAPMISC + 15,
+  HMStoTime                  index indexAPMISC + 16,
+  IncDateTime                index indexAPMISC + 17,
+  StUpcase                   index indexAPMISC + 18,
+  PadCh                      index indexAPMISC + 19,
+  Search                     index indexAPMISC + 20,
+  AddBackSlash               index indexAPMISC + 21,
+  JustPathname               index indexAPMISC + 22,
+  DefaultExtension           index indexAPMISC + 23,
+  HexW                       index indexAPMISC + 24,
+  HexL                       index indexAPMISC + 25,
+  JustFilename               index indexAPMISC + 26,
+  ExistFile                  index indexAPMISC + 27,
+  StringToHeap               index indexAPMISC + 28,
+  DisposeString              index indexAPMISC + 29,
+  CheckRange                 index indexAPMISC + 30,
+  GetAsyncStatus             index indexAPMISC + 31,
+  SetAsyncStatus             index indexAPMISC + 32,
+  GetArchiveStatus           index indexAPMISC + 33,
+  SetArchiveStatus           index indexAPMISC + 34,
+  GetAproFileMode            index indexAPMISC + 35,                   {!!.03}
+  SetAproFileMode            index indexAPMISC + 36,                   {!!.03}
+  ExtractWord                index indexAPMISC + 37,                   {!!.03}
+  WordPosition               index indexAPMISC + 38,                   {!!.03}
+
+  {from APARCHIV}
+  InitFileMaskList           index indexAPARCHIV + 1,
+  DoneFileMaskList           index indexAPARCHIV + 2,
+  AppendFileMask             index indexAPARCHIV + 3,
+  MatchFileMask              index indexAPARCHIV + 4,
+  SortFileMaskList           index indexAPARCHIV + 5,
+  ExpandFileMaskList         index indexAPARCHIV + 6,
+  arOptionsOn                index indexAPARCHIV + 7,
+  arOptionsOff               index indexAPARCHIV + 8,
+  arOptionsAreOn             index indexAPARCHIV + 9,
+  SetOutputPath              index indexAPARCHIV + 10,
+  CreateOutputFile           index indexAPARCHIV + 11,
+
+  {from APLZH}
+  InitLzhFile                index indexAPLZH + 1,
+  CreateLzhFile              index indexAPLZH + 2,
+  DoneLzhFile                index indexAPLZH + 3,
+  ExtractLzh                 index indexAPLZH + 4,
+  ExtractFileMaskListLzh     index indexAPLZH + 5,
+  CompressLzh                index indexAPLZH + 6,
+  CompressFileMaskListLzh    index indexAPLZH + 7,
+  DeleteFilesLzh             index indexAPLZH + 8,
+  DeleteFileMaskListLzh      index indexAPLZH + 9,
+  FreshenArchiveLzh          index indexAPLZH + 10,
+  SetCompressionModeLzh      index indexAPLZH + 11,
+  lhaMemRequired             index indexAPLZH + 12,
+  InitLzhFileList            index indexAPLZH + 13,
+  BuildLzhFileList           index indexAPLZH + 14,
+  DeleteLzhFileListNode      index indexAPLZH + 15,
+  ExtractLzhFileList         index indexAPLZH + 16,
+  DoneLzhFileList            index indexAPLZH + 17,
+  SetOkToWriteFuncLzh        index indexAPLZH + 18,
+  SetShowNameProcLzh         index indexAPLZH + 19,
+  SetShowMethodProcLzh       index indexAPLZH + 20,
+  SetExtractSuccessFuncLzh   index indexAPLZH + 21,
+  SetShowProgressFuncLzh     index indexAPLZH + 22,
+  SetOkToCompressFuncLzh     index indexAPLZH + 23,
+  SetCompressSuccessFuncLzh  index indexAPLZH + 24,
+  SetProgressWidth           index indexAPLZH + 25,
+  DefShowMethodProcLzh       index indexAPLZH + 26,
+  DefExtractSuccessFuncLzh   index indexAPLZH + 27,
+  DefCompressSuccessFuncLzh  index indexAPLZH + 28,
+  DefOkToWriteFuncLzh        index indexAPLZH + 29,
+  DefShowNameProcLzh         index indexAPLZH + 30,
+  DefShowProgressFuncLzh     index indexAPLZH + 31,
+  DefOkToCompressFuncLzh     index indexAPLZH + 32;
+
+begin
+end.

@@ -1,0 +1,91 @@
+const
+  {Run-time constants}
+  DefInterCharDelay : Word = 0;   {Default is zero ms delay between chars}
+  DefInterLineDelay : Word = 0;   {Default is zero ms delay between lines}
+  DefEOLChar : Char = cCr;        {Default EOL char is carriage return}
+  DefRcvTimeout : Word = 364;     {Default tics to assume end of receive}
+  DefBlockLen : Word = 60;        {Default block length (assume avg of 60)}
+
+  {#Z+}
+  DefMaxAccumDelay : Word = 30;   {Max accum milliseconds to delay in one call}
+  {#Z-}
+
+  {---- Option code for AsciiProtocol ----}
+  apSuppressCtrlZ  = $0800;
+
+  DefAsciiOptions  : Word = 0;
+
+type
+  {AsciiProtocol states}
+  AsciiStateType = (
+    taInitial,        {Prepare to transmit file}
+    taGetBlock,       {Get next block to transmit}
+    taWaitFreeSpace,  {Wait for free space in output buffer}
+    taSendBlock,      {Transmit current block, handling char/line delays}
+    taFinishDrain,    {Wait for last data to go out}
+    taFinished,       {Normal or error completion, cleanup}
+    taDone,           {Done with transmit}
+
+    raInitial,        {Prepare to receive file}
+    raCollectBlock,   {Collect block}
+    raProcessBlock,   {Check for ^Z, write block to disk}
+    raFinished,       {Normal or error completion, cleanup}
+    raDone);          {Done with receive}
+
+  AsciiProtocolPtr = ^AsciiProtocol;
+  AsciiProtocol = record
+    PData            : ProtocolDataPtr; {General protocol data}
+    apInterCharDelay : Word;            {Delay after each character}
+    apInterLineDelay : Word;            {Delay after EOLChar}
+    apEOLChar        : Char;            {End-of-line char}
+    CtrlZEncountered : Boolean;         {Found EOF character}
+    RcvTimeout       : Word;            {Timeout for ending receives}
+    TimerPending     : Boolean;         {True if waiting for 1st char}
+    MaxAccumDelay    : Word;            {Max tics before yielding}
+    SendIndex        : Word;            {Index into transmitted data}
+    LastBlockSize    : Word;            {Last block size read from disk}
+    AsciiState       : AsciiStateType;  {Current state}
+    DataBlock        : ^DataBlockType;  {Pointer to data block}
+    NoMoreData       : Boolean;         {True if no more data to read}
+    ReplyTimer       : EventTimer;      {Timer for replies}
+    BlkIndex         : Word;            {Index into received data}
+  end;
+
+{$IFDEF UsePModeDLL}
+
+procedure InitAscii(var P : ProtocolRecPtr; PortPtr : PortRecPtr); Export;
+procedure InitCustomAscii(var P : ProtocolRecPtr;
+                          PortPtr : PortRecPtr;
+                          InterCharDelay, InterLineDelay : Word;
+                          Options : Word); Export;
+procedure DoneAscii(var P : ProtocolRecPtr); Export;
+procedure SetDelays(P : ProtocolRecPtr; InterCharDelay, InterLineDelay : Word); Export;
+procedure SetEOLChar(P : ProtocolRecPtr; C : Char); Export;
+function GetLineNumber(P : ProtocolRecPtr) : LongInt; Export;
+procedure PrepareTransmitPartAS(P : ProtocolRecPtr); Export;
+function ProtocolTransmitPartAS(P : ProtocolRecPtr) : ProtocolStateType; Export;
+procedure ProtocolTransmitAS(P : ProtocolRecPtr); Export;
+procedure PrepareReceivePartAS(P : ProtocolRecPtr); Export;
+function ProtocolReceivePartAS(P : ProtocolRecPtr) : ProtocolStateType; Export;
+procedure ProtocolReceiveAS(P : ProtocolRecPtr); Export;
+
+{$ELSE}
+
+procedure InitAscii(var P : ProtocolRecPtr; PortPtr : PortRecPtr);
+procedure InitCustomAscii(var P : ProtocolRecPtr;
+                          PortPtr : PortRecPtr;
+                          InterCharDelay, InterLineDelay : Word;
+                          Options : Word);
+procedure DoneAscii(var P : ProtocolRecPtr);
+procedure SetDelays(P : ProtocolRecPtr; InterCharDelay, InterLineDelay : Word);
+procedure SetEOLChar(P : ProtocolRecPtr; C : Char);
+function GetLineNumber(P : ProtocolRecPtr) : LongInt;
+procedure PrepareTransmitPartAS(P : ProtocolRecPtr);
+function ProtocolTransmitPartAS(P : ProtocolRecPtr) : ProtocolStateType;
+procedure ProtocolTransmitAS(P : ProtocolRecPtr);
+procedure PrepareReceivePartAS(P : ProtocolRecPtr);
+function ProtocolReceivePartAS(P : ProtocolRecPtr) : ProtocolStateType;
+procedure ProtocolReceiveAS(P : ProtocolRecPtr);
+
+{$ENDIF}
+

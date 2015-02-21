@@ -1,0 +1,161 @@
+
+This file summarizes changes made between Async Profession 2.00 and
+2.01. It is of interest primarily to recipients of the APR201.EXE patch
+file from TurboPower Software's Electronic Maintenance System.
+
+New Features
+---------------------------------------------------------------------
+Most of the new features are described in detail in READ.1ST. The
+following is a brief description of them, arranged by unit. Minor
+enhancements to existing programs and routines are listed here only and
+are denoted by asterisks.
+
+APMISC
+  * HeapDebug debugging mode now works in pmode
+
+APFOSSIL
+  * Added support for 38400 baud
+  * Removed Com1-Com4 InitPort range check
+  * Allow simultaneous hardware and software flow control
+
+Protocols
+  - Reorganized protocols to minimize risk of pmode/ISR crashes
+  * Changed DisposeFileList to return a var pointer
+
+APBPLUS/OOBPLUS
+  * Added support for 2K packets
+
+APFAXCVT/OOFAXCVT
+  * Added support for multistrip TIFF images
+
+APFAX12/OOFAX12
+  * Log early handshake failures
+  * Better error reporting for unexpected class 1 disconnects
+
+APFAXPRN/OOFAXPRN
+  * Added ability to adjust blank area suppression size
+
+FAXSRVR/FAXSRVRO
+  - Added command line option /L to adjust blank area suppression area
+  - Added command line option /M for modem init settings
+  - Added command line option /O for slow modem command baud rates
+  * Screen saver mini-window now shows failure count
+
+SHOWFAX/SHOWFAXO
+  - Added scaling of fax image to fit screen width
+
+FX/FXO
+  * Added support for 8K Zmodem
+
+TPFAX
+  * Added hardware flow control option to TPFAX.INI
+  * DLGSTUFF - combo box fields can now be disabled
+
+OOPCOM
+  * Allow alternate device support
+
+APZIP/OOZIP
+  - Added PKZIP 2.0 deflate/inflate format compression/decompression
+
+Example Programs
+  * Changed EXBPLUS to be a procedural demo of B+
+  * Added EXBPLUSO as an OOP demo of B+
+
+
+Bugs Fixed
+---------------------------------------------------------------------
+
+APTIMER
+  - Won't compile under StonyBrook
+
+Device layers
+  - Combining device layers could result in lockup
+
+APINT14
+  - Timeout check in GetChar/PutChar wrong
+
+APDIGI14
+  - 8904 errors possible when calling HWFlowEnable
+
+APABSPCL/OOABSPCL
+  - Flow control could still get stuck with apRTSLowForWrite
+  - Prevent divide by zero in status routines
+
+APXMODEM/OOXMODEM
+  - Memory leak in APXMODEM only
+
+APXMODEM/OOYMODEM
+  - Returns ecOk on cancelled uploads
+
+APKERMIT/OOKERMIT
+  - Bad file if transmitter uses hibit quoting without repeat quoting
+
+APBPLUS/OOBPLUS
+  - Various upload/download failures
+
+APZMODEM/OOZMODEM
+  - Bad received file possible at very high error rates
+  - CRC errors with PCBoard v15 internal Zmodem
+  - Memory leak in 8K Zmodem option
+  - Partial files not time-stamped correctly (AP only)
+
+APFAXCVT/OOFAXCVT
+  - Bad or empty APF file from all PCX/DCX/TIFF files
+  - Honor input directory if SetFaxPath not called
+  - 204 possible in low memory conditions
+  - ufHalfWidth option produced empty/garbage PCX files
+  - Conversion buffer too small for worst case text files
+
+APFAX12/OOFAX12
+  - Class 1, won't receive at high resolution
+  - Class 1, status always reports high resolution
+  - Class 1, failed to transmit to some fax machines
+  - Class 1, hang if modem doesn't provide CR/LF after responses
+  - Class 2, some modems failed data/fax mid-stream connections
+  - Class 2, fail to transmit to some fax machines
+  - Class 2, fail to init if modem doesn't accept compound commands
+  - Class 2, bad station ID reported in some cases
+  - Both, page count and bytes transferred not updated at same time
+
+APFAXCAS/OOFAXCAS
+  - SetTaskTime won't set seconds
+  - Removed leftover debugging code
+  - May send first page only
+
+APARCHIV/OOARCHIV
+  - *.* mask in root directory tried to include subdirectory names
+
+APLZH/OOLZH
+  - Compressing a mask of *.* may include temp files
+  - Problems compressing files with paths
+  - Extraction failed with stored paths and SetOutputPath
+  - OOLZH was using ArchiveStatus instead of arError
+
+APZIP/OOZIP
+  - ZIPO /A didn't maintain contents of ZIP
+  - Extraction failed with stored paths and SetOutputPath
+  - OOZIP was using ArchiveStatus instead of arError
+
+SIMPRCV/SIMPRCVO
+  - Weren't honoring command line baud rate
+
+FAXSRVR/FAXSRVRO
+  - Save/restore path around DOS shell
+  - Won't compile with UseTPro
+  - 204 error with TP6
+
+PRNFAX/PRNFAXO
+  - Failed to deallocate memory after failures (PRNFAX only)
+
+OOPCOM
+  - 8104 error if data received while about box is up
+
+TPFAX
+  - Possible problems with floppy drives
+  - Various problems with send fax status routine
+  - Removed redundant error checking
+  - /S command line option wasn't implemented
+
+Protocol demos
+  - Time remaining display has extra zero if the total time >= 10:00
+

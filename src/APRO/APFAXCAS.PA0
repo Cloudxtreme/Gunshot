@@ -1,0 +1,347 @@
+const
+  {Maximum size of cover data, data beyond this is discarded}
+  MaxCoverData = 2048;
+
+  {Lines/page value to use when calculating page count}                {!!.01}
+  LinesPerPage : Word = 73;                                            {!!.01}
+
+  {Undocumented constants}
+  TransmitWait : Word = 182;     {Ticks to wait to assume all xmits complete}
+  ReceiveWait : Word = 546;      {Ticks to wait between receive file checks}
+
+type
+  {Types of CAS queues}
+  QueueType = (qTask, qReceive, qLog);
+
+  {.Z+}
+  CoverData = array[0..MaxCoverData-1] of Char;
+
+  {$IFDEF DPMI}
+  DosMemRec = record
+    Sele, Segm : Word;
+  end;
+  {$ENDIF}
+  {.Z-}
+
+type
+  {CAS FTR record, except cover data}
+  FileTransferRecord = record
+    FileType      : Byte;
+    TextSize      : Byte;
+    Status        : Byte;
+    BytesSent     : LongInt;
+    SizeTotal     : LongInt;
+    PagesSent     : Word;
+    PagesTotal    : Word;
+    Path          : Array[0..79] of Char;
+    Increments    : Byte;
+    PageLen       : Byte;
+    Reserved      : Array[0..30] of Byte;
+  end;
+
+  {CAS CFR record}
+  ControlFileRecordPtr = ^ControlFileRecord;
+  ControlFileRecord = record
+    EventType     : Byte;
+    XferType      : Byte;
+    Status        : Integer;
+    SendTime      : Word;
+    SendDate      : Word;
+    FilesToXfer   : Word;
+    OfsToFTR      : Word;
+    PhoneNum      : Array[0..46] of Char;
+    UserTag       : Array[0..63] of Char;
+    Reserved      : Byte;
+    ConnectSec    : Byte;
+    ConnectMin    : Byte;
+    ConnectHr     : Byte;
+    TotalPages    : LongInt;
+    PagesSent     : LongInt;
+    FilesSent     : Word;
+    CoverPage     : Byte;
+    ErrorCount    : Word;
+    DeleteFiles   : Byte;
+    EventHandle   : Word;
+    Reserved2     : Array[0..52] of Byte;
+    Internal      : Array[0..19] of Byte;
+    CoverRead     : Byte;
+    SuppHead      : Byte;
+    RemoteCSID    : Array[0..20] of Char;
+    DestName      : Array[0..31] of Char;
+    SenderName    : Array[0..31] of Char;
+    Logo          : Array[0..79] of Char;
+  end;
+
+  {CAS record type for submit single file function}
+  SubmitFileType = record
+    EventType     : Byte;
+    XferType      : Byte;
+    SendTime      : Word;
+    SendDate      : Word;
+    DestName      : array[0..31] of Char;
+    FaxName       : array[0..79] of Char;
+    PNumber       : array[0..46] of Char;
+    AppTag        : array[0..63] of Char;
+    Zero1         : Byte;
+    CoverYesNo    : Byte;
+    Zero2         : array[0..22] of Char;
+    CoverBuffer   : CoverData;
+  end;
+
+  {CAS EDB record}
+  ExternalDataBlock= record
+    Major         : Byte;
+    Minor         : Byte;
+    Path          : Array[0..67] of Char;
+    PB            : Array[0..12] of Char;
+    Logo          : Array[0..12] of Byte;
+    Sender        : Array[0..31] of Char;
+    CSID          : Array[0..20] of Char;
+    Reserved      : Array[0..106] of Byte;
+  end;
+
+  {CAS status record, used only by GetEventStatus}
+  StatusRecord = record
+    CFRec         : ControlFileRecord;
+    FTRec         : FileTransferRecord;
+    Fill          : Byte;
+  end;
+
+  {Array for vendor specific hardware status}
+  StatusArray = array[0..127] of Char;
+
+type
+  {The standard CAS send/receive record}
+  CASFaxPtr = ^CASFax;
+  CASFax = record
+    PData          : FaxDataPtr;
+    FirstReceive   : Boolean;
+    InProgress     : Boolean;
+    CurPages       : Word;
+    CurPage        : Word;
+    Resolution     : Word;
+    StatusWait     : Word;
+    CurBytes       : LongInt;
+    CASAbort       : AbortFunc;
+    Regs           : Registers;
+    State          : CASStates;
+    SubmitFile     : SubmitFileType;
+    LogoFile       : PathStr;
+    ReplyTimer     : EventTimer;
+  end;
+
+{$IFDEF UsePModeDLL}
+
+{Constructor/destructors}
+procedure InitCasFax(var FP : FaxRecPtr; ID : Str20); Export;
+  {-Initialize a CasFax record}
+procedure DoneCasFax(var FP : FaxRecPtr); Export;
+  {-Destroy a CasFax record}
+
+{CAS primitives}
+procedure SubmitTask(FP : FaxRecPtr; FName : PathStr; var Handle : Word); Export;
+  {-Submit a CAS task}
+procedure AbortCurrentEvent(FP : FaxRecPtr; var Handle : Word); Export;
+  {-Aborts the current CAS event, may take up to 30 seconds}
+procedure FindFirstCAS(FP : FaxRecPtr; Q : QueueType; Direction : Boolean;
+                       Status : Integer; var Handle : Word); Export;
+  {-Find the first event in the specified queue}
+procedure FindNextCAS(FP : FaxRecPtr; Q : QueueType; var Handle : Word); Export;
+  {-Find the next event in the specified queue}
+procedure OpenFile(FP : FaxRecPtr; Q : QueueType; FileNumber : Word;
+                   Handle : Word; var FHandle : Word); Export;
+  {-Open a queue file}
+procedure CloseFile(FP : FaxRecPtr; Handle : Word); Export;
+  {-Close a previously-opened file handle}
+procedure DeleteFile(FP : FaxRecPtr; Handle : Word; FileNumber : Word; Q : QueueType); Export;
+  {-Delete the file associated with Hdl from queue Q}
+procedure DeleteAllFiles(FP : FaxRecPtr; Q : QueueType); Export;
+  {-Delete all files in queue Q}
+procedure GetEventDate(FP : FaxRecPtr; Handle : Word; Q : QueueType;
+                       var Year, Month, Day : Word); Export;
+  {-Get the date info for event Handle in queue Q}
+procedure SetTaskDate(FP : FaxRecPtr; Handle : Word; Year, Month, Day : Word); Export;
+  {-Set the date info for event Handle in queue Q}
+procedure GetEventTime(FP : FaxRecPtr; Handle : Word; Q : QueueType;
+                             var Hour, Min, Sec : Word); Export;
+  {-Get the time info for event Handle in queue Q}
+procedure SetTaskTime(FP : FaxRecPtr; Handle : Word; Hour, Min, Sec : Word); Export;
+  {-Set the time info for event Handle in queue Q}
+procedure GetExternalDataBlock(FP : FaxRecPtr; var EDB : ExternalDataBlock); Export;
+  {-Return data in external data block, function 0E}
+procedure GetSetAutoReceive(FP : FaxRecPtr; var Rings : Word; GetSet : Word); Export;
+  {-Enable/disable autoreceive, function 0F}
+procedure GetEventStatus(FP : FaxRecPtr; var SRec : StatusRecord); Export;
+  {-Return status of current event, function 10}
+procedure GetQueueStatus(FP : FaxRecPtr; Q : QueueType;
+                         var Changes, ControlFiles, ReceivedFiles : Word); Export;
+  {-Get status of a queue, function 11}
+procedure GetHardwareStatus(FP : FaxRecPtr; var SArray : StatusArray); Export;
+  {-Return vendor-specific hardware status info, function 12}
+procedure RunDiagnostics(FP : FaxRecPtr; Mode : Word); Export;
+  {-Run hardware diagnostics, function 13}
+procedure MoveReceivedFile(FP : FaxRecPtr;
+                           Handle : Word;
+                           FileNumber : Word;
+                           NewName : PathStr); Export;
+  {-Move a received file to NewName (path and filename), function 14}
+procedure SubmitSingleFile(FP : FaxRecPtr;
+                           TransType : Word;
+                           TextSize : Word;
+                           Time : Word;
+                           Date : Word;
+                           Dest : String;
+                           FName : PathStr;
+                           Number : String;
+                           Cover : PathStr;
+                           var Handle : Word); Export;
+  {-Submit a single file to the CAS manager}
+
+{User control}
+procedure SetLogoFile(FP : FaxRecPtr; LF : PathStr); Export;
+  {-Set PCX logo file}
+procedure GetPageInfoCAS(FP : FaxRecPtr;
+                         var Pages : Word;
+                         var Page : Word;
+                         var BytesTransferred : LongInt;
+                         var PageLength : LongInt); Export;
+procedure SetCASAbortFunc(FP : FaxRecPtr; CAF : AbortFunc); Export;
+  {-Set a CAS abort func}
+procedure GetAllStatus(FP : FaxRecPtr;
+                       var Event : Byte;
+                       var AStatus : Word;
+                       var Pages : Word;
+                       var PageTotal : Word;
+                       var Bytes : LongInt;
+                       var FName : PathStr;
+                       var Remote : String); Export;
+  {Make status call and return these fields}
+procedure SetCASResolution(FP : FaxRecPtr; High : Boolean); Export;
+  {-Pass true to set high resolution}
+procedure PrepareFaxTransmitPartCas(FP : FaxRecPtr); Export;
+  {-Prepare to call FaxTransmitPart}
+function FaxTransmitPartCas(FP : FaxRecPtr) : FaxStateType; Export;
+  {-Do one part of CAS send process}
+procedure FaxTransmitCas(FP : FaxRecPtr); Export;
+  {-Call FaxTrasmitPart until fax is sent}
+procedure PrepareFaxReceivePartCas(FP : FaxRecPtr); Export;
+  {-Prepare to call FaxReceivePart}
+function FaxReceivePartCas(FP : FaxRecPtr) : FaxStateType; Export;
+  {-Do one part of CAS receive process}
+procedure FaxReceiveCas(FP : FaxRecPtr); Export;
+  {-Call FaxReceivePart until fax is sent}
+
+function CASInstalled : Boolean; Export;
+  {-Return True if CAS manager TSR is installed}
+
+{$ELSE}
+
+{Constructor/destructors}
+procedure InitCasFax(var FP : FaxRecPtr; ID : Str20);
+  {-Initialize a CasFax record}
+procedure DoneCasFax(var FP : FaxRecPtr);
+  {-Destroy a CasFax record}
+
+{CAS primitives}
+procedure SubmitTask(FP : FaxRecPtr; FName : PathStr; var Handle : Word);
+  {-Submit a CAS task}
+procedure AbortCurrentEvent(FP : FaxRecPtr; var Handle : Word);
+  {-Aborts the current CAS event, may take up to 30 seconds}
+procedure FindFirstCAS(FP : FaxRecPtr; Q : QueueType; Direction : Boolean;
+                       Status : Integer; var Handle : Word);
+  {-Find the first event in the specified queue}
+procedure FindNextCAS(FP : FaxRecPtr; Q : QueueType; var Handle : Word);
+  {-Find the next event in the specified queue}
+procedure OpenFile(FP : FaxRecPtr; Q : QueueType; FileNumber : Word;
+                   Handle : Word; var FHandle : Word);
+  {-Open a queue file}
+procedure CloseFile(FP : FaxRecPtr; Handle : Word);
+  {-Close a previously-opened file handle}
+procedure DeleteFile(FP : FaxRecPtr; Handle : Word; FileNumber : Word; Q : QueueType);
+  {-Delete the file associated with Hdl from queue Q}
+procedure DeleteAllFiles(FP : FaxRecPtr; Q : QueueType);
+  {-Delete all files in queue Q}
+procedure GetEventDate(FP : FaxRecPtr; Handle : Word; Q : QueueType;
+                       var Year, Month, Day : Word);
+  {-Get the date info for event Handle in queue Q}
+procedure SetTaskDate(FP : FaxRecPtr; Handle : Word; Year, Month, Day : Word);
+  {-Set the date info for event Handle in queue Q}
+procedure GetEventTime(FP : FaxRecPtr; Handle : Word; Q : QueueType;
+                             var Hour, Min, Sec : Word);
+  {-Get the time info for event Handle in queue Q}
+procedure SetTaskTime(FP : FaxRecPtr; Handle : Word; Hour, Min, Sec : Word);
+  {-Set the time info for event Handle in queue Q}
+procedure GetExternalDataBlock(FP : FaxRecPtr; var EDB : ExternalDataBlock);
+  {-Return data in external data block, function 0E}
+procedure GetSetAutoReceive(FP : FaxRecPtr; var Rings : Word; GetSet : Word);
+  {-Enable/disable autoreceive, function 0F}
+procedure GetEventStatus(FP : FaxRecPtr; var SRec : StatusRecord);
+  {-Return status of current event, function 10}
+procedure GetQueueStatus(FP : FaxRecPtr; Q : QueueType;
+                         var Changes, ControlFiles, ReceivedFiles : Word);
+  {-Get status of a queue, function 11}
+procedure GetHardwareStatus(FP : FaxRecPtr; var SArray : StatusArray);
+  {-Return vendor-specific hardware status info, function 12}
+procedure RunDiagnostics(FP : FaxRecPtr; Mode : Word);
+  {-Run hardware diagnostics, function 13}
+procedure MoveReceivedFile(FP : FaxRecPtr;
+                           Handle : Word;
+                           FileNumber : Word;
+                           NewName : PathStr);
+  {-Move a received file to NewName (path and filename), function 14}
+procedure SubmitSingleFile(FP : FaxRecPtr;
+                           TransType : Word;
+                           TextSize : Word;
+                           Time : Word;
+                           Date : Word;
+                           Dest : String;
+                           FName : PathStr;
+                           Number : String;
+                           Cover : PathStr;
+                           var Handle : Word);
+  {-Submit a single file to the CAS manager}
+
+{User control}
+procedure SetLogoFile(FP : FaxRecPtr; LF : PathStr);
+  {-Set PCX logo file}
+procedure GetPageInfoCAS(FP : FaxRecPtr;
+                         var Pages : Word;
+                         var Page : Word;
+                         var BytesTransferred : LongInt;
+                         var PageLength : LongInt);
+procedure SetCASAbortFunc(FP : FaxRecPtr; CAF : AbortFunc);
+  {-Set a CAS abort func}
+procedure GetAllStatus(FP : FaxRecPtr;
+                       var Event : Byte;
+                       var AStatus : Word;
+                       var Pages : Word;
+                       var PageTotal : Word;
+                       var Bytes : LongInt;
+                       var FName : PathStr;
+                       var Remote : String);
+  {Make status call and return these fields}
+procedure SetCASResolution(FP : FaxRecPtr; High : Boolean);
+  {-Pass true to set high resolution}
+procedure PrepareFaxTransmitPartCas(FP : FaxRecPtr);
+  {-Prepare to call FaxTransmitPart}
+function FaxTransmitPartCas(FP : FaxRecPtr) : FaxStateType;
+  {-Do one part of CAS send process}
+procedure FaxTransmitCas(FP : FaxRecPtr);
+  {-Call FaxTrasmitPart until fax is sent}
+procedure PrepareFaxReceivePartCas(FP : FaxRecPtr);
+  {-Prepare to call FaxReceivePart}
+function FaxReceivePartCas(FP : FaxRecPtr) : FaxStateType;
+  {-Do one part of CAS receive process}
+procedure FaxReceiveCas(FP : FaxRecPtr);
+  {-Call FaxReceivePart until fax is sent}
+
+function CASInstalled : Boolean;
+  {-Return True if CAS manager TSR is installed}
+
+{$ENDIF}
+
+var
+  {Undocumented error variables}
+  LastCasFunc   : Word;
+  LastCasReturn : Word;
+

@@ -1,0 +1,1341 @@
+  function mLong2Str(L : LongInt) : string;
+    {-Convert a long/word/integer/byte/shortint to a string}
+  var
+    S : string;
+  begin
+    Str(L, S);
+    mLong2Str := S;
+  end;
+
+  function mTrim(S : string) : string;
+    {-Return a string with leading and trailing white space removed}
+  var
+    I : Word;
+    SLen : Byte absolute S;
+  begin
+    while (SLen > 0) and (S[SLen] <= ' ') do
+      Dec(SLen);
+
+    I := 1;
+    while (I <= SLen) and (S[I] <= ' ') do
+      Inc(I);
+    Dec(I);
+    if I > 0 then
+      Delete(S, 1, I);
+
+    mTrim := S;
+  end;
+
+  function mBPS(Flags : Word) : Longint;
+    {-Return a longint BPS rate for Flags}
+  begin
+    Flags := Flags and mnBPSMask;
+    case Flags of
+      mn600BPS   : mBPS := 600;
+      mn1200BPS  : mBPS := 1200;
+      mn2400BPS  : mBPS := 2400;
+      mn4800BPS  : mBPS := 4800;
+      mn7200BPS  : mBPS := 7200;
+      mn9600BPS  : mBPS := 9600;
+      mn12000BPS : mBPS := 12000;
+      mn14400BPS : mBPS := 14400;
+      else         mBPS := 0;
+    end;
+  end;
+
+  procedure mPutStringDelay(M : ModemRecPtr; var S : String);
+    {-Delays DelayFactor tics before sending out modem string}
+  var
+    I : Word;
+    ET : EventTimer;
+    S1 : String;
+  begin
+    with M^ do begin
+      if DelayFactor <> 0 then begin
+        {Give modem a chance to recover from last command}
+        NewTimer(ET, DelayFactor);
+        while not WaitComplete(PR, ET) do ;
+        if GetAsyncStatus = ecUserAbort then begin                     {!!.02}
+          GotError(PR, epNonFatal+ecUserAbort);
+          Exit;
+        end;
+      end;
+
+      {Add <CR> if one is required but isn't there already}
+      S1 := S;
+      if (FlagIsSet(CmdFlags, moUseSuffix)) and (Pos(^M, S1) = 0) then
+        if Length(S1) < 255 then begin
+          Inc(Byte(S1[0]));
+          S1[Length(S1)] := CmdSuffix;
+        end;
+
+      for I := 1 to Length(S1) do begin
+        Delay(ModemCharDelay);
+        PutChar(PR, S1[I]);
+      end;
+    end;
+  end;
+
+  procedure InitModem(var M : ModemRecPtr; P : PortRecPtr);
+    {-Allocates and initializes a modem object}
+  begin
+    SetAsyncStatus(ecOk);                                              {!!.02}
+    M := nil;
+
+    {Allocate a modem record}
+    if not GetMemCheck(M, SizeOf(ModemRec)) then begin
+      GotError(P, epFatal+ecOutOfMemory);
+      Exit;
+    end;
+
+    {Initialize}
+    with M^ do begin
+      PR := P;
+      Buffer := '';
+      Responses := NumericCodes;
+      SRegs := SRegsInit;
+      SRegLow := 1;
+      SRegHigh := MaxSregs;
+      HandleResponses := True;
+      DelimChar := cCR;
+      CRchar := cCR;
+      LFchar := cLF;
+      SepChar := DefSepChar;
+      Timeout := DefTimeout;
+      DialTimeout := DefDialTimeout;
+      DelayFactor := DefDelayFactor;
+      DialPrefix := '';
+      CmdPrefix := 'AT';
+      CmdSuffix := cCR;
+      ConnectSpeed := 0;
+      mFlags := 0;
+      ECString := '';
+      ErrorControl := False;
+      CmdTable := @HayesCommandSet;
+      CmdTableMax := HayesCommandMax;
+      RespTable := @HayesResponseSet;
+      RespTableMax := HayesResponseMax;
+      CodeTable := @HayesCodeSet;
+      CodeTableMax := HayesCodeMax;
+    end;
+  end;
+
+  procedure DoneModem(M : ModemRecPtr);
+    {-Dispose of this modem object}
+  begin
+    FreeMemCheck(M, SizeOf(ModemRec));
+  end;
+
+  function SearchCommand(M : ModemRecPtr; Cmd : Word) : Integer;
+    {-Returns the index for Cmd (or -1 for not found)}
+  var
+    Finished : Boolean;
+    Index : Word;
+    Len : Word;
+    CurCmd : Word;
+  begin
+    Finished := False;
+    Index := 0;
+    with M^ do begin
+      repeat
+        {Get length byte}
+        Len := CmdTable^[Index];
+
+        {Is this the desired command?}
+        CurCmd := CmdTable^[Index+Len];
+        if CurCmd = Cmd then begin
+          SearchCommand := Index;
+          Exit;
+        end else begin
+          Inc(Index, Len+1);
+          if CmdTable^[Index] = 0 then begin
+            SearchCommand := -1;
+            Finished := True;
+          end;
+        end;
+      until Finished;
+    end;
+  end;
+
+  function mInsertNewCommand(M : ModemRecPtr;
+                             Cmd : Word; S : String;
+                             Flags : Word) : Boolean;
+    {-Insert new Cmd in best fit slot}
+  var
+    Finished : Boolean;
+    Index : Word;
+    Len : Word;
+    BestLen : Word;
+    BestIndex : Word;
+  begin
+    Finished := False;
+    Index := 0;
+    BestLen := 65535;
+    BestIndex := 0;
+
+    {Loop through table looking for best fit empty slot}
+    with M^ do begin
+      repeat
+        {Get length byte}
+        Len := CmdTable^[Index];
+
+        if Len = 0 then
+          {End-of-table}
+          Finished := True
+        else begin
+          {Is this slot empty?}
+          if CmdTable^[Index+Len] = mcNone then begin
+            if Len = Length(S)+2 then begin
+              {Finished if it's an exact fit}
+              BestLen := Len;
+              BestIndex := Index;
+              Finished := True;
+            end else if Len > Length(S)+1 then
+              {Command fits -- compare against best fit so far}
+              if Len < BestLen then begin
+                BestLen := Len;
+                BestIndex := Index;
+              end;
+          end;
+        end;
+
+        {Increment to next slot}
+        Inc(Index, Len+1);
+      until Finished;
+
+      if BestLen = 65535 then
+        {Couldn't find slot -- try to add at end of table}
+        if Index+Length(S)+2 < CmdTableMax then
+          {There is room -- set BestIndex}
+          BestIndex := Index-1
+        else begin
+          {No room anywhere -- return error}
+          mInsertNewCommand := False;
+          Exit;
+        end;
+
+      {Found slot -- insert command}
+      CmdTable^[BestIndex] := Length(S)+2;
+      CmdTable^[BestIndex+1] := Flags;
+      Move(S[1], CmdTable^[BestIndex+2], Length(S));
+      CmdTable^[BestIndex+Length(S)+2] := Cmd;
+      mInsertNewCommand := True;
+    end;
+  end;
+
+  procedure AddModemCommand(M : ModemRecPtr;
+                            S : String; Cmd : Word; Flags : Word);
+    {-Add/change modem command in list}
+  var
+    Index : Integer;
+    Len : Word;
+  begin
+    SetAsyncStatus(ecOk);                                              {!!.02}
+
+    {Exit immediately if Cmd = mcNone}
+    if Cmd = mrNone then
+      Exit;
+
+    with M^ do begin
+      {Search for matching Cmd}
+      Index := SearchCommand(M, Cmd);
+
+      if Index <> -1 then begin
+        {Found matching command, replace it or zero it out}
+        Len := CmdTable^[Index];
+        if Len = Length(S)+2 then begin
+          {Same length -- replace old command immediately}
+          CmdTable^[Index+1] := Flags;
+          Move(S[1], CmdTable^[Index+2], Len-2)
+        end else begin
+          {Different length -- zero out old command and find new cmd slot}
+          FillChar(CmdTable^[Index+1], Len, 0);
+          if not mInsertNewCommand(M, Cmd, S, Flags) then
+            {No slots available -- return error}
+            GotError(PR, epNonFatal+ecTableFull);
+        end;
+      end else
+        {No matching command, insert new command in best available slot}
+        if not mInsertNewCommand(M, Cmd, S, Flags) then
+          {No slots available -- return error}
+          GotError(PR, epNonFatal+ecTableFull);
+    end;
+  end;
+
+  procedure RemoveModemCommand(M : ModemRecPtr; Cmd : Word);
+    {-Remove modem command from list}
+  var
+    Index : Integer;
+    Len : Word;
+  begin
+    with M^ do begin
+      {Search for matching Cmd}
+      Index := SearchCommand(M, Cmd);
+
+      if Index <> -1 then begin
+        {Found matching command, zero it out}
+        Len := CmdTable^[Index];
+        FillChar(CmdTable^[Index+1], Len, 0);
+      end else
+        GotError(PR, epNonFatal+ecNullCommand);
+    end;
+  end;
+
+  procedure ExecuteModemCommand(M : ModemRecPtr; Cmd : Word; CmdVal : Integer);
+    {-Execute modem command Cmd with value CmdVal}
+  var
+    Index : Integer;
+    Len : Word;
+  begin
+    with M^ do begin
+      {Search for command}
+      Index := SearchCommand(M, Cmd);
+      if Index <> -1 then begin
+        Len := CmdTable^[Index];
+        CmdFlags := CmdTable^[Index+1];
+        Move(CmdTable^[Index+2], Buffer[1], Len-2);
+        Buffer[0] := Char(Len-2);
+        if FlagIsSet(CmdFlags, moUsePrefix) then
+          Buffer := CmdPrefix + Buffer;
+        if CmdVal >= 0 then
+          Buffer := Buffer + mLong2Str(CmdVal);
+        PutModemCommand(M, Buffer);
+      end else
+        GotError(PR, epNonFatal+ecNullCommand);
+    end;
+  end;
+
+  function SearchCodeIndex(M : ModemRecPtr; NC : Byte) : Integer;
+    {-Returns index for numeric response NC}
+  const
+    {Length of an entry is always 4 bytes}
+    Len = 4;
+  var
+    Index : Word;
+    CurCode : Word;
+  begin
+    with M^ do begin
+      Index := 0;
+      repeat
+        {Get the current code and compare to desired code}
+        CurCode := CodeTable^[Index];
+        if CurCode = NC then begin
+          {Found it}
+          SearchCodeIndex := Index;
+          Exit;
+        end else begin
+          {Not found, look for next one}
+          Inc(Index, Len);
+          if CodeTable^[Index] = 0 then begin
+            SearchCodeIndex := -1;
+            Exit;
+          end;
+        end;
+      until False;
+    end;
+  end;
+
+  function SearchCode(M : ModemRecPtr; NC : Byte; var Flags : Word) : Word;
+    {-Returns mrXxx code for numeric response NC}
+  const
+    {Length of an entry is always 4 bytes}
+    Len = 4;
+  var
+    Index : Integer;
+  begin
+    with M^ do begin
+      {Lookup index for this response code}
+      Index := SearchCodeIndex(M, NC);
+      if Index >= 0 then begin
+        {Found response code, return mrXxx code}
+        SearchCode := CodeTable^[Index+Len-1];
+        Flags := CodeTable^[Index+Len-3] shl 8;
+        Flags := Flags + CodeTable^[Index+Len-2];
+      end else begin
+        SearchCode := mrNone;
+        Flags := 0;
+      end;
+    end;
+  end;
+
+  procedure AddModemCode(M : ModemRecPtr; NC, Code : Byte; Options : Word);
+    {-Inserts new numeric response NC in best fit slot}
+  const
+    {Length of an entry is always 4 bytes}
+    Len = 4;
+  var
+    Finished : Boolean;
+    Index : Word;
+    I : Word;
+  begin
+    with M^ do begin
+      SetAsyncStatus(ecOk);                                            {!!.02}
+
+      {Exit immediately if Code = mrNone}
+      if Code = mrNone then
+        Exit;
+
+      {Loop through table looking for an empty slot}
+      Finished := False;
+      Index := 0;
+      repeat
+        if CodeTable^[Index] = 255 then
+          {End-of-table}
+          Finished := True
+        else begin
+          {Is this slot empty?}
+          if CodeTable^[Index+Len-1] = mrNone then begin
+            {Insert it here}
+            CodeTable^[Index] := NC;
+            CodeTable^[Index+1] := Hi(Options);                        {!!.02}
+            CodeTable^[Index+2] := Lo(Options);                        {!!.02}
+            CodeTable^[Index+3] := Code;
+            Exit;
+          end else
+            {Keep looking}
+            Inc(Index, Len);
+        end;
+      until Finished;
+
+      {Couldn't find slot -- try to add at end of table}
+      if Index+Len+1 < CodeTableMax then begin
+        {There is room -- insert here}
+        CodeTable^[Index] := NC;
+        CodeTable^[Index+1] := Hi(Options);                            {!!.02}
+        CodeTable^[Index+2] := Lo(Options);                            {!!.02}
+        CodeTable^[Index+3] := Code;
+        CodeTable^[Index+4] := 255;
+      end else
+        {No room anywhere -- return error}
+        GotError(PR, epNonFatal+ecTableFull);
+    end;
+  end;
+
+  procedure RemoveModemCode(M : ModemRecPtr; NC : Byte);
+    {-Remove the modem numeric response NC}
+  const
+    {Length of an entry is always 4 bytes}
+    Len = 4;
+  var
+    Index : Integer;
+  begin
+    with M^ do begin
+      Index := SearchCodeIndex(M, NC);
+      if Index = -1 then
+        {Not found, return error}
+        GotError(PR, epNonFatal+ecNullCommand)
+      else
+        {Found matching response code, change associate mrXxx code to mrNone}
+        CodeTable^[Index+Len-1] := mrNone;
+    end;
+  end;
+
+  function SearchResponseIndex(M : ModemRecPtr; S : String) : Integer;
+    {-Returns index for this response string}
+  var
+    Finished : Boolean;
+    Index : Word;
+    Len : Word;
+    CurResponse : String;
+    Posn : Byte;
+    I : Integer;
+    BestMatch : Integer;
+    BestLen : Word;
+  begin
+    with M^ do begin
+      {Upcase the response}
+      for I := 1 to Length(S) do
+        S[I] := Upcase(S[I]);
+
+      Finished := False;
+      BestMatch := -1;
+      BestLen := 0;
+      Index := 0;
+      repeat
+        {Get length byte}
+        Len := RespTable^[Index];
+
+        {Is this the desired response}
+        Move(RespTable^[Index+1], CurResponse[1], Len-1);
+        CurResponse[0] := Char(Len-1);
+        Posn := Pos(CurResponse, S);
+        if Posn <> 0 then begin
+          {Found at least a subset match}
+          if Length(CurResponse) > BestLen then begin
+            {This is better than the last subset match}
+            BestMatch := Index;
+            BestLen := Length(CurResponse);
+          end;
+          if Length(CurResponse) = Length(S) then
+            {It's an exact match, return now}
+            Finished := True
+          else begin
+            {Look for possible better matches}
+            Inc(Index, Len+1);
+            if RespTable^[Index] = 0 then
+              Finished := True;
+          end;
+        end else begin
+          {This isn't it, keep looking}
+          Inc(Index, Len+1);
+          if RespTable^[Index] = 0 then
+            Finished := True;
+        end;
+      until Finished;
+      SearchResponseIndex := BestMatch;
+    end;
+  end;
+
+  function SearchResponse(M : ModemRecPtr; S : String) : Word;
+    {-Returns code for this response string}
+  var
+    Index : Integer;
+    Len : Word;
+  begin
+    with M^ do begin
+      {Lookup the index for this response string}
+      Index := SearchResponseIndex(M, S);
+      if Index >= 0 then begin
+        {Found command, return code}
+        Len := RespTable^[Index];
+        SearchResponse := RespTable^[Index+Len];
+      end else
+        SearchResponse := mrNone;
+    end;
+  end;
+
+  procedure AddModemResponse(M : ModemRecPtr; S : String; Code : Word);
+    {-Inserts new response in best fit slot (never changes existing resp)}
+  var
+    Finished : Boolean;
+    Index : Word;
+    Len : Word;
+    BestLen : Word;
+    BestIndex : Word;
+    I : Word;
+  begin
+    SetAsyncStatus(ecOk);                                              {!!.02}
+
+    {Exit immediately if Code = mrNone}
+    if Code = mrNone then
+      Exit;
+
+    Finished := False;
+    Index := 0;
+    BestLen := 65535;
+    BestIndex := 0;
+
+    with M^ do begin
+      {Upcase the response}
+      for I := 1 to Length(S) do
+        S[I] := Upcase(S[I]);
+
+      {Loop through table looking for best fit empty slot}
+      repeat
+        {Get length byte}
+        Len := RespTable^[Index];
+
+        if Len = 0 then
+          {End-of-table}
+          Finished := True
+        else begin
+          {Is this slot empty?}
+          if RespTable^[Index+Len] = mrNone then begin
+            if Len = Length(S)+1 then begin
+              {Finished if it's an exact fit}
+              BestLen := Len;
+              BestIndex := Index;
+              Finished := True;
+            end else if Len > Length(S)+1 then
+              {Response fits -- compare against best fit so far}
+              if Len < BestLen then begin
+                BestLen := Len;
+                BestIndex := Index;
+              end;
+          end;
+        end;
+
+        {Increment to next slot}
+        Inc(Index, Len+1);
+      until Finished;
+
+      if BestLen = 65535 then
+        {Couldn't find slot -- try to add at end of table}
+        if Index+Length(S)+2 < RespTableMax then
+          {There is room -- set BestIndex}
+          BestIndex := Index-1
+        else begin
+          {No room anywhere -- return error}
+          GotError(PR, epNonFatal+ecTableFull);
+          Exit;
+        end;
+
+      {Found slot -- insert response}
+      RespTable^[BestIndex] := Length(S)+1;
+      Move(S[1], RespTable^[BestIndex+1], Length(S));
+      RespTable^[BestIndex+Length(S)+1] := Code;
+    end;
+  end;
+
+  procedure RemoveModemResponse(M : ModemRecPtr; S : String);
+    {-Remove the modem response S}
+  var
+    Index : Integer;
+    Len : Word;
+  begin
+    with M^ do begin
+      Index := SearchResponseIndex(M, S);
+      if Index = -1 then
+        {Not found, just return error}
+        GotError(PR, epNonFatal+ecNullCommand)
+      else begin
+        {Found matching command, clear it out}
+        Len := RespTable^[Index];
+        FillChar(RespTable^[Index+1], Len, 0);
+        RespTable^[Index+Len] := mrNone;
+      end;
+    end;
+  end;
+
+  function ExtractConnectSpeed(M : ModemRecPtr; S : String) : LongInt;
+    {-Extracts connect speed from S (assumed to be a response string}
+  var
+    Cpos : Byte;
+    BStr : String;
+    B : LongInt;
+    Code : Word;
+    I : Byte;
+  begin
+    with M^ do begin
+      ExtractConnectSpeed := 0;
+
+      {Upcase the string (just in case)}
+      S := StUpcase(S);
+
+      {Verify this is a connect string and find where connect starts}
+      Cpos := Pos('CONNECT', S);
+      if Cpos = 0 then
+        Exit;
+
+      {Try to extract a baud rate}
+      Inc(Cpos, 7);
+      I := 1;
+      while (Cpos <= Length(S)) and
+            (S[Cpos] <> CRchar) and
+            (S[Cpos] <> SepChar) do begin
+        BStr[I] := S[Cpos];
+        Inc(Cpos);
+        Inc(I);
+      end;
+      BStr[0] := Char(I-1);
+      BStr := mTrim(BStr);
+      Val(BStr, B, Code);
+      if Code <> 0 then
+        Exit;
+
+      {Return the extracted baudrate}
+      ExtractConnectSpeed := B;
+    end;
+  end;
+
+  function ExtractEC(M : ModemRecPtr; S : String) : Boolean;
+    {-Look for the ECString anywhere in the response buffer}
+  begin
+    ExtractEC := (Pos(M^.ECString, S) <> 0) and (M^.ECString <> '');
+  end;
+
+  {!!.02 modified}
+  procedure GetResponse(M : ModemRecPtr;
+                        var SResponse : String;
+                        var IResponse : Integer;
+                        RegValue : Boolean;
+                        CurTimeout : Integer);
+    {-Wait for the result code from the last modem command. Handles both
+      WordCodes and NumericCodes responses (and command echoes if echoing
+      happens to be on).
+
+      Echoes will be first in the buffer and are of the form:
+        AT<commands><CR>
+
+      WordCodes responses will be of the form:
+        <CR><LF><word response><CR><LF>
+
+      NumericCodes responses will be of the form:
+        <numeric response><CR>
+
+      Sx? responses will always be numeric strings like:
+        <CR><CR><LF><numeric string><CR><LF> for word responses}
+
+  const
+    Digits = '0123456789';
+  var
+    Result, Code : Integer;
+    C : Char;
+    Finished : Boolean;
+    FirstCR : Boolean;
+  begin
+    with M^ do begin
+      {Inits}
+      SResponse := '';
+      IResponse := -1;
+
+      {Wait until all chars have gone out}
+      DrainOutBuffer(PR, CurTimeout);
+      if GetAsyncStatus <> ecOk then                                   {!!.02}
+        Exit;
+
+      {Repeat until response is processed}
+      Finished := False;
+      repeat
+        {Peek at the first received character}
+        PeekCharTimeout(PR, C, 1, CurTimeout);
+        if GetAsyncStatus <> ecOk then                                 {!!.02}
+          Exit;
+
+        if (C = CmdPrefix[1]) then begin
+          {Modem command echo, just discard}
+          GetStringTimeout(PR, Buffer, 0, [CRchar], CurTimeout);
+          if GetAsyncStatus <> ecOk then                               {!!.02}
+            Exit;
+        end else if (C = CRchar) then begin
+          {Carriage return means modem is using WordCodes}
+          Finished := True;
+          Responses := WordCodes;
+
+          {Get and discard first <CR><LF>}
+          GetStringTimeout(PR, Buffer, 0, [LFchar], CurTimeout);
+          if GetAsyncStatus <> ecOk then                               {!!.02}
+            Exit;
+
+          {Get the response string (discard trailing <CR><LF>)}
+          GetStringTimeout(PR, Buffer, 0, [LFchar], CurTimeout);
+          if GetAsyncStatus <> ecOk then                               {!!.02}
+            Exit;
+
+          {Empty means we found an extra <CR><LF>, ignore it}
+          if Buffer = cCR then begin
+            GetStringTimeout(PR, Buffer, 0, [LFchar], CurTimeout);
+            if GetAsyncStatus <> ecOk then                             {!!.02}
+              Exit;
+          end;
+
+          SResponse := mTrim(Buffer);
+        end else if (Pos(C, Digits) <> 0) then begin
+
+          {Digit means modem is using NumericCodes}
+          Finished := True;
+          Responses := NumericCodes;
+          {Get entire response string}
+          GetStringTimeout(PR, Buffer, 0, [CRchar], CurTimeout);
+          if GetAsyncStatus <> ecOk then                               {!!.02}
+            Exit;
+          Buffer := mTrim(Buffer);
+
+          {Make sure it's a numeric code}
+          Val(Buffer, IResponse, Code);
+          if Code <> 0 then begin
+            GotError(PR, epNonFatal+ecUnknownModemResult);
+            Exit;
+          end;
+        end else begin
+
+          {Error, unexpected char back from modem}
+          GotError(PR, epNonFatal+ecUnknownModemResult);
+          FlushInBuffer(PR);
+          Exit;
+        end;
+      until Finished;
+    end;
+  end;
+
+  procedure GetModemResponse(M : ModemRecPtr; CurTimeout : Integer);
+    {-Get and process modem response}
+  var
+    SResult : String;
+    IResult : Integer;
+    C : Char;
+    Finished : Boolean;
+    Flags : Word;
+
+    function MapToAsyncStatus(Code : Byte) : Word;
+      {-Convert the modem result Code into an AsyncStatus value}
+    begin
+      case Code of
+        mrOk         : MapToAsyncStatus := ecOk;
+        mrConnect    : MapToAsyncStatus := ecConnect;
+        mrNoCarrier  : MapToAsyncStatus := ecNoCarrier;
+        mrError      : MapToAsyncStatus := ecError;
+        mrNoDialtone : MapToAsyncStatus := ecNoDialtone;
+        mrBusy       : MapToAsyncStatus := ecBusy;
+        mrNoAnswer   : MapToAsyncStatus := ecNoAnswer;
+        mrRing       : MapToAsyncStatus := ecRing;
+        else begin
+          MapToAsyncStatus := ecUnknownModemResult;
+          GotError(M^.PR, epNonFatal+ecUnknownModemResult);
+        end;
+      end;
+    end;
+
+  begin
+    with M^ do begin
+      {Clear old values (in case of early exit)}
+      LastText := '';
+      LastCode := -1;
+
+      {Get the modem response}
+      GetResponse(M, SResult, IResult, False, CurTimeout);
+      if GetAsyncStatus <> ecOk then                                   {!!.02}
+        Exit;
+
+      {Process the modem response}
+      if Responses = WordCodes then begin
+        {Using word codes, set numeric result}
+        if Length(SResult) > MaxWordLen then
+          SResult[0] := Char(MaxWordLen);
+        IResult := SearchResponse(M, SResult);
+        if IResult = mrConnect then begin
+          ConnectSpeed := ExtractConnectSpeed(M, SResult);
+          ErrorControl := ExtractEC(M, SResult);
+        end;
+        LastText := mTrim(SResult);
+      end else begin
+        {Using numeric codes - return actual result}
+        LastCode := IResult;
+        {Change result into mrXxx code}
+        IResult := SearchCode(M, IResult, Flags);
+        if IResult = mrConnect then begin
+          ConnectSpeed := mBPS(Flags);
+          ErrorControl := FlagIsSet(Flags, mnErrorControl);
+        end;
+      end;
+
+      {Convert mrXxx code to an AsyncStatus value}
+      SetAsyncStatus(MapToAsyncStatus(IResult));                       {!!.02}
+
+      {Call GotError for error-like responses}
+      if (GetAsyncStatus = ecError) or                                 {!!.02}
+         (GetAsyncStatus = ecBusy) or                                  {!!.02}
+         (GetAsyncStatus = ecNoDialTone) or                            {!!.02}
+         (GetAsyncStatus = ecNoCarrier) or                             {!!.02}
+         (GetAsyncStatus = ecNoAnswer) then                            {!!.02}
+        GotError(PR, epNonFatal+GetAsyncStatus);                       {!!.02}
+    end;
+  end;
+
+  procedure PutModemCommand(M : ModemRecPtr; Cmd : String);
+    {-Sends Cmd string to the modem and handles the response}
+  begin
+    with M^ do begin
+      FlushInBuffer(PR);
+      mPutStringDelay(M, Cmd);
+      if GetAsyncStatus <> ecOk then                                   {!!.02}
+        Exit;
+
+      {Process the response (results returned in AsyncStatus)}
+      if HandleResponses then
+        if FlagIsSet(CmdFlags, moDialTimeout) then
+          GetModemResponse(M, DialTimeout)
+        else
+          GetModemResponse(M, Timeout);
+
+      {Reset command flags}
+      CmdFlags := 0;
+    end;
+  end;
+
+  function GetLastText(M : ModemRecPtr) : String;
+    {-Returns text of last modem response}
+  begin
+    GetLastText := M^.LastText;
+  end;
+
+  function GetLastCode(M : ModemRecPtr) : Integer;
+    {-Returns code of last modem response}
+  begin
+    GetLastCode := M^.LastCode;
+  end;
+
+  function GetConnectSpeed(M : ModemRecPtr) : LongInt;
+    {-Returns the current connect speed of the modem}
+  begin
+    GetConnectSpeed := M^.ConnectSpeed;
+  end;
+
+  function GetLastErrorMode(M : ModemRecPtr) : Boolean;
+    {-Returns True if the last connection was an error correcting one}
+  begin
+    GetLastErrorMode := M^.ErrorControl;
+  end;
+
+  procedure SetModemDelay(M : ModemRecPtr; DF : Word);
+    {-Time (in tics) to delay before sending a modem command}
+  begin
+    M^.DelayFactor := DF;
+  end;
+
+  procedure SetHandleResponses(M : ModemRecPtr; State : Boolean);
+    {-Turns automatic response handling on/off}
+  begin
+    M^.HandleResponses := State;
+  end;
+
+  procedure SetDialPrefix(M : ModemRecPtr; Prefix : PrefixStr);
+    {-Sets a dialing prefix (do _not_ include ATD)}
+  begin
+    M^.DialPrefix := Prefix;
+  end;
+
+  procedure SetModemTimeouts(M : ModemRecPtr; Normal, Dialing : Integer);
+    {-Sets timeout values for normal commands and dialing}
+  begin
+    with M^ do begin
+      if Normal >= 0 then
+        Timeout := Normal;
+      if Dialing >= 0 then
+        DialTimeout := Dialing;
+    end;
+  end;
+
+  procedure SetModemPort(M : ModemRecPtr; P : PortRecPtr);
+    {Change modem to use port record P}
+  begin
+    M^.PR := P;
+  end;
+
+  procedure SetModemCmdTable(M : ModemRecPtr; P : Pointer; Max : Word);
+    {Change modem to use command table pointed to by P}
+  begin
+    with M^ do begin
+      CmdTable := P;
+      CmdTableMax := Max;
+    end;
+  end;
+
+  procedure SetModemRespTable(M : ModemRecPtr; P : Pointer; Max : Word);
+    {Change modem to use response string table pointed to by P}
+  begin
+    with M^ do begin
+      RespTable := P;
+      RespTableMax := Max;
+    end;
+  end;
+
+  procedure SetModemCodeTable(M : ModemRecPtr; P : Pointer; Max : Word);
+    {Change modem to use response code table pointed to by P}
+  begin
+    with M^ do begin
+      CodeTable := P;
+      CodeTableMax := Max;
+    end;
+  end;
+
+  procedure SetModemErrorString(M : ModemRecPtr; EC : ModemErrorString);
+    {-Change modem error string to EC}
+  begin
+    M^.ECString := EC;
+  end;
+
+  procedure AnswerModem(M : ModemRecPtr);
+    {-Answer modem immediately}
+  begin
+    ExecuteModemCommand(M, mcAnswer, -1);
+
+    {If we get a ring result, discard it and check for another result}
+    if GetAsyncStatus mod 10000 = ecRing then                          {!!.02}
+      GetModemResponse(M, M^.Timeout);
+  end;
+
+  procedure AutoAnswerModem(M : ModemRecPtr);
+    {-Loops waiting to detect a RING when modem in auto answer mode}
+  var
+    CarrierWait : word;
+    SaveStatus : word;
+    NrRings : byte;
+    Number : byte;
+    ET : EventTimer;
+    JustStatus : Word;
+  begin
+    with M^ do begin
+      SetAsyncStatus(ecOk);                                            {!!.02}
+      NrRings := SRegs[0].Def;
+
+      {Programmer error if SRegs[0] not 0}
+      if (NrRings = 0) or (not HandleResponses) then begin
+        GotError(PR, epNonFatal+ecInvalidArgument);
+        Exit;
+      end;
+
+      {Loop for ecRing or ecUserAbort}
+      repeat
+        GetModemResponse(M, DialTimeOut);
+        JustStatus := GetAsyncStatus mod 10000;                        {!!.02}
+      until (JustStatus = ecRing) or (JustStatus = ecUserAbort);
+      if JustStatus = ecUserAbort then begin
+        GotError(PR, epNonFatal+ecUserAbort);
+        Exit;
+      end;
+
+      {Got ecRing, wait for the specified number of rings}
+      Number := 1;
+      if NrRings > 1 then begin
+        NewTimerSecs(ET, 7*NrRings);  {about 5 secs per ring}
+        repeat
+          GetModemResponse(M, TimeOut);
+          JustStatus := GetAsyncStatus mod 10000;                      {!!.02}
+          if JustStatus = ecRing then
+            Inc(Number);
+        until (Number = NrRings) or
+              (JustStatus = ecNoCarrier) or
+              WaitComplete(PR, ET);
+        if Number <> NrRings then begin
+          SetAsyncStatus(ecNoCarrier);                                 {!!.02}
+          FlushInBuffer(PR);
+          Exit;
+        end;
+      end;
+
+      {Modem has picked up the phone, wait for carrier}
+      CarrierWait := 19 * SRegs[7].Def;
+      GetModemResponse(M, CarrierWait);
+
+      {if not connected make sure of modem state and clear buffer}
+      if GetAsyncStatus <> ecConnect then begin                        {!!.02}
+        SaveStatus := GetAsyncStatus;                                  {!!.02}
+        PutModemCommand(M, CmdPrefix+CmdSuffix);
+        FlushInBuffer(PR);
+        SetAsyncStatus(SaveStatus);                                    {!!.02}
+      end;
+    end;
+  end;
+
+  procedure RepeatModemCommand(M : ModemRecPtr);
+    {-Repeats last modem command}
+  begin
+    ExecuteModemCommand(M, mcRepeat, -1);
+  end;
+
+  procedure SetCarrierTrans(M : ModemRecPtr; Opt : Word);
+    {-Turns carrier transmiter on/off}
+  begin
+    ExecuteModemCommand(M, mcSetCarrierTrans, Opt);
+  end;
+
+  procedure DialModem(M : ModemRecPtr; TelNo : NumberStr);
+    {-Dials TelNo}
+  var
+    Index : Integer;
+    Len : Word;
+  begin
+    with M^ do begin
+      {Lookup modem dial command}
+      Index := SearchCommand(M, mcDial);
+      if Index <> -1 then begin
+        Len := CmdTable^[Index];
+        CmdFlags := CmdTable^[Index+1];
+        Move(CmdTable^[Index+2], Buffer[1], Len-2);
+        Buffer[0] := Char(Len-2);
+      end else
+        GotError(PR, epNonFatal+ecNullCommand);
+
+      {Add command prefix}
+      Buffer := CmdPrefix + Buffer;
+
+      {Add dial prefix and telephone number}
+      Buffer := Buffer + DialPrefix + TelNo;
+
+      {Send it}
+      PutModemCommand(M, Buffer);
+
+      {If user aborted send a <CR> to the modem to cancel the dial}
+      if GetAsyncStatus mod 10000 = ecUserAbort then begin             {!!.02}
+        {PutChar(PR, cLF);}
+        PutString(PR, CmdPrefix+CmdSuffix);
+        SetAsyncStatus(epNonFatal+ecUserAbort);                        {!!.02}
+      end;
+    end;
+  end;
+
+  procedure SetModemEcho(M : ModemRecPtr; Opt : Word);
+    {-Turn modem echoing on/off}
+  begin
+    ExecuteModemCommand(M, mcEcho, Opt);
+  end;
+
+  procedure SetModemOnlineEcho(M : ModemRecPtr; Opt : Word);
+    {-Turn modem echoing on/off}
+  begin
+    ExecuteModemCommand(M, mcOnlineEcho, Opt);
+  end;
+
+  procedure SetDialPulse(M : ModemRecPtr);
+    {-Sets dialing to pulse mode}
+  begin
+    ExecuteModemCommand(M, mcPulse, -1);
+  end;
+
+  procedure HangupModem(M : ModemRecPtr; Opt : Word; DropDTR : Boolean);
+    {-Send hangup string or drop DTR to hangup modem}
+  begin
+    SetAsyncStatus(ecOk);                                              {!!.02}
+    with M^ do begin
+      if DropDTR then begin
+        {Just drop the DTR line}
+        SetDTR(PR, False);
+        DelayTics(DTRDropHold);
+        SetDTR(Pr, True);
+      end else begin
+        {Issue the registered hangup command}
+        SetModemCmdMode(M);
+        ExecuteModemCommand(M, mcHook, Opt);
+      end;
+      ConnectSpeed := 0;
+    end;
+  end;
+
+  procedure SetModemSpeaker(M : ModemRecPtr; Opt : Word);
+    {-Sets the speaker mode}
+  begin
+    ExecuteModemCommand(M, mcSpeaker, Opt);
+  end;
+
+  procedure SetModemOnline(M : ModemRecPtr);
+    {-Switches modem from command mode to terminal mode}
+  begin
+    ExecuteModemCommand(M, mcOnline, -1);
+  end;
+
+  procedure SetModemCmdMode(M : ModemRecPtr);
+    {-Switches modem from terminal mode to command mode}
+  const
+    GuardTime = 27;
+  var
+    SaveHandleResponses : Boolean;
+    Finished : Boolean;                                                {!!.02}
+    Index : Integer;
+    Len : Byte;
+    C : Char;                                                          {!!.02}
+  begin
+    with M^ do begin
+      SaveHandleResponses := HandleResponses;
+      HandleResponses := False;
+
+      {Lookup the command ourselves}
+      Index := SearchCommand(M, mcCmdMode);
+      if Index <> -1 then begin
+        Len := CmdTable^[Index];
+        Move(CmdTable^[Index+2], Buffer[1], Len-2);
+        Buffer[0] := Char(Len-2);
+      end else begin
+        GotError(PR, epNonFatal+ecNullCommand);
+        HandleResponses := SaveHandleResponses;
+        Exit;
+      end;
+
+      {Allow for 1.5 second guard time, then send escape sequence}
+      DelayTics(GuardTime);
+      PutModemCommand(M, Buffer);
+
+      {Wait for guard time again}
+      DelayTics(GuardTime);
+
+      {Discard +++ echo, if there is one}
+      WaitForString(PR, Buffer, DelayFactor);
+      {!!.02 removed
+      if AsyncStatus <> ecOk then begin
+        HandleResponses := SaveHandleResponses;
+        Exit;
+      end;}
+
+      {Get the response}
+      GetModemResponse(M, DelayFactor);
+
+      HandleResponses := SaveHandleResponses
+    end;
+  end;
+
+  procedure SetModemQuiet(M : ModemRecPtr; Opt : Word);
+    {-Set modem response mode (quite/normal)}
+  begin
+    ExecuteModemCommand(M, mcQuiet, Opt);
+  end;
+
+  procedure SetModemRegister(M : ModemRecPtr; Reg, Value : Integer);
+    {-Sets the S register Reg to Value}
+  var
+    S : string[5];
+    Index : Integer;
+    Len : Word;
+  begin
+    SetAsyncStatus(ecOk);                                              {!!.02}
+
+    with M^ do begin
+      {If default requested, set default value}
+      if Value = -1 then
+        if Reg <= MaxStdSRegs then
+          Value := SRegs[Reg].Def
+        else
+          Value := 0;
+
+      {Limit check Value}
+      if Reg <= MaxStdSRegs then
+        with SRegs[Reg] do
+          if (Value < Lo) or (Value > Hi) then begin
+            GotError(PR, epNonFatal+ecOutOfRange);
+            SetAsyncStatus(ecOutOfRange);                              {!!.02}
+            Exit;
+          end;
+
+      {Build a command like: ATS<Reg>=<Value><CR>}
+      {(really: <CmdPrefix><registeredcmd>=<Value><CR>)}
+      Index := SearchCommand(M, mcSetRegister);
+      if Index <> -1 then begin
+        Len := CmdTable^[Index];
+        CmdFlags := CmdTable^[Index+1];
+        Move(CmdTable^[Index+2], Buffer[1], Len-2);
+        Buffer[0] := Char(Len-2);
+      end else begin
+        GotError(PR, epNonFatal+ecNullCommand);
+        Exit;
+      end;
+
+      {Add command prefix}
+      Buffer := CmdPrefix + Buffer;
+      Str(Reg, S);
+      Buffer := Buffer + S + '=';
+      Str(Value, S);
+      Buffer := Buffer + S + CmdSuffix;
+
+      {Send it}
+      PutModemCommand(M, Buffer);
+      if GetAsyncStatus <> ecOk then                                   {!!.02}
+        Exit;
+
+      {Make some internal adjustments based on the reg being modified}
+      case Reg of
+        2 : {Escape character}
+          begin
+            RemoveModemCommand(M, mcCmdMode);
+            Buffer[0] := #3;
+            for Index := 1 to 3 do
+              Buffer[Index] := Char(Value);
+            AddModemCommand(M, Buffer, mcCmdMode, 0);
+          end;
+        3 : CRChar := Char(Value);
+        4 : LFChar := Char(Value);
+      end;
+
+      {Update SRegs}
+      if Reg <= MaxStdSRegs then
+        SRegs[Reg].Def := Value;
+    end;
+  end;
+
+  function GetModemRegister(M : ModemRecPtr; Reg : Integer) : Byte;
+    {-Returns string result from S-register Reg}
+  var
+    S : string[5];
+    Index : Word;
+    Len : Word;
+    Code : Word;
+    SResponse : String;
+    IResponse : Integer;
+  begin
+    GetModemRegister := 0;
+    SetAsyncStatus(ecOk);                                              {!!.02}
+
+    with M^ do begin
+      {Build a command like: ATS<Reg>?<CR>}
+      {(really: <CmdPrefix><registeredcmd>?<CR>)}
+      Index := SearchCommand(M, mcReadRegister);
+      if Index <> -1 then begin
+        Len := CmdTable^[Index];
+        CmdFlags := CmdTable^[Index+1];
+        Move(CmdTable^[Index+2], Buffer[1], Len-2);
+        Buffer[0] := Char(Len-2);
+      end else begin
+        GotError(PR, epNonFatal+ecNullCommand);
+        Exit;
+      end;
+
+      {Add command prefix}
+      Buffer := CmdPrefix + Buffer;
+      Str(Reg, S);
+      Buffer := Buffer + S + '?' + CmdSuffix;
+
+      {Send it}
+      FlushInBuffer(PR);
+      mPutStringDelay(M, Buffer);
+      if GetAsyncStatus <> ecOk then                                   {!!.02}
+        Exit;
+
+      {Get the register response}
+      GetResponse(M, SResponse, IResponse, True, Timeout);
+      if GetAsyncStatus <> ecOk then                                   {!!.02}
+        Exit;
+
+      {Set the function result}
+      if SResponse <> '' then begin
+        Val(SResponse, IResponse, Code);
+        if Code <> 0 then
+          IResponse := 0;
+      end;
+      GetModemRegister := IResponse;
+
+      {Update SRegs}
+      if Reg <= MaxStdSRegs then
+        SRegs[Reg].Def := IResponse;
+
+      {Get rest of modem response string}
+      GetModemResponse(M, Timeout);
+    end;
+  end;
+
+  procedure SetDialTone(M : ModemRecPtr);
+    {-Sets dial mode to tone}
+  begin
+    ExecuteModemCommand(M, mcTone, -1);
+  end;
+
+  procedure SetDCDControl(M : ModemRecPtr; Opt : Word);
+    {-Sets DCD behavior (mDCDAlwaysOn or mDCDFollowConnect)}
+  begin
+    ExecuteModemCommand(M, mcDCDControl, Opt);
+  end;
+
+  procedure SetDTRControl(M : ModemRecPtr; Opt : Word);
+    {-Sets DTR behavior (mDTRAlwaysOn or mDTRTerminateCall)}
+  begin
+    ExecuteModemCommand(M, mcDTRControl, Opt);
+  end;
+
+  procedure SetModemResults(M : ModemRecPtr; Opt : Word);
+    {-Set modem response codes to numerics or words}
+  begin
+    with M^ do begin
+      if Opt = 0 then
+        Responses := NumericCodes
+      else
+        Responses := WordCodes;
+
+      FlushInBuffer(PR);
+      ExecuteModemCommand(M, mcResultCodes, Opt);
+    end;
+  end;
+
+  procedure SetModemCodeSet(M : ModemRecPtr; Opt : Word);
+    {-Sets the modem response code set}
+  begin
+    ExecuteModemCommand(M, mcCodeSet, Opt);
+  end;
+
+  procedure ResetModem(M : ModemRecPtr);
+    {-Issues ATZ command to reset modem to power-on defaults}
+  begin
+    ExecuteModemCommand(M, mcReset, -1);
+  end;
+
+  procedure SetModemVolume(M : ModemRecPtr; Opt : Word);
+    {-Sets the speaker volume}
+  begin
+    ExecuteModemCommand(M, mcVolume, Opt);
+  end;

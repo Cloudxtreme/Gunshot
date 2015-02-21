@@ -1,0 +1,182 @@
+const
+  {default values}
+  DefDialTimeout       = 60;     {Default seconds for dial timeout}
+  DefAnswerTimeout     = 60;     {Default seconds for answer timeout}
+  DefDelayFactor       = 2;      {Default Tics for inter-cmd delay}
+  DefCmdTimeout        = 182;    {Default Tics for command timeout (10 secs)}
+  DefDTRDropHold       = 8;      {Default Tics for DTR low during hangup}
+  DefModemCharDelay    = 0;      {Default Tics between each outgoing cmd char}
+  DefTildeDelay        = 9;      {Default Tics to delay for ~'s in cmd Strings}
+  DefRingWaitTimeout   = 182;    {Default Tics before auto answer resets}
+  DefFeatureWait       = 9;      {Default number of Tics to wait for features}
+  DefBaudWait          = 36;     {Default number of Tics to wait for a BPS rate}
+  TicsPerSec           = 18;     {Default number of Tics in a second}
+
+  CmdSepChar           = '|'; {Character to separate multiple commands}
+
+  NumResponses         = 8;                           {Number of responses}
+  NumWaitStrs          = NumResponses + 2 * MaxTags;  {Number of wait strings}
+
+type
+  {pointer to string}
+  PStr = ^String;
+
+  {set to handle response codes}
+  ModemResponseSet = set of Byte;
+
+  {record for holding response data}
+  WaitStringRec = record
+    WaitStr : PStr;
+    Enabled : Boolean;
+    Idx     : Byte;
+  end;
+
+  {array for holding response strings}
+  WaitStringArray = array [1..(NumWaitStrs)] of WaitStringRec;
+
+  {record for holding modem data and handling modem commands}
+  ModemRecPtr = ^ModemRec;
+  ModemStatusProc = procedure(P : ModemRecPtr; MsgType, SecsRemaining : Word);
+
+  ModemRec = record
+    InitCmd         : PStr;
+    DialCmd         : PStr;
+    DialTerm        : PStr;
+    DialCancel      : PStr;
+    HangupCmd       : PStr;
+    ConfigCmd       : PStr;
+    AnswerCmd       : PStr;
+    WaitStrings     : WaitStringArray;
+    DialTimeout     : Word;
+    AnswerTimeout   : Word;
+    DelayFactor     : Word;
+    CmdTimeout      : Word;
+    DTRDropHold     : Word;
+    ModemCharDelay  : Word;
+    TildeDelay      : Word;
+    RingWaitTimeout : Word;
+    FeatureWait     : Word;
+    BaudWait        : Word;
+    TicsLeft        : Word;
+    ConnectSpeed    : LongInt;
+    ResponseTimer   : EventTimer;
+    P               : PortRecPtr;
+    DisplayStatus   : ModemStatusProc;
+    LockDTE         : Boolean;
+    ErrorCorrection : Boolean;
+    DataCompression : Boolean;
+    ModemBusy       : Boolean;
+    LastECNum       : Byte;
+    LastDCNum       : Byte;
+    LastField       : record end;
+  end;
+{$IFDEF UsePModeDLL}
+  procedure InitModem(var M : ModemRecPtr; Port : PortRecPtr; var Data : ModemData); Export;
+  procedure DoneModem(var M : ModemRecPtr); Export;
+  procedure SetDialTimeout(M : ModemRecPtr; Secs : Word); Export;
+  procedure SetAnswerTimeout(M : ModemRecPtr; Secs : Word); Export;
+  procedure SetDelayFactor(M : ModemRecPtr; Tics : Word); Export;
+  procedure SetCmdTimeout(M : ModemRecPtr; Tics : Word); Export;
+  procedure SetDTRDropHold(M : ModemRecPtr; Tics : Word); Export;
+  procedure SetCharDelay(M : ModemRecPtr; Tics : Word); Export;
+  procedure SetTildeDelay(M : ModemRecPtr; Tics : Word); Export;
+  procedure SetRingWaitTimeout(M : ModemRecPtr; Tics : Word); Export;
+  procedure SetStatusProc(M : ModemRecPtr; MSP : ModemStatusProc); Export;
+  procedure PutCommand(M : ModemRecPtr; Cmd : String; Wait : Boolean); Export;
+  procedure Initialize(M : ModemRecPtr; Wait : Boolean); Export;
+  function NumConfigStrings(M : ModemRecPtr) : Word; Export;
+  function GetConfigString(M : ModemRecPtr; StrNum : Word) : CmdStrType; Export;
+  procedure Configure(M : ModemRecPtr); Export;
+  procedure HangUp(M : ModemRecPtr; Wait : Boolean); Export;
+  procedure Dial(M : ModemRecPtr; Number : String; Wait : Boolean); Export;
+  procedure SendCancel(M : ModemRecPtr); Export;
+  function GetConnectSpeed(M : ModemRecPtr) : LongInt; Export;
+  function GetDataCompression(M : ModemRecPtr) : Boolean; Export;
+  function GetErrorCorrection(M : ModemRecPtr) : Boolean; Export;
+  function ModemWorking(M : ModemRecPtr) : Boolean; Export;
+  procedure Answer(M : ModemRecPtr; Wait : Boolean); Export;
+  procedure AutoAnswer(M : ModemRecPtr; Rings : Word); Export;
+  function ProcessCommandResponse(M : ModemRecPtr) : Boolean; Export;
+  procedure ProcessConnectResponse(M : ModemRecPtr); Export;
+{$ELSE}
+  procedure InitModem(var M : ModemRecPtr; Port : PortRecPtr; var Data : ModemData);
+    {-Initialize a modem}
+
+  procedure DoneModem(var M : ModemRecPtr);
+    {-Destroy a modem}
+
+  procedure SetDialTimeout(M : ModemRecPtr; Secs : Word);
+    {-Set the number of seconds before a dial attempt times out}
+
+  procedure SetAnswerTimeout(M : ModemRecPtr; Secs : Word);
+    {-Set the number of seconds before an answer attempt times out}
+
+  procedure SetDelayFactor(M : ModemRecPtr; Tics : Word);
+    {-Set the number of Tics to wait between commands sent to the modem}
+
+  procedure SetCmdTimeout(M : ModemRecPtr; Tics : Word);
+    {-Set the number of Tics to wait for a modem response}
+
+  procedure SetDTRDropHold(M : ModemRecPtr; Tics : Word);
+    {-Set the number of Tics to hold DTR low during hangup}
+
+  procedure SetCharDelay(M : ModemRecPtr; Tics : Word);
+    {-Set the number of Tics to wait between each command character sent}
+
+  procedure SetTildeDelay(M : ModemRecPtr; Tics : Word);
+    {-Set the number of Tics to wait when a '~' is encountered in a command}
+
+  procedure SetRingWaitTimeout(M : ModemRecPtr; Tics : Word);
+    {-Set the number of Tics to wait before mAutoAnswerModem resets}
+
+  procedure SetStatusProc(M : ModemRecPtr; MSP : ModemStatusProc);
+    {-Set the DisplayStatus procedure to procedure SP}
+
+  procedure PutCommand(M : ModemRecPtr; Cmd : String; Wait : Boolean);
+    {-Send a command to the modem}
+
+  procedure Initialize(M : ModemRecPtr; Wait : Boolean);
+    {-Send the initialization String to the modem}
+
+  function NumConfigStrings(M : ModemRecPtr) : Word;
+    {-Returns number of command strings with configuration string}
+
+  function GetConfigString(M : ModemRecPtr; StrNum : Word) : CmdStrType;
+    {-Returns command string from configuration string}
+
+  procedure Configure(M : ModemRecPtr);
+    {-Send the configuration Strings to the modem}
+
+  procedure HangUp(M : ModemRecPtr; Wait : Boolean);
+    {-Send the hangup String to the modem}
+
+  procedure Dial(M : ModemRecPtr; Number : String; Wait : Boolean);
+    {-Dial the modem}
+
+  procedure SendCancel(M : ModemRecPtr);
+    {-Sends the cancel command to the modem}
+
+  function GetConnectSpeed(M : ModemRecPtr) : LongInt;
+    {-Get the actual speed of the connection}
+
+  function GetDataCompression(M : ModemRecPtr) : Boolean;
+    {-Returns the value of data compression}
+
+  function GetErrorCorrection(M : ModemRecPtr) : Boolean;
+    {-Returns the value of error correction}
+
+  function ModemWorking(M : ModemRecPtr) : Boolean;
+    {-Sees if modem is processing a command}
+
+  procedure Answer(M : ModemRecPtr; Wait : Boolean);
+    {-Answer the modem}
+
+  procedure AutoAnswer(M : ModemRecPtr; Rings : Word);
+    {-Answer the modem after Rings rings}
+
+  function ProcessCommandResponse(M : ModemRecPtr) : Boolean;
+    {-Process responses from modem}
+
+  procedure ProcessConnectResponse(M : ModemRecPtr);
+    {-Process connection responses from modem}
+{$ENDIF}

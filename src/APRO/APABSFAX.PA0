@@ -1,0 +1,515 @@
+const
+  {Constants used to initialize object fields}
+  DefConnectAttempts : Word    = 1;       {Default one connect attempt}
+  DefMaxRetries : Integer      = 2;       {Max times to retry sending a page}
+  DefCmdTimeout : Integer      = 546;     {Ticks to wait for fax cmd response}
+  DefDialTimeout : Integer     = 1092;    {Ticks to wait for dial response}
+  DefTransTimeout : Integer    = 1092;    {Ticks to wait for outbuf room}
+  DefStatusTimeout : Integer   = 18;      {Ticks between status updates}
+
+  {Constants used directly}
+  DefInit : String[40]         = 'ATE0Q0V1X4S0=0S2=43'; {Required inits}{!!.02}
+  DefStatusBytes : Word        = 10000;   {Force periodic exit}
+  MaxBadPercent : Word         = 10;      {Error if this % bad training}
+  FlushWait : Word             = 500;     {Msec before/after DTR drop}
+  FrameWait : Word             = 20;      {Msec delay before HDLC frame}
+
+  {Undocumented constants}
+  AbortDelay : Word            = 1000;    {Msec wait for +++}
+  PreCommandDelay : Word       = 100;     {MSec before general modem cmds}
+  PreFaxDelay : Word           = 40;      {MSec before inprog fax modem cmds}
+  ExtraCommandDelay : Word     = 200;     {MSec extra delay before some cmds}
+  PreEOPDelay : Word           = 500;     {MSec delay before sending EOP}
+  OkDelay : Word               = 18;      {Tick wait for optional OK}
+  InterCharDelay : Word        = 0;       {MSec between modem chars}
+  BaudChangeDelay : Word       = 500;     {MSec delay before changing baud} {!!.01}
+  MaxClass1Retry : Word        = 3;       {Max class 1 frame retries}  {!!.02}
+  Class1Wait : Word            = 54;      {Ticks till frame carrier}   {!!.02}
+
+  {Fax send/receive options}
+  afAbortNoConnect      = $0001;   {Abort if no connect}
+  afCASWaitTillDone     = $0002;   {Stay in FaxTransmit/Receive till done}
+  afExitOnError         = $0004;   {Exit FaxTransmit/Receive on error}
+  afCASSubmitUseControl = $0008;   {SubmitSingleFile uses control file}
+  afNoSoftwareFlow      = $0010;   {Don't use software flow control in C1/2}
+
+  DefFaxOptions : Word = afCASWaitTillDone;
+  BadFaxOptions = 0;
+
+  {Fax progress codes, sending}
+  fpInitModem         = 01;  {Initializing modem for fax processing}
+  fpDialing           = 02;  {Dialing}
+  fpBusyWait          = 03;  {Busy, FaxTransmit is waiting}
+  fpSendPage          = 04;  {Sending document page data}
+  fpSendPageStatus    = 05;  {Send EOP}
+  fpPageError         = 06;  {Error sending page}
+  fpPageOK            = 07;  {Page accepted by remote}
+
+  {Fax progress codes, receiving}
+  fpWaiting           = 20;  {Waiting for incoming call}
+  fpNoConnect         = 21;  {No connect on this call}
+  fpAnswer            = 22;  {Answering incoming call}
+  fpIncoming          = 23;  {Incoming call validated as fax}
+  fpGetPage           = 24;  {Getting page data}
+  fpGetPageResult     = 25;  {Getting end-of-page signal}
+  fpCheckMorePages    = 26;  {getting end-of-document status}
+  fpGetHangup         = 27;  {Get hangup command}
+  fpGotHangup         = 28;  {Got Class 2 FHNG code}
+
+  {Fax progress codes, common}
+  fpSessionParams     = 40;  {Getting connection params}
+  fpGotRemoteID       = 41;  {got called-station ID}
+
+type
+  {.Z+}
+  ClassType = (ctUnknown, ctDetect, ctClass1,                          {!!.02}
+               ctClass2, ctClass2_0, ctCAS);                           {!!.02}
+  {.Z-}
+
+  {Logging codes}
+  TLogFaxCode = (
+    lfaxTransmitStart,
+    lfaxTransmitOk,
+    lfaxTransmitFail,
+    lfaxReceiveStart,
+    lfaxReceiveOk,
+    lfaxReceiveSkip,
+    lfaxReceiveFail);
+
+  {General fax states}
+  FaxStateType = (
+    faxReady,           {State machine ready immediately}
+    faxWaiting,         {State machine waiting}
+    faxCritical,        {State machine in critical state}
+    faxFinished);       {State machine is finished}
+
+type
+  {.Z+}
+  {A list of files/numbers to fax}
+  TFaxNumber = String[40];
+  PFaxEntry = ^TFaxEntry;
+  TFaxEntry = record
+    fNumber : TFaxNumber;
+    fFName  : PathStr;
+    fCover  : PathStr;
+    fNext   : PFaxEntry;
+  end;
+  {.Z-}
+
+  {Generic fax record}
+  FaxRecPtr = ^FaxRec;
+
+  {Various hook types}
+  FaxStatusProc = procedure (FP : FaxRecPtr;
+                             Starting, Ending : Boolean);
+  NextFaxFunc = function(FP : FaxRecPtr;
+                         var Number : String;
+                         var FName : PathStr;
+                         var Cover : PathStr) : Boolean;
+  FaxLogProc = procedure(FP : FaxRecPtr;
+                         Number : String;
+                         FName : PathStr;
+                         Log : TLogFaxCode);
+  FaxNameFunc = function (FP : FaxRecPtr) : PathStr;
+  AcceptFaxFunc = function(FP : FaxRecPtr;
+                           RemoteName : Str20) : Boolean;
+
+  {Abstract fax data}
+  FaxDataPtr = ^FaxData;
+  FaxData = record
+    Sending      : Boolean;       {True if sending faxes}
+    SendingCover : Boolean;       {True if sending cover page}
+    MaxConnect   : Word;          {max number of connect attempts}
+    ConnectCnt   : Word;          {count of connect attempts}
+    RetryCnt     : Word;          {Number of class 1 frame attempts}   {!!.02}
+    RetryWait    : Word;          {ticks to wait between connect attempts}
+    afFlags      : Word;          {fax send/receive options}
+    SaveStatus   : Word;          {Temp var and save between states}
+    FaxProgress  : Word;          {For storing progress codes}
+    FaxListCount : Word;          {Number of fax entries}
+    CurrPage     : Integer;       {counter for pages}
+    PageCount    : Integer;       {total pages in document}
+    CoverCount   : Integer;       {Number of cover pages, 0 or 1}
+    DataCount    : LongInt;       {count of received "real" data bytes}
+    PageSize     : LongInt;       {size of page file in bytes}
+    FaxListHead  : PFaxEntry;     {Head of fax entry list}
+    FaxListTail  : PFaxEntry;     {Tail of fax entry list}
+    FaxListNode  : PFaxEntry;     {Current node of fax entry list}
+    ClassInUse   : ClassType;     {class of device in use}
+    StationID    : Str20;         {Station ID (usually phone #)}
+    RemoteID     : Str20;         {StationID of remote}
+    StNumber     : Str20;         {station ID, usually phone number}
+    DestDir      : PathStr;       {destination directory}
+    FaxFileName  : PathStr;       {current document being processed}
+    CoverFile    : PathStr;       {cover page file if any}
+    PhoneNum     : String[40];    {phone number to dial}
+    StatusTimer  : EventTimer;    {Timer for status updates}
+    Title        : String;        {Sender title}
+    Recipient    : String;        {Recipient's name}
+    Sender       : String;        {Sender's name}
+    afStatus     : FaxStatusProc; {Proc for status}
+    afNextFax    : NextFaxFunc;   {Func for next fax}
+    afLogFax     : FaxLogProc;    {Proc for fax logging}
+    afFaxName    : FaxNameFunc;   {Func to name incoming fax}
+    afAcceptFax  : AcceptFaxFunc; {Func to accept incoming fax}
+    SaveMode     : Byte;          {Save FileMode}
+  end;
+
+  FaxRec = record
+    PData : FaxDataPtr;           {Pointer to fax data}
+  end;
+
+{$IFDEF UsePModeDLL}
+
+{FaxData init/destroy routines}
+procedure InitFaxData(var PData : FaxDataPtr; ID : Str20); Export;
+procedure DoneFaxData(var PData : FaxDataPtr); Export;
+
+{Option management}
+procedure afOptionsOn(FP : FaxRecPtr; OptionFlags : Word); Export;
+  {-Activate multiple options}
+procedure afOptionsOff(FP : FaxRecPtr; OptionFlags : Word); Export;
+  {-Deactivate multiple options}
+function afOptionsAreOn(FP : FaxRecPtr; OptionFlags : Word) : Boolean; Export;
+  {-Return True if all specified options are on}
+
+{User control}
+procedure SetFaxStatusProc(FP : FaxRecPtr; SP : FaxStatusProc); Export;
+  {-Set our status display routine}
+procedure SetTitle(FP : FaxRecPtr; NewTitle : String); Export;
+  {-Set title of sender (used in header line)}
+procedure SetRecipientName(FP : FaxRecPtr; NewName : String); Export;
+  {-Set name of recipient}
+procedure SetSenderName(FP : FaxRecPtr; NewName : String); Export;
+  {-Set name of sender}
+procedure SetDestinationDir(FP : FaxRecPtr; Dest : PathStr); Export;
+  {-Set a destination directory for received files}
+procedure SetStationID(FP : FaxRecPtr; NewID : Str20); Export;
+  {-Assign our station ID}
+procedure SetConnectAttempts(FP : FaxRecPtr; Attempts : Word;
+                             DelayTicks : Word); Export;
+  {-Set number of connect attempts per fax, 0 = infinite}
+procedure SetNextFaxFunc(FP : FaxRecPtr; NFF : NextFaxFunc); Export;
+  {-Set function to call for next number}
+procedure SetFaxLogProc(FP : FaxRecPtr; FLP : FaxLogProc); Export;
+  {-Set procedure to call for each fax transmitted or received}
+procedure SetFaxNameFunc(FP : FaxRecPtr; FNF : FaxNameFunc); Export;
+  {-Set function to call to name incoming faxes}
+procedure SetAcceptFaxFunc(FP : FaxRecPtr; AFF : AcceptFaxFunc); Export;
+  {-Set function to call to accept incoming faxes}
+
+{Hook procedures}
+procedure FaxStatus(FP : FaxRecPtr; Starting, Ending : Boolean); Export;
+  {-Overridable status proc}
+
+{Fax entry list stuff}
+procedure AddFaxEntry(FP : FaxRecPtr; Number : String; FName : PathStr; Cover : PathStr); Export;
+  {-Add another number to the built-in list}
+procedure ClearFaxEntries(FP : FaxRecPtr); Export;
+  {-Remove all fax entries from builtin list}
+
+{Status info}
+function GetFaxName(FP : FaxRecPtr) : PathStr; Export;
+  {-Return name of current fax and size if known}
+function GetFaxProgress(FP : FaxRecPtr) : Word; Export;
+  {-Return fax progress code}
+
+{.Z+}{Private}
+function NextFax(FP : FaxRecPtr;
+                 var Number : String;
+                 var FName : PathStr;
+                 var Cover : PathStr) : Boolean; Export;
+  {-Return next number to dial}
+procedure LogFax(FP : FaxRecPtr; Number : String;
+                 FName : PathStr; Log : TLogFaxCode); Export;
+  {-Call user logging procedure}
+function FaxName(FP : FaxRecPtr) : PathStr; Export;
+  {-Call user FaxName procedure}
+function AcceptFax(FP : FaxRecPtr; RemoteName : Str20) : Boolean; Export;
+  {-Call user AcceptFax function}
+function afConvertHeaderString(FP : FaxRecPtr; S : String) : String; Export;
+{.Z-}
+
+{Builtin functions}
+function NextFaxList(FP : FaxRecPtr;
+                     var Number : String;
+                     var FName : PathStr;
+                     var Cover : PathStr) : Boolean; Export;
+  {-Returns next fax name/number in builtin list}
+function FaxNameMD(FP : FaxRecPtr) : PathStr; Export;
+  {-Returns name for incoming fax}
+function FaxNameCount(FP : FaxRecPtr) : PathStr; Export;
+  {-Returns name for incoming fax}
+
+{$ELSE}
+
+{FaxData init/destroy routines}
+procedure InitFaxData(var PData : FaxDataPtr; ID : Str20);
+procedure DoneFaxData(var PData : FaxDataPtr);
+
+{Option management}
+procedure afOptionsOn(FP : FaxRecPtr; OptionFlags : Word);
+  {-Activate multiple options}
+procedure afOptionsOff(FP : FaxRecPtr; OptionFlags : Word);
+  {-Deactivate multiple options}
+function afOptionsAreOn(FP : FaxRecPtr; OptionFlags : Word) : Boolean;
+  {-Return True if all specified options are on}
+
+{User control}
+procedure SetFaxStatusProc(FP : FaxRecPtr; SP : FaxStatusProc);
+  {-Set our status display routine}
+procedure SetTitle(FP : FaxRecPtr; NewTitle : String);
+  {-Set title of sender (used in header line)}
+procedure SetRecipientName(FP : FaxRecPtr; NewName : String);
+  {-Set name of recipient}
+procedure SetSenderName(FP : FaxRecPtr; NewName : String);
+  {-Set name of sender}
+procedure SetDestinationDir(FP : FaxRecPtr; Dest : PathStr);
+  {-Set a destination directory for received files}
+procedure SetStationID(FP : FaxRecPtr; NewID : Str20);
+  {-Assign our station ID}
+procedure SetConnectAttempts(FP : FaxRecPtr; Attempts : Word;
+                             DelayTicks : Word);
+  {-Set number of connect attempts per fax, 0 = infinite}
+procedure SetNextFaxFunc(FP : FaxRecPtr; NFF : NextFaxFunc);
+  {-Set function to call for next number}
+procedure SetFaxLogProc(FP : FaxRecPtr; FLP : FaxLogProc);
+  {-Set procedure to call for each fax transmitted or received}
+procedure SetFaxNameFunc(FP : FaxRecPtr; FNF : FaxNameFunc);
+  {-Set function to call to name incoming faxes}
+procedure SetAcceptFaxFunc(FP : FaxRecPtr; AFF : AcceptFaxFunc);
+  {-Set function to call to accept incoming faxes}
+
+{Hook procedures}
+procedure FaxStatus(FP : FaxRecPtr; Starting, Ending : Boolean);
+  {-Overridable status proc}
+
+{Fax entry list stuff}
+procedure AddFaxEntry(FP : FaxRecPtr; Number : String; FName : PathStr; Cover : PathStr);
+  {-Add another number to the built-in list}
+procedure ClearFaxEntries(FP : FaxRecPtr);
+  {-Remove all fax entries from builtin list}
+
+{Status info}
+function GetFaxName(FP : FaxRecPtr) : PathStr;
+  {-Return name of current fax and size if known}
+function GetFaxProgress(FP : FaxRecPtr) : Word;
+  {-Return fax progress code}
+
+{.Z+}{Private}
+function NextFax(FP : FaxRecPtr;
+                 var Number : String;
+                 var FName : PathStr;
+                 var Cover : PathStr) : Boolean;
+  {-Return next number to dial}
+procedure LogFax(FP : FaxRecPtr; Number : String;
+                 FName : PathStr; Log : TLogFaxCode);
+  {-Call user logging procedure}
+function FaxName(FP : FaxRecPtr) : PathStr;
+  {-Call user FaxName procedure}
+function AcceptFax(FP : FaxRecPtr; RemoteName : Str20) : Boolean;
+  {-Call user AcceptFax function}
+function afConvertHeaderString(FP : FaxRecPtr; S : String) : String;
+{.Z-}
+
+{Builtin functions}
+function NextFaxList(FP : FaxRecPtr;
+                     var Number : String;
+                     var FName : PathStr;
+                     var Cover : PathStr) : Boolean;
+  {-Returns next fax name/number in builtin list}
+function FaxNameMD(FP : FaxRecPtr) : PathStr;
+  {-Returns name for incoming fax}
+function FaxNameCount(FP : FaxRecPtr) : PathStr;
+  {-Returns name for incoming fax}
+
+{$ENDIF}
+
+{.Z+}{Private data types}
+type
+  {End-of-page status}
+  ReceivePageStatus = (
+    rpsBadPage,
+    rpsMoreSame,
+    rpsNewPage,
+    rpsNewDocument,
+    rpsEndOfDocument);
+
+  {Send machine states}
+  SendStates = (
+    tfNone,
+
+    {Setup, both classes}
+    tfGetEntry,
+    tfInit,
+
+    {Phase A, Class 1}
+    tf1Init1,
+
+    {Phase A, Class 2}
+    tf2Init1,
+    tf2Init2,
+    tf2Init3,
+
+    {Phase A, both classes}
+    tfDial,
+    tfRetryWait,
+
+    {Phase B, Class 1}
+    tf1Connect,
+    tf1SendTSI,
+    tf1TSIResponse,
+    tf1DCSResponse,
+    tf1TrainStart,
+    tf1TrainFinish,
+    tf1WaitCFR,
+    tf1WaitPageConnect,
+
+    {Phase B, Class 2}
+    tf2Connect,
+    tf2GetParams,
+
+    {Phase C, both classes}
+    tfWaitXon,
+    tfWaitFreeHeader,
+    tfSendPageHeader,
+    tfOpenCover,
+    tfSendCover,
+    tfPrepPage,
+    tfSendPage,
+    tfDrainPage,
+
+    {Phase D states for Class 1}
+    tf1PageEnd,
+    tf1PrepareEOP,
+    tf1SendEOP,
+    tf1WaitMPS,
+    tf1WaitEOP,
+    tf1WaitMCF,
+    tf1SendDCN,
+    tf1Hangup,
+    tf1WaitHangup,
+
+    {Phase D, Class 2}
+    tf2SendEOP,
+    tf2WaitFPTS,
+    tf2WaitFET,
+    tf2WaitPageOK,
+    tf2NextPage,
+
+    {Phase E, both classes}
+    tfClose,
+    tfCompleteOK,
+    tfAbort,
+    tfDone);
+
+  {Receive machine states}
+  ReceiveStates = (
+    rfNone,
+
+    {Setup, both classes}
+    rfInit,
+
+    {Setup, class 1}
+    rf1Init1,
+
+    {Setup, class 2}
+    rf2Init1,
+    rf2Init2,
+    rf2Init3,
+
+    {Phase A, both classes}
+    rfWaiting,
+    rfAnswer,
+
+    {Phase B, class 1}
+    rf1SendCSI,
+    rf1SendDIS,
+    rf1CollectFrames,
+    rf1StartTrain,
+    rf1CollectTrain,
+    rf1Timeout,                                                        {!!.02}
+    rf1Retrain,
+    rf1FinishTrain,
+    rf1SendCFR,
+    rf1WaitPageConnect,
+
+    {Phase B, class 2}
+    rf2ValidConnect,
+    rf2GetSenderID,
+    rf2GetConnect,
+
+    {Phase C}
+    rfStartPage,
+    rfGetPageData,
+
+    {Phase D, class 1}
+    rf1FinishPage,
+    rf1WaitEOP,
+    rf1WritePage,
+    rf1SendMCF,
+    rf1WaitDCN,
+    rf1WaitHangup,
+
+    {Phase D, class 2}
+    rf2GetPageResult,
+    rf2GetFHNG,
+
+    {Phase E, both classes}
+    rfComplete,
+    rfAbort,
+    rfDone);
+
+  {CAS states send and receive}
+  CASStates = (
+    csNone,
+    csInit,
+    csSubmitting,
+    csWaiting,
+    csAbort,
+    csDone);
+
+const
+  {Bit reversed fax control fields IDs from HDLC info field}
+  NSFFrame = $20;
+  EOPFrame = $2E;
+  CSIFrame = $40;
+  TSIFrame = $42;
+  FTTFrame = $44;
+  RTNFrame = $4C;
+  MPSFrame = $4E;
+  DISFrame = $80;
+  DCSFrame = $82;
+  CFRFrame = $84;
+  MCFFrame = $8C;
+  EOMFrame = $8E;
+  DCNFrame = $FA;                                                      {!!.01}
+  RTPFrame = $CC;
+
+  {Size of buffer for fax file data}
+  DataBufferSize = 4096;
+
+  {DIS/DCS permanent bit masks, bit reversed}
+  DISGroup1   = $00;        {No group 1/2 options}
+  DISGroup3_1 = $02;        {RS 465 receiver/transmitter support}      {!!.02}
+  DISGroup3_2 = $88;        {A4 width, unlimited len, extended byte}   {!!.01}
+  DISGroup3_3 = $00;        {No extended options}
+
+  {DIS/DCS option bits for DISGroup3_1}
+  DISHighResolution = $40;
+  DIS2400BPS        = $00;
+  DIS4800BPS        = $08;
+  DIS7200BPS        = $0C;
+  DIS9600BPS        = $04;
+  DIS12000BPS       = $10;
+  DIS14400BPS       = $20;
+
+  {!!.03 - added}
+  {DIS/DCS option bits for DISGroup3_2}
+  DISWideWidth      = $01;
+
+  {Class 1 constants}
+  AddrField = #$FF;
+  ControlField = #$03;
+  ControlFieldLast = #$13;
+{.Z-}
