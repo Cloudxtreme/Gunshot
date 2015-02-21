@@ -1,0 +1,31 @@
+This is still copyright, and I have the paperwork to prove it, so if you want
+to use this you will:
+
+1] Acknowlege the source code is ancient and is therefore very bad. :)
+2] Not bother the original author for any help - you have the source and
+   you are now on your own.
+3] Not release another package with the name Shotgun or SG in it - rename
+   it to something else please.
+4] Notify Brent Shellenberg if you *do* have something made from it - he
+   would be interested in seeing what others do with it.
+
+What you need:
+
+1] Borland Pascal with Objects 7.0. Turbo Pascal will NOT work!
+2] Genus Microprogramming SVGA toolkits - you need ALL of them (for DOS)
+3] Async Professional for DOS
+
+Why I released this:
+
+I'm no longer interested in the old code. I AM WORKING ON a new version of
+SG that uses 100% new code, so I figured I would release out the old code
+for anyone that wants to tinker. Of course, you need a fair amount of
+commercial stuff to compile it, so it will cost you in that regard. I'm
+doing this in good faith, so please, if you make something out of it, let
+me know. I'd like to see what all you've done. If you want new structures
+that I'm using for the new SG to adapt the old one (would be a bit of work)
+I will gladly give them up so there could be more than one package with
+"compatibility" - wouldn't that be a new thing in the BBS world...
+
+Thanks!
+Brent Shellenberg (shellenberg@telus.net)

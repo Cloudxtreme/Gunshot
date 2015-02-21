@@ -1,0 +1,500 @@
+
+              Eine EXEC Funktion mit Speicherauslagerung
+                  Version 3.3a, Freigegeben 93-06-22
+      
+                      Public Domain Software von
+                            Thomas Wagner
+                       Ferrari electronic GmbH
+                (Achtung AdressÑnderung, siehe unten!)
+
+
+Dieses Archiv enthÑlt die Quellen fÅr eine 'EXEC'-Funktion die den
+Aufruf externer Programme erlaubt, wobei der Programmspeicher
+optional auf EMS, XMS, oder Datei ausgelagert wird. Bei Auslagerung
+des Speichers werden nur noch wenige K des Hauptspeichers belegt
+wÑhrend das externe Programm ausgefÅhrt wird. Der Code/Daten-Bereich
+betrÑgt etwa 1k, der benîtigte Speicherplatz ist abhÑngig von der
+Speicherfragmentierung, sowie besonders von der Grî·e des
+Umgebungsvariablenblocks. öblicherweise werden zwischen 2K und 7K
+belegt.
+
+Die Routinen sind kompatibel mit 
+   Turbo C (Versionen 1.x, 2.x, sowie C++ 1.0)
+   Borland C++ (Version 2.0 und hîher),
+   Microsoft C (Versionen 5.1 und hîher), 
+   Watcom C (Version 8.0), 
+   Turbo Pascal (Versionen 4.x bis 6.x). 
+
+EMS (LIM 3.0 und spÑtere Versionen) oder XMS werden benutzt sofern
+ausreichend Platz zur VerfÅgung steht. Wenn nicht, wird eine
+temporÑre Plattendatei angelegt. Diese Datei wird in dem durch die
+Umgebungsvariablen TEMP= oder TMP= gegebenen Pfad angelegt. Ist kein
+solcher Pfad angegeben, wird der aktuelle Pfad benutzt.
+
+Aufruf und Parameterversorgung sind in der Datei "exec.h" (C) bzw.
+"exec.pas" (Pascal) detailliert dokumentiert.
+
+Das allgemeine Format ist
+
+   retcode = do_exec (Name des auszufÅhrenden Programms,
+                      Programm-Parameter und Redirection String,
+                      Spawn-Optionen,
+                      Benîtigter Speicher (0xffff lagert stets aus, 0 nie),
+                      Umgebungsvariablen-Zeiger/Flag)
+
+zum Beispiel:
+
+   rc = do_exec ("cl", "-c -Od exec.c >&errout", USE_ALL, 0xffff, NULL);
+
+oder, fÅr Pascal:
+
+   rc := do_exec ('tpc', '/$D+ exec >&errout', USE_ALL, $ffff, false);
+
+Redirection fÅr Standard Input, Standard Output, und Standard Error
+wird optional behandelt indem der Parameter-String nach den folgenden
+Kombinationen durchsucht wird:
+
+   stdin:   <file
+   stdout:  >file    oder >>file   zum AnfÅgen
+   stderr:  >&file   oder >&>file  zum AnfÅgen
+
+Redirection wird standardmÑ·ig unterstÅtzt. Um sie auszuschalten,
+mÅssen Sie die Definitionen sowohl in spawn.asm als auch in
+exec.c/exec.pas Ñndern.
+
+Wenn das auszufÅhrende Kommando eine Batch-Datei ist, wird
+automatisch der Kommando-Prozessor aufgerufen. Der Kommandoprozessor
+wird auch aufgerufen wenn das Kommando leer ist. Dabei wird die
+COMSPEC-Umgebungsvariable benutzt um den Kommandoprozessor zu finden,
+zusÑtzliche Parameter in der COMSPEC-Zeile werden in die
+Kommandoparameter eingefÅgt.
+
+Zum Beispiel:
+
+   Es sei  COMSPEC=C:\DOS\COMMAND.COM /E:960
+           PATH=C:\DOS;C:\CMD
+           Datei B.BAT existiert in C:\CMD
+           do_exec wird aufgerufen mit ('b', 'eins zwei >out', ...)
+
+   Dann ist das aufgerufene Kommando
+           C:\DOS\COMMAND.COM
+   mit dem Parameter-String
+           /E:720 /C C:\CMD\B.BAT eins zwei
+   und Standard Output wird umgeleitet auf die Datei 'out'.
+
+
+
+                        INHALT
+                        ======
+
+Dieses Archiv enthÑlt die folgenden Dateien:
+
+    LIESMICH.DOC    Diese Datei
+    README.DOC      Englische Version dieser Datei
+
+    GETLANG.EXE     Ein Hilfsprogramm zur Extraktion einer ein-
+                    sprachigen Version aus der zweisprachigen
+                    Quelle.
+                    Alle C- und Assembler-Quellen (die Pascal-Quellen
+                    leider nur teilweise) sind sowohl in Deutsch als
+                    auch in Englisch dokumentiert, was die Quellen
+                    schwer lesbar macht. FÅr bessere Lesbarkeit
+                    kînnen Sie mit GETLANG eine der Sprachen
+                    eliminieren.
+
+         Benutzung:  GETLANG Sprache Compiler <Eingabe >Ausgabe
+            wobei    Sprache   'E' fÅr Englisch oder 'D' fÅr Deutsch
+                     Compiler  'C' fÅr C Dateien, 'A' fÅr Assembler,
+                               'P' fÅr Pascal.
+
+         Beispiele:  GETLANG d a <spawn.asm >spawnd.asm
+                     GETLANG d c <extest.c >extestd.c
+
+    DEUTSCH.BAT     Batch-File zur AusfÅhrung von GETLANG fÅr alle
+                    Quelldateien, deutsche Version
+    ENGLISH.BAT     Batch-File zur AusfÅhrung von GETLANG fÅr alle
+                    Quelldateien, englische Version
+
+    SPAWN.ASM       Die Hauptfunktion fÅr exec.
+
+        Diese Datei ist fÅr die C und Pascal Versionen gleich.
+        FÅr Benutzung mit Turbo Pascal mu· mit dem Turbo-Assembler 
+        assembliert werden. Die C Version kann mit TASM (geben Sie
+        /JMASM51 an) oder MASM 5.1 Åbersetzt werden.
+
+        Assemblieren mit:
+            tasm /DPASCAL spawn,spawnp;     FÅr Turbo Pascal, near calls
+            tasm /DPASCAL /DFARCALL spawn,spawnp;  
+                                            FÅr Turbo Pascal, far calls
+            ?asm spawn;                     FÅr C (Default small model)
+            ?asm /DMODL=xxx spawn;          For C (model 'xxx')
+         Beispiel:
+            masm /DMODL=large spawn;            Large model C
+            tasm /DMODL=medium /JMASM51 spawn;  Medium model C
+
+    SPAWNP.OBJ      SPAWN assembliert fÅr Pascal, near calls
+    SPAWNCS.OBJ     SPAWN assembliert fÅr C (small model)
+    SPAWNCL.OBJ     SPAWN assembliert fÅr C (large model)
+        
+        Die C Dateien wurden mit dem /MX-Schalter Åbersetzt um
+        Gro·-/Kleinschreibung beim Linken zu berÅcksichtigen.
+
+        Hinweis fÅr Turbo Pascal: Sie kînnen die "near call" Version
+        von SPAWN auch dann nutzen wenn Sie mit "force far calls"
+        kompilieren, indem Sie die "external"-Definitionen von
+        do_spawn und prep_swap in Datei exec.pas in {$F-} und {$F+} 
+        einschlie·en.
+        Um Konfusion bei der Verwendung mehrerer Compiler zu
+        vermeiden, wurde das Pascal-Object "spawnp.obj" benannt.
+
+    CHECKPAT.ASM   Hilfsfunktion zur PrÅfung und Auflîsung eines Pfades
+
+        Diese Datei ist fÅr die C und Pascal Versionen gleich.
+        FÅr Benutzung mit Turbo Pascal mu· mit dem Turbo-Assembler 
+        assembliert werden. Die C Version kann mit TASM (geben Sie
+        /JMASM51 an) oder MASM 5.1 Åbersetzt werden.
+
+        Assemblieren mit:
+            tasm /DPASCAL checkpat,checkpap;  FÅr Turbo Pascal, near calls
+            tasm /DPASCAL /DFARCALL checkpat,checkpap;  
+                                              FÅr Turbo Pascal, far calls
+            ?asm checkpat;                    FÅr C (Default small model)
+            ?asm /DMODL=xxx checkpat;         FÅr C (model 'xxx')
+         Beispiel:
+            masm /DMODL=large checkpat;            Large model C
+            tasm /DMODL=medium /JMASM51 checkpat;  Medium model C
+
+    CHECKPAP.OBJ    CHECKPAT assembliert fÅr Pascal, far calls
+    CHECKPCS.OBJ    CHECKPAT assembliert fÅr C (small model)
+    CHECKPCL.OBJ    CHECKPAT assembliert fÅr C (large model)
+    CHECKPAT.PAS    Einbindungs-Unit fÅr checkpat (Nur Pascal)   
+
+        Die C Dateien wurden mit dem /MX-Schalter Åbersetzt um
+        Gro·-/Kleinschreibung beim Linken zu berÅcksichtigen.
+        Die Pascal-Version mu· mit dem FARCALL-Schalter assembliert
+        werden wenn Sie sie mit der Einbindungs-Unit CHECKPAT.PAS
+        zusammen benutzen. Zumindest Turbo Pascal Version 5.5
+        verwendet offenbar stets einen Far Call wenn eine externe
+        Routine im Interface-Teil einer Unit definiert wird.
+
+    EXEC.PAS        Interface Routinen und Dokumentation fÅr Turbo Pascal
+    EXEC.C          Interface Routinen fÅr C
+    EXEC.H          Interface Definitionen und Dokumentation fÅr C
+    COMPAT.H        MS-C/TC KompatibilitÑts-Definitionen fÅr C
+
+        Diese Dateien bereiten die Parameter fÅr die Hauptfunktion
+        vor und bearbeiten die Datei-Suche und Umgebungsvariablen.
+
+    EXTEST.C        C Test-Programm fÅr EXEC
+    EXTEST.PAS      Turbo Pascal Test-Programm fÅr EXEC
+
+        Das EXTEST Programm testet die FunktionalitÑt der do_exec
+        Funktion. Es erwartet die Eingabe eines DOS-Kommandos und,
+        durch Komma getrennt, seiner Parameter. Die Eingabe einer
+        Leerzeile startet COMMAND.COM ohne Parameter.
+
+   MAKEPAS          Make-Datei fÅr Turbo Pascal (Borland Make) 
+   MAKETC           Make-Datei fÅr Borland C++ (Borland Make) 
+   MAKEMS           Make-Datei fÅr Microsoft C (MS NMAKE) 
+
+
+Die Turbo Pascal Version von EXEC.PAS enthÑlt Ersatzfunktionen fÅr
+die Umgebungsvariablen-Zugriffsfunktionen 'envcount', 'envstr', und
+'getenv', sowie eine zusÑtzliche Funktion 'putenv'. Diese Funktion
+erlaubt Ihnen, zur Umgebung des gerufenen Programms Strings
+hinzuzufÅgen. Die Definition ist
+
+        procedure putenv (envvar: string);
+
+wobei 'envstr' einen String der Form 'ENVVAR=wert' enthÑlt. Das '='
+ist notwendig. Um einen Umgebungsvariablenstring zu lîschen geben Sie
+'ENVVAR=' an. Bitte nutzen Sie nur die Funktionen aus der EXEC Unit,
+mischen Sie sie nicht mit Aufrufen der Funktionen der DOS Unit.
+
+
+                        SUPPORT
+                        =======
+
+Diese Software ist "Public Domain", das hei·t es gibt keinerlei
+EinschrÑnkungen bezÅglich ihrer Nutzung, ob privat oder in
+kommerziellen Produkten. Es ist weder eine RegistrierungsgebÅhr zu
+zahlen, noch sind zur Nutzung irgendwelche Lizenzen erforderlich.
+
+Dies hei·t allerdings auch, da· der Autor zu keiner Leistung
+gegenÅber dem Nutzer verpflichtet ist. Jegliche AnsprÅche auf
+Schadenersatz bei Fehlfunktionen sind ausgeschlossen. Sie haben die
+Quellen, bitte prÅfen Sie sie vor Nutzung.
+
+Ich mîchte auch um VerstÑndnis bitten, da· ich nicht in der Lage bin,
+kostenlose Programmierberatung zu erteilen, Spezialversionen fÅr
+exotische Compiler zu erstellen, oder neue Versionen dieses Programms
+kostenlos zu versenden. 
+
+Fehlermeldungen, VerbesserungsvorschlÑge und Ñhnliches senden Sie
+bitte an meine Firmen-Adresse:
+
+        Ferrari electronic GmbH
+        Ruhlsdorfer Strasse 138
+        D-14513 Teltow
+
+        Tel.:  (+49 3328) 474 626
+        Fax:   (+49 3328) 438 04-0
+
+        BBS:   (+49 3328) 438 04-8 (ab 15.8.93)
+               Bitte versuchen Sie nicht, vor dem 15.8. anzurufen!
+
+        Internet:    twagner@bix.com
+        BIX:         twagner
+        Compuserve:  100023,2042
+
+Ein eingeschrÑnkter Support ist Åber BIX, das Teleconferencing System
+von McGraw-Hill, mîglich. Falls Sie Fragen oder Fehlermeldungen
+haben, senden sie BIXmail an 'twagner'. Details Åber BIX finden Sie
+in der Englischsprachigen Version dieser Dokumentation.
+
+
+
+                        EINSCHRéNKUNGEN
+                        ===============
+
+Der "keine RÅckkehr"-Modus von do_exec ist nur der VollstÑndigkeit
+halber verfÅgbar. Er hat einige Nachteile gegenÅber den
+Standard-Funktionen der Compiler-Bibliotheken. Insbesondere werden
+offene Dateien nicht abgeschlossen, und durch die Laufzeitbibliothek
+belegte Interrupt-Vektoren werden nicht auf den DOS-Standardwert
+zurÅckgesetzt. Wenn mîglich, benutzen Sie fÅr diesen Modus die
+Standardfunktionen.
+
+Das Assembler-Modul "spawn" darf nicht das erste Modul beim Linken
+sein. FÅgen Sie es in eine Bibliothek ein, oder geben Sie spawn.obj
+als eine der letzten zu linkenden Dateien an. Das spawn-Modul
+Åberschreibt etwa 1k am Anfang des Programmspeichers. Dieser Speicher
+wird zwar gesichert, er darf aber nicht Teile des Moduls selbst
+enthalten, da der Programmcode dabei zerstîrt wÅrde. Die
+do_exec-Funktion ÅberprÅft diese Bedingung, und kehrt mit einem
+entsprechenden Fehlercode zurÅck falls der Code in Gefahr wÑre.
+
+Bei Aufruf von do_exec dÅrfen keine Interrupt-Handler installiert
+sein. Dies schlie·t Handler fÅr Control-C und Critical Errors ein.
+Sofern Sie Interrupts bearbeiten wollen wÑhrend Ihr Programm
+ausgelagert ist, mÅssen Sie das spawn-Modul modifizieren, soda· die
+Handler in den residenten Teil Åbernommen werden.
+
+Offene Dateien bleiben wÑhrend der do_exec-Funktion geîffnet. Dies
+reduziert die Zahl der mîglichen offenen Dateien fÅr das
+Kind-Programm. Die Umgebungsvariable "C_FILE_INFO", die von einigen
+C-Compilern bei Aufruf der Standard-Funktionen fÅr spawn erzeugt
+wird, wird nicht unterstÅtzt. Wenn NO_INHERIT in spawn.asm gesetzt
+ist (Standard), werden alle offenen Dateien au·er den ersten fÅnf
+Standard-Dateien vor dem Kindprozess "versteckt" und damit nicht
+vererbt. Dies erlaubt dem Kindprozess, mehr Dateien zu îffnen, wobei
+allerdings das Systemweite Limit (FILES= in config.sys) hoch genug
+sein mu· um alle offenen Dateien zu unterstÅtzen.
+
+Interne Kommandos (CD, DIR usw.) werden nicht automatisch bearbeitet.
+Sie kînnen diese ausfÅhren indem Sie den Kommandointerpreter laden
+(durch öbergabe eines leeren Strings fÅr das auszufÅhrende Programm).
+Zum Beispiel:
+
+(C)     retcode = do_exec ("dir", "*.*", USE_ALL, 0xffff, environ);
+        if (retcode == RC_NOFILE)
+           retcode = do_exec ("", "/c dir *.*", USE_ALL, 0xffff, environ);
+
+(P)     retcode := do_exec ('dir', '*.*', USE_ALL, $ffff, true);
+        if (retcode = RC_NOFILE)
+           retcode := do_exec ('', '/c dir *.*', USE_ALL, $ffff, true);
+
+
+
+                        HINWEISE
+                        ========
+
+Die Funktion sollte mit DOS bis herunter zu Version 2.11 kompatibel
+sein. Getestet wurde jedoch nur unter DOS 3.3, DOS 4.0, DOS 5.0, 
+DOS 6.0 und DR-DOS 5.0.
+
+KompatibilitÑt zu Compiler-Versionen wurde nur getestet mit Borland
+C++ 3.1, Microsoft Visual C 1.0, und Turbo Pascal 5.5. Auf andere Compiler
+habe ich leider keinen Zugriff. Turbo Pascal 6.0 scheint nach
+Benutzerberichten keine Probleme mit EXEC zu haben. Eine Benutzung
+mit dem DOS-Extender von Turbo Pascal 7.0 (oder anderen
+DOS-Extendern) ist nicht mîglich.
+
+Wird ein Kommando aufgerufen das resident bleibt (TSR), zum Beispiel
+PRINT oder Sidekick, ist eine RÅckkehr in das rufende Programm nicht
+mîglich. Das Programm wird beendet, belegter Speicher in EMS/XMS wird
+freigegeben, eine Auslagerungsdatei wird gelîscht.
+
+Wenn der Programmspeicher aus mehreren DOS-Speicherblîcken besteht,
+benutzt die Auslagerungsfunktion undokumentierte DOS-Interna.
+Insbesondere werden Speicherkontrollblîcke direkt modifiziert. Dies
+kann theoretisch zu InkompatibilitÑten mit spÑteren DOS-Versionen,
+oder mit DOS-Clones oder Emulatoren fÅhren. Im praktischen Betrieb
+wurden bisher noch keine Probleme mit irgendwelchen DOS-Versionen,
+einschlie·lich DOS 6.0 und der DR-DOS Versionen, festgestellt.
+
+Wenn NO_INHERIT in spawn.asm auf TRUE gesetzt ist, werden einige
+undokumentierte Felder im PSP benutzt und modifiziert. Auch dies
+sollte mit allen DOS-Versionen und Clones funktionieren. Sollten Sie
+jedoch Probleme befÅrchten, kînnen Sie NO_INHERIT auf FALSE setzen
+(nicht jedoch, wenn Sie die Handle-Tabelle erweitern).
+
+
+                        énderungsgeschichte
+                        ===================
+
+énderungen von Version 3.3 auf 3.3a:
+
+Au·er der AdressÑnderung ist die einzige signifikante énderung eine
+verbesserte Behandlung der Redirection. Wie unter DOS kann die
+Redirection jetzt auch gemischt mit sonstigen Parametern angegeben
+werden.
+
+In der Pascal-Version wurde die Redirection nicht korrekt behandelt,
+sofern mehr als eine Redirection angegeben war. Ebenso wurden
+Parameter in der COMSPEC-Zeile nicht erkannt. Dies wurde korrigiert.
+
+
+énderungen von Version 3.2a auf 3.3:
+
+Neu ist die BerÅcksichtigung des unbenutzten Heap-Bereichs fÅr Turbo
+Pascal. Dieser Bereich wird optional nicht ausgelagert, was in vielen
+FÑllen sowohl die Auslagerungsgeschwindigkeit erhîht, als auch den
+Speicherbedarf auf dem Auslagerungsmedium reduziert. Da dies
+VersionsabhÑngig ist (Turbo Pascal Version 6 hat eine andere
+Heap-Verwaltung als frÅhere Versionen), ist dieses Feature in der
+vorÅbersetzten Version nicht eingeschaltet. Bitte setzen Sie PAS_FREE
+in SPAWN.ASM auf TRUE, und setzen sie TPAS_6 je nach Ihrer
+Turbo-Pascal-Version auf TRUE oder FALSE, um es zu nutzen.
+
+Die Pascal "putenv" Funktion war fehlerhaft. Wenn eine Variable
+gesetzt wurde, die bereits im Environment vorhanden war, wurde ein
+doppelter Eintrag erzeugt statt den alten Eintrag zu lîschen.
+Fehlermeldung und Korrektur von A. Bailey.
+
+Bei der Bestimmung von Programmname und Pfad wurden Programme, deren
+Basis-Name (ohne Extension) gleich dem Namen einer Subdirectory war,
+unter UmstÑnden nicht gefunden. Die checkpath Funktion wurde
+modifiziert um diesen Fall korrekt zu behandeln. Fehlermeldung von H.
+Lembke.
+
+Bei Auslagerung auf Datei mit NO_INHERIT true und einer erweiterten
+Handle-Tabelle war eine RÅckkehr nicht mîglich. Dies lag daran, da·
+der Tabellen-Zeiger im PSP wiederhergestellt wurde bevor der
+dazugehîrige MCB-Block alloziert und wiederhergestellt war. Der
+PSP-Eintrag wird jetzt erst nach dem ZurÅckladen gesetzt.
+Fehlermeldung von H. Lembke.
+
+EXEC konnte nicht auslagern wenn eine erweiterte Handle-Tabelle mit
+NO_INHERIT false verwendet wurde. Der MCB der die Handle-Tabelle
+enthÑlt wird jetzt nicht mehr ausgelagert. Dies fÅhrt allerdings
+dazu, da· der Speicher fragmentiert wird, soda· NO_INHERIT stets TRUE
+sein sollte wenn die Handle-Tabelle erweitert werden soll.
+
+Die C do_exec-Funktion verarbeitet jetzt auch NULL-Zeiger auf
+Kommandozeile und Parameterstring korrekt.
+
+
+énderungen von Version 3.2 auf 3.2a:
+
+Ein Fehler in checkpat.asm, der zu nicht vollstÑndigen Pfadangaben 
+fÅhrte, wurde behoben.
+
+Ein Fehler in spawn.asm, der dazu fÅhrte, da· die Dateiumleitungs-
+Dateien selbst nach Programmende nicht geschlossen wurden, wurde
+behoben.
+
+énderungen von Version 3.1 auf 3.2:
+
+Neu ist der Aufruf einer benutzerdefinierbaren Funktion (Åber einen
+Funktions-Pointer bzw. eine Prozedurvariable) aus do_exec vor
+AusfÅhrung des Programmaufrufs. Diese Funktion kann z.B. Meldungen
+ausgeben und zusÑtzliche PrÅfungen durchfÅhren. Die bisher interne
+Struktur mit den Auslagerungs-Parametern wurde zugÑnglich gemacht
+um der Benutzerfunktion den Zugriff zu erlauben. FÅr Details siehe
+exec.h bzw. exec.pas, sowie das Beispiel in extest.c/extest.pas.
+
+Ein Fehler in checkpat.asm, der bei Verwendung mit Turbo Pascal
+zu Problemen mit der "exists"-Funktion fÅhrte, wurde behoben.
+
+Die Pascal-Version von extest wurde (endlich) auf den gleichen
+Stand wie die C-Version gebracht, ein Beispiel fÅr die Nutzung
+der Benutzerfunktion wurde in beide Versionen eingefÅgt.
+
+In exec.c wurde die Definition der internen Routinen auf "static"
+geÑndert, die Initialisierung einiger Variablen in do_exec wurde
+korrigiert.
+
+
+énderungen von Version 3.0a auf 3.1:
+
+Neu sind vor allem die automatische Behandlung von .BAT-Dateien und
+die UnterstÅtzung der I/O-Dateiumleitung. Die Suchreihenfolge fÅr
+Kommandos entspricht jetzt exakt der DOS-Reihenfolge, bis auf die
+Bearbeitung interner Kommandos (es gibt keinen sicheren Weg fÅr die
+Erkennung, ob ein Kommando intern oder extern ist). Dateiumleitung
+ist optional. Das Interface zu do_exec hat sich nicht geÑndert,
+do_spawn benîtigt drei neue Parameter wenn Redirection eingeschaltet
+ist.
+
+Eine Routine (checkpat.asm) die einen Pfad prÅft und auflîst sowie in
+seine Bestandteile aufteilt wurde hinzugefÅgt. Diese Routine fÅhrt
+einige PrÅfungen des Pfades und des Dateinamens durch und behandelt
+Critical Errors (ungÅltiges Laufwerk, Laufwerk nicht bereit) ohne
+Benutzereingriff. Die Routine wird zur Bearbeitung des
+Programm-Dateinamens, des Kommandoprozessor-Dateinamens und des
+temporÑren Dateipfades verwendet. Die Routine ist unabhÑngig von den
+anderen EXEC/SPAWN-Funktionen, sie kann daher auch in anderen
+Applikationen nÅtzlich sein.
+
+Einige neue Fehlercodes erlauben eine bessere Analyse von
+Fehlerursachen.
+
+Der Pfad der temporÑren Datei ist jetzt stets ein vollstÑndiger Pfad.
+Ein Wechsel von Laufwerk oder Pfad wÑhrend der Auslagerung kann daher
+jetzt nicht mehr zum Verlust der Auslagerungsdatei fÅhren.
+
+Die PrÅfung auf Existenz einer Datei wurde in checkpat.asm verlagert,
+und von der 'find first'-Funktion auf 'get file attributes'
+umgestellt. Dies scheint geringfÅgig schneller und vermeidet
+Compiler-AbhÑngigkeiten.
+
+Das Programm GETLANG wurde korrigiert, die Hilfs-Meldungen werden
+jetzt auf stderr ausgegeben.
+
+
+énderungen von Version 3.0 auf 3.0a:
+
+Ein kleiner Fehler in EXEC.C wurde korrigiert: ein '<' fehlte in
+einem deutschen Kommentar, soda· bei GETLANG E ein gro·er Teil der
+Datei verschluckt wurde.
+
+Ein Problem (Fehler? Feature?) bei der Turbo C/Borland C "stat"
+Funktion, die fÅr Directories stets "read-only" liefern, verhinderte
+die Benutzung der TEMP Directory beim Auslagern. Die Schreib-
+Erlaubnis wird jetzt nicht mehr geprÅft.
+
+Die PrÑallozierung der Auslagerungsdatei, die mit Version 3.0
+eingefÅhrt wurde um sicherzustellen da· das Laufwerk den kompletten
+Speicher fassen kann, fÅhrte zu starken Verzîgerungen wenn die
+Auslagerungsdatei auf einem Novell-Netzwerk Laufwerk lag. Um dieses
+Problem zu umgehen wurden zwei neue Flags fÅr den "method" Parameter
+eingefÅhrt:
+
+      NO_PREALLOC - Nie PrÑallozieren
+      CHECK_NET   - Nicht PrÑallozieren wenn Datei auf Netzwerk
+
+Wenn die Datei nicht prÑalloziert wird, wird das Laufwerk nicht auf
+ausreichenden Platz geprÅft. Die Alternative, der "get disk free
+space" Aufruf, dauert im allgemeinen noch wesentlich lÑnger als ein
+PrÑallozieren. Dies ist allerdings kein gro·es Problem, die
+Auslagerung liefert lediglich den Fehlercode 0x502 wenn der
+Speicherplatz nicht ausreicht.
+
+
+énderungen fÅr Version 3.0:
+
+Dies ist die erste Version mit Deutscher Dokumentation. Falls Sie mit
+frÅheren Versionen gearbeitet haben, kînnen Sie die énderungen in der
+Englischen Beschreibung nachlesen - denn dann kînnen Sie doch
+Englisch, oder? :)

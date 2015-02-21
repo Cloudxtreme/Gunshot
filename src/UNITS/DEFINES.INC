@@ -1,0 +1,4 @@
+{$IFNDEF WINDOWS}
+  {$IFNDEF DPMI}
+  {$ENDIF}
+{$ENDIF}

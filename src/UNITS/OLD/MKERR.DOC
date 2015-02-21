@@ -1,0 +1,348 @@
+
+ManuSoft MkErr Error device for Turbo Pascal 6.0      THIS IS Public Domain
+
+                       Version 1.01
+
+ I dropped out the example program ErrTest in my last posting
+ MkErr100. I am  sorry for this.
+ 
+ Here is a little error device I wrote for Turbo Pascal.
+ The history of device is that my boss wrote some fancy programs
+ with TVision, but he is not a "real" programmer so the
+ programs run nice until something unwanted happens like file 
+ that should be there isn't.
+ 
+ Look end of file for changes to MkErr 1.00 package.
+
+
+What does it do ?
+
+ MkErr let you build an error handler to pascal programs. Your handler
+ is called automatically on error. You can choose in errorhandler
+ what to do then, halt/print message/continue etc..
+
+ Not only that MkErr let you make LOCAL errorhandles too.
+
+ First, you setup errorhandler with MkBuf.ErrSet procedure
+
+ ErrSet saves its own return address to internal MkErr.rbuf stack
+ and returns always false value. when error occurs, Turbo Pascal
+ ExitProc routine (rerouted to MkErr.Errh by errset function) starts
+ and restores the saved information from rbuf stack. Errh then return
+ with the True value. This makes Turbo Pascal to continue code from
+ inside the errset IF clause in your program instead of printing
+ runtime err and halt.
+
+ You can get some picture of program from example program I
+ wrote named errtest.pas.
+
+
+What do you do ?
+
+  0. You have to put error device in your program uses line
+     
+     "uses MkErr;"
+
+  1. INIT: Error device saves programs exitproc pointer.
+     if you load other TPUs' that reroutes this pointer
+     I suggest you to run MkErr.Init as first thing in
+     your program. this way you can save yourself from
+     mixing up exitcodes (like if you have an communication
+     TPU which closes all communication on exit. Communication
+     TPU now thinks it is time to say goodbye, if installed
+     before MkErr.)
+
+  
+  2. Now is your turn to wake up the error device:
+     You should put next kind of if clause in your program
+     somewhere (BEFORE any error of course):
+     
+     if errset then begin
+       {YOUR ERROR HANDLER IS HERE}
+     end;
+     
+     errset routine saves the point program is. this is the 'then' 
+     clause in the above code. Now errh routine takes advantage
+     of this saved information and when the fuse blows (ie. a
+     run-time error occurs) errh is activated instead of SYSTEM
+     tpus' exitcode program. errh does not stop the program, but
+     instead it starts running the code inside the errset if
+     clause.
+     
+  3.  WARNING:
+      To avoid problems you should release errset at end of
+      every object that activates error device
+      (that is, programs that uses errset routine !)
+
+     procedure myloader;
+     begin
+       if errset then
+         {YOUR ERROR HANDLER IS HERE}
+       end;
+       {YOUR CODE HEAR}
+       errfree;
+     end;
+      
+     If you don't release MkErr and error occurs before next installa-
+     tion of errset in the caller of "myloader" then errh switch prog-
+     ram to run from "myloader" if clause WITHOUT HAVING the "myloader"
+     return address in stack ! this crashes your code for sure.
+     
+     The opposite situation works fine. If you load your errset in 
+     main program and error occurs in your, say, re-entrant code,
+     errset just waste all the information pushed to program stack
+     and continues from errset if clause.
+     
+  4. You should call done procedure at the end of your program just to
+     make sure everything is clear for exit.
+
+     begin
+      init;
+      .
+      .
+      done;
+     end;
+     
+
+  5. so, what you need is:
+
+
+     Program My_Program;
+     uses ..........,mkerr;
+
+     procedure To_Be_Error_Checked(...);
+     begin
+      if errset then begin
+        My_Error:=IoResult;  {Clear all the occurred errors}
+        .
+        .
+        .
+        {$if you put here an exit clause, be care that you use the ERRFREE}
+        errfree;
+        exit;
+        {$endif}
+      end;
+      .
+      .
+      .
+      .
+      errfree;
+      exit;
+     end;
+
+     begin
+      .
+      .
+      done;
+     end;
+
+ NOTE:
+  MkErr does not clear any heap variables/objects nor does it close
+  any files. All this you should write in your errorhandler.
+
+  You should be very careful with the code INSIDE the errorhandler. You
+  can guess what happens, if you make an error there..
+
+ While error device is quite dangerous when misused I think it can solve
+ some annoying problems writing turbo pascal code. while your code can
+ be straightforward and your error handler smart your code would be
+ a bit faster while more compact.
+ 
+ I served 16 occurrence for nested errset to happen. If you think you need
+ more, be my guest and change the constant value at the start of MkErr
+ tpu named "NestErr = 16" to what ever you desire. MkErr reserves data
+ from your programs data segment (Nesterr) * 7 bytes + 8 bytes vars.
+  
+ What should one write on his/her error handler then ?
+
+ - You of course should manipulate the environment so that you can continue
+   error free.
+
+ - You can exit from the routine. The lower in the mkerr stream you
+   place the 'if errset' clause, the lower the system automatically
+   exits.
+
+   e.g.
+   
+   -Main
+      -My_Prog_1st_generation
+         -if errset
+         -My_Prog_2nd_generation
+            -My_Prog_3rd_generation
+               -SYSTEM.RESET
+                  -Error(goes in to errset, so situation comes like this:)
+                 
+   -Main
+      -My_Prog_1st_generation
+         -if errset
+            -ERROR_CODE
+            
+ You can place errset to even in your main program.
+ 
+ Please examine errtest.pas while it is too hard to me explain all the 
+ things you can do with errtest the program shows a quite a bit of them.
+ 
+
+WHATS NEW ?
+
+MkErr 1.01 versus 1.00
+
+ Mainly I reposted this package because I failed badly while repacking
+ it to zip.  I dropped out the example program ErrTest in my last posting
+ MkErr100. I am  sorry for this.
+
+ MkErr 1.01 Errorhandler is now wiser. In some cases it hanged the 
+ machine. For example if you did not put ErrFree / Done methods 
+ to their place. This is now fixed.
+ 
+ Some new stuff is added:
+ continue   Procedure to continue the program from error.
+ halt       Rerouted system.halt procedure for safe halting the program.
+
+
+
+MkErr 1.01 Functions and descriptions
+
+
+Init procedure
+ 
+ Init procedure resets MkErr device to its initial inactive state.
+
+Done procedure
+
+ Done procedure resets MkErr device to its final inactive state.
+  
+errset function
+
+ Returns always false state while errh returns always true.
+ 
+ Errset is program place recorder. It saves the point where program is
+ running to rbuf buffer. Data is used by errh error handler to go back
+ to "if" clause written using this function. 
+ 
+ 
+
+Errh function
+
+ Returns always true state while errset returns always false.
+ 
+ This is inside use function for the errorhandler. It returns program
+ to line that previously included errset funcion. 
+ 
+ Why is it in the interface part? 
+ 
+ Well you can call errh within your program to state your own errors
+ or whatever. 
+ 
+ 1. Remember that errh call halt procedure if there is no error when 
+    it starts. You can state errh not to call stop even when called without 
+    erroraddr set by setting MkErr boolean variable nehalt to FALSE. 
+    (nehalt=non error halt).
+    
+    Another way around is by putting non-nil value to system.tpu erroraddr 
+    pointer variable. This is dangerous though. If continue command is 
+    used in error handler, program freezes. (Until the value you gave
+    to erroraddr is address of some line in your program.)
+    
+ 2. Errh calls halt also when there is no recorded information in rbuf
+    stack. This is obvious, where else could it go without having address ?    
+    This way if errorhandler is not activated with errset all the runtime
+    errors are handled the normal way (runtime error...)
+ 
+ errh does NOT clear the rbuf recorded with errset. If another error 
+ happens before errfree, errh is launched again.
+ 
+ MkErr 1.01 Errorhandler is now wiser. In some cases it hanged the 
+ machine. For example if you did not put ErrFree / Done methods 
+ to their place. This is now fixed.
+ 
+ Why is it in the interface part? 
+ 
+ Well you can call errh within your program to state your own errors
+ or whatever. 
+ 
+ 1. Remember that errh call halt procedure if there is no error when 
+    it starts. You can state errh not to call stop even when called without 
+    erroraddr set by setting MkErr boolean variable nehalt to FALSE. 
+    (nehalt=non error halt).
+    
+    Another way around is by putting non-nil value to system.tpu erroraddr 
+    pointer variable. This is dangerous though. If continue command is 
+    used in error handler, program freezes. (Until the value you gave
+    to erroraddr is address of some line in your program.)
+    
+ 2. Errh calls halt also when there is no recorded information in rbuf
+    stack. This is obvious, where else could it go without having address ?    
+    This way if errorhandler is not activated with errset all the runtime
+    errors are handled the normal way (runtime error...)
+ 
+
+errfree procedure
+
+  Errfree is program to pop out last recorded information from the rbuf
+  stack. That is all it does.
+
+
+Halt Procedure         Override of SYSTEM TPU Halt to secure program halting.
+
+ I noticed that sometimes when you gave halt command the program plugged
+ the errh routine and started errorhandler without good reason. I think
+ when you give turbo pascal the command halt you mean it. Now halt command
+ has been rerouted by MkErr. When you give halt, MkErr first clears up
+ itself and then turns to SYSTEM TPUs halt command.
+
+ If you for some reason need to use real halt command, you can do that by
+ pointing to turbo pascal to use System.tpu's halt:
+
+ halt;         {this goes to mkerr.tpu halt}
+ system.halt;  {this goes straight to system.tpu halt}
+ mkerr.halt;   {this always goes to mkerr.tpu halt}
+
+
+continue procedure     Continues program after error line.
+
+ While trying to build code with MkErr I came up with the idea that you
+ should be able to continue program from the point it failed. This can
+ be done in turbo pascal with erroraddr variable where the address of
+ the line error occured is. example:
+
+  if errtest then begin
+   writeln('File Not Found, give file name');
+   continue;
+  end;
+  assign(f,paramstr(0));
+  reset(f);
+  .
+  .
+  .
+  
+ If error occurs in reset(f) command (e.g. file not found), program continues
+ running inside if clause. (writing file not found on the screen).
+ 
+ Continue statement then continues program from the next program line AFTER
+ reset command. 
+ 
+ I have not found a way to go back to reset(f) itself in the program, since
+ failures can be caused by e.g. div by zero statement. Size of these routines
+ are different and information posted to errorhandler is not enough to 
+ turn back to reset(f) line.
+  
+
+Author 
+      
+ Enjoy your self.
+ 
+ I have tested MkErr for some time now, but I do NOT quarantee anything nor
+ will I take any response of whatever the program does. 
+ 
+ Please Please.
+  If you make any major changes or
+  Notice bugs in program please let me know about them.
+  Any ideas are welcome too.
+  
+ Keep in touch
+   ManuSoft
+   Manu Kemppainen            Mail : manu@stekt.oulu.fi
+   Yliopistokatu 32 B 212
+   90570 Oulu                 Phone: +358-81-363374
+

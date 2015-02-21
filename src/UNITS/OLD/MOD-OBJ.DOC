@@ -1,0 +1,257 @@
+** THIS VERSION has been made available to people on Greyhawk BBS
+** Please DO_NOT distribute this version.  Although I have tested it
+** well there are bound to be a few bugettes, so I'm giving you lot the 
+** chance to play with an early release!  You can still use this version
+** in your programs though - see the license stuff in section 6ish.
+** Don't report bugs to the board - I won't get to log on for quite a
+** while.
+
+     MODOBJ **********                                 (C) Mark J Cox
+     MODOBJ ***                                                  1992
+     MODOBJ *****
+     MODOBJ ****************                             Version 0.03
+
+     Module playing OBJect file
+
+
+     I. QUICK START
+     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+	
+     The two included programs, TCMOD and TPMOD were created using
+     the unregistered version of MOD-OBJ under Turbo C v2.00 and
+     Turbo Pascal v6.0 respectively.   Look at the source code to see
+     how they work.
+
+
+     1. INTRODUCTION
+     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+     The object file that is part of this package allows programmers
+     to add music and sound effects simply and easily to their programs.
+
+     Music and sound effects can be played through a large number of
+     sound devices, including the PC Speaker, the Soundblaster and
+     various Covox devices.  
+
+     Music plays in the background and there are a a huge number of
+     ready-made music modules available on the Amiga and the PC (*).
+
+     Music modules are standard Amiga Noisetracker/ Startrekker/
+     Soundtracker/ Protracker modules.   A music module is made up of
+     up to 31 sampled instruments (instruments can also be things like
+     speech samples or effects).   Up to four of these instruments can
+     be played at once and are mixed to form the final sound output.  The
+     mixing is controlled from a music track,  which can playback notes
+     in sequence and perform numerous effects.
+
+     The MODPLAY program (currently MPLAY219B) is a stand-alone player
+     for these modules on a PC.  It has graphical support, a real
+     spectrum analyser and much more. (And its freeware by Mark Cox)
+
+     The MODEDIT program (currently MODED200) is a module creator/editor
+     and the documentation with Modedit explains in more detail the 
+     structure of the amiga modules. (also freeware by Norman Lin)
+
+     Please note that not all Music modules can be treated as 'Public
+     Domain'.  Each module has a section that lists the names of all the
+     instruments and sometimes this includes a message from the author. 
+     Use MODEDIT/MODPLAY to view the messages (or use a file viewer on the
+     MOD file).  If a module has a message giving the module author, you
+     are advised to contact them before using their module for ANYTHING.
+
+     You can obtain modules from many Bulletin Boards,  Internet sites or from
+     friends Amiga's.  Modules usually come archived in LZH form, these can be 
+     unpacked with the excellent LHA program.  
+
+
+
+     2. SUPPORTED PROGRAMS
+     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+     The OBJ file has been tested with the following software
+
+     Turbo C v2.0	
+     Turbo Pascal v6.0
+ 
+     but should work with most other C and Pascal compilers.
+     It will soon also support
+ 
+     PowerBasic (formally Turbo Basic)
+
+
+     3. FEATURES
+     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+        o Does not affect the clock, disk acesses or anything else
+
+	o Allows samples to be played on a special '5th track' allowing
+	  sound effects to be put over the top of the music.  
+	  (registered version only)
+
+        o Plays all Protracker 31 instrument module files. (Modules that
+          have 15 instruments can be converted using a program such as 
+	  MODEDIT by Norman Lin.  It will also handle most Soundtracker/
+	  Noisetracker and Startrekker (4 channel) modules, including ones
+	  that have samples greater than 64k each in them.
+
+        o Runs completely in the background, letting your program 
+          carry on as normal.
+
+	o Plays through a wide range of output devices, including the
+          PC Speaker and Soundblaster
+
+	o No royalties to pay for including it in your program (See
+	  License agreement for details).
+
+	o Module mixing speed can be altered to account for different
+          speed computers
+
+
+     4.  TECHNICAL
+     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+     Technical details can be found in the technical documentation
+     TECH.DOC
+
+
+     5.  SHAREWARE
+     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+     MODOBJ is shareware.  If you intend to use it in anything other
+     than public domain programs you should register it.  Registration
+     entitles you to the latest version of MOD-OBJ as well as the
+     ability to play sound samples over the top of the module and other
+     useful functions.  See the sections on registering and the license
+     agreement.
+
+
+
+     6.  LICENCE AGREEMENT
+     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+	Use of Mod-obj in a Personal or Public Domain Program
+	ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+	The unregistered version of MODOBJ may be used in any public domain
+	programs (these are programs for which no fee is charged by the
+        author)  provided that this document is distributed with the programs
+        and that the author (Mark J Cox) receives credits within the program
+        and documentation.
+	You are strongly urged to register to get the extra routines 
+	provided by the registered version however.  
+
+	The registered version of MODOBJ may be used in your public domain
+        programs freely without the need to include this document as long
+        as the author (Mark J Cox) recieves credits within the program and
+        documentation.
+
+	Use of MODOBJ in Shareware Programs
+	ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+	The unregistered version of MODOBJ may not be used in any Shareware
+	(fee charged for the software) programs.  
+
+	Registering your version of MODOBJ will entitle you to include 
+	MODOBJ in your shareware programs as long as the author (Mark J Cox)
+        receives credits both within the program and the documentation.
+
+
+	Use of MODOBJ in Commercial Programs
+	ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+	The unregistered version of MODOBJ may not be used in any commercial
+	programs.  
+
+	The registered version may be used where agreed in writing
+	by the author.  (This will not involve royalty payments, just a 
+	one-off fee;  contact the author).
+
+
+     7.  COPYRIGHT/LICENCE AGREEMENT
+     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+     The files MOD-OBJ.DOC, TECH.DOC, MOD-OBJ.OBJ  are copyrighted by 
+     Mark J Cox.  You are free to distribute the unregistered version
+     of the MOD-OBJ package as you wish provided no profit is made from
+     the distribution.
+
+     The copyright owner hereby licenses you to use this software
+     as stated in section 6 of this document.
+
+     º NEITHER THE MODOBJ PROGRAM OR DOCUMENTATION MAY BE ALTERED         º
+     º IN ANY WAY, OR REVERSE-ENGINEERED BY DISASSEMBLY OR OTHER METHOD.  º
+
+     There is no warranty of any kind, and the copyright owner is not liable
+     for damages of any kind.  By using this software, you agree to 
+     all the above terms.
+    
+     The software and documentation are
+     Copyright (C) 1992 by Mark J Cox
+
+	Mark J Cox
+	29 Lundie Close
+	Stenson Fields
+	Derby DE2 3AN.
+
+
+
+     8.  ELECTRONIC MAIL
+     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+     You can contact me via electronic mail
+
+	m.j.h.cox@bradford.ac.uk		(probably until 1995)
+
+     If that fails, as a last resort try
+
+       bc732@cleveland.freenet.edu
+
+     An excellent dial-up BBS in the UK (Derby) is
+
+	Kingdom of Greyhawk,  +44 332 756414  (0332 756414 UK)
+	its got loads of stuff on it, and in the past was voted top
+  	UK BBS.  Friendly sysop Alan Coates is waiting for your 
+	call (300-14k4) - mention you heard about it from Mark Cox! 
+
+     You can check to see if I'm still registered by calling Bradford's
+     Information Server;  telnet to
+
+	info.bradford.ac.uk
+
+     And log in as user "info"
+
+
+     8.  REGISTRATION
+     ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+     To register your version of MODOBJ, send a cheque or postal
+     order payable to "Mark Cox" to the address is section 6
+
+     Registration includes a diskette containing some more sample
+     programs, and a registered version of MODOBJ with the extra
+     facilities listed in this document.  Please state if you want
+     5.25" diskette instead of usual 3.5"
+
+
+     Cheque in UK currency (Sterling):		
+		15 pounds
+
+     Cheque in US dollars: 	
+		30 US dollars
+
+     Outside UK (other currency):
+		17 pounds * Current Exchange rate + 10% for fluctuations
+		If unsure, contact me for an estimate.
+
+
+     Coming soon:
+
+	Power Basic version (maybe, I'm having problems allocating more
+                             than 31K at a time)
+
+	Soundblaster Pro support (at the moment works - but in mono)
+	Adlib Gold support
+        Pro Audio Spectrum support
+
+	If you have programming details for the above cards (or any other
+        new cards) let me know - Its worth a free registration to the first!

@@ -1,0 +1,2300 @@
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ               RIPlink - Version 1.21              ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+
+           RIPlink(tm) - Version 1.21 - Documentation - 03-22-1995
+            Copyright 1994 InterProgramming, All Rights Reserved.
+              (1.21 changes by Steven R. Lorenz and Bob Dalton)
+               -NOW FREEWARE AND PART OF THE DDPLUS DOOR KIT-
+
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ                 Table of Contents                 ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+Section Title                                     Page
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄÄÄÄÄ
+Distribution and Support Information                2
+Whats In the Package?                               2
+Warranty and Disclaimer                             3
+License Agreement                                   3
+Registration Information                            4
+General Information about RIPlink                   6
+Installation Information                            7
+Basic Memory Requirements                           7
+Interfacing with the DDPLUS Door ToolKit            8
+Using the Mouse with DDPLus Door Kit               10
+Definitions
+ ş Constants                                       11
+ ş Types                                           12
+ ş Variables                                       15
+ ş Procedures, Functions, and Methods              16
+Programming Suggestions                            45
+Comments from InterProgramming                     45
+Credits                                            46
+Index to Methods                                   47
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                             Page 2 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ       Distribution and Support Information        ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+Riplink contains archives for TP 7.0 and has two different configurations of
+RIPlink.
+Those configurations are as follows:
+
+R??-EXT.* - All driver files are contained in RIPLINK.FNT and RIPLINK.CHR.
+R??-ALL.* - All files are internal to the .EXE.
+
+The TP 5.5 version does not include the *.ALL version as it does not support
+it.  TP 6.0 supports all extended fonts with the exception of Bold (Font 10).
+
+The latest version of RIPlink may be downloaded or Freqed from the sites
+listed below.  This now is included in the DDplus 7.0 package FREQ DDPLUS
+from the sites below.
+
+Files may be obtained from:
+ The Officer's Club BBS   TANSTAFL BBS         Note:
+ Steve Lorenz             Bob Dalton           Tom Morgan the original author
+ (818)249-8579            (501)741-5699        has turned over support to
+ 28.8kbps,                14.4kbps             these door authors.
+ 1:391/3010.1  CA,USA     1:391/3010  AR,USA
+
+Installation instructions may be found below.  Please do NOT attempt to
+install RIPlink until you have read the installation instructions.
+
+As of 1.21 we cannot extend support to any version of Turbo Pascal other than
+TP 7.0.  TP 6.0 will not work properly with the .obj files included in this
+package.
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ              What's in the Package?               ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+The following make up this package. Make sure you are not missing any or
+it won't work:
+
+RIPLINK.CHR     - Support file required by RipLink.
+RIP.CTL         - Required for Ripdoor.exe sample program
+HISTORY.DOC     - History of RipLink
+RIPLINK.DOC     - What you are reading now
+RIPSCRIP.DOC    - Rip script specifications from Telegrafix
+RIP2PAS.EXE     - Program to convert .RIP into TP source code
+RIPDOOR.EXE     - Simple demo door program - Try running this before
+                   reading the rest of this doc to get a feel for what
+                   is happening. Type RIPDOOR /L /R to make it run.  Do
+                   it from the same directory where all the other Riplink
+                   files are.
+RIPLINK.FNT     - Font File required by Riplink
+COMPUTER.ICN    - Icon file for use with demo program
+BOLD.OBJ        - Font object file for use with Riplink
+EGAVGA.OBJ      - EGA/VGA Device driver
+EURO.OBJ        - Font object file for use with Riplink
+GOTH.OBJ        - Font object file for use with Riplink
+LCOM.OBJ        - Font object file for use with Riplink
+LITT.OBJ        - Font object file for use with Riplink
+SANS.OBJ        - Font object file for use with Riplink
+SCRI.OBJ        - Font object file for use with Riplink
+SIMP.OBJ        - Font object file for use with Riplink
+TRIP.OBJ        - Font object file for use with Riplink
+TSCR.OBJ        - Font object file for use with Riplink
+RIPLINK.PA1     - Support unit for RipLink
+RIPLINK.PA2     - Support unit for RipLink
+CITY.PAS        - Made from CITY.RIP by using RIP2PAS.EXE
+DDPLUSR.PAS     - Used in place of DDPLUS.PAS if you are using RipLink
+RIP2PAS.PAS     - Source code to RIP2PAS.EXE
+RIPDOOR.PAS     - Source code to demo program
+RIPLINK.PAS     - The main Riplink unit and the one you compile
+RIPLINK1.PAS    - Support unit for RipLink
+RIPLINKD.PAS    - Support unit for RipLink
+RIPLINKE.PAS    - Support unit for RipLink
+RIPLINKM.PAS    - Support unit for RipLink
+CITY.RIP        - Used with demo program
+PRESS.TXT       - Press release on RipLink from Tom Morgan
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                             Page 3 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ              Warranty and Disclaimer              ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+This software and accompanying materials are distributed "as is" without 
+warranty, neither expressed nor implied; including but not limited to any 
+implied warranties of merchantability or fitness for a particular purpose.  
+In no event shall Thomas E. Morgan, InterProgramming or anyone else involved 
+with the creation or production of this product be held liable for any 
+damages, including, but not limited to, any lost profits, savings, data or 
+other incidental, indirect, special, or consequential damages arising out of 
+the use or inability to use this software, or for any claim by any other 
+party, even if Thomas E. Morgan or InterProgramming has been advised of the 
+possibility of such damages.  The person(s) using the software bear(s) all 
+risk as to the quality and performance of the software.  Use of this software 
+assumes acceptance of this statement.  This warranty is governed by the laws 
+of the State of New Mexico.
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ                 License Agreement                 ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RIPlink may only be used in the production of door programs.  It may NOT be
+used for terminal programs, comm programs or BBS packages.  Exceptions to
+this must be in writing from InterProgramming.  RIPlink may NOT be used in
+the creation of another toolkit.
+
+Thomas E. Morgan retains ALL copyrights to the source code.  There is NO
+charge for using this kit, nor are there any royalties to pay.  Just be sure
+to give me, and the DDPlus toolkit, credit in your program documentation if
+you use any part of it in your door program. The RipLink kit is now FREEWARE
+as of version 7.0 of the DDPLUS DOOR PROGRAMMING TOOLKIT. RipLink source code
+may NOT be included in any other package other then DDPlus, nor may the
+source code be sold in ANY manner.  If you cannot accept these conditions
+then DO NOT USE RipLink!
+
+This toolkit and all related programs and documentation are:
+  Copyright 1994 Thomas E. Morgan and InterProgramming, All Rights Reserved.
+
+RIPscrip is a Trademark of TeleGrafix Communications, Inc.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                             Page 4 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ             Registration Information              ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+There is no registration per se.  But an acknowledgement that you are using
+Riplink and it's author and copyright holder, Tom Morgan should be included.
+This software if free to all door authors to use on condition than no term
+program nor bbs software be produced from it.
+                                                           Steve Lorenz
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                             Page 5 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                             Page 6 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ         General Information about RIPlink         ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RIPlink is based off of the Borland Graphics Interface (BGI).  The .BGI and
+.CHR files are NOT included with the archive.  However, they should not be
+needed as they have been compiled into the file RIPLINK.CHR for usage by your 
+program.
+
+RIPlink provides RIPscrip support in two ways.  One is an internal support
+with various procedures that will translate the given parameters to RIPscrip
+commands and send them to the remote side as well as interpret them locally.
+The other option is to have RIPlink read in an external .RIP file.  It will
+then parse and display the RIP screen locally and will optionally send the
+commands to the remote side.  Because RIPlink is still under development, it 
+does not fully support all of the commands that make up RIPscrip.  It only 
+has limited interactive ability for the Sysop.  It will display the graphics 
+and do the mouse support, but it does not do things such as protocol support, 
+etc.  Those things may be added in a future release.
+
+RIPlink is an Object Oriented toolkit.  Although not everyone is familiar
+with OOP programming, we feel that the provided examples should be enough to
+fully use RIPlink.
+
+The RIPscrip commands that require that the remote terminal return a value
+must be handled with care.  RIPlink will only send the codes.  It will NOT
+wait for the returned information; this is left up to the individual
+programmer.
+
+If you are looking for more information regarding the RIPscrip standard, it
+is highly suggested that you read the RIPscrip specification document
+which is included in this package.  As of this release, the latest version
+of RIP which is supported is 1.54.00.
+
+Also in this package is the RIP2PAS program which will read a standard
+.RIP file and write turbo pascal source code for use with RipLink.
+See the file CITY.PAS for an example of the output produced by RIP2PAS.
+To use it just type RIP2PAS for further instructions.
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                             Page 7 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ             Installation Information              ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+As mentioned above, RIPlink has two different versions or models.  The
+following information refers to both of the different models of RIPlink
+(EXTernal and ALL.)  Please note that TP 5.5 does not support the ALL model.
+What does this mean to YOUR door program?  If you use the EXTERNAL model
+you will need to ensure that the RIPLINK.CHR and RIPLINK.FNT files are
+included IN your door product distribution archive along with all the
+other program files. You will also need to notify using sysops that
+these files must be available in the same directory as your door program.
+If you use the INTERNAL model, then you will only need to provide the
+RIPLINK.FNT file in your door product distribution archive and notify
+using sysops that this file must be in the same directory as the door
+program.  
+
+You will need to install either one or both of the models depending on your 
+needs.  For large applications, we suggest that you use the EXTernal version.  
+For smaller applications, the ALL version is useful as it combines all the 
+code into one executable without requiring external driver files.  The file 
+names in each version are the same, so don't attempt to install more than one
+version in a directory.  Please also note that RIPlink relies upon the GRAPH
+unit provided with TP.  Make sure that RIPlink has access to the GRAPH unit 
+and the appropriate driver files as necessary.
+
+The installation itself is fairly simple.  Once you have chosen the version
+which will best serve your needs, set the definition flags in the RipLink.PAS
+unit and compile that unit.  Make sure ALL required RipLink files are in
+the same directory when you compile.  Then move the TPU's to the place where
+you store all your compiled units.  In TP 6.0 and 7.0, this is under
+Options.Directories.Unit_Directories.
+
+As an introduction to RIPlink we suggest working with RIPDOOR until you feel
+comfortable with how RIPLink interfaces with the DDPlus Door Toolkit.  Then
+move on to using RIPlink in your own projects.   
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ             Basic Memory Requirements             ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+The following memory requirements are based on information gathered from
+RIPDOOR under TP7.  They may vary from version to version and from
+application to application.
+
+No Internal Drivers (Ext): 84k
+Internal Drivers    (All): 212k
+
+Please note that these figures are from our testing here at InterProgramming
+and will not necessarily match your results.
+
+We are aware that these figures are quite high and that you may not be able
+to sacrifice this much memory.  If this is the case, start by working with
+the EXTernal model.  Next, you may overlay the units RIPlink and RIPlink1.
+You may NOT overlay RIPlinkD, RIPlinkM, or RIPlinkE.
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ                RipLink with DDplus/7              ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipLink 1.21 has been modified slightly to work with DDplus 7.0+.  A special
+RipLink specific version of DDplus unit called DDPLUSR.pas should be used
+instead of DDplus if you plan of using RipLink.
+
+Riplink has been modified to work better in DV windows.  It now chooses the
+best and most stable graphics mode.  In many cases this will be VGA, even
+though Rip graphics is only EGA.  If you see a black bar about 1 1/2 inch
+above the status bar when using DDplusR you are viewing in VGA mode.
+
+Enclosed is a test program called Ripdoor which is also a DDplusR door. This
+when run with the /R run line parm will show local graphics if the caller is
+using rip or if the caller is local.  To view local use both /L /R parms.
+You can have the program use ansi or text if you run it without the /R parm.
+
+Note:
+Some graphics cards produced a flicker or fuzzy or strange colored picture
+when run in EGA mode under DESQview.  Running in VGA mode seems to eliminate
+this.
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                             Page 8 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ      Interfacing with the DDPlus Door Toolkit     ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RIPlink has no internal comm routine support.  Instead, RIPlink must be rely
+on the DDPlus Door Toolkit to provide this support  This section will explain
+how to RipLink interfaces with the DDPlus Door Toolkit comm routines so that
+they will talk to each other. Included in the archive is DDPLUSR.PAS which
+substitutes for the normal DDPLUS.PAS unit if you are using RipLink. If you
+are using RipLink with DDPlus you will need to replace DDPLus.PAS with
+DDPLusR.PAS instead and then compile DDPLUSR.PAS.  Make sure you also change
+all references in your program from "Uses DDPlus" to "Uses  with the /R run line parm will show local graphics if the caller is
+using rip or if the caller is local.  To view local use both /L /R parms.
+You can have the program use ansi or text if you run it without the /R parm.
+
+Note:
+Some graphics cards produced a flicker or fuzzy or strange colored picture
+when run in EGA mode under DESQview.  Running in VGA mode seems to eliminate
+this.
+
+*******
+
+Because of the OOP structure of RIPlink, we can simply override one of
+RIPlink's procedures to call the appropriate procedure(s) in the comm
+routines.  This is done by first creating a descendent of the RIPlink object:
+
+  RIPtr = ^RIPObject;
+  RIPObject = object(RIPObj)
+    Procedure SendStr(instr : string); virtual;
+    Procedure SendStrCR(instr : string); virtual;
+  end;
+
+Now, the SendStr and SendStrCR procedures just need to be overriden so that
+they will call the proper procedure to send strings over the modem.
+
+  Procedure RIPObject.SendStr(instr : string);
+  begin
+    SendText(instr);
+  end;
+
+  Procedure RIPObject.SendStrCR(instr : string);
+  begin
+    SendText(instr+#13#10);
+  end;
+
+These procedures call the procedure SendText and sends it the string over
+the modem.  Notice that one procedure appends a CRLF (#13#10) to the end
+of the string and one does not. Also, the procedure you call MUST NOT send
+the characters to the local console.  If it does send the characters to the
+local console, RIPlink's support to send RIP codes to the user and let the
+Sysop still use ANSI will be void.  In this example, SendText takes the
+string and sends the characters directly to the user.  It does not display
+anything on the local screen at all.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                             Page 9 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+The next item that must be dealt with is handling the status line.  The code
+necessary to override the Status Line is already incorporated into the 
+DDPlusR.PAS unit.  What is being done is to override or change the existing
+status line procedure such that it calls RIPlink's status line procedure.
+It ALSO must fill in the string variable:
+
+  RipObj.StatText  : String[75];
+
+This variable tells RIPlink what text to display.  Please note that the
+override should ONLY be called if the Sysop wants RIP.  The status line has 
+no effect on the user's side.  Here is an example procedure that gets called 
+from a door toolkit.  Note that this procedure then calls RIPlink's StatLine 
+procedure.  
+
+Procedure StatusL; far;
+begin
+  RIP^.StatText := UserName+', '+baud+', Time: '+inttostr(timeremaining);
+  RIP^.StatLine;
+end;
+
+This is a simple example which just sets the string variable and then calls
+StatLine to display the text.
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 10 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ         Using the Mouse with Door Toolkits        ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+This section provides information about getting the strings that the mouse
+buttons generate. This also has already been incorporated into the 
+DDPlusR.PAS unit.
+
+RIPlink has a 128 byte buffer that it uses to store the strings in.  There
+are three procedures that you'll need to know about.  Everything else
+concerning the mouse is already taken care of.  They are:
+
+Procedure RIP^.CheckMouse;
+Function  RIP^.CharInBuffer:boolean;
+Function  RIP^.GetNextChar:char;
+
+CheckMouse is called routinely by DDPlusR so it will check the mouse's
+buttons, invert the buttons, move strings to the buffer, etc. CharInBuffer
+simply reports True if a character is in the buffer.  GetNextChar gets the
+next character in the buffer and moves the pointer to the next character.
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 11 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ              Definitions: Constants               ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RIPLINK.PAS:
+  AnsiMaxParams       = 5;
+  ...
+  iQueueSize          = 32;
+
+  These constants are for the TextWindow's ANSI support.
+
+  TextOffsetX : array[0..4] of Byte = ( 8, 7, 8, 7,16);
+  TextOffsetY : array[0..4] of Byte = ( 8, 8,14,14,14);
+  TextMaxX    : array[0..4] of Byte = (79,90,79,90,39);
+  TextMaxY    : array[0..4] of Byte = (42,42,24,24,24);
+
+  These are also used by the TextWindow.  They are based off of the different
+  text window fonts defined by RIPscrip.
+
+RIPLINK1.PAS:
+  MegaArray : array[0..35] of Char = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  Although this probably won't be useful, it is listed here in case you
+  choose to write your own procedures to convert Decimal to/from MegaNums.
+  MegaNums are the number system used with all RIPscrip commands.  MegaNum is 
+  the shortened name for HexaTriDeciaml.  MegaNums are a base-36 number 
+  system with digits ranging from 0-9,A-Z.
+
+RIPLINK.PA2:
+  MetricArray : MetricArrayType = ...
+  Low_Char    : Array[0..255] of Byte = ...
+
+  These are used by the RipButton procedure to determine the offsets of the
+  text in the buttons.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 12 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ                Definitions: Types                 ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RIPLINK.PAS:
+  Str2          = String[2];
+  Str4          = String[4];
+  Str12         = String[12];
+  Str50         = String[50];
+
+  These are just typical string constants that RIPlink uses:
+
+  FPT           = Array[1..8] of Byte;
+
+  This is a type used for Fill Patterns.
+
+  MouseRegionRecord = record
+    x0,y0,x1,y1     : Word;
+    Invert,Reset    : Boolean;
+    TheText         : Str50;
+  end;
+
+  This is the record used to keep track of the active mouse buttons.
+
+  RootPtr = ^Root;
+  Root = object
+    constructor Init;
+    destructor Done; virtual;
+  end;
+
+  This is the Root object.  It serves no purpose except to be inherited by
+  the RIPlink object.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 13 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+  The following is the RIPlink object.  Each part is covered in a later 
+  section.  Please note that all parameters are in Decimal, NOT MegaNums.  
+  RIPlink does the conversion for you.
+
+  RipPtr = ^RipObj;
+  RipObj = object(Root)
+    {General}
+    IconDir     : DirStr;
+    StatText    : String[75];
+
+    {Mouse}
+    MouseExist  : Boolean;
+    IsMouseOn   : Boolean;
+
+    Constructor Init(UseRip: Boolean; FontName: String);
+    Procedure   RipTextWindow(x0,y0,x1,y1: Byte; Wrap: Boolean; Size: Byte);
+    Procedure   RipViewPort(x0,y0,x1,y1: Word);
+    Procedure   RipResetWindows;
+    Procedure   RipEraseWindow;
+    Procedure   RipEraseView;
+    Procedure   RipGotoXY(x0,y0: Byte);
+    Procedure   RipHome;
+    Procedure   RipEraseEOL;
+    Procedure   RipColor(Clr: Byte);
+    Procedure   RipSetPalette(c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,
+                              c15,c16: Word);
+    Procedure   RipOnePalette(Color,Value: Word);
+    Procedure   RipWriteMode(Mode: Byte);
+    Procedure   RipMove(x0,y0: Word);
+    Procedure   RipText(InStr: String);
+    Procedure   RipTextXY(x0,y0: Word; InStr: String);
+    Procedure   RipFontStyle(Font,Direct,Size: Byte);
+    Procedure   RipPixel(x0,y0: Word);
+    Procedure   RipLine(x0,y0,x1,y1: Word);
+    Procedure   RipRectangle(x0,y0,x1,y1: Word);
+    Procedure   RipBar(x0,y0,x1,y1: Word);
+    Procedure   RipCircle(x0,y0,Radius: Word);
+    Procedure   RipOval(x0,y0,StAngle,EndAngle,xRad,yRad: Word);
+    Procedure   RipFilledOval(x0,y0,xRad,yRad: Word);
+    Procedure   RipArc(x0,y0,StAngle,EndAngle,Rad: Word);
+    Procedure   RipOvalArc(x0,y0,StAngle,EndAngle,xRad,yRad: Word);
+    Procedure   RipPieSlice(x0,y0,StAngle,EndAngle,Rad: Word);
+    Procedure   RipOvalPieSlice(x0,y0,StAngle,EndAngle,RadX,RadY: Word);
+    Procedure   RipBezier(x0,y0,x1,y1,x2,y2,x3,y3,Count: Word);
+    Procedure   RipPolygon(NumPoints: Word; var PolyPoints);
+    Procedure   RipFillPoly(NumPoints: Word; var PolyPoints);
+    Procedure   RipPolyLine(NumPoints: Word; var PolyPoints);
+    Procedure   RipFill(x0,y0,Border: Word);
+    Procedure   RipLineStyle(Style,Pattern,Thick: Word);
+    Procedure   RipFillStyle(Style,Color: Word);
+    Procedure   RipFillPattern(Pattern: FPT; Color: Word);
+    Procedure   RipMouse(x0,y0,x1,y1: Word; Click,Clear: Boolean;
+                         InStr: String);
+    Procedure   RipKillMouseFields;
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 14 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+    Procedure   RipBeginText(x0,y0,x1,y1: Word);
+    Procedure   RipRegionText(Justify: Boolean; InStr: String);
+    Procedure   RipEndText;
+    Procedure   RipGetImage(x0,y0,x1,y1: Word);
+    Procedure   RipPutImage(x0,y0,Mode: Word);
+    Procedure   RipWriteIcon(FName: Str12);
+    Procedure   RipLoadIcon(x0,y0,Mode: Word; ClipBrd: Boolean; 
+                            FName: Str12);
+    Procedure   RipButtonStyle(Wid,Hgt,Orient,Flags,BevSize,dFore,dBack,
+                               Bright,Dark,Surface,Grp_No,Flags2,ULine_Col,
+                               Corner_Col: Word);
+    Procedure   RipButton(x0,y0,x1,y1,HotKey: Word; Flags: Byte; Icon: Str12;
+                          sLabel: String; Cmd: String);
+    Procedure   RipDefine(Flags: Word; TextVar: Str12; Width: Byte; Ques,
+                          Default: String);
+    Procedure   RipQuery(Mode: Byte; InStr: String);
+    Procedure   RipCopyRegion(x0,y0,x1,y1,DestLine: Word);
+    Procedure   RipReadScene(FName: Str12);
+    Procedure   RipFileQuery(Mode: Word; FName: Str12);
+    Procedure   RipEnterBlockMode(UL: Boolean; Proto,FType: Word;
+                                  FName: Str12);
+    Procedure   RipNoMore;
+    Procedure   SendStr(InStr: String); Virtual;
+    Procedure   SendStrCR(InStr: String); Virtual;
+    Procedure   StatLine;
+    Destructor  Done; Virtual;
+    Function    DisplayRIPfile(Path: String): Boolean;
+    Procedure   ParseRipStr(S: String; SendChar: Boolean);
+    Procedure   ParseRip(C: Char; SendChar: Boolean);
+    Procedure   DoTextStr(S: String);
+    Procedure   DoTextChar(C: Char);
+
+    Procedure   MouseInit;
+    Procedure   MouseOn;
+    Procedure   MouseOff;
+    Procedure   GetPosition(var ButtonStatus,xPos,yPos: Integer);
+    Procedure   SetMousePos(x,y: Integer);
+    Procedure   CheckMouse;
+    Procedure   AddRegion(x0,y0,x1,y1: Word; Invert,Reset: Boolean;
+                          TheText: Str50);
+    Function    CharInBuffer: Boolean;
+    Function    GetNextChar: Char;
+    Procedure   KillRegions;
+    Procedure   KillBuffer;
+  end;
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 15 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RIPLINK1:
+  Str2  = String[2];
+  Str4  = String[4];
+
+  String types used by the MegaNum <==> Decimal conversion routines.
+
+GRAPH:
+  PointRec = record
+    X : word;
+    Y : word;
+  end;
+
+  This record is used for the various polygon related procedures.  Details
+  are given in the procedures.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ              Definitions: Variables               ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+  RipObj.IconDir     : DirStr;
+
+  This is the directory RIPlink will look in for *.ICN files.  If it's not
+  defined, it will default to the current directory.
+
+  RipObj.StatText    : String[75];
+
+  This is the string which contains the text to display on the status line.
+
+  RipObj.MouseExist  : Boolean;
+
+  Does a mouse exist and is it enabled?
+
+  RipObj.IsMouseOn   : Boolean;
+
+  Is the mouse pointer currently on the screen?
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 16 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ  Definitions: Procedures, Functions, and Methods  ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+Init constructor                                                      RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Initializes the RIPlink Object
+
+Declaration: Init(UseRip: Boolean; FontName: String);
+
+Variables  : UseRip     : Display graphics locally
+             FontName   : Alternate name of RIPLINK.CHR and RIPLINK.FNT
+
+Notes      : You have the option of renaming RIPLINK.CHR and RIPLINK.FNT to
+             something that coincides with your program.  For example, if you
+             renamed them to MYDOOR.*, you would pass 'MYDOOR' as the 
+             parameter for FontName.  Note that you do not pass the 
+             extension.
+
+
+
+RipTextWindow procedure                                               RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Define the text window
+
+Declaration: RipTextWindow(x0,y0,x1,y1: Byte; Wrap: Boolean; Size: Byte);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Upper lefthand coordinates
+             x1,y1      : Lower righthand coordinates
+             Wrap       : Wrap text at right edge?
+             Size       : Size of characters (see chart)
+
+             Size   Font Size   X Range  Y Range
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+             0     8x8          0-79     0-42
+             1     7x8          0-90     0-42
+             2     8x14         0-79     0-24
+             3     7x14         0-90     0-24
+             4     16x14        0-39     0-24
+
+
+
+RipViewPort procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Define the view port
+
+Declaration: RipViewPort(x0,y0,x1,y1: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Upper lefthand coordinates
+             x1,y1      : Lower righthand coordinates
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 17 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipResetWindows procedure                                             RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Reset the RIP screen, mouse, buttons, etc.
+
+Declaration: RipResetWindows;
+
+Support    : Send and process
+
+Notes      : This is a "reset button" for RIPscrip.  Everything is returned
+             to its default state when this is called.  This includes the
+             view port, text screen, mouse regions, palettes, etc.
+
+
+
+RipEraseWindow procedure                                              RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Erase text window
+
+Declaration: RipEraseWindow;
+
+Support    : Send and process
+
+Notes      : This clears the area defined as the text window.  This includes
+             any graphics that are in the text window area.
+
+
+
+RipEraseView procedure                                                RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Erase view port
+
+Declaration: RipEraseView;
+
+Support    : Send and process
+
+
+
+RipGotoXY procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Move text cursor
+
+Declaration: RipGotoXY(x0,y0: Byte);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Location to move text cursor to
+
+Notes      : x0 and y0 are 0-based.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 18 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipHome procedure                                                     RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Home the text cursor
+
+Declaration: RipHome;
+
+Support    : Send and process
+
+Notes      : This moves the text cursor to the upper lefthand corner of the
+             text window.
+
+
+
+RipEraseEOL procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Erase to the End of Line (text)
+
+Declaration: RipEraseEOL;
+
+Support    : Send and process
+
+
+
+RipColor procedure                                                    RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Set drawing color
+
+Declaration: RipColor(Clr: Byte);
+
+Support    : Send and process
+
+Variables  : Clr        : New drawing color (see chart)
+
+             Value   Color
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+             00      Black (00 is always the background color)
+             01      Blue
+             02      Green
+             03      Cyan
+             04      Red
+             05      Magenta
+             06      Brown
+             07      Light Gray
+             08      Dark Gray
+             09      Light Blue
+             10      Light Green
+             11      Light Cyan
+             12      Light Red
+             13      Light Magenta
+             14      Yellow
+             15      White
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 19 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipSetPalette procedure                                               RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Set 16 color palette
+
+Declaration: RipSetPalette(c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,
+             c15,c16: Word);
+
+Support    : Send and process
+
+Variables  : c1..c16    : Each color in the palette (see chart)
+
+             RIP Palette   Master Palette
+             Color Code      Color Code      Color
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+               01 (00)          0            Black
+               02 (01)          1            Blue
+               03 (02)          2            Green
+               04 (03)          3            Cyan
+               05 (04)          4            Red
+               06 (05)          5            Magenta
+               07 (06)          7            Brown
+               08 (07)          20           Light Gray
+               09 (08)          56           Dark Gray
+               10 (09)          57           Light Blue
+               11 (10)          58           Light Green
+               12 (11)          59           Light Cyan
+               13 (12)          60           Light Red
+               14 (13)          61           Light Magenta
+               15 (14)          62           Yellow
+               16 (15)          63           White
+
+             This chart lists the default colors.
+
+
+
+RipOnePalette procedure                                               RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Set one color in the palette
+
+Declaration: RipOnePalette(Color,Value: Word);
+
+Support    : Send and process
+
+Variables  : Color      : Which color to change (0-15)
+             Value      : New color for palette (0-63) (see chart above)
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 20 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipWriteMode procedure                                                RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Set the write mode
+
+Declaration: RipWriteMode(Mode: Byte);
+
+Support    : Send and process
+
+Variables  : Mode       : New write mode (see chart)
+
+             Mode   Description
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+             00     Normal drawing mode (overwrite)
+             01     XOR (complimentary) mode
+
+
+
+RipMove procedure                                                     RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Move the Current Pointer (CP)
+
+Declaration: RipMove(x0,y0: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Location to move to
+
+Notes      : This procedure is used to move the graphics pointer, also known
+             as the current pointer (CP).
+
+
+
+RipText procedure                                                     RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Write text at CP
+
+Declaration: RipText(InStr: String);
+
+Support    : Send and process
+
+Variables  : InStr      : String to write
+
+Notes      : This procedure write "graphics" text.  The text is written in a
+             font in the view port.  This text does not go into the text 
+             window.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 21 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipTextXY procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Write text at a specified location
+
+Declaration: RipTextXY(x0,y0: Word; InStr: String);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Location to start writing text at
+             InStr      : String to write
+
+Notes      : This procedure is really a combination of the RipMove procedure 
+             and the RipText procedure.  As in RipText, this text is 
+             "graphics" text.
+
+
+
+RipFontStyle procedure                                                RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Set font type, direction, and size
+
+Declaration: RipFontStyle(Font,Direct,Size: Byte);
+
+Support    : Send and process
+
+Variables  : Font       : Font to use (see chart)
+             Direct     : Direction of text (see chart)
+             Size       : Size of font (1-10)
+
+             Font   Description of Font
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+             00     Default 8x8 font
+             01     Triplex Font
+             02     Small Font
+             03     Sans Serif Font
+             04     Gothic [Old English] Font
+             05     Script Font
+             06     Simplex Font
+             07     Triplex Script Font
+             08     Complex Font
+             09     European Font
+             10     Bold Font
+
+             Value   Direction
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+             00      Horizontal
+             01      Vertical
+
+Notes      : Except for font 0, all fonts are scalable.  Font 0 is bit-mapped
+             and looks best in size 1.  Font sizes may range from 1 to 10.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 22 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipPixel procedure                                                    RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a pixel in current drawing color
+
+Declaration: RipPixel(x0,y0: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Location to put pixel
+
+
+
+RipLine procedure                                                     RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a line
+
+Declaration: RipLine(x0,y0,x1,y1: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Beginning of the line
+             x1,y1      : End of the line
+
+
+
+RipRectangle procedure                                                RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a rectangle
+
+Declaration: RipRectangle(x0,y0,x1,y1: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Upper lefthand corner of rectangle
+             x1,y1      : Lower righthand corner of rectangle
+
+
+
+RipBar procedure                                                      RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a rectangle and fill it
+
+Declaration: RipBar(x0,y0,x1,y1: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Upper lefthand corner of rectangle
+             x1,y1      : Lower righthand corner of rectangle
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 23 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipCircle procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a circle
+
+Declaration: RipCircle(x0,y0,Radius: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Center of circle
+             Radius     : Length of the radius of the circle
+
+
+
+RipOval procedure                                                     RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw an oval
+
+Declaration: RipOval(x0,y0,StAngle,EndAngle,xRad,yRad: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Center of oval
+             StAngle    : Starting angle (see diagram)
+             EndAngle   : Ending angle (see diagram)
+             xRad       : Length of horizontal axis
+             yRad       : Length of vertical axis
+
+                  90ø
+                   ³
+             180øÄÄÅÄÄ 0ø
+                   ³
+                 270ø
+
+Notes      : A starting angle of 0 and an ending angle of 360 will draw a
+             complete oval.  The angles go counter-clockwise starting at 3
+             o'clock.
+
+
+
+RipFilledOval procedure                                               RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw an oval and fill it
+
+Declaration: RipFilledOval(x0,y0,xRad,yRad: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Center of oval
+             xRad       : Length of horizontal axis
+             yRad       : Length of vertical axis
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 24 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipArc procedure                                                      RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a circular arc
+
+Declaration: RipArc(x0,y0,StAngle,EndAngle,Rad: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Center of circle which the arc lies on
+             StAngle    : Starting angle (see diagram in RipOval procedure)
+             EndAngle   : Ending angle (see diagram in RipOval procedure)
+             Rad        : Length of the radius of the circle which the arc
+                          lies on
+
+
+
+RipOvalArc procedure                                                  RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw an oval arc
+
+Declaration: RipOvalArc(x0,y0,StAngle,EndAngle,xRad,yRad: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Center of oval
+             StAngle    : Starting angle (see diagram in RipOval procedure)
+             EndAngle   : Ending angle (see diagram in RipOval procedure)
+             xRad       : Length of horizontal axis
+             yRad       : Length of vertical axis
+
+Notes      : This procedure is identical to the RipOval procedure.  It is
+             included here for completeness.
+
+
+
+RipPieSlice procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a pie slice
+
+Declaration: RipPieSlice(x0,y0,StAngle,EndAngle,Rad: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Center of circle which the pie slice lies on
+             StAngle    : Starting angle (see diagram in RipOval procedure)
+             EndAngle   : Ending angle (see diagram in RipOval procedure)
+             Rad        : Length of the radius of circle which the pie slice
+                          lies on
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 25 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipOvalPieSlice procedure                                             RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw an oval pie slice
+
+Declaration: RipOvalPieSlice(x0,y0,StAngle,EndAngle,RadX,RadY: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Center of circle which the pie slice lies on
+             StAngle    : Starting angle (see diagram in RipOval procedure)
+             EndAngle   : Ending angle (see diagram in RipOval procedure)
+             RadX       : Length of horizontal axis of oval which the pie
+                          slice lies on
+             RadY       : Length of vertical axis of oval which the pie
+                          slice lies on
+
+
+
+RipBezier procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a bezier curve
+
+Declaration: RipBezier(x0,y0,x1,y1,x2,y2,x3,y3,Count: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Beginning point of the curve
+             x1,y1      : Point that pulls the curve; not necessarily on the
+                          curve
+             x2,y2      : Point that pulls the curve; not necessarily on the
+                          curve
+             x3,y3      : Ending point of the curve
+             Count      : Number of segments to draw the curve with
+
+
+
+RipPolygon procedure                                                  RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a closed polygon
+
+Declaration: RipPolygon(NumPoints: Word; Var PolyPoints);
+
+Support    : Send and process
+
+Variables  : NumPoints  : Number of points on the polygon
+             PolyPoints : Array[1..NumPoints] of PointRec (defined under
+                          Definitions: Types)
+
+Notes      : PolyPoints is a variable array.  It may be anywhere from 2 to
+             512 records (or points).
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 26 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipFillPoly procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a closed polygon and fill it
+
+Declaration: RipFillPoly(NumPoints: Word; Var PolyPoints);
+
+Support    : Send and process
+
+Variables  : NumPoints  : Number of points on the polygon
+             PolyPoints : See definition and notes under RipPolygon
+
+
+
+RipPolyLine procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw an open polygon
+
+Declaration: RipPolyLine(NumPoints: Word; Var PolyPoints);
+
+Support    : Send and process
+
+Variables  : NumPoints  : Number of points on the polygon
+             PolyPoints : See definition and notes under RipPolygon
+
+
+
+RipFill procedure                                                     RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Flood fill an area
+
+Declaration: RipFill(x0,y0,Border: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : A point in the area to fill
+             Border     : The color of the border surrounding the area to be
+                          filled
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 27 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipLineStyle procedure                                                RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Set the line style, pattern, and thickness
+
+Declaration: RipLineStyle(Style,Pattern,Thick: Word);
+
+Support    : Send and process
+
+Variables  : Style      : Line style (see chart)
+             Pattern    : User defined pattern
+             Thick      : Line thickness (see chart)
+
+             Style   Description           Binary
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+             00      Normal, Solid Line    1111111111111111
+             01      Dotted Line           0011001100110011
+             02      Centered Line         0001111000111111
+             03      Dashed Line           0001111100011111
+             04      Custom Defined line
+
+             Thick   Description
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+             01      Lines are 1 pixel wide
+             03      Lines are 3 pixels wide
+
+Notes      : If Style is 4, then the pattern is defined by the variable 
+             Pattern.  Pattern is a 16-bit representation of the pattern.
+
+             Repeating Pattern   Binary Coding      Decimal
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+             - - - - - - - -     1010101010101010   43690
+             ----    ----        1111000011110000   61680
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 28 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipFillStyle procedure                                                RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Set the fill style and color
+
+Declaration: RipFillStyle(Style,Color: Word);
+
+Support    : Send and process
+
+Variables  : Style      : Fill pattern style (see chart)
+             Color      : Fill color
+
+             Pattern  Description                 Example       Misc
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+               00     Fill with background color               (color #0)
+               01     Solid Fill                               (fill color)
+               02     Line Fill                   -----------  (thick lines)
+               03     Light Slash Fill            /  /  /  /   (thin lines)
+               04     Normal Slash Fill           // // // //  (thick lines)
+               05     Normal Backslash Fill       \\ \\ \\ \\  (thick lines)
+               06     Light Backslash Fill        \  \  \  \   (thin lines)
+               07     Light Hatch Fill            ###########  (thin lines)
+               08     Heavy Cross Hatch Fill      XXXXXXXXXXX  (thin lines)
+               09     Interleaving Line Fill      +-+-+-+-+-+  (thin lines)
+               10     Widely spaced dot fill      ' . ' . ' .  (pixels only)
+               11     Closely spaced dot fill     '.'.'.'.'.'  (pixels only)
+
+
+
+RipFillPattern procedure                                              RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Set a custom fill pattern and color
+
+Declaration: RipFillPattern(Pattern: FPT; Color: Word);
+
+Support    : Send and process
+
+Variables  : Pattern    : Custom pattern (Array[1..8] of Byte)
+             Color      : Fill color
+
+Notes      : The custom pattern is an 8x8 square area.  Each row is one byte 
+             in the array.  The pattern is bit-mapped much like the 
+             RipLineStyle command above.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 29 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipMouse procedure                                                    RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Define a mouse region
+
+Declaration: RipMouse(x0,y0,x1,y1: Word; Click,Clear: Boolean;
+             InStr: String);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Upper lefthand corner of region
+             x1,y1      : Lower righthand corner of region
+             Click      : Invert the region when clicked?
+             Clear      : Clear screen when clicked?
+             InStr      : String to send when region is clicked
+
+
+
+RipKillMouseFields procedures                                         RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Kill all mouse regions
+
+Declaration: RipKillMouseFields;
+
+Support    : Send and process
+
+
+
+RipBeginText procedure                                                RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Begin a text region
+
+Declaration: RipBeginText(x0,y0,x1,y1: Word);
+
+Support    : Send only
+
+Variables  : x0,y0      : Upper lefthand corner of text region
+             x1,y1      : Lower righthand corner of text region
+
+Notes      : This command defines a region on the view port for text.  This
+             is usually used for long streams of text.  Following this
+             command should be one or more RipRegionText commands followed by 
+             a RipEndText command.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 30 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipRegionText procedure                                               RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Put text in the current text region
+
+Declaration: RipRegionText(Justify: Boolean; InStr: String);
+
+Support    : Send only
+
+Variables  : Justify    : Do left/righthand justification?
+             InStr      : String to write in the text region
+
+
+
+RipEndText procedure                                                  RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : End the current text region
+
+Declaration: RipEndText;
+
+Support    : Send only
+
+
+
+RipGetImage procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Get an image from the screen and place it in the clipboard (CB)
+
+Declaration: RipGetImage(x0,y0,x1,y1: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Upper lefthand corner of image
+             x1,y1      : Lower righthand corner of image
+
+
+
+RipPutImage procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Move the image in the CB to the screen
+
+Declaration: RipPutImage(x0,y0,Mode: Word);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Upper lefthand corner of image
+             Mode       : Mode to paste image onto screen with (see chart)
+
+             Mode Description                                        Logical
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+              00  Paste the image on-screen normally                  (COPY)
+              01  Exclusive-OR  image with the one already on screen  (XOR)
+              02  Logically OR  image with the one already on screen  (OR)
+              03  Logically AND image with the one already on screen  (AND)
+              04  Paste the inverse of the image on the screen        (NOT)
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 31 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipWriteIcon procedure                                                RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Write the image in the CB to disk
+
+Declaration: RipWriteIcon(FName: Str12);
+
+Support    : Send and process
+
+Variables  : FName      : Icon name (with extension)
+
+Notes      : This will override an icon with the same name if one exists.
+
+
+
+RipLoadIcon procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Load icon from disk, paste to screen, and optionally paste to CB
+
+Declaration: RipLoadIcon(x0,y0,Mode: Word; ClipBrd: Boolean; FName: Str12);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Upper lefthand corner of image
+             Mode       : Mode to paste image with (see chart in RipPutImage)
+             ClipBrd    : Put the image into the clipboard?
+             FName      : Icon name
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 32 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipButtonStyle procedure                                              RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Define the button style
+
+Declaration: RipButtonStyle(Wid,Hgt,Orient,Flags,BevSize,DFore,DBack,Bright,
+             Dark,Surface,Grp_No,Flags2,ULine_Col,Corner_Col: Word);
+
+Support    : Send and process
+
+Variables  : Wid        : Width of a plain button
+             Hgt        : Height of a plain button
+             Orient     : Orientation of button label (see chart)
+             Flags      : Flags 1 (see chart)
+             BevSize    : Size of bevel (if enabled)
+             DFore      : Text foreground color
+             DBack      : Dropshadow color
+             Bright     : Hi-lighted color
+             Dark       : Shadowed color
+             Surface    : Button surface color
+             Grp_No     : Group Number
+             Flags2     : Flags 2 (see chart)
+             ULine_Col  : Underline color
+             Corner_Col : Corner color
+
+             Value   Description of Orientation
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+              00     Display label above button
+              01     Display label to the left of button
+              02     Display label in the center of the button
+              03     Display label to the right of button
+              04     Display label beneath the button
+
+             Value   Description of Flags Field #1
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                 1   Button is a "Clipboard Button"
+                 2   Button is "Invertable"
+                 4   Reset screen after button click
+                 8   Display Chisel special effect
+                16   Display Recessed special effect
+                32   Dropshadow the label (if any)
+                64   Auto-stamp image onto Clipboard
+               128   Button is an "Icon Button"
+               256   Button is a "Plain Button"
+               512   Display Bevel special effect
+              1024   Button is a Mouse Button
+              2048   Underline hot-key in label
+              4096   Make Icon Button use Hot Icons
+              8192   Adj. vertical centering of label
+             16384   Button belongs to a Radio Group
+             32768   Display Sunken special effect
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 33 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+             Value Description of Flags Field #2
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+                 1   Button is in a check box group
+                 2   Highlight hotkey character
+                 4   Explode (zoom out when clicked)
+                 8   Left Justify Label (top/ctr/btm)
+                16   Right Justify Label (top/ctr/btm)
+
+Notes      : Flags1 and Flags2 are bitmapped.  As such, you may add values
+             together to get the desired combination.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 34 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipButton procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Draw a button
+
+Declaration: RipButton(x0,y0,x1,y1,HotKey: Word; Flags: Byte; Icon: Str12;
+             sLabel: String; Cmd: String);
+
+Support    : Send and process
+
+Variables  : x0,y0      : Upper lefthand corner of the button
+             x1,y1      : Lower righthand corner of the button
+             HotKey     : ASCII value of hotkey character for this button
+                          (If this is a letter, it should be uppercase)
+             Flags      : Flags (see chart)
+             Icon       : Name of icon (if any)
+             sLabel     : Button Label (if any)
+             Cmd        : Command for terminal to return when this button is
+                          selected
+
+             Value  Description
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+               1    Draw button as already selected
+               2    Button is "default" when <ENTER> is pressed
+
+Notes      : Flags is a bitmapped field.
+
+
+
+RipDefine procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Define a text variable
+
+Declaration: RipDefine(Flags: Word; TextVar: Str12; Width: Byte;
+             Ques,Default: String);
+
+Support    : Send only
+
+Variables  : Flags      : Flags (see chart)
+             TextVar    : Variable Identifier
+             Width      : Variable Length
+             Ques       : Question to prompt user with
+             Default    : Default answer (if any)
+
+             Value  Description
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+             01     Save Variable to database
+             02     Cannot specify a blank response
+             04     Non-interactive query
+
+Notes      : Flags is a bitmapped field.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 35 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipQuery procedure                                                    RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Query user for a text variable
+
+Declaration: RipQuery(Mode: Byte; InStr: String);
+
+Support    : Send only
+
+Variables  : Mode       : Query Mode (see chart)
+             InStr      : Query prompt (see Notes)
+
+             Mode  Description
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+              0    Process the query command NOW (upon receipt)
+              1    Process when mouse clicked in Graphics Window
+              2    Process when mouse clicked in Text Window (any text
+                   variables that return X or Y mouse coordinates return
+                   TEXT coordinates, not graphics coordinates in this
+                   mode.  These coordinates are two-digit values instead
+                   of the graphical values that are four digits).
+
+Notes      : Due to the various possibilities of this command, it is
+             suggested that you read about it in the RIPscrip document.
+             However, it's briefly explained here.  InStr includes a question
+             or statement and a text variable.  It might look like this: 'My 
+             name is $FULL_NAME$.'  If the text variable $FULL_NAME$ 
+             contained 'John Doe' then the result would be something like: 
+             'My name is John Doe.'
+
+
+
+RipCopyRegion procedure                                               RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Copy a region on the screen up or down
+
+Declaration: RipCopyRegion(x0,y0,x1,y1,DestLine: Word);
+
+Support    : Send only
+
+Variables  : x0,y0      : Upper lefthand corner of region
+             x1,y1      : Lower righthand corner of region
+             DestLine   : New Y scan line to copy image to
+
+Notes      : This command copies the specified region up or down.  It does 
+             not clear the original image.  This command does not adhere to 
+             the limitations imposed by the view port.  It will work anywhere 
+             on the screen.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 36 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipReadScene procedure                                                RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Display/process a RIP file
+
+Declaration: RipReadScene(FName: Str12);
+
+Support    : Send only
+
+Variables  : FNames     : RIP file name
+
+
+
+RipFileQuery procedure                                                RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Get information of a file (usually an icon file)
+
+Declaration: RipFileQuery(Mode: Word; FName: Str12);
+
+Support    : Send only
+
+Variables  : Mode       : Query mode (see chart)
+             FName      : Name of file to get information about
+
+             Mode  Description
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+              00   Simply query the existence of the file.  If it exists, a
+                   "1" is returned.  Otherwise a "0" is returned to the Host
+                   (without a carriage return).
+              01   Same as 0, except a carriage return is added after the
+                   response.
+              02   Queries the existence of a file.  If it does not exist, a
+                   "0" is returned to the Host followed by a carriage
+                   return.  If it does exist, the returned text is a "1."
+                   followed by the file size (in decimal).  The return
+                   sequence is terminated by a carriage return.  An example
+                   of the returned text could be "1.21345".
+              03   Queries extended return information.  If the file does
+                   not exist, a "0" is returned followed by a carriage
+                   return.  If it does exist, the text returned to the Host
+                   is in the Format: 1.size.date.time <cr>.  An example of a
+                   return statement could be "1.21345.01/02/93.03:04:30<cr>"
+              04   Queries extended return information.  If the file does
+                   not exist, a "0" is returned followed by a carriage
+                   return.  If it does exist, the text returned to the Host
+                   is in the Format: 1.filename.size.date.time <cr>. An
+                   example of a return statement could be
+                   "1.MYFILE.RIP.20345.01/02/93.03:04:30 <cr>".  Note that
+                   the file extension adds another period into the return
+                   text.
+
+Notes      : You must check for the return information and deal with it
+             yourself.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 37 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+RipEnterBlockMode procedure                                           RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Enter file transfer mode with the remote system
+
+Declaration: RipEnterBlockMode(UL: Boolean; Proto,FType: Word;
+             FName: Str12);
+
+Support    : Send only
+
+Variables  : UL         : True: Upload; False: Download
+             Proto      : Protocol to use (see chart)
+             FType      : Transfer Type (see chart)
+             FName      : FileName (if UL, Xmodem, or Kermit)
+
+             Value   Protocol            Filename Required?
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+               0     Xmodem (checksum)          Yes
+               1     Xmodem (CRC)               Yes
+               2     Xmodem-1K                  Yes
+               3     Xmodem-1K (G)              Yes
+               4     Kermit                     Yes
+               5     Ymodem (batch)             No
+               6     Ymodem-G                   No
+               7     Zmodem (crash recovery)    No
+
+             Value   Description of Block Transfer Contents
+             ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+               0     RIP file sequence (display it)
+               1     RIP file sequence (store them)
+               2     ICN file sequence (store them in proper directories)
+               3     HLP file sequence (store it, and auto-load if needed)
+               4     COMPOSITE DYNAMIC file sequence (batch protocols only)
+               5     ACTIVE DYNAMIC file sequence (batch protocols only)
+
+Notes      : Composite Dynamic and Active Dynamic modes process the files 
+             based on file extension.  They will only work for .RIP and .ICN 
+             files though.  Composite just stores the files while Active
+             stores and displays the .RIP files.
+
+
+
+RipNoMore procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : End a RIP sequence
+
+Declaration: RipNoMore;
+
+Support    : Send and process
+
+Notes      : This procedure will send 3 NoMore sequences to the remote as
+             suggested by the RIPscrip specification.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 38 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+SendStr procedure                                                     RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : A procedure to be overwritten to work with your comm routines
+
+Declaration: SendStr(InStr : String);
+
+Notes      : An undefined procedure designed to be overwritten.  See the
+             example door provided.
+
+
+
+SendStrCR procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : A procedure to be overwritten to work with your comm routines
+
+Declaration: SendStrCR(InStr : String);
+
+Notes      : An undefined procedure designed to be overwritten.  See the
+             example door provided.
+
+
+
+StatLine procedure                                                    RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Display a status line
+
+Declaration: StatLine;
+
+Notes      : This should be called after RipObj.StatText is (re)set.
+
+
+
+Done destructor                                                       RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : End the RIPlink processor
+
+Declaration: Done;
+
+Notes      : Cleans up.  Use when ending your program.  Returns to text mode,
+             etc.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 39 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+DisplayRIPfile function                                               RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Display a RIP file.
+
+Declaration: DisplayRIPfile(Path: String): Boolean;
+
+Returns    : True: File existed; False: File did not exist
+
+Variables  : Path       : Full path and name of .RIP file to display
+
+Notes      : This procedure calls ParseRip for each character.  You may
+             choose to write your own processor if this one does not suit
+             your needs.
+
+
+
+ParseRipStr procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Parses a RIPscrip sequence
+
+Declaration: ParseRip(S: Char; SendChar: Boolean);
+
+Variables  : S          : String to parse
+             SendChar   : Send this string out the port?
+
+Notes      : This procedures calls ParseRip for each character in the string.
+
+
+
+ParseRip procedure                                                    RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Parse next character in a RIPscrip sequence
+
+Declaration: ParseRip(C: Char; SendChar: Boolean);
+
+Variables  : C          : Character to parse
+             SendChar   : Send this character out the port?
+
+
+
+DoTextStr procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Send a string to the Text Window
+
+Declaration: DoTextStr(S: String);
+
+Variables  : S          : String to send to window
+
+Notes      : This procedure calls DoTextChar for each character in the
+             string.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 40 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+DoTextChar procedure                                                  RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Send a character to the Text Window
+
+Declaration: DoTextChar(C: Char);
+
+Variables  : C          : Character to send to window
+
+
+
+MouseInit procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Initialize Mouse
+
+Declaration: MouseInit;
+
+Notes      : This procedure is automatically called by Init.
+
+
+
+MouseOn procedure                                                     RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Turn on the Mouse Cursor
+
+Declaration: MouseOn;
+
+Notes      : This will turn on the mouse cursor regardless of how many times
+             MouseOff has been called.
+
+
+
+MouseOff procedure                                                    RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Turn off the Mouse Cursor
+
+Declaration: MouseOff;
+
+Notes      : This will turn off the mouse cursor regardless of how many times
+             MouseOn has been called.
+
+
+
+GetPosition procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Returns location and button status of the mouse
+
+Declaration: GetPosition(var ButtonStatus,xPos,yPos: Integer);
+
+Variables  : ButtonStatus : Which buttons are currently down
+             xPos,yPos    : X and Y position of the mouse cursor
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 41 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+SetMousePos procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Relocate the mouse cursor
+
+Declaration: SetMousePos(x,y: Integer);
+
+Variables  : x,y        : New location for the mouse cursor
+
+
+
+CheckMouse procedure                                                  RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Update internal variables and process buttons
+
+Declaration: CheckMouse;
+
+Notes      : This procedure must be called regularly in your GetChar routine.
+             It will check the mouse buttons, invert buttons as necessary,
+             and put strings resulting from clicked buttons into a buffer.
+
+
+
+AddRegion procedure                                                   RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Add a mouse region to the internal stack of regions
+
+Declaration: AddRegion(x0,y0,x1,y1: Word; Invert,Reset: Boolean;
+             TheText: Str50);
+
+Variables  : x0,y0      : Upper lefthand coordinates of the region
+             x1,y1      : Lower righthand coordinates of the region
+             Invert     : Invert this button when clicked?
+             Reset      : Reset screen when mouse button released?
+                          (Not currently implemented)
+             TheText    : String to place into buffer when button is clicked
+
+Notes      : This procedure is primarily intended for internal use and is
+             only documented in case you might need it.
+
+
+
+CharInBuffer function                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : To determine if there is a character in the mouse buffer
+
+Declaration: CharInBuffer: Boolean;
+
+Returns    : True if there are one or more characters in the buffer
+
+Notes      : This function is designed to be included in your GetChar routine
+             to allow it to know when to call GetNextChar (see below.)
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 42 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+GetNextChar function                                                  RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Return next character in the mouse buffer
+
+Declaration: GetNextChar: Char;
+
+Returns    : Next character from the mouse buffer
+
+Notes      : This function is also intended to be included in your GetChar
+             routine.
+
+
+
+KillRegions procedure                                                 RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Kill the internal list of regions
+
+Declaration: KillRegions;
+
+Notes      : Primarily intended for internal use.
+
+
+
+KillBuffer procedure                                                  RIPlink
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Kill the internal mouse buffer
+
+Declaration: KillBuffer;
+
+Notes      : Primarily intended for internal use.
+
+
+
+IntToStr function                                                    RIPlink1
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Convert an integer-type to a string
+
+Declaration: IntToStr(I: LongInt): String;
+
+Returns    : String representation of the integer-type
+
+Variables  : I          : Integer-type number
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 43 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+StrToInt function                                                    RIPlink1
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Convert a string to an integer-type
+
+Declaration: StrToInt(S: String): LongInt;
+
+Returns    : Integer-type representation of the string; 0 if string is
+             invalid
+
+Variables  : S          : String to convert
+
+
+
+BackSlash function                                                   RIPlink1
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Append a backslash to a string if it does not exist
+
+Declaration: BackSlash(InString: String): String;
+
+Returns    : String with a backslash
+
+Variables  : InString   : String to append a backslash to
+
+
+
+Exists function                                                      RIPlink1
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Check to see if a file exists
+
+Declaration: Exists(FN: String): Boolean;
+
+Returns    : True if file exists
+
+Variables  : FN         : Full path and name of file to check
+
+
+
+WordToMega function                                                  RIPlink1
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Convert a Word to a MegaNum
+
+Declaration: WordToMega(Num: Word): Str2;
+
+Returns    : 2 Digit MegaNum
+
+Variables  : Num        : Decimal number to convert
+
+Notes      : A MegaNum is RIPscrip's number format.  This function is mostly 
+             used internally to RIPlink, but is provided here in case you 
+             find a use for it.  Note that the word must not be larger at 
+             1295 as that is the maximum for a 2 digit meganum.  If your word 
+             is 1296 or larger, use the WordToMega4 function described below.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 44 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+WordToMega4 function                                                 RIPlink1
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Convert a Word to a 4 digit MegaNum
+
+Declaration: WordToMega4(Num: Word): Str4;
+
+Returns    : 4 Digit MegaNum
+
+Variables  : Num        : Decimal number to convert
+
+Notes      : This function operates just like the WordToMega function.  The
+             only difference is in the length of the meganum returned.
+
+
+
+MegaToWord function                                                  RIPlink1
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Convert a MegaNum to a Word
+
+Declaration: MegaToWord(S2: Str2): Word;
+
+Returns    : Word
+
+Variables  : S2         : 2 Digit MegaNum
+
+Notes      : This function turns a 2 digit meganum into a word.
+
+
+
+Mega4ToLong function                                                 RIPlink1
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Purpose    : Convert a 4 digit MegaNum to a Longint
+
+Declaration: Mega4ToLong(S4: Str4): Longint;
+
+Returns    : Longint
+
+Variables  : S4         : 4 Digit MegaNum
+
+Notes      : This takes a 4 digit meganum and turns it into a longint.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 45 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ              Programming Suggestions              ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+It is suggested that you include a reference in your documentation that
+RIPscrip currently only supports EGA or above graphics.  This will hopefully
+eliminate the possibility of people with CGA or Mono monitors who can't seem
+to make the RIP graphics work <grin>.  RIPlink will still send out RIP codes
+to the user, of course.
+
+Use the internal RIPXxxxx procedures when possible.  Whereas the Rip Parser
+works just fine, it is a bit slower and has the potential to take vast
+amounts of .EXE space.
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ           Comments from InterProgramming          ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+We hope you enjoy this product.  It has increased registrations of our 
+products substantially, and we hope it does the same for you.  Also, to any
+door author who is interested:  Send us a registered copy of your door and
+we'll put it up on our board for others to see and use.  And, if you send
+us a distribution copy, we'll make it available for download and Freq.  As 
+mentioned above, RIPlink doesn't fully support everything specified by the 
+RIPscrip standard.  Continued additions to RIPlink are in progress to bring 
+RIPlink closer to fully supporting the evolving RIPscrip standard. 
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 46 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ                      Credits                      ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+Deepest thanks and gratitude goes to:
+
+Jesus Christ for making the ultimate sacrifice of death for each and every 
+ one of us.  And, for giving us the benefit of that sacrifice, the
+ opportunity to spend eternity in heaven with him, as a free gift which can
+ not be bought, only accepted.
+
+Special thanks also goes out to the following people:
+
+John Tucker for his support, particularly when first developing RIPlink.
+
+Jason Niver for his tremendous help with many projects and always being 
+ around to help.
+
+Jason Trowbridge for just being there, for providing input and comments on
+ RIPlink, and for assisting with the mouse support.
+
+Michael Welling for his assistance in making RIPlink available for TP 5.5.
+
+Casey Robinson and Jason Percival for sending along code to do the Bezier
+ curve.
+
+And last, but not least, those individuals who sent us messages stating their 
+ interest in this product before it was available, or even known about.
+
+     You were all instrumental in making RIPlink what it is.
+
+                       THANKS GUYS!
+
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ RIPlink - Version 1.21                                            Page 47 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³°°°±±±²²²ÛÛÛ                 Index to Methods                  ÛÛÛ²²²±±±°°°³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+        Method Name           Page        Method Name           Page
+        ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ   ÄÄÄÄÄÄ       ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ   ÄÄÄÄÄÄ
+        AddRegion              41         RipFillPoly            26
+        BackSlash              43         RipFillStyle           28
+        CharInBuffer           41         RipFontStyle           21
+        CheckMouse             41         RipGetImage            30
+        DisplayRIPfile         39         RipGotoXY              17
+        Done                   38         RipHome                18
+        DoTextChar             40         RipKillMouseFields     29
+        DoTextStr              39         RipLine                22
+        Exists                 43         RipLineStyle           27
+        GetNextChar            42         RipLoadIcon            31
+        GetPosition            40         RipMouse               29
+        Init                   16         RipMove                20
+        IntToStr               42         RipNoMore              37
+        KillBuffer             42         RipOnePalette          19
+        KillRegions            42         RipOval                23
+        Mega4ToLong            44         RipOvalArc             24
+        MegaToWord             44         RipOvalPieSlice        25
+        MouseInit              40         RipPieSlice            24
+        MouseOff               40         RipPixel               22
+        MouseOn                40         RipPolygon             25
+        ParseRip               39         RipPolyLine            26
+        ParseRipStr            39         RipPutImage            30
+        RipArc                 24         RipQuery               35
+        RipBar                 22         RipReadScene           36
+        RipBeginText           29         RipRectangle           22
+        RipBezier              25         RipRegionText          30
+        RipButton              34         RipResetWindows        17
+        RipButtonStyle         32         RipSetPalette          19
+        RipCircle              23         RipText                20
+        RipColor               18         RipTextWindow          16
+        RipCopyRegion          35         RipTextXY              21
+        RipDefine              34         RipViewPort            16
+        RipEndText             30         RipWriteIcon           31
+        RipEnterBlockMode      37         RipWriteMode           20
+        RipEraseEOL            18         SendStr                38
+        RipEraseView           17         SendStrCR              38
+        RipEraseWindow         17         SetMousePos            41
+        RipFileQuery           36         StatLine               38
+        RipFill                26         StrToInt               43
+        RipFilledOval          23         WordToMega             43
+        RipFillPattern         28         WordToMega4            44
+

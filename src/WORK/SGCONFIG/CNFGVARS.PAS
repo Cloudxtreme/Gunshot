@@ -1,0 +1,271 @@
+{$I DEFINES.INC}
+UNIT CNFGVARS;
+
+
+INTERFACE
+
+
+USES Shotgun,Version,MkFFile;
+
+
+TYPE FFF = RECORD
+     Name     : String[12];
+     FileType : Byte;
+     FileSize : Longint;
+     FileDesc : String[46];
+     END;
+TYPE FFFF = RECORD
+     OrigIndex : Word;
+     Info      : String[16];
+     InfoNum   : Longint;
+     END;
+TYPE FFFFF = RECORD
+     Name  : String[12];
+     Size  : Longint;
+     Time  : Longint;
+     END;
+TYPE File_Info  = Array[1..1000] OF FFF;
+TYPE File_Info2 = Array[1..1000] OF FFFF;
+TYPE File_Info3 = Array[1..1000] OF FFFFF;
+TYPE Rec = RECORD
+     N   : Word;
+     V   : String[40];
+     END;
+VAR  O                  : Rec;
+     Colours            : _SysColourANSI;
+     Colours2           : _SysColourSVGA;
+     Menu               : _Menu_Record;
+     Menu2              : _Menu_Record;
+     LangDir            : _LanguageDirs_Record;
+     LangDir2           : _LanguageDirs_Record;
+     BadLang            : _BadLang_Record;
+     BadLang2           : _BadLang_Record;
+     Scanners           : _VirusScanners_Record;
+     ArcDefs            : _Archiver_Record;
+     FileArea           : _FileArea_Record;
+     FileArea2          : _FileArea_Record;
+     FileArea3          : _FileArea_Record;
+     FileSubs           : _FileSub_Record;
+     FileSubs2          : _FileSub_Record;
+     MessageArea        : _MessageArea_Record;
+     MessageArea2       : _MessageArea_Record;
+     MessageSubs        : _MessageSub_Record;
+     MessageSubs2       : _MessageSub_Record;
+     UserAccess         : _Access_Record;
+     UserAccess2        : _Access_Record;
+     Verifier           : _VerifyLog_Record;
+     Verifier2          : _VerifyLog_Record;
+     System_Info        : _SystemDat_Record;
+     Totals             : _SystemCalls_Record;
+     UserRecord         : _UsersBBS_Record;
+     UserRecord2        : _UsersBBS_Record;
+     FileDefs           : _FileDefinitions;
+     FileDesc           : ARRAY[1..18] Of _FileDescriptions;
+     FileDefs2          : _FileDefinitions;
+     FileDesc2          : ARRAY[1..18] Of _FileDescriptions;
+     NodeInfo           : _Node_Record;
+     ProtocolInfo       : _Protocols_Record;
+     ErrorLevelInfo     : _ErrLevel_Record;
+     ErrorLevelInfo2    : _ErrLevel_Record;
+     SessionPassword    : _SessionPW_Record;
+     SessionPassword2   : _SessionPW_Record;
+     Mailer2Info        : _Mailer2_Record;
+     MailerInfo         : _Mailer_Record;
+     ConfigSetup        : _SGConfig_Record;
+     CBVSetup           : ^_CallBack_Record;
+     NetWorkInfo        : _Network_Record;
+     NetWorkInfo2       : _Network_Record;
+     NetOrigins         : _Origin_Record;
+     NetOrigins2        : _Origin_Record;
+     Names              : _ScreenNames_Record;
+     UUCP               : _UUCP_Record;
+     Shuttle            : _Shuttle_Record;
+     Shuttle2           : _Shuttle_Record;
+     Reports            : _Report_Record;
+     Reports2           : _Report_Record;
+     Links              : _Links_Record;
+     Links2             : _Links_Record;
+     LinkGroups         : _Link_Groups_Record;
+     LinkGroups2        : _Link_Groups_Record;
+     Opening            : _Opening_Record;
+     Opening2           : _Opening_Record;
+     NewUserVga         : _NewUserVga_Record;
+     NewUserVga2        : _NewUserVga_Record;
+     NewUserANSI        : _NewUserANSI_Record;
+     NewUserANSI2       : _NewUserANSI_Record;
+     Modems             : _Modems_Record;
+     ExitEvent          : _Exit_Event;
+     ExitEvent2         : _Exit_Event;
+     DropEvent          : _Drop_Event;
+     DropEvent2         : _Drop_Event;
+     PollEvent          : _Poll_Event;
+     PollEvent2         : _Poll_Event;
+     SendEvent          : _Send_Event;
+     SendEvent2         : _Send_Event;
+     MailEvent          : _Mail_Event;
+     MailEvent2         : _Mail_Event;
+     FreqEvent          : _Freq_Event;
+     FreqEvent2         : _Freq_Event;
+     PhoneBook          : _PhoneBook_Record;
+     PhoneBook2         : _PhoneBook_Record;
+     SGFileKill         : _SGFileKill_Record;
+     SGFileKill2        : _SGFileKill_Record;
+     CallRouting        : _CallRouting_Record;
+     CallRouting2       : _CallRouting_Record;
+     Translation        : _CallBack_Translation;
+     Translation2       : _CallBack_Translation;
+     CDRoms             : _CDRom_Record;
+     CDRoms2            : _CDRom_Record;
+     ArcUtils           : _Archiver_Utilities;
+     ArcUtils2          : _Archiver_Utilities;
+     Freqs              : _FreqRecord;
+     Inits              : _Mailer_Inits;
+     Inits2             : _Mailer_Inits;
+     CommandFile        : _Command;
+     ExtCodes           : _ExtCodesM_Record;
+     CallerId           : _CallerId_Record;
+     FaxCodes           : _FaxCodes_Record;
+     ShotgunColours     : _Shotgun_Colours;
+     NodeListSG         : _PrivateNode_Sg;
+     NodeListSG2        : _PrivateNode_Sg;
+     FunctionKeys       : _Function_Keys;
+     LockoutRecord      : _Lockout_Record;
+     LockoutRecord2     : _Lockout_Record;
+     ExternalApps       : _External_Apps;
+     HiddenDial         : _Hidden_Dial;
+     FHiddenDial        : File Of _Hidden_Dial;
+     FExternalApps      : File Of _External_Apps;
+     FLockoutRecord     : File Of _Lockout_Record;
+     FLockoutRecord2    : File Of _Lockout_Record;
+     FFunctionKeys      : File Of _Function_Keys;
+     FNodeListSG        : File Of _PrivateNode_Sg;
+     FNodeListSG2       : File Of _PrivateNode_Sg;
+     FShotgunColours    : File Of _Shotgun_Colours;
+     FFaxCodes          : File Of _FaxCodes_Record;
+     FCallerId          : File Of _CallerId_Record;
+     FExtCodes          : File Of _ExtCodesM_Record;
+     FCommandFile       : File Of _Command;
+     FInits             : File Of _Mailer_Inits;
+     FInits2            : File Of _Mailer_Inits;
+     FFreqs             : File Of _FreqRecord;
+     FArcUtils          : File Of _Archiver_Utilities;
+     FArcUtils2         : File Of _Archiver_Utilities;
+     FCDRoms            : File Of _CDRom_Record;
+     FCDRoms2           : File Of _CDRom_Record;
+     FTranslation       : File Of _CallBack_Translation;
+     FTranslation2      : File Of _CallBack_Translation;
+     FCallRouting       : File Of _CallRouting_Record;
+     FCallRouting2      : File Of _CallRouting_Record;
+     FSGFileKill        : File Of _SGFileKill_Record;
+     FSGFileKill2       : File Of _SGFileKill_Record;
+     FPhoneBook         : File Of _PhoneBook_Record;
+     FNetOrigins        : File Of _Origin_Record;
+     FNetOrigins2       : File Of _Origin_Record;
+     FPhoneBook2        : File Of _PhoneBook_Record;
+     FMailEvent         : File Of _Mail_Event;
+     FMailEvent2        : File Of _Mail_Event;
+     FFreqEvent         : File Of _Freq_Event;
+     FFreqEvent2        : File Of _Freq_Event;
+     FPollEvent         : File Of _Poll_Event;
+     FPollEvent2        : File Of _Poll_Event;
+     FSendEvent         : File Of _Send_Event;
+     FSendEvent2        : File Of _Send_Event;
+     FDropEvent         : File Of _Drop_Event;
+     FDropEvent2        : File Of _Drop_Event;
+     FExitEvent         : File Of _Exit_Event;
+     FExitEvent2        : File Of _Exit_Event;
+     FModems            : File Of _Modems_Record;
+     FNewUserANSI       : File Of _NewUserANSI_Record;
+     FNewUserANSI2      : File Of _NewUserANSI_Record;
+     FNewUserVga        : File Of _NewUserVga_Record;
+     FNewUserVga2       : File Of _NewUserVga_Record;
+     FOpening           : File Of _Opening_Record;
+     FOpening2          : File Of _Opening_Record;
+     FLinks             : File Of _Links_Record;
+     FLinks2            : File Of _Links_Record;
+     FLinkGroups        : File Of _Link_Groups_Record;
+     FLinkGroups2       : File Of _Link_Groups_Record;
+     FReports           : File Of _Report_Record;
+     FReports2          : File Of _Report_Record;
+     FShuttle           : File Of _Shuttle_Record;
+     FShuttle2          : File Of _Shuttle_Record;
+     FUUCP              : File Of _UUCP_Record;
+     FNames             : File Of _ScreenNames_Record;
+     FNetWorkInfo       : File Of _Network_Record;
+     FNetWorkInfo2      : File Of _Network_Record;
+     FCBVSetup          : File Of _CallBack_Record;
+     FConfigSetup       : File Of _SGConfig_Record;
+     FMailerInfo        : File Of _Mailer_Record;
+     FMailer2Info       : File Of _Mailer2_Record;
+     FSessionPassword   : File Of _SessionPW_Record;
+     FSessionPassword2  : File Of _SessionPW_Record;
+     FErrorLevelInfo    : File Of _ErrLevel_Record;
+     FErrorLevelInfo2   : File Of _ErrLevel_Record;
+     FProtocolInfo      : File Of _Protocols_Record;
+     FNodeInfo          : File Of _Node_Record;
+     FFileDefs          : File Of _FileDefinitions;
+     FFileDesc          : File Of _FileDescriptions;
+     FFileDefs2         : File Of _FileDefinitions;
+     FFileDesc2         : File Of _FileDescriptions;
+     FColours           : File Of _SysColourANSI;
+     FColours2          : File Of _SysColourSVGA;
+     FMenu              : File Of _Menu_Record;
+     FMenu2             : File Of _Menu_Record;
+     FLangDir           : File Of _LanguageDirs_Record;
+     FLangDir2          : File Of _LanguageDirs_Record;
+     FBadLang           : File Of _BadLang_Record;
+     FBadLang2          : File Of _BadLang_Record;
+     FScanners          : File Of _VirusScanners_Record;
+     FArcDefs           : File Of _Archiver_Record;
+     FFileArea          : File Of _FileArea_Record;
+     FFileArea2         : File Of _FileArea_Record;
+     FFileSubs          : File Of _FileSub_Record;
+     FMessageArea       : File Of _MessageArea_Record;
+     FMessageArea2      : File Of _MessageArea_Record;
+     FMessageSubs       : File Of _MessageSub_Record;
+     FUserAccess        : File Of _Access_Record;
+     FVerifier          : File Of _VerifyLog_Record;
+     FVerifier2         : File Of _VerifyLog_Record;
+     FSystem_Info       : File Of _SystemDat_Record;
+     FTotals            : File Of _SystemCalls_Record;
+     FUserRecord        : File Of _UsersBBS_Record;
+     DoingMessageEdit   : Boolean;
+     DoingMessageChange : Boolean;
+     DoingSubChange     : Boolean;
+     DoingLinksEdit     : Boolean;
+     DoingOpeningEdit   : Boolean;
+     SelectedLanguage   : String;
+     EditMenuFile       : String;
+     WorkingString      : String;
+     BaseDirectory      : String;
+     FileInfo           : ^File_Info;
+     FileInfoTmp        : ^File_Info;
+     FileInfo2          : ^File_Info2;
+     FileInfo3          : ^File_Info3;
+     FileCounter        : Word;
+     CurrentNode        : Word;
+     WorkDir            : String;
+     WorkingFile        : FFileObj;
+
+
+PROCEDURE DrawLanguage;
+
+
+IMPLEMENTATION
+
+
+USES Crt,IntrFace,BsString;
+
+
+PROCEDURE DrawLanguage;
+BEGIN
+     TextBackGround_BS(Colour.DeskTopColour);
+     TextColor_BS(15);
+     GotoXY(1,24); ClrEol;
+     GotoXY(1,24); WRITE(_PadBoth('LANGUAGE DIRECTORY: '+SelectedLanguage+'     NODE: '+_String(CurrentNode),80));
+END;
+
+
+BEGIN
+     CurrentNode   := 1;
+END.

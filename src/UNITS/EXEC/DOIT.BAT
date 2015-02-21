@@ -1,0 +1,4 @@
+@ECHO OFF
+MAKE -B
+MOVE *.OBJ ..
+MOVE *.TPU ..

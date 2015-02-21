@@ -1,0 +1,126 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 007B2H 007B3H extest             CODE
+ 007C0H 028C1H 02102H exec               CODE
+ 028D0H 02CD0H 00401H checkpat           CODE
+ 02CE0H 02E3EH 0015FH Dos                CODE
+ 02E40H 0345FH 00620H Crt                CODE
+ 03460H 04382H 00F23H System             CODE
+ 04390H 0523BH 00EACH DATA               DATA
+ 05240H 14C3FH 0FA00H STACK              STACK
+ 14C40H 14C40H 00000H HEAP               HEAP
+
+  Address         Publics by Value
+
+ 0000:0000       hexdig
+ 0000:0028       hexstr
+ 0000:01AE       help
+ 0000:0364       spcheck
+ 0000:054B       @
+ 007C:0185       getenv
+ 007C:0324       putenv
+ 007C:0EE1       RunExec
+ 007C:1406       @
+ 028D:0029       checkpath
+ 028D:03DB       exists
+ 02CE:0000       DosVersion
+ 02CE:0005       EnvCount
+ 02CE:000E       EnvStr
+ 02CE:0050       GetEnv
+ 02CE:00BE       MsDos
+ 02CE:00C9       Intr
+ 02CE:0126       SwapVectors
+ 02E4:000D       @
+ 02E4:0178       TextMode
+ 02E4:018D       Window
+ 02E4:01CD       ClrScr
+ 02E4:01E7       ClrEol
+ 02E4:01FB       InsLine
+ 02E4:0200       DelLine
+ 02E4:0220       GotoXY
+ 02E4:024C       WhereX
+ 02E4:0258       WhereY
+ 02E4:0264       TextColor
+ 02E4:027E       TextBackground
+ 02E4:0296       LowVideo
+ 02E4:029C       HighVideo
+ 02E4:02A2       NormVideo
+ 02E4:02A9       Delay
+ 02E4:02D5       Sound
+ 02E4:0302       NoSound
+ 02E4:0309       KeyPressed
+ 02E4:031B       ReadKey
+ 02E4:033D       AssignCrt
+ 0439:0006       OvrCodeList
+ 0439:0008       OvrHeapSize
+ 0439:000A       OvrDebugPtr
+ 0439:000E       OvrHeapOrg
+ 0439:0010       OvrHeapPtr
+ 0439:0012       OvrHeapEnd
+ 0439:0014       OvrLoadList
+ 0439:0016       OvrDosHandle
+ 0439:0018       OvrEmsHandle
+ 0439:001A       HeapOrg
+ 0439:001E       HeapPtr
+ 0439:0022       HeapEnd
+ 0439:0026       FreeList
+ 0439:002A       FreeZero
+ 0439:002E       HeapError
+ 0439:0032       ExitProc
+ 0439:0036       ExitCode
+ 0439:0038       ErrorAddr
+ 0439:003C       PrefixSeg
+ 0439:003E       StackLimit
+ 0439:0040       InOutRes
+ 0439:0042       RandSeed
+ 0439:0046       SelectorInc
+ 0439:0048       Seg0040
+ 0439:004A       SegA000
+ 0439:004C       SegB000
+ 0439:004E       SegB800
+ 0439:0050       Test8086
+ 0439:0051       Test8087
+ 0439:0052       FileMode
+ 0439:0056       method
+ 0439:0058       needed
+ 0439:005A       env
+ 0439:005C       i
+ 0439:005E       j
+ 0439:0060       argv
+ 0439:0160       fn
+ 0439:0260       par
+ 0439:0360       TheSwapDirectory
+ 0439:03E2       spawn_check
+ 0439:03E6       swap_prep
+ 0439:0C4A       CheckBreak
+ 0439:0C4B       CheckEOF
+ 0439:0C4C       DirectVideo
+ 0439:0C4D       CheckSnow
+ 0439:0C4E       LastMode
+ 0439:0C50       TextAttr
+ 0439:0C52       WindMin
+ 0439:0C54       WindMax
+ 0439:0C5E       Input
+ 0439:0D5E       Output
+ 0439:0E5E       SaveInt00
+ 0439:0E62       SaveInt02
+ 0439:0E66       SaveInt1B
+ 0439:0E6A       SaveInt21
+ 0439:0E6E       SaveInt23
+ 0439:0E72       SaveInt24
+ 0439:0E76       SaveInt34
+ 0439:0E7A       SaveInt35
+ 0439:0E7E       SaveInt36
+ 0439:0E82       SaveInt37
+ 0439:0E86       SaveInt38
+ 0439:0E8A       SaveInt39
+ 0439:0E8E       SaveInt3A
+ 0439:0E92       SaveInt3B
+ 0439:0E96       SaveInt3C
+ 0439:0E9A       SaveInt3D
+ 0439:0E9E       SaveInt3E
+ 0439:0EA2       SaveInt3F
+ 0439:0EA6       SaveInt75
+
+Program entry point at 0000:054B

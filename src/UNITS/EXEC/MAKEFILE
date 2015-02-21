@@ -1,0 +1,20 @@
+# sample makefile for EXTEST - Turbo Pascal, Tasm, and Borland Make
+PC=bpc
+OPT=/$D+ /$F- /V
+ASM=tasm /Zi /MX /W /DPASCAL
+
+extest.exe: extest.pas checkpat.tpu exec.tpu
+   $(PC) extest $(OPT) /GP /M
+
+spawnp.obj: spawn.asm
+   $(ASM) spawn,$*;
+
+checkpap.obj: checkpat.asm
+   $(ASM) /DFARCALL checkpat,$*;
+
+checkpat.tpu: checkpat.pas checkpat.h checkpap.obj
+   $(PC) checkpat $(OPT)
+
+exec.tpu: exec.pas checkpat.tpu spawnp.obj
+   $(PC) exec $(OPT)
+

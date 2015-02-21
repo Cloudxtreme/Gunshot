@@ -1,0 +1,9 @@
+| Swap program to XMS, EMS, or Disk, then spawn. Version 3.3a 93-06-22.
+| This file contains full source code (in C, Pascal, and Assembler) 
+| for a module that allows you to swap your program to XMS, EMS, or disk,
+| and then spawn any DOS program, including COMMAND.COM. I/O redirection
+| and execution of batch files is handled automatically. Only a small 
+| reload stub is left in memory. Compatible with Microsoft C, Turbo C, 
+| Watcom C, and Turbo Pascal. Binaries included, recompilation 
+| requires MASM 5.1 or later, or TASM. Packed with LHA 2.13.
+| Unrestricted Public Domain, no registration or royalty fees.

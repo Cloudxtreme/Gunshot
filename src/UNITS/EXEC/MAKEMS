@@ -1,0 +1,25 @@
+# sample makefile for EXTEST - Microsoft C, MASM, and NMAKE
+MODEL=S
+AMODEL=small
+
+CC=cl -c -W3 -A$(MODEL) -Ox -Zi -Fo$*
+LINK=link /M /CO
+OBJ=exec$(MODEL).obj extest$(MODEL).obj checkpc$(MODEL).obj spawnc$(MODEL).obj
+ASM=masm /Zi /MX /W2 /DMODL=$(AMODEL)
+
+
+extest.exe: $(OBJ)
+   $(LINK) $(OBJ),extest,extest;
+
+spawnc$(MODEL).obj: spawn.asm
+   $(ASM) spawn,$*;
+
+checkpc$(MODEL).obj: checkpat.asm
+   $(ASM) checkpat,$*;
+
+exec$(MODEL).obj: exec.c exec.h checkpat.h
+   $(CC) exec.c
+
+extest$(MODEL).obj: extest.c exec.h
+   $(CC) extest.c
+

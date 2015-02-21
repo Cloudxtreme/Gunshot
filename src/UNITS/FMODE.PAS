@@ -1,0 +1,13 @@
+UNIT FMode;
+
+
+INTERFACE
+
+
+CONST SetFileMode = 66;
+
+
+IMPLEMENTATION
+
+
+END.
