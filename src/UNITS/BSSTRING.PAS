@@ -101,6 +101,7 @@ BEGIN
 END;
 
 
+{$IFDEF MSDOS}
 FUNCTION _RemoveSpaces(InString: String): String; Assembler;
 ASM
    PUSH DS
@@ -127,6 +128,30 @@ ASM
    STOSB
    POP  DS
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+FUNCTION _RemoveSpaces(InString: String): String;
+VAR
+  I: Integer;
+  OutString: String;
+BEGIN
+  if (Pos(' ', InString) > 0) then
+  begin
+    OutString := '';
+    for I := 1 to Length(InString) do
+    begin
+      if (InString[I] <> ' ') then
+      begin
+        OutString := OutString + InString[I];
+      end;
+    end;
+    _RemoveSpaces := OutString;
+  end else
+  begin
+    _RemoveSpaces := InString;
+  end;
+END;
+{$ENDIF}
 
 
 FUNCTION _RemoveLeftSpaces(InString: String): String;
@@ -161,6 +186,7 @@ BEGIN
 END;
 
 
+{$IFDEF MSDOS}
 FUNCTION _RemoveUnderScores(InString: String): String; Assembler;
 ASM
    PUSH DS
@@ -183,6 +209,34 @@ ASM
 @3:
    POP  DS
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+// REETODO Confirm this replaces underscores with spaces
+FUNCTION _RemoveUnderScores(InString: String): String;
+VAR
+  I: Integer;
+  OutString: String;
+BEGIN
+  if (Pos('_', InString) > 0) then
+  begin
+    OutString := '';
+    for I := 1 to Length(InString) do
+    begin
+      if (InString[I] = '_') then
+      begin
+        OutString := OutString + ' ';
+      end else
+      begin
+        OutString := OutString + InString[I];
+      end;
+    end;
+    _RemoveUnderScores := OutString;
+  end else
+  begin
+    _RemoveUnderScores := InString;
+  end;
+END;
+{$ENDIF}
 
 
 FUNCTION _IsNumeric(Str: String): Boolean;
@@ -248,6 +302,7 @@ BEGIN
 END;
 
 
+{$IFDEF MSDOS}
 FUNCTION _Pos2(Objct,Target: String; StartPos: Byte): Byte; Assembler;
 ASM
            {$IFOPT G+}
@@ -295,8 +350,27 @@ ASM
            POP     BP
            {$ENDIF}
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+FUNCTION _Pos2(Objct,Target: String; StartPos: Byte): Byte;
+VAR
+  Result: Byte;
+BEGIN
+  if (StartPos <= 1) then
+  begin
+    Result := Pos(Objct, Target);
+  end else
+  begin
+    Delete(Target, 1, StartPos - 1);
+    Result := Pos(Objct, Target);
+    if (Result > 0) then Inc(Result, StartPos - 1);
+  end;
+  _Pos2 := Result;
+END;
+{$ENDIF}
 
 
+{$IFDEF MSDOS}
 FUNCTION _UpperCase(InString: String): String; Assembler;
 ASM
    PUSH DS
@@ -321,8 +395,29 @@ ASM
 @3:
    POP  DS
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+// Found in SWAG, claims to be roughly 40% faster than for loop using UpCase()
+FUNCTION _UpperCase(InString: String): String;
+VAR
+  i, len : Integer;
+BEGIN
+  i := 0;
+  len := Ord(InString[0]);
+  Repeat
+    Inc(i);
+    If i > len Then
+      Break;
+    If InString[i] in ['a'..'z'] Then
+      Dec(InString[i], 32);
+  Until False;
+  
+  _UpperCase := InString;
+END;
+{$ENDIF}
 
 
+{$IFDEF MSDOS}
 FUNCTION _LowerCase(InString: String): String; Assembler;
 ASM
    PUSH DS
@@ -347,6 +442,26 @@ ASM
 @3:
    POP  DS
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+// Inverse of _UpperCase, which was found in SWAG
+FUNCTION _LowerCase(InString: String): String;
+VAR
+  i, len : Integer;
+BEGIN
+  i := 0;
+  len := Ord(InString[0]);
+  Repeat
+    Inc(i);
+    If i > len Then
+      Break;
+    If InString[i] in ['A'..'Z'] Then
+      Inc(InString[i], 32);
+  Until False;
+  
+  _LowerCase := InString;
+END;
+{$ENDIF}
 
 
 END.

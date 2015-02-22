@@ -18,11 +18,7 @@ Interface
 
 
 Uses
-  {$IFDEF WINDOWS}
-  WinDos,Shotgun,BsString;
-  {$ELSE}
   Dos,Shotgun,BsString;
-  {$ENDIF}
 
 
 Type MKDateType = Record
@@ -45,13 +41,8 @@ Function  IsValidAddr(Addr: AddrType): Boolean;
   {Result in seconds}
 Function  NameCrcCode(Str: String): LongInt; {Get CRC code for name}
 Function  ValidMKDate(DT: MKDateTime): Boolean;
-{$IFDEF WINDOWS}
-Procedure DT2MKDT(Var DT: TDateTime; Var DT2: MKDateTime);
-Procedure MKDT2DT(Var DT: MKDateTime; Var DT2: TDateTime);
-{$ELSE}
 Procedure DT2MKDT(Var DT: DateTime; Var DT2: MKDateTime);
 Procedure MKDT2DT(Var DT: MKDateTime; Var DT2: DateTime);
-{$ENDIF}
 Procedure Str2MKD(St: String; Var MKD: MKDateType);
 Function MKD2Str(MKD: MKDateType): String;
 
@@ -139,11 +130,7 @@ Function ParseAddr(AStr: String; CurrAddr: AddrType; Var DestAddr: AddrType): Bo
   End;
 
 
-{$IFDEF WINDOWS}
-Procedure DT2MKDT(Var DT: TDateTime; Var DT2: MKDateTime);
-{$ELSE}
 Procedure DT2MKDT(Var DT: DateTime; Var DT2: MKDateTime);
-{$ENDIF}
 
   Begin
   DT2.Year := DT.Year;
@@ -155,11 +142,7 @@ Procedure DT2MKDT(Var DT: DateTime; Var DT2: MKDateTime);
   End;
 
 
-{$IFDEF WINDOWS}
-Procedure MKDT2DT(Var DT: MKDateTime; Var DT2: TDateTime);
-{$ELSE}
 Procedure MKDT2DT(Var DT: MKDateTime; Var DT2: DateTime);
-{$ENDIF}
 
   Begin
   DT2.Year := DT.Year;
@@ -173,11 +156,7 @@ Procedure MKDT2DT(Var DT: MKDateTime; Var DT2: DateTime);
 
 Function  ValidMKDate(DT: MKDateTime): Boolean;
   Var
-    {$IFDEF WINDOWS}
-    DT2: TDateTime;
-    {$ELSE}
     DT2: DateTime;
-    {$ENDIF}
 
   Begin
   MKDT2DT(DT, DT2);

@@ -97,7 +97,9 @@ type
     charfile      : file;
     FontPtr       : Pointer;
     FontSize      : word;
+{$IFDEF MSDOS}
     DriverPtr     : Pointer;
+{$ENDIF}
     {button info}
     ButPlainWidth, ButPlainHeight, ButOrientation, ButFlags,
     ButBevelSize, ButLabelFore, ButLabelDropShadow, ButPlainHilite,
@@ -452,6 +454,7 @@ begin
   with palette do
   begin
     size := 16;
+{$IFDEF MSDOS}    
     colors[0]  := c1;
     colors[1]  := c2;
     colors[2]  := c3;
@@ -468,6 +471,26 @@ begin
     colors[13] := c14;
     colors[14] := c15;
     colors[15] := c16;
+{$ENDIF}
+{$IFNDEF MSDOS}
+    // REETODO https://github.com/graemeg/freepascal/blob/master/packages/graph/src/inc/palette.inc has colours
+    colors[0].Red := 252; colors[0].Green := 252; colors[0].Blue := 252;
+    colors[1].Red := 252; colors[1].Green := 252; colors[1].Blue := 252;
+    colors[2].Red := 252; colors[2].Green := 252; colors[2].Blue := 252;
+    colors[3].Red := 252; colors[3].Green := 252; colors[3].Blue := 252;
+    colors[4].Red := 252; colors[4].Green := 252; colors[4].Blue := 252;
+    colors[5].Red := 252; colors[5].Green := 252; colors[5].Blue := 252;
+    colors[6].Red := 252; colors[6].Green := 252; colors[6].Blue := 252;
+    colors[7].Red := 252; colors[7].Green := 252; colors[7].Blue := 252;
+    colors[8].Red := 252; colors[8].Green := 252; colors[8].Blue := 252;
+    colors[9].Red := 252; colors[9].Green := 252; colors[9].Blue := 252;
+    colors[10].Red := 252; colors[10].Green := 252; colors[10].Blue := 252;
+    colors[11].Red := 252; colors[11].Green := 252; colors[11].Blue := 252;
+    colors[12].Red := 252; colors[12].Green := 252; colors[12].Blue := 252;
+    colors[13].Red := 252; colors[13].Green := 252; colors[13].Blue := 252;
+    colors[14].Red := 252; colors[14].Green := 252; colors[14].Blue := 252;
+    colors[15].Red := 252; colors[15].Green := 252; colors[15].Blue := 252;
+{$ENDIF}
   end;
   SetAllPalette(Palette);
 end;
@@ -1279,6 +1302,9 @@ begin
 end;
 
 Constructor RipObj.Init(userip : boolean;fontname : string);
+{$IFNDEF MSDOS}
+const MaxAvail: LongInt = 640 * 1024; // Pretend we have 640k
+{$ENDIF}    
 var
   GrDriver      : integer;
   GrMode        : Integer;
@@ -1330,10 +1356,12 @@ begin
     {$I+}
     if ioresult <> 0 then
       success := false;
+{$IFDEF MSDOS}
     GetMem(driverptr,5527);
     blockread(charfile,driverptr^,5527);
     if RegisterBGIdriver(driverptr) < 0 then
       success := false;
+{$ENDIF}
     FontPtr       := nil;
     FontSize      := 0;
 
@@ -1343,10 +1371,17 @@ begin
       Fail;
     end;
 
+{$IFDEF MSDOS}
     GrDriver := Graph.EGA64;
     GrMode   := Graph.EGA64Hi;
     SetGraphBufSize(4096);
     InitGraph(GrDriver, GrMode,'');
+{$ENDIF}
+{$IFNDEF MSDOS}
+    GrDriver := D4bit;
+    GrMode := m640x350;
+    InitGraph(GrDriver, GrMode,''); // REETODO Need to supply path to BGI fonts
+{$ENDIF}
     tres := graphresult;
     if tres <> grOk then
       success := false;
@@ -1403,9 +1438,14 @@ begin
     close(textfontfile);
     FreeMem(Queue,QueueSize);
     {$IFDEF MOUSE}
+{$IFDEF MSDOS}
     regs.ax := $0000;
     intr($33,regs);
     mouseexist := (regs.ax = $ffff);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT RIPLINK RipObj.Done'); Halt;
+{$ENDIF}
     {$ENDIF}
     if ClipB <> nil then
     begin
@@ -1414,7 +1454,9 @@ begin
       ClipSize := 0;
     end;
     CloseGraph;
+{$IFDEF MSDOS}
     FreeMem(driverptr,5527);
+{$ENDIF}
     if fontptr <> nil then
       freemem(fontptr,fontsize);
     close(charfile);
@@ -2607,9 +2649,14 @@ end;
 {$IFDEF MOUSE}
 Procedure RipObj.MouseInit;
 begin
+{$IFDEF MSDOS}
   regs.ax := $0000;
   intr($33,regs);
   mouseexist := (regs.ax = $ffff);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  mouseexist := false; // REETODO
+{$ENDIF}
   fillchar(regionarray,sizeof(mouseregionrecord)*128,#0);
   lastbutton := 0;
   inverted := 0;
@@ -2627,8 +2674,13 @@ begin
     exit;
   if RIPMouseOverride then
     exit;
+{$IFDEF MSDOS}
   regs.ax := $01;
   intr($33,regs);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT RIPLINK RipObj.MouseOn'); Halt;
+{$ENDIF}
 end;
 
 Procedure RipObj.MouseOff;
@@ -2637,8 +2689,13 @@ begin
     exit;
   if RIPMouseOverride then
     exit;
+{$IFDEF MSDOS}
   regs.ax := $02;
   intr($33,regs);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT RIPLINK RipObj.MouseOff'); Halt;
+{$ENDIF}
 end;
 
 Procedure RipObj.GetPosition(var ButtonStatus,xPos,yPos:Integer);
@@ -2649,11 +2706,16 @@ Procedure RipObj.GetPosition(var ButtonStatus,xPos,yPos:Integer);
 begin
   if not mouseexist then
     exit;
+{$IFDEF MSDOS}
   regs.ax := $03;
   intr($33,regs);
   buttonstatus := regs.bx;
   xpos := regs.cx;
   ypos := regs.dx;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT RIPLINK RipObj.GetPosition'); Halt;
+{$ENDIF}
 end;
 
 Procedure RipObj.SetMousePos(x,y:Integer);
@@ -2661,16 +2723,22 @@ Procedure RipObj.SetMousePos(x,y:Integer);
 begin
   if not mouseexist then
     exit;
+{$IFDEF MSDOS}
   regs.ax := $04;
   regs.cx := x;
   regs.dx := y;
   intr($33,regs);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT RIPLINK RipObj.SetMousePos'); Halt;
+{$ENDIF}
 end;
 
 Procedure RipObj.IsButtonDown(Button:Integer; var Status,DnCount,xPos,yPos:Integer);
 begin
   if not mouseexist then
     exit;
+{$IFDEF MSDOS}
   regs.ax := $05;
   regs.bx := button;
   intr($33,regs);
@@ -2678,12 +2746,17 @@ begin
   dncount := regs.bx;
   xpos := regs.cx;
   ypos := regs.dx;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT RIPLINK RipObj.IsButtonDown'); Halt;
+{$ENDIF}
 end;
 
 Procedure RipObj.IsButtonUp(Button:Integer; var Status,UpCount,xPos,yPos:Integer);
 begin
   if not mouseexist then
     exit;
+{$IFDEF MSDOS}
   regs.ax := $06;
   regs.bx := button;
   intr($33,regs);
@@ -2691,6 +2764,10 @@ begin
   upcount := regs.bx;
   xpos := regs.cx;
   ypos := regs.dx;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT RIPLINK RipObj.IsButtonUp'); Halt;
+{$ENDIF}
 end;
 
 Function FlagOn(Flags : word; FlagMask : word) : Boolean;

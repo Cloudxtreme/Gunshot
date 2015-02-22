@@ -55,13 +55,36 @@ procedure IntOn; inline($58/            {POP  AX}
                         $74/$01/        {JE   @DONE}
                         $FB);           {STI}
 {$ELSE}
+{$IFDEF MSDOS}  
 procedure IntOff; inline($9C/$FA);      {PUSHF/CLI}
 procedure IntOn; inline($9D);           {POPF}
+{$ENDIF}
+{$IFNDEF MSDOS}
+procedure IntOff;
+begin
+  // REENOTE Not needed
+end;
+
+procedure IntOn;
+begin
+  // REENOTE Not needed
+end;
+{$ENDIF}
 {$ENDIF}
 
 var
   {Set to 1/1/1970 00:00 GMT}
   StartDate : DateTimeRec;
+
+{$IFNDEF MSDOS}
+  function LoCaseMac(Ch : Char) : Char;
+    {-Lowercase character macro, no international character support}
+  begin
+    if (Ch in ['A'..'Z']) then
+      Inc(Ch, 32);
+    LoCaseMac := Ch;
+  end;
+{$ENDIF}
 
   procedure InitProtocolData(var P : ProtocolDataPtr;
                              PortPtr : PortRecPtr;

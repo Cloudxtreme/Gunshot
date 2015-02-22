@@ -73,6 +73,7 @@ function Linear(P: pointer): longint;
   Linear := (longint(seg(P^)) shl 4) + ofs(P^)
   end;
 
+{$IFDEF MSDOS}
 procedure DosNew(var P: pointer;
                      Bytes: word);
   { Get a pointer to a chunk of memory from DOS.  Returns NIL if
@@ -98,7 +99,16 @@ procedure DosNew(var P: pointer;
     end
   {$ENDIF}
   end;
+{$ENDIF}
+{$IFNDEF MSDOS}
+procedure DosNew(var P: pointer;
+                     Bytes: word);
+  begin
+    WriteLn('REEPORT SHRINK DosNew'); Halt;
+  end;
+{$ENDIF}
 
+{$IFDEF MSDOS}
 procedure DosDispose(var P: pointer);
   { Return an allocated chunk of memory to DOS.  Only call this function
     with pointers allocated with DosNew or DosNewShrink. }
@@ -116,7 +126,15 @@ procedure DosDispose(var P: pointer);
     end
   {$ENDIF}
   end;
+{$ENDIF}
+{$IFNDEF MSDOS}
+procedure DosDispose(var P: pointer);
+  begin
+    WriteLn('REEPORT SHRINK DosDispose'); Halt;
+  end;
+{$ENDIF}
 
+{$IFDEF MSDOS}
 procedure DosNewShrink(var P: pointer;
                            Bytes: word);
   { Get a pointer to a chunk of memory from DOS, shrinking current program
@@ -166,6 +184,14 @@ procedure DosNewShrink(var P: pointer;
   {$ENDIF}
   {$ENDIF}
   end;
+{$ENDIF}
+{$IFNDEF MSDOS}
+procedure DosNewShrink(var P: pointer;
+                           Bytes: word);
+  begin
+    WriteLn('REEPORT SHRINK DosNewShrink'); Halt;
+  end;
+{$ENDIF}
 
 end.
 

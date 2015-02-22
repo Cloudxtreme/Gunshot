@@ -24,7 +24,12 @@ BEGIN
      FOR Loop := y1 TO y2 DO
      BEGIN
        GetPut1.Lines[Count].LineLength := x2-x1+1;
+{$IFDEF MSDOS}
        Move(MEM[SegB800:(((Loop-1)*160)+((x1-1)*2))],GetPut1.Lines[Count].Line,(x2-x1+1)*2);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT LOGFILE Get'); Halt;
+{$ENDIF}
        INC(Count);
      END;
 END;
@@ -37,7 +42,12 @@ BEGIN
      Count := 1;
      FOR Loop := y TO (y+GetPut1.NumLines-1) DO
      BEGIN
+{$IFDEF MSDOS}
        Move(GetPut1.Lines[Count].Line,MEM[SegB800:(((Loop-1)*160)+((x-1)*2))],(GetPut1.Lines[Count].LineLength)*2);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT LOGFILE Put'); Halt;
+{$ENDIF}
        INC(Count);
      END;
 END;

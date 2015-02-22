@@ -696,7 +696,7 @@ BEGIN
      24:  AltToNormal := 'O';
      25:  AltToNormal := 'P';
      16:  AltToNormal := 'Q';
-     17:  AltToNormal := 'R';
+     19:  AltToNormal := 'R';
      31:  AltToNormal := 'S';
      20:  AltToNormal := 'T';
      22:  AltToNormal := 'U';

@@ -11,7 +11,7 @@ INTERFACE
 IMPLEMENTATION
 
 
-USES OVERLAY,OVERXMS,DOS,OVRVARS;
+USES {$IFDEF MSDOS}OVERLAY,OVERXMS,{$ENDIF}DOS,OVRVARS;
 
 
 FUNCTION OvrName : STRING;
@@ -42,6 +42,7 @@ END;
 
 
 BEGIN
+{$IFDEF MSDOS}
      OvrInit(OvrName);
      IF OvrResult<>0 THEN ShowError(OvrResult);
      OvrInitXMS;
@@ -56,4 +57,8 @@ BEGIN
      END
      ELSE _OverlayBufLoc := 1;
      _OverLayBufferSize := OvrGetBuf;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  // REENOTE Don't need overlays
+{$ENDIF}
 END.

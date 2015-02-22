@@ -68,6 +68,63 @@ const
   Digits : array[0..$F] of Char = '0123456789ABCDEF';
 {$ENDIF}
 
+{$IFNDEF MSDOS}
+  function UpdateCrc32(CurByte : Byte; CurCrc : LongInt) : LongInt;
+    {-Returns an updated crc32}
+  begin
+    UpdateCrc32 := Crc32Table[Byte(CurCrc xor LongInt(CurByte))] xor
+                   ((CurCrc shr 8) and $00FFFFFF);
+  end;
+
+  procedure SetFlag(var Flags : Word; FlagMask : Word);
+    {-Set the bit(s) specified by FlagMask in Flags}
+  begin
+    WriteLn('REEPORT APMISC SetFlag'); Halt;
+  end;
+  
+  procedure ClearFlag(var Flags : Word; FlagMask : Word);
+    {-Clear the bit(s) specified by FlagMask in Flags}
+  begin
+    WriteLn('REEPORT APMISC ClearFlag'); Halt;
+  end;
+  
+  function FlagIsSet(Flags, FlagMask : Word) : Boolean;
+    {-Returns True if the bit specified by FlagMask is set in Flags}
+  begin
+    FlagIsSet := (Flags and FlagMask) <> 0;
+  end;
+
+  function MinWord(A, B : Word) : Word;
+    {-Returns the smaller of A and B}
+  begin
+    WriteLn('REEPORT APMISC MinWord'); Halt;
+  end;
+    
+  function MakeLongInt(H, L : Word) : LongInt;
+    {-Constructs a LongInt from two Words}
+  begin
+    WriteLn('REEPORT APMISC MakeLongInt'); Halt;
+  end;
+    
+  function AddWordToPtr(P : Pointer; W : Word) : Pointer;
+    {-Add a Word to a pointer. No normalization or wrap checking performed}
+  begin
+    WriteLn('REEPORT APMISC AddWordToPtr'); Halt;
+  end;
+    
+  procedure DecPtr(var P; Size : Word);
+    {-Reduce a pointer value by Size bytes, Dec(P)}
+  begin
+    WriteLn('REEPORT APMISC DecPtr'); Halt;
+  end;
+    
+  procedure IncPtr(var P; Size : Word);
+    {-Increase a pointer value by Size bytes, Inc(P)}
+  begin
+    WriteLn('REEPORT APMISC IncPtr'); Halt;
+  end;
+{$ENDIF}
+
   function UpdateChecksum(CurByte : Byte; CheckSum : Word) : Word;
     {-Returns an updated checksum}
   begin
@@ -462,6 +519,7 @@ const
      MatLength is length of string to match. Returns number of bytes searched
      to find Match, $FFFF if not found.}
   begin
+{$IFDEF MSDOS}
     inline(
       $1E/                   {PUSH DS                 ;Save DS}
       $FC/                   {CLD                     ;Go forward}
@@ -505,6 +563,10 @@ const
                              {SDone:}
       $1F/                   {POP  DS                 ;Restore DS}
       $89/$46/<Search);      {MOV [BP+<Search],AX     ;Set func result}
+{$ENDIF}
+{$IFNDEF MSDOS}
+    WriteLn('REEPORT APMISC Search'); Halt;
+{$ENDIF}
   end;
 
   {$IFDEF HeapDebug}
@@ -680,6 +742,9 @@ const
 
   function StringToHeap(S : string) : StringPtr;
     {-Allocate space for s and return pointer}
+{$IFNDEF MSDOS}
+  const MaxAvail: LongInt = 640 * 1024; // Pretend we have 640k
+{$ENDIF}    
   var
     L : Word;
     P : Pointer;
@@ -779,9 +844,11 @@ const
   end;
 
 begin
+{$IFDEF MSDOS}
   {$IFDEF Standalone}
   HeapError := @HeapFunc;
   {$ENDIF}
+{$ENDIF}
 
   {$IFDEF HeapDebug}
   {Delete old heap error report}

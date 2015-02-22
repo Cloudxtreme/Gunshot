@@ -36,13 +36,23 @@ BEGIN
      SavedY := WhereY;
      SavedAttr := TextAttr;
      _HideCursor;
+{$IFDEF MSDOS}
      Move(MEM[SegB800:0],SAVESCRNScr[1],4000);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT UNPAKGIP SaveTheScreen'); Halt;
+{$ENDIF}
 END;
 
 
 PROCEDURE RestoreTheScreen;
 BEGIN
+{$IFDEF MSDOS}
      Move(SAVESCRNScr[1],MEM[SegB800:0],4000);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT UNPAKGIP RestoreTheScreen'); Halt;
+{$ENDIF}
      GotoXy(SavedX,SavedY);
      TextAttr := SavedAttr;
      _ShowCursor;
@@ -59,13 +69,23 @@ BEGIN
      x := ((yy2*160)+(xx1*2))+1;
      FOR Loop := xx1 to xx2 DO
      BEGIN
+{$IFDEF MSDOS}
           Mem[SegB800:x] := 8;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT UNPAKGIP Shadow'); Halt;
+{$ENDIF}
           INC(x,2);
      END;
      y := ((yy1*160)+((xx2)*2))+1;
      FOR Loop := yy1 to yy2 DO
      BEGIN
+{$IFDEF MSDOS}
           Mem[SegB800:y] := 8;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT UNPAKGIP Shadow'); Halt;
+{$ENDIF}
           INC(y,160);
      END;
 END;

@@ -24,11 +24,7 @@ Unit MKMsgFid;       {Fido *.Msg Unit}
 Interface
 
 Uses MKGlobT,MKMsgAbs,MKFFile,Shotgun,BsString,BsAkas,
-{$IFDEF WINDOWS}
-  Strings, WinDos;
-{$ELSE}
   Dos;
-{$ENDIF}
 
 
 Const MaxFidMsgArray = 4000;
@@ -54,11 +50,7 @@ Type FMsgType = Record
   MsgDone: Boolean;
   CurrMsg: LongInt;
   SeekOver: Boolean;
-  {$IFDEF WINDOWS}
-  SR: TSearchRec;
-  {$ELSE}
   SR: SearchRec;
-  {$ENDIF}
   Name: String[35];
   Handle: String[35];
   MailType: MsgMailType;
@@ -583,11 +575,7 @@ Function  FidoMsgObj.WriteMsg: Word;
   Var
     NetNum: Word;
     TmpDate: LongInt;
-    {$IFDEF WINDOWS}
-    TmpDT: TDateTime;
-    {$ELSE}
     TmpDT: DateTime;
-    {$ENDIF}
     TmpFile: File;
     Code: LongInt;
 
@@ -1443,12 +1431,7 @@ Function FidoMsgObj.MsgBaseExists: Boolean;
 
 Procedure FidoMsgObj.Rescan;
   Var
-  {$IFDEF WINDOWS}
-    SR: TSearchRec;
-    TStr: Array[0..128] of Char;
-  {$ELSE}
     SR: SearchRec;
-  {$ENDIF}
   TmpName: String[13];
   TmpNum: Word;
   Code: Word;
@@ -1456,19 +1439,10 @@ Procedure FidoMsgObj.Rescan;
 
   Begin
   FillChar(FM^.MsgPresent, SizeOf(FM^.MsgPresent), 0);
-  {$IFDEF WINDOWS}
-  StrPCopy(TStr, FM^.NetMailPath + '*.MSG');
-  FindFirst(TStr, faReadOnly + faArchive, SR);
-  {$ELSE}
   FindFirst(FM^.NetMailPath + '*.MSG', ReadOnly + Archive, SR);
-  {$ENDIF}
   While DosError = 0 Do
     Begin
-    {$IFDEF WINDOWS}
-    TmpName :=  StrPas(SR.Name);
-    {$ELSE}
     TmpName := SR.Name;
-    {$ENDIF}
     Val(Copy(TmpName, 1,  Pos('.', TmpName) - 1), TmpNum, Code);
     If ((Code = 0) And (TmpNum > 0)) Then
       Begin

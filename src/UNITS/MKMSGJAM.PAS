@@ -41,11 +41,7 @@ Unit MKMsgJam;       {JAM Msg Object Unit}
 Interface
 
 Uses MKGlobT, MKMsgAbs,BsString,Shotgun,BsAkas,
-{$IFDEF WINDOWS}
-  Strings, WinDos;
-{$ELSE}
   Dos;
-{$ENDIF}
 
 
 Type JamHdrType = Record
@@ -640,11 +636,7 @@ Procedure JamMsgObj.AddSubField(id: Word; Data: String);
 
 Function  JamMsgObj.WriteMsg: Word;
   Var
-    {$IFDEF WINDOWS}
-    DT: TDateTime;
-    {$ELSE}
     DT: DateTime;
-    {$ENDIF}
     WriteError: Word;
     i: Word;
     TmpIdx: JamIdxType;
@@ -839,11 +831,7 @@ Procedure JamMsgObj.MsgStartUp;
     SubCtr: LongInt;
     SubPtr: ^SubFieldType;
     NumRead: Word;
-    {$IFDEF WINDOWS}
-    DT: TDateTime;
-    {$ELSE}
     DT: DateTime;
-    {$ENDIF}
     IdxLoc: LongInt;
     TmpStr: String;
     TmpAddr: AddrType;

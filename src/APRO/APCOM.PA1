@@ -840,7 +840,12 @@
          (InBuffCount < HWFResume) then begin
         {Clear bits we are honoring, then set to "on" state}
         ModemControl := ModemControl xor HWFRecHonor;
+{$IFDEF MSDOS}
         Port[BaseAddr+MCreg] := ModemControl;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT APCOM.PA1 GetBlockDirect'); Halt;
+{$ENDIF}
         HWFRemoteOff := False;
       end;
       {$ENDIF}

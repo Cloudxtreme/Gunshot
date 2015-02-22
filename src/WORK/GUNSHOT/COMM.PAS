@@ -15,8 +15,8 @@ FUNCTION  Comm_init     (ThePort,Device: Longint) : Boolean;
 IMPLEMENTATION
 
 
-USES Globals,ApPort,ApCom,ErrorLog,ApUart,ApFossil,ApDigi14,
-     ApMisc,ApTimer,ApInt14,BsString,BsMulti;
+USES Globals,ApPort,ApCom,ErrorLog,{$IFDEF MSDOS}ApUart,{$ENDIF}ApFossil,{$IFDEF MSDOS}ApDigi14,{$ENDIF}
+     ApMisc,ApTimer,{$IFDEF MSDOS}ApInt14,{$ENDIF}BsString,BsMulti;
 
 
 PROCEDURE ClearInBuffer;
@@ -54,11 +54,16 @@ VAR   BaseAddr   : Word;
       NewAddr    : Word;
       TVector    : Array[0..15] Of Byte;
 BEGIN
+{$IFNDEF MSDOS}
+     Device := 2; // Force FOSSIL, which is where the socket code lives on non-MSDOS platforms
+{$ENDIF}
      IF LocalLogon THEN Exit;
      DefPortOptions := DefPortOptionsSimple;
      IF NodeInfo.ptBufferGetChar THEN DefPortOptions := (DefPortOptions OR ptBufferGetChar);
      CASE Device OF
+{$IFDEF MSDOS}
      1:   ActivateApUart;
+{$ENDIF}
      2:   BEGIN
             ActivateApFossil;
             DefFossilOptions := DefFossilOptionsSimple;
@@ -66,13 +71,17 @@ BEGIN
             IF NodeInfo.ptTrueOutBuffFree THEN DefFossilOptions := (DefFossilOptions OR ptTrueOutBuffFree);
             IF NodeInfo.ptClearFlow THEN DefFossilOptions := (DefFossilOptions OR ptPutCharWait);
           END;
+{$IFDEF MSDOS}
      3:   BEGIN
             ActivateApDigi14;
             DefDigi14Options := DefDigi14OptionsSimple;
             IF NodeInfo.ptPutCharWait THEN DefDigi14Options := (DefDigi14Options OR ptReadWriteWait);
             IF NodeInfo.ptReadWriteWait THEN DefDigi14Options := (DefDigi14Options OR ptClearFlow);
           END;
+{$ENDIF}
+{$IFDEF MSDOS}
      4:   ActivateApInt14;
+{$ENDIF}
      ELSE DoErrorLog(2,'');
      END;
      IF Device=1 THEN
@@ -107,6 +116,7 @@ BEGIN
      IF AsyncStatus=ecOk THEN
      BEGIN
           ptOptionsOff(BBSPort,ptRestoreOnClose OR ptDropModemOnClose);
+{$IFDEF MSDOS}
           IF Device=1 THEN
           BEGIN
                BaseAddr := GetBaseAddr(BBSPort);
@@ -120,6 +130,7 @@ BEGIN
                     END;
                END;
           END;
+{$ENDIF}
           CASE NodeInfo.FlowControl OF
           1:   HWFlowEnable(BBSPort,Trunc(BufferSize*0.75),Trunc(BufferSize*0.25),hfUseRTS OR hfRequireCTS);
           2:   HWFlowEnable(BBSPort,Trunc(BufferSize*0.75),Trunc(BufferSize*0.25),hfUseDTR OR hfRequireDSR);

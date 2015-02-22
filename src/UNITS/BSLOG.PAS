@@ -31,6 +31,9 @@ END;
 
 
 PROCEDURE bsWriteLog(InString: String; LocalDisplay: Boolean);
+{$IFNDEF MSDOS}
+CONST MemAvail: LongInt = 640 * 1024; // Pretend we have 640k
+{$ENDIF}    
 VAR  FFile : File;
      Temp  : String;
 

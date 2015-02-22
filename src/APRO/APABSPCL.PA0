@@ -210,6 +210,7 @@ type
 
 function LoCaseMac(Ch : Char) : Char;
   {-Lowercase character macro, no international character support}
+{$IFDEF MSDOS}
   inline(
     $58/                     {POP  AX}
     $3C/$41/                 {CMP    AL,'A'}
@@ -217,7 +218,7 @@ function LoCaseMac(Ch : Char) : Char;
     $3C/$5A/                 {CMP    AL,'Z'}
     $77/$02/                 {JA     No}
     $0C/$20);                {OR     AL,$20}
-
+{$ENDIF}
 {$IFDEF UsePModeDLL}
 
 procedure InitProtocolData(var P : ProtocolDataPtr;

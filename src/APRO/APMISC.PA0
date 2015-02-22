@@ -629,6 +629,7 @@ function UpdateCrc32(CurByte : Byte; CurCrc : LongInt) : LongInt;
                  ((CurCrc shr 8) and $00FFFFFF);
   *)
 
+{$IFDEF MSDOS}
 Inline(
                          {;Get args -- DX:BX = CurCrc, CX = CurByte;}
   $5B/                   {        POP     BX}
@@ -658,28 +659,33 @@ Inline(
   $31/$D8/               {        XOR     AX,BX}
   $89/$CB/               {        MOV     BX,CX}
   $31/$DA);              {        XOR     DX,BX}
+{$ENDIF}
 
 {$IFDEF Standalone}
 procedure SetFlag(var Flags : Word; FlagMask : Word);
   {-Set the bit(s) specified by FlagMask in Flags}
+{$IFDEF MSDOS}
   inline(
     $58/                     {pop ax        ;FlagMask into AX}
     $5F/                     {pop di}
     $07/                     {pop es        ;ES:DI => Flags}
     $26/$09/$05);            {or es:[di],ax ;Flags := Flags or FlagMask}
-
+{$ENDIF}
 
 procedure ClearFlag(var Flags : Word; FlagMask : Word);
   {-Clear the bit(s) specified by FlagMask in Flags}
+{$IFDEF MSDOS}
   inline(
     $58/                     {pop ax         ;FlagMask into AX}
     $5F/                     {pop di}
     $07/                     {pop es         ;ES:DI => Flags}
     $F7/$D0/                 {not ax         ;FlagMask := not FlagMask}
     $26/$21/$05);            {and es:[di],ax ;Flags := Flags and not FlagMask}
+{$ENDIF}
 
 function FlagIsSet(Flags, FlagMask : Word) : Boolean;
   {-Returns True if the bit specified by FlagMask is set in Flags}
+{$IFDEF MSDOS}
   inline(
     $5A/                     {pop dx    ;FlagMask into DX}
     $58/                     {pop ax    ;Flags into AX}
@@ -687,9 +693,11 @@ function FlagIsSet(Flags, FlagMask : Word) : Boolean;
     $74/$02/                 {jz  Exit}
     $B0/$01);                {mov al,1  ;AL = Ord(True)}
                              {Exit:}
+{$ENDIF}
 
 function MinWord(A, B : Word) : Word;
   {-Returns the smaller of A and B}
+{$IFDEF MSDOS}
   inline(
     $58/                     {pop ax}
     $5B/                     {pop bx}
@@ -698,36 +706,45 @@ function MinWord(A, B : Word) : Word;
     $89/$D8);                {mov ax,bx}
                              {done:}
 {$ENDIF}
+{$ENDIF}
 
 function MakeLongInt(H, L : Word) : LongInt;
   {-Constructs a LongInt from two Words}
+{$IFDEF MSDOS}
   inline(
     $58/                     {pop ax  ;low word into AX}
     $5A);                    {pop dx  ;high word into DX}
+{$ENDIF}
 
 function AddWordToPtr(P : Pointer; W : Word) : Pointer;
   {-Add a Word to a pointer. No normalization or wrap checking performed}
+{$IFDEF MSDOS}
   inline(
     $5B/                     {pop bx     ;bx = W}
     $58/                     {pop ax     ;ax = Ofs(P^)}
     $5A/                     {pop dx     ;dx = Seg(P^)}
     $01/$D8);                {add ax,bx  ;ax = Ofs(P^)+W}
+{$ENDIF}
 
 {!!.01}
 procedure DecPtr(var P; Size : Word);
   {-Reduce a pointer value by Size bytes, Dec(P)}
+{$IFDEF MSDOS}
   Inline(
     $58/                {pop ax            ;ax = Size}
     $5F/                {pop di            ;di = Ofs(P)}
     $07/                {pop es            ;es = Seg(P)}
     $26/$29/$05);       {sub es:[di], ax   ;P = P - Size}
+{$ENDIF}
 
 {!!.01}
 procedure IncPtr(var P; Size : Word);
   {-Increase a pointer value by Size bytes, Inc(P)}
+{$IFDEF MSDOS}
   Inline(
     $58/                {pop ax            ;ax = Size}
     $5F/                {pop di            ;di = Ofs(P)}
     $07/                {pop es            ;es = Seg(P)}
     $26/$01/$05);       {add es:[di], ax   ;P = P + Size}
+{$ENDIF}
 

@@ -15,6 +15,12 @@ PROCEDURE _ShowCursor;
 IMPLEMENTATION
 
 
+{$IFNDEF MSDOS}
+USES
+  VideoUtils;
+{$ENDIF}
+
+
 FUNCTION _AltToNormal(C: Char): Char;
 BEGIN
      CASE ORD(C) OF
@@ -35,7 +41,7 @@ BEGIN
      24:  _AltToNormal := 'O';
      25:  _AltToNormal := 'P';
      16:  _AltToNormal := 'Q';
-     17:  _AltToNormal := 'R';
+     19:  _AltToNormal := 'R';
      31:  _AltToNormal := 'S';
      20:  _AltToNormal := 'T';
      22:  _AltToNormal := 'U';
@@ -59,20 +65,36 @@ BEGIN
 END;
 
 
+{$IFDEF MSDOS}
 PROCEDURE _HideCursor; Assembler;
 ASM
    MOV ax,$0100
    MOV cx,$2607
    INT $10
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+PROCEDURE _HideCursor;
+BEGIN
+  VideoUtils.CursorHide;
+END;
+{$ENDIF}
 
 
+{$IFDEF MSDOS}
 PROCEDURE _ShowCursor; Assembler;
 ASM
    MOV ax,$0100
    MOV cx,$0506
    INT $10
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+PROCEDURE _ShowCursor;
+BEGIN
+  VideoUtils.CursorShow;
+END;
+{$ENDIF}
 
 
 FUNCTION IsTheKeyOk(Key: Char; Alt: Boolean): Char;
@@ -136,7 +158,7 @@ BEGIN
      'O': _NormalToAlt := #24;
      'P': _NormalToAlt := #25;
      'Q': _NormalToAlt := #16;
-     'R': _NormalToAlt := #17;
+     'R': _NormalToAlt := #19;
      'S': _NormalToAlt := #31;
      'T': _NormalToAlt := #20;
      'U': _NormalToAlt := #22;

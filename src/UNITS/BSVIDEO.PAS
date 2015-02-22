@@ -20,14 +20,20 @@ USES Dos,FastW1,Crt,Version;
 PROCEDURE _HighBackGrounds(TurnOn: Boolean);
 VAR  Regs : Registers;
 BEGIN
+{$IFDEF MSDOS}
      FillChar(Regs,SizeOf(Regs),0);
      IF TurnOn THEN Regs.BL := 0
                ELSE Regs.BL := 1;
      Regs.AX := $1003;
      Intr($10,Regs);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  // REETODO Not sure this can be toggled on non-MSDOS
+{$ENDIF}
 END;
 
 
+{$IFDEF MSDOS}
 PROCEDURE SwitchTo28Rows; Assembler;
 ASM
    mov ax,1202h
@@ -39,8 +45,16 @@ ASM
    mov bl,00h
    int 10h
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+PROCEDURE SwitchTo28Rows;
+BEGIN
+     WriteLn('REEPORT BSVIDEO SwitchTo28Rows'); Halt;
+END;
+{$ENDIF}
 
 
+{$IFDEF MSDOS}
 PROCEDURE SwitchTo30Rows;
 VAR  CrtcReg : Array[1..8] Of Word;
      Offset  : Word;
@@ -68,6 +82,13 @@ BEGIN
         int 10h
      END;
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+PROCEDURE SwitchTo30Rows;
+BEGIN
+     WriteLn('REEPORT BSVIDEO SwitchTo30Rows'); Halt;
+END;
+{$ENDIF}
 
 
 PROCEDURE ExtendedVideoMode(NumLines: Byte);

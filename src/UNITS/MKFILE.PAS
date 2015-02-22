@@ -141,6 +141,12 @@ Uses
   {$IFDEF OPRO}
   OpCrt;
   {$ELSE}
+{$IFDEF UNIX}
+  Unix,
+{$ENDIF}
+{$IFDEF WINDOWS}
+  Windows,
+{$ENDIF}  
   Crt;
   {$ENDIF}
 
@@ -338,7 +344,9 @@ Procedure FlushFile(Var F); {Dupe file handle, close dupe handle}
   {$IFDEF BASMINT}
     Tmp: Word;
   {$ELSE}
+{$IFDEF MSDOS}
     Regs: Registers;
+{$ENDIF}
   {$ENDIF}
 
   Begin
@@ -355,6 +363,7 @@ Procedure FlushFile(Var F); {Dupe file handle, close dupe handle}
     @JFlush:
     End;
   {$ELSE}
+{$IFDEF MSDOS}
   Regs.ah := $45;
   Regs.bx := Handle;
   MsDos(Regs);
@@ -364,10 +373,15 @@ Procedure FlushFile(Var F); {Dupe file handle, close dupe handle}
     Regs.Ah := $3e;
     MsDos(Regs);
     End;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT MKFILE FlushFile'); Halt;
+{$ENDIF}
   {$ENDIF}
   End;
 
 
+{$IFDEF MSDOS}
 Function LockFile(Var F; LockStart: LongInt; LockLength: LongInt): Word;
   Var
     Handle: Word Absolute F;
@@ -420,8 +434,30 @@ Function LockFile(Var F; LockStart: LongInt; LockLength: LongInt): Word;
     Tmp := 0;
   LockFile := Tmp;
   End;
+{$ENDIF}
+{$IFNDEF MSDOS}
+// From ELEBBS (and modified since we get the file, not the handle)
+Function LockFile(Var F; LockStart: LongInt; LockLength: LongInt): Word;
+var Tmp: Word;
+    StrtHi: Longint;
+    StrtLo: Longint;
+    LgHi: Longint;
+    LgLo: Longint;
+begin
+  StrtHi := LongHi(LockStart);
+  StrtLo := LongLo(LockStart);
+  LgHi := LongHi(LockLength);
+  LgLo := LongLo(LockLength);
 
+  if NOT Windows.LockFile(FileRec(F).Handle, StrtLo, StrtHi, LgLo, LgHi) then
+      Tmp := GetLastError
+       else Tmp := 00;
 
+  LockFile := Tmp;
+end; { func. LockFile }
+{$ENDIF}
+
+{$IFDEF MSDOS}
 Function UnLockFile(Var F; LockStart: LongInt; LockLength: LongInt): Word;
   Var
     Handle: Word Absolute F;
@@ -474,7 +510,28 @@ Function UnLockFile(Var F; LockStart: LongInt; LockLength: LongInt): Word;
     Tmp := 0;
   UnLockFile := Tmp;
   End;
+{$ENDIF}
+{$IFNDEF MSDOS}
+// From ELEBBS (and modified since we get the file, not the handle)
+Function UnLockFile(Var F; LockStart: LongInt; LockLength: LongInt): Word;
+var Tmp: Word;
+    StrtHi: Longint;
+    StrtLo: Longint;
+    LgHi: Longint;
+    LgLo: Longint;
+begin
+  StrtHi := LongHi(LockStart);
+  StrtLo := LongLo(LockStart);
+  LgHi := LongHi(LockLength);
+  LgLo := LongLo(LockLength);
 
+   if NOT Windows.UnLockFile(FileRec(F).Handle, StrtLo, StrtHi, LgLo, LgHi) then
+     Tmp := GetLastError
+       else Tmp := 00;
+
+  UnLockFile := Tmp;
+end; { func. UnLockFile }
+{$ENDIF}
 
 Function LongLo(InNum: LongInt): Word;
   Begin
@@ -806,7 +863,9 @@ Function IsDevice(FilePath: String): Boolean;
     Handle: Word Absolute F;
     Tmp: Word;
   {$IFNDEF BASMINT}
+{$IFDEF MSDOS}
     Regs: Registers;
+{$ENDIF}
   {$ENDIF}
 
   Begin
@@ -831,11 +890,16 @@ Function IsDevice(FilePath: String): Boolean;
       Mov @Result, al;
       End;
 {$ELSE}
+{$IFDEF MSDOS}
     Regs.ah := $44;
     Regs.al := $00;
     Regs.bx := Tmp;
     MsDos(Regs);
     IsDevice := (Regs.Dx and $80) <> 0;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT MKFILE IsDevice'); Halt;
+{$ENDIF}
 {$ENDIF}
     End;
   Close(F);
@@ -1009,6 +1073,7 @@ Function  CreateTempDir(FN: String): String;
   For i := 1 to 16 Do
    TmpStr[Length(TmpStr) + i] := #0;
   i := 0;
+{$IFDEF MSDOS}
   Asm
     Mov bx, TSeg;
     Mov ax, TOfs;
@@ -1052,6 +1117,10 @@ Function  CreateTempDir(FN: String): String;
     @JEnd:
     Pop ds;
     End;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT MKFILE CreateTempDir'); Halt;
+{$ENDIF}
   TmpStr[0] := #255;
   TmpStr[0] := Chr(Pos(#0, TmpStr) - 1);
   If i = 0 Then
@@ -1060,6 +1129,7 @@ Function  CreateTempDir(FN: String): String;
     CreateTempDir := '';
   End;
 
+{$IFDEF MSDOS}
 Function  GetTempName(FN: String): String;
   Var
     TOfs: Word;
@@ -1117,6 +1187,39 @@ Function  GetTempName(FN: String): String;
   Else
     GetTempName := '';
   End;
+{$ENDIF}
+{$IFNDEF MSDOS}
+// From ELEBBS
+Function  GetTempName(FN: String): String;
+var Counter  : Byte;
+    TempName : String;
+    TempCH   : Char;
+begin
+  If Fn[Length(Fn)] <> '\' Then
+       begin
+         FN[00] := Chr(Length(FN) + 01);
+         Fn[Length(Fn)] := '\';
+       end; { Add trailing backslash }
+
+  Randomize;
+  TempName[0] := #12;
+
+  For Counter := 01 to 12 do
+    begin
+      If Counter=09 then TempName[Counter] := '.'
+       else begin
+              TempCH := #00;
+
+              While NOT (TempCH in ['A'..'Z', 'a'..'z', '0'..'9']) do
+                TempCH := Chr(Random(256));
+
+              TempName[Counter] := TempCH;
+            end;
+    end; { create random name }
+
+  GetTempName := FN + TempName;
+end; { func. GetTempName }
+{$ENDIF}
 
 Function  GetTextPos(Var F: Text): LongInt;
   Type WordRec = Record
@@ -1129,7 +1232,9 @@ Function  GetTextPos(Var F: Text): LongInt;
    Tmp: LongInt;
    Handle: Word;
    {$IFNDEF BASMINT}
-     Regs: Registers;
+{$IFDEF MSDOS}
+      Regs: Registers;
+{$ENDIF}
    {$ENDIF}
 
   Begin
@@ -1150,6 +1255,7 @@ Function  GetTextPos(Var F: Text): LongInt;
     Mov WordRec(Tmp).LongHi, dx;
     End;
   {$ELSE}
+{$IFDEF MSDOS}
   Regs.ah := $42;
   Regs.al := $01;
   Regs.bx := Handle;
@@ -1163,6 +1269,10 @@ Function  GetTextPos(Var F: Text): LongInt;
     End;
   WordRec(Tmp).LongLo := Regs.Ax;
   WordRec(Tmp).LongHi := Regs.Dx;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT MKFILE GetTextPos'); Halt;
+{$ENDIF}
   {$ENDIF}
   If Tmp >= 0 Then
     Inc(Tmp, TR.BufPos);

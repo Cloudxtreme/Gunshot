@@ -63,8 +63,21 @@ const
                           $74/$01/        {JE   @DONE}
                           $FB);           {STI}
   {$ELSE}
+{$IFDEF MSDOS}  
   procedure IntOff; inline($9C/$FA);      {PUSHF/CLI}
   procedure IntOn; inline($9D);           {POPF}
+{$ENDIF}
+{$IFNDEF MSDOS}
+  procedure IntOff;
+  begin
+    // REENOTE Not needed
+  end;
+
+  procedure IntOn;
+  begin
+    // REENOTE Not needed
+  end;
+{$ENDIF}
   {$ENDIF}
 
   {$I APCOM.PA1}   {Gets, puts, flow, modem status}

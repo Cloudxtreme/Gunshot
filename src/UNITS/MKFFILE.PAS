@@ -36,12 +36,8 @@ Type FFileObj = Object
 Implementation
 
 Uses MKFile,
-{$IFDEF WINDOWS}
-  WinDos;
-{$ELSE}
   Dos,
   Crt;
-{$ENDIF}
 
 
 

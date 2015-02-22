@@ -69,6 +69,9 @@ END;
 
 
 PROCEDURE StartLogFile;
+{$IFNDEF MSDOS}
+CONST MemAvail: LongInt = 640 * 1024; // Pretend we have 640k
+{$ENDIF}    
 VAR  TFile : Text;
 BEGIN
      ASSIGN(TFile,TheLogFile);

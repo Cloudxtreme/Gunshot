@@ -18,11 +18,7 @@ Unit MKMsgAbs;       {Abstract Msg Object}
 Interface
 
 Uses MKGlobT,Shotgun,
-{$IFDEF WINDOWS}
-  WinDos;
-{$ELSE}
   Dos;
-{$ENDIF}
 
 
 Type MsgMailType = (mmtNormal, mmtEchoMail, mmtNetMail);

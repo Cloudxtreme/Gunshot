@@ -5,7 +5,7 @@ UNIT Globals;
 INTERFACE
 
 
-USES Shotgun,ApTimer,MkFFile;
+USES {$IFNDEF MSDOS}VideoUtils,{$ENDIF}Shotgun,ApTimer,MkFFile;
 
 
 TYPE BiggerBuffer     = Array[1..64000] Of Byte;
@@ -36,7 +36,12 @@ VAR  NodeNumber       : Word;
      DoConverting     : Boolean;
      BaseDirectory    : String;
      NumberOfTics     : Word;
+{$IFDEF MSDOS}
      SavedScreen      : Array[1..4000] Of Byte;
+{$ENDIF}     
+{$IFNDEF MSDOS}
+     SavedScreen      : TScreenBuffer;
+{$ENDIF}
      SavedScreenXY    : Word;
      CurrentTicFile   : String[12];
      TossIsGood       : Boolean;

@@ -49,13 +49,23 @@ BEGIN
      x := ((y2*160)+(x1*2))+1;
      FOR Loop := x1 to x2 DO
      BEGIN
+{$IFDEF MSDOS}     
           Mem[SegB800:x] := 8;
+{$ENDIF}
+{$IFNDEF MSDOS}
+          WriteLn('REEPORT BSFRAMES winDropShadow'); Halt;
+{$ENDIF}
           INC(x,2);
      END;
      y := ((y1*160)+((x2)*2))+1;
      FOR Loop := y1 to y2 DO
      BEGIN
+{$IFDEF MSDOS}
           Mem[SegB800:y] := 8;
+{$ENDIF}
+{$IFNDEF MSDOS}
+          WriteLn('REEPORT BSFRAMES winDropShadow'); Halt;
+{$ENDIF}
           INC(y,160);
      END;
 END;

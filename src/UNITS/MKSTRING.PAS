@@ -18,11 +18,7 @@ Unit MKString;
 
 Interface
 
-{$IFDEF WINDOWS}
-Uses WinDos,BsString;
-{$ELSE}
 Uses Dos,BsString;
-{$ENDIF}
 
 Procedure MKStrCat(Var St: String; AStr: String);
 Function LoCase(Ch: Char): Char;
@@ -47,11 +43,7 @@ Function DateStr(DosDate: LongInt): String;
 Function TimeStr(DosDate: LongInt): String;
 Procedure AddBackSlash(Var InPath: String);
 Function WithBackSlash(InPath: String): String;
-{$IFDEF WINDOWS}
-Function FormattedDate(DT: TDateTime; Mask: String): String;
-{$ELSE}
 Function FormattedDate(DT: DateTime; Mask: String): String;
-{$ENDIF}
 Function FormattedDosDate(DosDate: LongInt; Mask:String): String;
 Function DOWStr(Dow: Word): String;
 Function DOWShortStr(DOW: Word): String;
@@ -164,11 +156,7 @@ Function Str2Long(St: String): LongInt;
 
 Function DateStr(DosDate: LongInt): String;
   Var
-{$IFDEF WINDOWS}
-    DT:TDateTime;
-{$ELSE}
     DT: DateTime;
-{$ENDIF}
     OutStr: String[10];
     TempStr: String[10];
 
@@ -201,11 +189,7 @@ Function DateStr(DosDate: LongInt): String;
 
 Function TimeStr(DosDate: LongInt): String;
   Var
-{$IFDEF WINDOWS}
-    DT: TDateTime;
-{$ELSE}
     DT: DateTime;
-{$ENDIF}
     OutStr: String[8];
     TempStr: String[8];
 
@@ -501,11 +485,7 @@ Function StripBoth(St:String;Ch:Char):String;
   End;
 
 
-{$IFDEF WINDOWS}
-Function FormattedDate(DT: TDateTime; Mask: String): String;
-{$ELSE}
 Function FormattedDate(DT: DateTime; Mask: String): String;
-{$ENDIF}
   Var
     DStr: String[2];
     MStr: String[2];
@@ -564,11 +544,7 @@ Function FormattedDate(DT: DateTime; Mask: String): String;
 
 Function FormattedDosDate(DosDate: LongInt; Mask:String): String;
   Var
-    {$IFDEF WINDOWS}
-    DT: TDateTime;
-    {$ELSE}
     DT: DateTime;
-    {$ENDIF}
 
   Begin
   UnPackTime(DosDate, DT);

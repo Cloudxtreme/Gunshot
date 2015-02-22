@@ -7,13 +7,12 @@
 {$R-}
 {$X+}
 
-{$IFNDEF WINDOWS}
+{$IFDEF MSDOS}
 {$O+}                       {Make units overlayable}
 {$X-}                       {Turn off extended syntax}
 {$ENDIF}
-
-{$IFDEF WINDOWS}
-  {$DEFINE BASMINT}         {Use BASM for interrupts under windows}
+{$IFNDEF MSDOS}
+  {$PACKRECORDS 1}
 {$ENDIF}
 
 {.$DEFINE OPRO}             {Remove dot to use with OPRO}

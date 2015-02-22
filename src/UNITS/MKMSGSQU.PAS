@@ -279,11 +279,7 @@ Type SqMsgPtr = ^SqMsgObj;
 Implementation
 
 Uses MKFile, MKString, MKDos,BsString
-{$IFDEF WINDOWS}
-,WinDos;
-{$ELSE}
 ,Dos;
-{$ENDIF}
 
 
 Const
@@ -1025,11 +1021,7 @@ Function SqMsgObj.WriteMsg: Word; {Write msg to msg base}
     FramePos: LongInt;
     TmpFrame: SqFrameHdrType;
     TmpDate: LongInt;
-    {$IFDEF WINDOWS}
-    TmpDT: TDateTime;
-    {$ELSE}
     TmpDT: DateTime;
-    {$ENDIF}
     TmpStr: String;
     AlreadyLocked: Boolean;
 

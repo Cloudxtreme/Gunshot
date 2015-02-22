@@ -15,6 +15,9 @@ USES BsVideo,BsString,Globals,Time,ErrorLog,ApCom;
 
 
 PROCEDURE status_line;
+{$IFNDEF MSDOS}
+CONST MemAvail: LongInt = 640 * 1024; // Pretend we have 640k
+{$ENDIF}    
 VAR  TheMem : Longint;
 BEGIN
      IF IOResult=0 THEN;

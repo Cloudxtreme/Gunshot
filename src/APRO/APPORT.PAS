@@ -55,6 +55,7 @@ var
   TraceWrapped : Boolean;
 {$ENDIF}
 
+{$IFDEF MSDOS}
 function IsPS2 : Boolean;
   {-Returns True if the current machine is a PS/2}
 type
@@ -134,6 +135,14 @@ begin
   if FreeLDTDescriptor(IDSel) = 0 then ;
   {$ENDIF}
 end;
+{$ENDIF}
+{$IFNDEF MSDOS}
+function IsPS2 : Boolean;
+  {-Returns True if the current machine is a PS/2}
+begin
+  WriteLn('REEPORT APPORT IsPS2'); Halt;
+end;
+{$ENDIF}
 
 function ComNameString(ComName : ComNameType) : String;
   {-Returns a displayable comport name string}
@@ -184,7 +193,12 @@ var
     else
       Dec(I);
     OCW2 := $C0 + I;
+{$IFDEF MSDOS}    
     Port[PortAddr] := OCW2;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT APPORT RotatePrim'); Halt;
+{$ENDIF}
   end;
 
 begin

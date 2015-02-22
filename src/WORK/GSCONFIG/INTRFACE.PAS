@@ -5,7 +5,7 @@ UNIT Intrface;
 INTERFACE
 
 
-USES Dos,BsMouse,CNFGVARS,Dispatch,DosShell,Crt,FastW1,BsMulti,BsEditor,BsKeys,BsVideo;
+USES {$IFNDEF MSDOS}VideoUtils,{$ENDIF}Dos,BsMouse,CNFGVARS,Dispatch,DosShell,Crt,FastW1,BsMulti,BsEditor,BsKeys,BsVideo;
 
 {ÄÂ³ÅÁÚ¿ÀÙ´ÃÛ²±}
 
@@ -89,7 +89,12 @@ VAR  Toggle                   : Array[1..8] OF Flip;
      Mouse_Y                  : Word;
      MouseB                   : Byte;
      OriginalMode             : Word;
+{$IFDEF MSDOS}
      SavedScreen              : Array[1..4000] Of Byte;
+{$ENDIF}
+{$IFNDEF MSDOS}
+     SavedScreen              : TScreenBuffer;
+{$ENDIF}
      ProgramFinished          : Boolean;
      Colour                   : ColourScheme;
      MenuUsed                 : Array[1..MaxMenus,1..19] Of Boolean;
@@ -257,8 +262,13 @@ BEGIN
           Temp := '';
           FOR Loop2 := 1 TO 80 DO
           BEGIN
+{$IFDEF MSDOS}
                Temp := Temp+Chr(Mem[SegB800:Loop]);
                INC(Loop,2);
+{$ENDIF}
+{$IFNDEF MSDOS}
+               Temp := Temp+VideoUtils.GetCharAt(Loop2, Loop1);
+{$ENDIF}
           END;
           WRITELN(TFile,Temp);
      END;
@@ -638,11 +648,17 @@ BEGIN
      GotoXY(1,1);
      WRITE(_PadBoth('SHOTGUN PROFESSIONAL '+ShotgunVersion+' - Configuration Module',80));
      GotoXY(1,1);
+{$IFDEF MSDOS}
      Move(MEM[SegB800:0],SavedScreen,160*25);
+{$ENDIF}
+{$IFNDEF MSDOS}
+     VideoUtils.ScreenSave(SavedScreen);
+{$ENDIF}
      _ShowMouse;
 END;
 
 
+{$IFDEF MSDOS}
 PROCEDURE _SaveWindow(FileName: String);
 VAR  FFile        : File;
      SavedScreen2 : Array[1..4000] Of Byte;
@@ -655,8 +671,24 @@ BEGIN
      CLOSE(FFile);
      _ShowMouse;
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+PROCEDURE _SaveWindow(FileName: String);
+VAR  FFile        : File;
+     SavedScreen2  : TScreenBuffer;
+BEGIN
+     _HideMouse;
+     VideoUtils.ScreenSave(SavedScreen2);
+     ASSIGN(FFile,FileName);
+     REWRITE(FFile,1);
+     BLOCKWRITE(FFile,SavedScreen2,SizeOf(TScreenBuffer));
+     CLOSE(FFile);
+     _ShowMouse;
+END;
+{$ENDIF}
 
 
+{$IFDEF MSDOS}
 PROCEDURE LoadWindow(FileName: String);
 VAR  FFile        : File;
      SavedScreen2 : Array[1..4000] Of Byte;
@@ -670,8 +702,25 @@ BEGIN
      Move(SavedScreen2,Mem[SegB800:0],160*25);
      _ShowMouse;
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+PROCEDURE LoadWindow(FileName: String);
+VAR  FFile        : File;
+     SavedScreen2  : TScreenBuffer;
+BEGIN
+     ASSIGN(FFile,FileName);
+     RESET(FFile,1);
+     BLOCKREAD(FFile,SavedScreen2,SizeOf(TScreenBuffer));
+     CLOSE(FFile);
+     ERASE(FFile);
+     _HideMouse;
+     VideoUtils.ScreenRestore(SavedScreen2);
+     _ShowMouse;
+END;
+{$ENDIF}
 
 
+{$IFDEF MSDOS}
 PROCEDURE LoadWindowNoKill(FileName: String);
 VAR  FFile        : File;
      SavedScreen2 : Array[1..4000] Of Byte;
@@ -684,6 +733,21 @@ BEGIN
      Move(SavedScreen2,Mem[SegB800:0],160*25);
      _ShowMouse;
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+PROCEDURE LoadWindowNoKill(FileName: String);
+VAR  FFile        : File;
+     SavedScreen2  : TScreenBuffer;
+BEGIN
+     ASSIGN(FFile,FileName);
+     RESET(FFile,1);
+     BLOCKREAD(FFile,SavedScreen2,SizeOf(TScreenBuffer));
+     CLOSE(FFile);
+     _HideMouse;
+     VideoUtils.ScreenRestore(SavedScreen2);
+     _ShowMouse;
+END;
+{$ENDIF}
 
 
 PROCEDURE DoMenus;
@@ -900,6 +964,9 @@ END;
 
 
 PROCEDURE Memory;
+{$IFNDEF MSDOS}
+CONST MemAvail: LongInt = 640 * 1024; // Pretend we have 640k
+{$ENDIF}    
 BEGIN
      FastWrite('MEM: '+_PadRight(_String(MemAvail),6),25,69,(7*16));
 END;
@@ -969,7 +1036,12 @@ END;
 PROCEDURE DeActivate(Number: Word);
 BEGIN
      _HideMouse;
+{$IFDEF MSDOS}
      Move(SavedScreen,Mem[SegB800:0],160*25);
+{$ENDIF}
+{$IFNDEF MSDOS}
+     VideoUtils.ScreenRestore(SavedScreen);
+{$ENDIF}
      DrawLanguage;
      _ShowMouse;
 END;
@@ -986,13 +1058,23 @@ BEGIN
      x := ((yy2*160)+(xx1*2))+1;
      FOR Loop := xx1 to xx2 DO
      BEGIN
+{$IFDEF MSDOS}
           Mem[SegB800:x] := 8;
+{$ENDIF}
+{$IFNDEF MSDOS}
+          VideoUtils.SetAttrAt(8, Loop+1, yy2+1);
+{$ENDIF}
           INC(x,2);
      END;
      y := ((yy1*160)+((xx2)*2))+1;
      FOR Loop := yy1 to yy2 DO
      BEGIN
+{$IFDEF MSDOS}
           Mem[SegB800:y] := 8;
+{$ENDIF}
+{$IFNDEF MSDOS}
+          VideoUtils.SetAttrAt(8, xx2+1, Loop+1);
+{$ENDIF}
           INC(y,160);
      END;
      _ShowMouse;

@@ -16,12 +16,17 @@ PROCEDURE SaveScreen;
 IMPLEMENTATION
 
 
-USES Globals,FastW1,Crt,Dos,BsString,LogFile,BsFile,BsAkas,ApTimer,BsTime,BsVideo;
+USES {$IFNDEF MSDOS}VideoUtils,{$ENDIF}Globals,FastW1,Crt,Dos,BsString,LogFile,BsFile,BsAkas,ApTimer,BsTime,BsVideo;
 
 
 PROCEDURE SaveScreen;
 BEGIN
+{$IFDEF MSDOS}
      Move(MEM[SegB800:0],SavedScreen,4000);
+{$ENDIF}
+{$IFNDEF MSDOS}
+     VideoUtils.ScreenSave(SavedScreen);
+{$ENDIF}
      WhereXYAbs(SavedScreenXY);
      TextBackGround(0);
      TextColor(7);
@@ -31,12 +36,20 @@ END;
 
 PROCEDURE RestoreScreen;
 BEGIN
+{$IFDEF MSDOS}
      Move(SavedScreen,MEM[SegB800:0],4000);
+{$ENDIF}
+{$IFNDEF MSDOS}
+     VideoUtils.ScreenRestore(SavedScreen);
+{$ENDIF}
      GotoXYAbs(SavedScreenXY);
 END;
 
 
 PROCEDURE DrawStartingStatus;
+{$IFNDEF MSDOS}
+CONST MemAvail: LongInt = 640 * 1024; // Pretend we have 640k
+{$ENDIF}    
 VAR  Temp  : String;
      DFree : Longint;
 BEGIN

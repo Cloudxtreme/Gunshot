@@ -4,11 +4,7 @@ Unit MKMisc;
 
 Interface
 
-{$IFDEF WINDOWS}
-Uses WinDos;
-{$ELSE}
 Uses Dos;
-{$ENDIF}
 
 Procedure SetLFlag(Var L: LongInt; Bit: Byte; Setting: Boolean);
 Function  GetLFlag(L: LongInt; Bit: Byte): Boolean;
@@ -19,17 +15,10 @@ Function  GetBFlag(L: Byte; Bit: Byte): Boolean;
 Function  StrCRC(Str: String): LongInt;
 Function  NameCRC(Str: String): LongInt;
 Procedure UpdateWordFlag(Var Flag: Word; Mask: Word; Setting: Boolean);
-{$IFDEF WINDOWS}
-Function  DTToUnixDate(DT: TDateTime): LongInt;
-Procedure UnixToDt(SecsPast: LongInt; Var DT: TDateTime);
-Function  GregorianToJulian(DT: TDateTime): LongInt;
-Function  ValidDate(DT: TDateTime): Boolean;
-{$ELSE}
 Function  DTToUnixDate(DT: DateTime): LongInt;
 Procedure UnixToDt(SecsPast: LongInt; Var DT: DateTime);
 Function  GregorianToJulian(DT: DateTime): LongInt;
 Function  ValidDate(DT: DateTime): Boolean;
-{$ENDIF}
 Function  ToUnixDate(FDate: LongInt): LongInt;
 Function  ToUnixDateStr(FDate: LongInt): String;
 Function  FromUnixDateStr(S: String): LongInt;
@@ -54,13 +43,8 @@ Const
 
 Function DaysAgo(DStr: String): LongInt;
   Var
-    {$IFDEF WINDOWS}
-    ODate: TDateTime;
-    CDate: TDateTime;
-    {$ELSE}
     ODate: DateTime;
     CDate: DateTime;
-    {$ENDIF}
     Tmp: Word;
 
   Begin
@@ -194,11 +178,7 @@ Function GetBFlag(L: Byte; Bit: Byte): Boolean;
   End;
 
 
-{$IFDEF WINDOWS}
-Function GregorianToJulian(DT: TDateTime): LongInt;
-{$ELSE}
 Function GregorianToJulian(DT: DateTime): LongInt;
-{$ENDIF}
 Var
   Century: LongInt;
   XYear: LongInt;
@@ -253,11 +233,7 @@ Procedure JulianToGregorian(JulianDN : LongInt; Var Year, Month,
   End;
 
 
-{$IFDEF WINDOWS}
-Procedure UnixToDt(SecsPast: LongInt; Var Dt: TDateTime);
-{$ELSE}
 Procedure UnixToDt(SecsPast: LongInt; Var Dt: DateTime);
-{$ENDIF}
   Var
     DateNum: LongInt;
 
@@ -273,11 +249,7 @@ Procedure UnixToDt(SecsPast: LongInt; Var Dt: DateTime);
   End;
 
 
-{$IFDEF WINDOWS}
-Function DTToUnixDate(DT: TDateTime): LongInt;
-{$ELSE}
 Function DTToUnixDate(DT: DateTime): LongInt;
-{$ENDIF}
    Var
      SecsPast, DaysPast: LongInt;
 
@@ -290,11 +262,7 @@ Function DTToUnixDate(DT: DateTime): LongInt;
 
 Function ToUnixDate(FDate: LongInt): LongInt;
   Var
-    {$IFDEF Windows}
-      DT: TDateTime;
-    {$ELSE}
-      DT: DateTime;
-    {$ENDIF}
+    DT: DateTime;
 
   Begin
   UnpackTime(Fdate, Dt);
@@ -322,11 +290,7 @@ Function ToUnixDateStr(FDate: LongInt): String;
 
 Function FromUnixDateStr(S: String): LongInt;
   Var
-    {$IFDEF WINDOWS}
-    DT: TDateTime;
-    {$ELSE}
     DT: DateTime;
-    {$ENDIF}
     secspast, datenum: LONGINT;
     n: WORD;
 
@@ -347,11 +311,7 @@ Function FromUnixDateStr(S: String): LongInt;
   End;
 
 
-{$IFDEF WINDOWS}
-Function ValidDate(DT: TDateTime): Boolean;
-{$ELSE}
 Function ValidDate(DT: DateTime): Boolean;
-{$ENDIF}
   Const
     DOM: Array[1..12] of Byte = (31,29,31,30,31,30,31,31,30,31,30,31);
 

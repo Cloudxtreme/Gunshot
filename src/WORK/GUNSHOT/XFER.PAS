@@ -12,7 +12,7 @@ PROCEDURE ReceiveFiles(Filename: String; Protocl: Byte; DoDupes: Boolean);
 IMPLEMENTATION
 
 
-USES ApAbsPcl,ApXmodem,ApYmodem,ApZmodem,Globals,Crt,ApTimer,BsVideo,
+USES {$IFNDEF MSDOS}VideoUtils,{$ENDIF}ApAbsPcl,ApXmodem,ApYmodem,ApZmodem,Globals,Crt,ApTimer,BsVideo,
      BsString,ApCom,ApPort,Dos,ApMisc,BsMulti,BsLog,SaveScrn,CDS,
      MkFFile,FMode,BsFile,BsTime,BsKeys;
 
@@ -174,13 +174,23 @@ BEGIN
      x := ((yy2*160)+(xx1*2))+1;
      FOR Loop := xx1 to xx2 DO
      BEGIN
+{$IFDEF MSDOS}
           Mem[SegB800:x] := 8;
+{$ENDIF}
+{$IFNDEF MSDOS}
+          VideoUtils.SetAttrAt(8, Loop+1, yy2+1);
+{$ENDIF}
           INC(x,2);
      END;
      y := ((yy1*160)+((xx2)*2))+1;
      FOR Loop := yy1 to yy2 DO
      BEGIN
+{$IFDEF MSDOS}
           Mem[SegB800:y] := 8;
+{$ENDIF}
+{$IFNDEF MSDOS}
+          VideoUtils.SetAttrAt(8, xx2+1, Loop+1);
+{$ENDIF}
           INC(y,160);
      END;
 END;

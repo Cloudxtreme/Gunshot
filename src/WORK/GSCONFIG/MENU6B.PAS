@@ -1051,7 +1051,7 @@ VAR  Loop      : Word;
                                           ELSE PickListFile.B := 'No';
                 CASE NewUserANSI.FunctionType OF
                 1:   PickListFile.A := ' Display File ('+NewUserANSI.FileName+')';
-                1,2,3,13,14,18: PickListFile.B := 'Yes';
+                2,3,13,14,18: PickListFile.B := 'Yes';
                 END;
                 WRITE(FPickListFile,PickListFile);
           UNTIL EOF(FNewUserANSI);

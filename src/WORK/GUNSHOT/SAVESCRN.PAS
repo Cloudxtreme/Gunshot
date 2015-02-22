@@ -14,21 +14,36 @@ PROCEDURE Restore_Screen;
 IMPLEMENTATION
 
 
-USES Globals,Crt,ANSIMisc,BsKeys;
+USES {$IFNDEF MSDOS}VideoUtils,{$ENDIF}Globals,Crt,ANSIMisc,BsKeys;
 
 
+{$IFDEF WIN32}
+var
+  SavedScreen1: TScreenBuffer;
+  SavedScreen2: TScreenBuffer;
+{$ENDIF}
 {LOCAL SCREEN SAVE}
 
 
 PROCEDURE Save_Screen2;
 BEGIN
+{$IFDEF MSDOS}
      Move(MEM[SegB800:0],SAVESCRN_Scr2[1],4000);
+{$ENDIF}
+{$IFNDEF MSDOS}
+     VideoUtils.ScreenSave(SavedScreen2);
+{$ENDIF}
 END;
 
 
 PROCEDURE Restore_Screen2;
 BEGIN
+{$IFDEF MSDOS}
      Move(SAVESCRN_Scr2[1],MEM[SegB800:0],4000);
+{$ENDIF}
+{$IFNDEF MSDOS}
+     VideoUtils.ScreenRestore(SavedScreen2);
+{$ENDIF}
 END;
 
 
@@ -37,7 +52,12 @@ END;
 
 PROCEDURE Save_Screen;
 BEGIN
+{$IFDEF MSDOS}
      Move(MEM[SegB800:0],SAVESCRN_Scr[1],3840);
+{$ENDIF}
+{$IFNDEF MSDOS}
+     VideoUtils.ScreenSave(SavedScreen1);
+{$ENDIF}
      SAVESCRN_X := WhereX;
      SAVESCRN_Y := WhereY;
      SAVESCRN_Attr := TextAttr;
@@ -70,7 +90,13 @@ BEGIN
        BEGIN
          IF LoopX=80 THEN
          BEGIN
+{$IFDEF MSDOS}
            TheAttr := SAVESCRN_Scr[Loop];
+{$ENDIF}
+{$IFNDEF MSDOS}
+           // REETODO Does this work?
+           TheAttr := Byte(SavedScreen1[LoopY][LoopX].Attributes);
+{$ENDIF}
            IF TheAttr>127 THEN DEC(TheAttr,128);
            NewB := Trunc(TheAttr/16);
            NewF := TheAttr-(NewB*16);
@@ -83,9 +109,21 @@ BEGIN
          END
          ELSE
          BEGIN
+{$IFDEF MSDOS}
            TheAttr := SAVESCRN_Scr[Loop];
+{$ENDIF}
+{$IFNDEF MSDOS}
+           // REETODO Does this work?
+           TheAttr := Byte(SavedScreen1[LoopY][LoopX].Attributes);
+{$ENDIF}
            IF TheAttr>127 THEN DEC(TheAttr,128);
+{$IFDEF MSDOS}
            TheChar := Chr(SAVESCRN_Scr[Loop-1]);
+{$ENDIF}
+{$IFNDEF MSDOS}
+           // REETODO Does this work?
+           TheChar := SavedScreen1[LoopY][LoopX].AsciiChar;
+{$ENDIF}
            NewB := Trunc(TheAttr/16);
            NewF := TheAttr-(NewB*16);
            IF ((NewF<>LastF) OR (NewB<>LastB)) THEN

@@ -94,7 +94,9 @@ var DosMemory: pointer;                          { Pointer to memory gained from
     OldNumHandles: byte;                         { Original number of handles }
 
 {$IFNDEF DPMI}
+{$IFDEF MSDOS}
 {$L EXTEND }
+{$ENDIF}
 procedure ExtendInit; external;                  { Initialize interrupt handler }
 procedure ExtendHandler; external;               { Replacement INT 21 handler }
 {$ENDIF}
@@ -106,13 +108,19 @@ procedure SwapVectorsExtend;
   {$IFNDEF DPMI}                                 { This can't apply to a DPMI program }
   if lo(DosVersion) = 2 then
     begin
+{$IFDEF MSDOS}
     GetIntVec($21,TempVector);                   { Swap the INT 21 vectors }
     SetIntVec($21,OldInt21);
     OldInt21 := TempVector
+{$ENDIF}
+{$IFNDEF MSDOS}
+  // REENOTE Not needed
+{$ENDIF}
     end
   {$ENDIF}
   end;
 
+{$IFDEF MSDOS}
 procedure ExtendHandles;
   { Install the extended handles interrupt.  No files (other than
     standard handles) should be open when unit starts up. }
@@ -178,6 +186,13 @@ procedure ExtendHandles;
         end
     end
   end;
+{$ENDIF}
+{$IFNDEF MSDOS}
+procedure ExtendHandles;
+  begin
+    // REENOTE Not needed
+  end;
+{$ENDIF}
 
 {$IFNDEF DPMI}                                   { Most of this unit is simply commented out in protected mode }
 {$F+}

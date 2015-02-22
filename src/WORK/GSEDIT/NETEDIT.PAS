@@ -61,6 +61,9 @@ END;
 
 
 PROCEDURE DrawMainScreen;
+{$IFNDEF MSDOS}
+CONST MemAvail: LongInt = 640 * 1024; // Pretend we have 640k
+{$ENDIF}    
 VAR  Loop : Word;
 BEGIN
      FOR Loop := 1 TO 25 DO FastWrite(_PadRight('',80),Loop,1,7);

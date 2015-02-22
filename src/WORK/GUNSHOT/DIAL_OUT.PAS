@@ -11,7 +11,7 @@ PROCEDURE DialOut(PhoneNumber,Title: String; UseNode: Word);
 IMPLEMENTATION
 
 
-USES Globals,ApTimer,ApUart,ApCom,ApPort,ApMisc,BsMulti,ANSIMisc,BsString,
+USES Globals,ApTimer,{$IFDEF MSDOS}ApUart,{$ENDIF}ApCom,ApPort,ApMisc,BsMulti,ANSIMisc,BsString,
      BsLog,Screens,KeyInput,Comm,SBuffer,Time,Carrier,Crt,ErrorLog,
      BsFile;
 
@@ -22,6 +22,7 @@ VAR   BaseAddr   : Word;
       NewAddr    : Word;
       TVector    : Array[0..15] Of Byte;
 BEGIN
+{$IFDEF MSDOS}
      IF (NodeInfo2.ComDevice<>NodeInfo.ComDevice) THEN
      BEGIN
           Comm_Init2 := False;
@@ -81,6 +82,10 @@ BEGIN
           Comm_Init2 := True;
      END
      ELSE Comm_Init2 := False;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT DIAL_OUT Comm_init2'); Halt;
+{$ENDIF}
 END;
 
 

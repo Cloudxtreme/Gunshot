@@ -13,7 +13,7 @@ PROCEDURE InvertedBox       (x1,y1,x2,y2: Word);
 IMPLEMENTATION
 
 
-USES Crt,FastW1,Globals,Time,SaveScrn,Misc,Version,BsString,BsVideo;
+USES {$IFNDEF MSDOS}VideoUtils,{$ENDIF}Crt,FastW1,Globals,Time,SaveScrn,Misc,Version,BsString,BsVideo;
 
 
 PROCEDURE DrawWindow(x1,y1,x2,y2: Word; Title: String; Shad: Boolean);
@@ -66,13 +66,23 @@ BEGIN
      x := ((yy2*160)+(xx1*2))+1;
      FOR Loop := xx1 to xx2 DO
      BEGIN
+{$IFDEF MSDOS}
           Mem[SegB800:x] := 8;
+{$ENDIF}
+{$IFNDEF MSDOS}
+          VideoUtils.SetAttrAt(8, Loop+1, yy2+1);
+{$ENDIF}
           INC(x,2);
      END;
      y := ((yy1*160)+((xx2)*2))+1;
      FOR Loop := yy1 to yy2 DO
      BEGIN
+{$IFDEF MSDOS}
           Mem[SegB800:y] := 8;
+{$ENDIF}
+{$IFNDEF MSDOS}
+          VideoUtils.SetAttrAt(8, xx2+1, Loop+1);
+{$ENDIF}
           INC(y,160);
      END;
 END;
@@ -88,7 +98,12 @@ BEGIN
      FOR Loop := y1 TO y2 DO
      BEGIN
           GetPut1^.Lines[Count].LineLength := x2-x1+1;
+{$IFDEF MSDOS}
           Move(MEM[SegB800:(((Loop-1)*160)+((x1-1)*2))],GetPut1^.Lines[Count].Line,(x2-x1+1)*2);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT DRAWSCRN Get'); Halt;
+{$ENDIF}
           INC(Count);
      END;
 END;
@@ -101,7 +116,12 @@ BEGIN
      Count := 1;
      FOR Loop := y TO (y+GetPut1^.NumLines-1) DO
      BEGIN
+{$IFDEF MSDOS}
           Move(GetPut1^.Lines[Count].Line,MEM[SegB800:(((Loop-1)*160)+((x-1)*2))],(GetPut1^.Lines[Count].LineLength)*2);
+{$ENDIF}
+{$IFNDEF MSDOS}
+  WriteLn('REEPORT DRAWSCRN Put'); Halt;
+{$ENDIF}
           INC(Count);
      END;
      IF Kill THEN Dispose(GetPut1);
