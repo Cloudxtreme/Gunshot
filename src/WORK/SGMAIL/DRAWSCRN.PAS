@@ -56,7 +56,7 @@ BEGIN
      FastWrite(_PadRight(TempTime,55),Window1-1,25,TheAttr);
      Work := LENGTH(TempTime)+25;
      IF Work>80 THEN Work := 80;
-     apGotoXY(Work,Window1-1);
+     FastW1.GotoXY(Work,Window1-1);
 END;
 
 
@@ -70,7 +70,7 @@ BEGIN
      FastWrite(_PadRight(InString,55),Window2-1,25,ShotgunColours.SGMailNormalText);
      Work := LENGTH(InString)+25;
      IF Work>80 THEN Work := 80;
-     apGotoXY(Work,Window2-1);
+     FastW1.GotoXY(Work,Window2-1);
 END;
 
 
@@ -95,7 +95,7 @@ BEGIN
      ScreenBytes := (160*NumLines);
      Window1     := (Trunc(NumLines/2))+1;
      Window2     := NumLines-7;
-     SetAnsiHeight(24);
+     (*REETODO SetAnsiHeight(24);*)
      CheckSnow := False;
      ReinitFastWrite;
 END;

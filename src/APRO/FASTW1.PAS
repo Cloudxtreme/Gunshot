@@ -70,6 +70,9 @@ procedure FrameWindow(LeftCol, TopRow, RightCol, BotRow : Word;
 procedure WhereXYAbs(var XY : Word);
   {-Return the absolute (not window relative) coordinates of cursor}
 
+procedure GotoXY(X, Y : Word);
+  {-Position cursor at absolute coordinates X, Y}
+
 procedure GotoXYAbs(XY : Word);
   {-Position cursor at absolute coordinates X, Y}
 
@@ -256,6 +259,11 @@ type
       Intr($10, Regs);
       XY := DX;
     end;
+  end;
+
+  procedure GotoXY(X, Y : Word);
+  begin
+    GotoXYAbs((X - 1) + ((Y - 1) SHL 8));
   end;
 
   procedure GotoXYAbs(XY : Word);

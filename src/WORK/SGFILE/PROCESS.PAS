@@ -592,7 +592,7 @@ BEGIN
          IF Scanners.CommandLine[Loop]<>'' THEN
          BEGIN
            SaveScreen;
-           apGotoXY(1,1);
+           FastW1.GotoXY(1,1);
            ChDir(BaseDirectory+'\!20');
            CommandLine := Scanners.Path[Loop]+Scanners.CommandLine[Loop]+' *.*';
            PPointer := DoExec(GetEnv('COMSPEC'),' /C '+CommandLine,SwapMethod,BaseDirectory+'\!21');

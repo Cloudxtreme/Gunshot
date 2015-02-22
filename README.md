@@ -29,6 +29,7 @@ TODO List
   <li>IFDEF out anything that doesn't compile and make a placeholder that does a "WriteLn('REEPORT UNIT FUNCTION'); Halt;" (then you can grep the executables for REEPORT to see which REEPORTs actually need to be implemented)</li>
   <li>IFDEF out any ASM code blocks and handle the same as noncompiling code</li>
   <li>Implement any REEPORTs that appear in compiled executables</li>
+  <li>Handle any REETODOs that need handling</li>
   <li>VP needed FindFirst to pass AnyFile instead of 0 -- is this an issue with FPC?</li>
   <li>Ensure all calls to FindFirst have a matching FindClose (memory leaks if FindClose is not called)</li>
   <li>Rename executables mentioned in code (ie SGECHO to GSECHO in a string in a code file)</li>
@@ -49,7 +50,7 @@ Completed List
 ==============
 
 <ul>
-  <li>Nothing yet!</li>
+  <li>Make it all compile (or as much as possible) with BP</li>
 </ul>
 
 <hr />

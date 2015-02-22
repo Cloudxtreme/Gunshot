@@ -84,7 +84,7 @@ BEGIN
                 PutBlockDirect(BBSPort,Buffer,Needed.BytesRead,BytesSent); {Data}
                 IF NOT(GetYAPPAck) THEN
                 BEGIN
-                     apDelay(500);
+                     ApTimer.Delay(500);
                      INC(Errors);
                      INC(SessionErrors);
                      IF Errors=8 THEN GOTO Abort;

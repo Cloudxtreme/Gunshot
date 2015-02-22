@@ -12,7 +12,7 @@ FUNCTION  RunExternalFax: Boolean;
 IMPLEMENTATION
 
 
-USES Crt,Globals,ApPort,ApCom,BsLog,ApAbsFax,ApFax12,ApTimer,
+USES Crt,Globals,ApPort,ApCom,BsLog,ApAbsFax,ApFax12,ApFaxCvt,ApTimer,
      ApMisc,FastW1,SaveScrn,DrawScrn,BsMulti,Comm,Dos,Shotgun,
      BsFile,BsString,BsKeys,BsCom,BsExec,Scan,Sema,BsVideo,Misc;
 
@@ -35,7 +35,7 @@ END;
 {$F-}
 
 {$F+}
-FUNCTION MyAcceptFax(FP: FaxRecPtr; RemoteName: String): Boolean;
+FUNCTION MyAcceptFax(FP: FaxRecPtr; RemoteName: Str20): Boolean;
 BEGIN
      MyAcceptFax := True;
 END;

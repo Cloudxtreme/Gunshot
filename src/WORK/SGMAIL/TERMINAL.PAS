@@ -60,7 +60,7 @@ BEGIN
      UpdateOnlineTime;
      Textcolor(7);
      Textbackground(0);
-     apGotoXY(1,1);
+     FastW1.GotoXY(1,1);
 END;
 
 
@@ -939,7 +939,7 @@ BEGIN
                                ChDir(Shotgun_Directory);
                                Window(1,1,80,NumLines-1);
                                RestoreScreen(2);
-                               apGotoXY(SvX,SvY);
+                               FastW1.GotoXY(SvX,SvY);
                           END;
                      ELSE PutChar(bsBBSPort,Chr(128+Ord(ccc)));
                      END;

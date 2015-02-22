@@ -29,7 +29,7 @@ LABEL            JumpIn;
                FastWrite(Stuff,Y,X,ShotgunColours.SGMailDataEntry);
           END
           ELSE FastWrite(_PadRight(Stuff,Len),Y,X,ShotgunColours.SGMailDataEntry);
-          apGotoXY(X+Length(Stuff),Y);
+          FastW1.GotoXY(X+Length(Stuff),Y);
      END;
 
 BEGIN

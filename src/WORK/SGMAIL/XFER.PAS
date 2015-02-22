@@ -219,19 +219,10 @@ BEGIN
            END;
            CurBytesTransferred := GetBytesTransferred(P);
            CurElapsedTics := GetElapsedTics(P);
-           IF DoingTelink THEN
-           BEGIN
-             CurFileSize       := TelinkBlock.FileSize;
-             CurBytesRemaining := CurFileSize-CurBytesTransferred;
-             TheProto := 'Telink       ';
-           END
-           ELSE
-           BEGIN
-             CurFileSize       := GetFileSize(P);
-             CurBytesRemaining := GetBytesRemaining(P);
-             IF Protocol=ZModem THEN TheProto := 'ZModem       '
-                                ELSE TheProto := 'XModem       ';
-           END;
+           CurFileSize       := GetFileSize(P);
+           CurBytesRemaining := GetBytesRemaining(P);
+           IF Protocol=ZModem THEN TheProto := 'ZModem       '
+                              ELSE TheProto := 'XModem       ';
            IF ((CurBytesTransferred>CurFileSize) AND (CurFileSize<>0)) THEN CurBytesTransferred := CurFileSize;
            FastWrite(TheProto,8,17,ShotgunColours.SGMailWindowHighlight);
            Temp := TheFile;
@@ -357,20 +348,7 @@ BEGIN
        END;
      lfReceiveOk:
        BEGIN
-         IF DoingTelink THEN
-         BEGIN
-           FSize := TelinkBlock.FileSize;
-           ASSIGN(FFile,GetPathName(P));
-           {$I-}RESET(FFile,1);{$I+}
-           IF IOResult=0 THEN
-           BEGIN
-             {$I-}SEEK(FFile,FSize);{$I+}
-             IF IOResult=0 THEN {$I-}TRUNCATE(FFile);{$I+}
-             IF IOResult=0 THEN;
-             CLOSE(FFile);
-           END;
-         END
-         ELSE FSize := GetFileSize(P);
+         FSize := GetFileSize(P);
          TheExt := _GetFileExtension(GetPathName(P));
          IsAPacket := False;
          IsABundle := False;
@@ -570,7 +548,6 @@ BEGIN
                         SetAbortFunc(bsBBSPort,KbdAbort);
                         CASE TransferMode OF
                         Transmit : BEGIN
-                                        IF TelinkBlocks THEN InitTelink(SrcFileName,'SGMail');
                                         SetFileMask(PROTO,SrcFileName);
                                         ProtocolTransmitXM(PROTO);
                                    END;
@@ -635,15 +612,10 @@ BEGIN
      CASE Proto OF
      'X': BEGIN
                Protocol := XModem;
-               TelinkBlocks := False;
           END;
      'Z': BEGIN
                Protocol := ZModem;
                WaitForAutoStart;
-          END;
-     'T': BEGIN
-               Protocol := XModem;
-               TelinkBlocks := True;
           END;
      END;
      SrcFilename := FileName;
@@ -662,15 +634,10 @@ BEGIN
      CASE Proto OF
      'X': BEGIN
                Protocol := XModem;
-               TelinkBlocks := False;
           END;
      'Z': BEGIN
                Protocol := ZModem;
                _Delay(1000);
-          END;
-     'T': BEGIN
-               Protocol := XModem;
-               TelinkBlocks := True;
           END;
      END;
      SrcFilename := FileName;

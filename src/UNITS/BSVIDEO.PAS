@@ -81,7 +81,7 @@ END;
 
 PROCEDURE FastWrite(St: String; Row,Col,Attr: Byte);
 BEGIN
-     apFastWrite(St,Row,Col,Attr);
+     FastW1.FastWrite(St,Row,Col,Attr);
 END;
 
 
