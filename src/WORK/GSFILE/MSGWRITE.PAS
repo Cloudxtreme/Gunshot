@@ -220,7 +220,7 @@ BEGIN
                    Msg^.DoStringLn('');
                    Msg^.DoStringLn(_GetPrettyDate+'; '+_GetPrettyTime);
                    Msg^.DoStringLn('');
-                   Msg^.DoStringLn('The following areas were auto-created by SGFile:');
+                   Msg^.DoStringLn('The following areas were auto-created by GSFile:');
                    Msg^.DoStringLn(_Replicate('Ä',75));
                    ASSIGN(TFile1,BaseDirectory+'\!21\AUTOADD.TXT');
                    RESET(TFile1);

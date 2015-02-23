@@ -126,8 +126,8 @@ LABEL              OverAgain,Skip1,Skip2;
                IF (TheOne<=NumItems) THEN
                BEGIN
                     TTemp := PickList^[TheOne].Text;
-                    IF TheOne=Current THEN FastWrite(TTemp,LLoop,3,ShotgunColours.SGMailMenuSelected)
-                                      ELSE FastWrite(TTemp,LLoop,3,ShotgunColours.SGMailWindowText);
+                    IF TheOne=Current THEN FastWrite(TTemp,LLoop,3,ShotgunColours.GSMailMenuSelected)
+                                      ELSE FastWrite(TTemp,LLoop,3,ShotgunColours.GSMailWindowText);
                END;
                INC(TheOne);
           END;
@@ -169,9 +169,9 @@ BEGIN
           YYPos := 2;
           DrawWindow(2,2,78,24,'Undialable Systems',True);
      END;
-     FastWrite(_PadRight('  [   ]',80),Window2+7,1,ShotgunColours.SGMailWindowText);
-     FastWrite('DEL',Window2+7,4,ShotgunColours.SGMailWindowHighlight);
-     FastWrite('Delete Entry',Window2+7,9,ShotgunColours.SGMailWindowText);
+     FastWrite(_PadRight('  [   ]',80),Window2+7,1,ShotgunColours.GSMailWindowText);
+     FastWrite('DEL',Window2+7,4,ShotgunColours.GSMailWindowHighlight);
+     FastWrite('Delete Entry',Window2+7,9,ShotgunColours.GSMailWindowText);
      _HideCursor;
      Top     := 1;
      Current := 1;

@@ -2,7 +2,7 @@
 Hello there???
 {$ENDIF}
 {$M 60000,0,655360}
-PROGRAM SgConfig;
+PROGRAM GSConfig;
 
 
 USES BsOvr,Dos,Crt,Intrface,BsMouse,CNFGVARS,Menu1,Menu2,Menu3,Menu4,
@@ -82,7 +82,7 @@ BEGIN
      AddMenuObject(2,14,Item,' Advanced Functions ',0,ORD('A'),'Access levels for "sysop" type functions');
      AddMenuObject(2,15,SBar,'                    ',0,0,'');
      AddMenuObject(2,16,Item,' Function Keys      ',0,ORD('F'),'Programmable function keys.');
-     AddMenuObject(2,17,Item,' Hidden Dial Info   ',0,ORD('H'),'SGMail hidden dial strings.');
+     AddMenuObject(2,17,Item,' Hidden Dial Info   ',0,ORD('H'),'GSMail hidden dial strings.');
      {USERS MENU}
      AddMenuObject(3,1,Item, ' Userbase Editor        ',0,ORD('U'),'Edit the system''s userbase');
      AddMenuObject(3,2,Item, ' Find User              ',0,ORD('F'),'Find a user in the userbase');
@@ -146,36 +146,36 @@ BEGIN
      {LINKS MENU}
      AddMenuObject(7,1,Item,' Node Configuration ',0,ORD('N'),'Uplink/downlink manager');
      AddMenuObject(7,2,Item,' UUCP Configuration ',0,ORD('U'),'Configuration for FIDO/UUCP message gating');
-     AddMenuObject(7,3,Item,' Quick Phonebook    ',0,ORD('Q'),'Quick alias name nodelist lookups for SGMail');
-     AddMenuObject(7,4,Item,' Edit Private Nodes ',0,ORD('E'),'Add/edit additional entries for the nodelist for SGMail');
+     AddMenuObject(7,3,Item,' Quick Phonebook    ',0,ORD('Q'),'Quick alias name nodelist lookups for GSMail');
+     AddMenuObject(7,4,Item,' Edit Private Nodes ',0,ORD('E'),'Add/edit additional entries for the nodelist for GSMail');
      AddMenuObject(7,5,SBar,'                    ',0,0,'');
-     AddMenuObject(7,6,Item,' Passwords          ',0,ORD('P'),'Session passwords for SGMail');
+     AddMenuObject(7,6,Item,' Passwords          ',0,ORD('P'),'Session passwords for GSMail');
      AddMenuObject(7,7,SBar,'                    ',0,0,'');
-     AddMenuObject(7,8,Item,' SGFile Auto-Purge  ',0,ORD('S'),'Areas that SGFile should auto-kill inbound files');
+     AddMenuObject(7,8,Item,' GSFile Auto-Purge  ',0,ORD('S'),'Areas that GSFile should auto-kill inbound files');
      AddMenuObject(7,9,SBar,'                    ',0,0,'');
-     AddMenuObject(7,10,Item,' Call Routing       ',0,ORD('C'),'SGEcho/SGMail mail packet routing');
+     AddMenuObject(7,10,Item,' Call Routing       ',0,ORD('C'),'GSEcho/GSMail mail packet routing');
      AddMenuObject(7,11,SBar,'                    ',0,0,'');
-     AddMenuObject(7,12,Item,' Fax Setup        **',0,ORD('F'),'SGMail fax configuration');
+     AddMenuObject(7,12,Item,' Fax Setup        **',0,ORD('F'),'GSMail fax configuration');
      {NODES MENU}
      AddMenuObject(8,1 ,Item,' Select Node      ',0,ORD('S'),'Select the node ### to edit');
      AddMenuObject(8,2 ,SBar,'                  ',0,0,'');
      AddMenuObject(8,3 ,Item,' Device Setup   **',0,ORD('D'),'Modem configuration for current node');
      AddMenuObject(8,4 ,Item,' Node Options   **',0,ORD('N'),'Video and access settings for current node');
      AddMenuObject(8,5 ,SBar,'                  ',0,0,'');
-     AddMenuObject(8,6 ,Item,' Mailer Setup   **',0,ORD('M'),'General options for SGMail');
-     AddMenuObject(8,7 ,Item,' Files & Paths  **',0,ORD('F'),'Files and paths associated with SGMail');
-     AddMenuObject(8,8 ,Item,' Error Levels   **',0,ORD('E'),'Error level exits for SGMail/WFC');
-     AddMenuObject(8,9 ,Item,' Result Codes   **',0,ORD('R'),'Modem result codes for SGMail/WFC');
-     AddMenuObject(8,10,Item,' Init - Special **',0,ORD('I'),'Pre-dial inits for SGMail');
-     AddMenuObject(8,11,Item,' Local Console  **',0,ORD('L'),'Various console settings for SGMail');
+     AddMenuObject(8,6 ,Item,' Mailer Setup   **',0,ORD('M'),'General options for GSMail');
+     AddMenuObject(8,7 ,Item,' Files & Paths  **',0,ORD('F'),'Files and paths associated with GSMail');
+     AddMenuObject(8,8 ,Item,' Error Levels   **',0,ORD('E'),'Error level exits for GSMail/WFC');
+     AddMenuObject(8,9 ,Item,' Result Codes   **',0,ORD('R'),'Modem result codes for GSMail/WFC');
+     AddMenuObject(8,10,Item,' Init - Special **',0,ORD('I'),'Pre-dial inits for GSMail');
+     AddMenuObject(8,11,Item,' Local Console  **',0,ORD('L'),'Various console settings for GSMail');
      AddMenuObject(8,12,Item,' CallerID         ',0,ORD('C'),'CallerID support configuration');
      AddMenuObject(8,13,SBar,'                  ',0,0,'');
-     AddMenuObject(8,14,Item,' 1. Busy Events **',0,ORD('1'),'SGMail events that take the phone offhook');
-     AddMenuObject(8,15,Item,' 2. Exit Events **',0,ORD('2'),'SGMail events that drop to an errorlevel');
-     AddMenuObject(8,16,Item,' 3. Mail Events **',0,ORD('3'),'SGMail events that block human callers');
-     AddMenuObject(8,17,Item,' 4. Poll Events **',0,ORD('4'),'SGMail events that call other systems');
-     AddMenuObject(8,18,Item,' 5. Send Events **',0,ORD('5'),'SGMail events that unhold outbound mail');
-     AddMenuObject(8,19,Item,' 6. Freq Events **',0,ORD('6'),'SGMail events that refuse file requests');
+     AddMenuObject(8,14,Item,' 1. Busy Events **',0,ORD('1'),'GSMail events that take the phone offhook');
+     AddMenuObject(8,15,Item,' 2. Exit Events **',0,ORD('2'),'GSMail events that drop to an errorlevel');
+     AddMenuObject(8,16,Item,' 3. Mail Events **',0,ORD('3'),'GSMail events that block human callers');
+     AddMenuObject(8,17,Item,' 4. Poll Events **',0,ORD('4'),'GSMail events that call other systems');
+     AddMenuObject(8,18,Item,' 5. Send Events **',0,ORD('5'),'GSMail events that unhold outbound mail');
+     AddMenuObject(8,19,Item,' 6. Freq Events **',0,ORD('6'),'GSMail events that refuse file requests');
 END;
 
 
@@ -216,7 +216,7 @@ BEGIN
           CurrentNode := _Numeric(SuperCrap);
      END;
      _CreatePath(WorkDir);
-     CheckRegistered(WorkDir,'SGFile');
+     CheckRegistered(WorkDir,'GSFile');
      IF NOT(IsItRegistered) THEN
      BEGIN
           _NukeDir(WorkDir,False);
@@ -342,7 +342,7 @@ BEGIN
                 3:   DoPhoneBook;
                 4:   DoEditNodes;
                 6:   DoSessionPassword;
-                8:   DoSGFileKill;
+                8:   DoGSFileKill;
                 10:  DoCallRouting;
                 12:  DoFaxSetup;
                 END;

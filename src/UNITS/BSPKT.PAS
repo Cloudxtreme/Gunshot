@@ -573,7 +573,7 @@ BEGIN
      $010B: rPktGetProductName := 'Xenia';
      $010C: rPktGetProductName := 'GMS';
      $010D: rPktGetProductName := 'HNET';
-     $010E: rPktGetProductName := 'SGEcho';
+     $010E: rPktGetProductName := 'GSEcho';
      ELSE
        BEGIN
          rPktGetProductName := 'Unknown $'+Word2Hex(ReadPktMsg^.ProductCode);

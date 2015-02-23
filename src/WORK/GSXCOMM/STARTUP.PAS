@@ -456,7 +456,7 @@ BEGIN
           ClrScr;
           TEXTCOLOR(4);
           WRITELN('CRITICAL ERROR!!! Missing a required data file in the '+DATA_Directory+'\');
-          WRITELN('directory. Please run SGCONFIG.EXE to correct the problem.');
+          WRITELN('directory. Please run GSCONFIG.EXE to correct the problem.');
           WRITELN;
           TEXTCOLOR(7);
           Halt;
@@ -573,10 +573,10 @@ BEGIN
                DoNodeActivity(0,'');
                IF ((TermType='Dos') OR (TermType='Extended Dos')) THEN
                BEGIN
-                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\SGT.HLP')
-                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\SGT.HLP',True);
-                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\SGT.EXE')
-                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\SGT.EXE',True);
+                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\GST.HLP')
+                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\GST.HLP',True);
+                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\GST.EXE')
+                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\GST.EXE',True);
                     IF _FileExists(Shotgun_Directory+'\NEWYAPP\PLAYVOC.EXE')
                        THEN dl_file(Shotgun_Directory+'\NEWYAPP\PLAYVOC.EXE',True);
                     IF _FileExists(Shotgun_Directory+'\NEWYAPP\PLAYFLI.EXE')

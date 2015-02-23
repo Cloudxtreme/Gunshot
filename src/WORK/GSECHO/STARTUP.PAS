@@ -72,13 +72,13 @@ END;
 
 PROCEDURE Help;
 BEGIN
-     AppHeader('SGEcho - Echo Mail Processor For Shotgun Professional');
+     AppHeader('GSEcho - Echo Mail Processor For Shotgun Professional');
      Window(1,1,80,25);
      GotoXY(1,7);
      TextColor(7);
-     WriteLn('SGEcho Command Line Options:');
+     WriteLn('GSEcho Command Line Options:');
      WriteLn;
-     WriteLn('      SGECHO.EXE <arg> <arg> ...');
+     WriteLn('      GSECHO.EXE <arg> <arg> ...');
      WriteLn;
      WriteLn('             -N<xxx>      : xxx is the node number to use.');
      WriteLn('             -TOSS        : Toss inbound mail into the system.');
@@ -155,8 +155,8 @@ BEGIN
        END;
      END;
      IF Toss
-        THEN AppHeader('SGEcho - Echo Mail Processor For Shotgun Professional [TOSS]')
-        ELSE AppHeader('SGEcho - Echo Mail Processor For Shotgun Professional [SCAN]');
+        THEN AppHeader('GSEcho - Echo Mail Processor For Shotgun Professional [TOSS]')
+        ELSE AppHeader('GSEcho - Echo Mail Processor For Shotgun Professional [SCAN]');
      IF NOT(LoadInDataFiles) THEN Halt;
      CASE SystemInfo.SwapMethod OF
      1:   SwapMethod := USE_EMS or USE_XMS;
@@ -177,7 +177,7 @@ END;
 PROCEDURE ProgramShutDown;
 BEGIN
      Dispose(MsgTextBuffer);
-     CloseSGEchoDat;
+     CloseGSEchoDat;
      FLinkGroups.Done;
      FLinksInfo.Done;
      FEchoTag.Done;
@@ -203,7 +203,7 @@ VAR  FNode : File Of _NodeFile_Record;
      Node  : _NodeFile_Record;
 BEGIN
      FillChar(Node,SizeOf(Node),0);
-     Node.User     := 'SGEcho';
+     Node.User     := 'GSEcho';
      Node.Activity := 'Processing Network Mail';
      Node.Node     := NodeNumber;
      ASSIGN(FNode,BaseDirectory+'\INTRNODE\NODE'+_String(NodeNumber)+'.$$$');
@@ -284,7 +284,7 @@ BEGIN
          IF rFidoOpenMessage(Loop) THEN
          BEGIN
            Temp := _UpperCase(rFidoGetMsgTo);
-           IF ((Temp='SGECHO') OR (Temp='AREAFIX') OR (Temp='AREAMGR')) THEN
+           IF ((Temp='GSECHO') OR (Temp='AREAFIX') OR (Temp='AREAMGR')) THEN
            BEGIN
              IF ((NOT rFidoIsReceived) AND (NOT rFidoIsLocal)) THEN
              BEGIN
@@ -347,7 +347,7 @@ BEGIN
          Type2PPacket.PrdCodH   := Hi(FTSCProductCode);
          Type2PPacket.PVMajor   := MajorVersion;
          Type2PPacket.PVMinor   := MinorVersion;
-         FOR Loop := 1 TO LENGTH(LinksInfo.SGEchoPacket) DO Type2PPacket.Password[Loop] := LinksInfo.SGEchoPacket[Loop];
+         FOR Loop := 1 TO LENGTH(LinksInfo.GSEchoPacket) DO Type2PPacket.Password[Loop] := LinksInfo.GSEchoPacket[Loop];
          Type2PPacket.QDestZone := LinksInfo.NetworkAddress.Zone;
          Type2PPacket.DestZone  := LinksInfo.NetworkAddress.Zone;
          Type2PPacket.DestNet   := LinksInfo.NetworkAddress.Net;
@@ -515,7 +515,7 @@ BEGIN
                    TossMsg^.DoStringLn('');
                    TossMsg^.DoStringLn(_GetPrettyDate+'; '+_GetPrettyTime);
                    TossMsg^.DoStringLn('');
-                   TossMsg^.DoStringLn('The following areas were auto-created by SGEcho:');
+                   TossMsg^.DoStringLn('The following areas were auto-created by GSEcho:');
                    TossMsg^.DoStringLn(_Replicate('Ä',75));
                    ASSIGN(TFile,TempOutbound+'\AUTOADD.TXT');
                    RESET(TFile);

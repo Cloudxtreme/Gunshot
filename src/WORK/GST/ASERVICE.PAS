@@ -20,7 +20,7 @@ BEGIN
      FillChar(DialDir,SizeOf(DialDir),0);
      DialDir.DoESCs := True;
      DialDir.Sound  := True;
-     ASSIGN(FDialDir,'SGT.DIR');
+     ASSIGN(FDialDir,'GST.DIR');
      {$I-}RESET(FDialDir);{$I+}
      IF IOResult<>0 THEN REWRITE(FDialDir);
      SEEK(FDialDir,FileSize(FDialDir));

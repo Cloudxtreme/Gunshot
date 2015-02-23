@@ -4,7 +4,7 @@
 
 {$I DEFINES.INC}
 {$M 32000,0,655360}
-PROGRAM SGEditMailEditor;
+PROGRAM GSEditMailEditor;
 
 
 USES FMode,NetEdit,Crt,Globals,MkFFile,BsString,BsFile,BsExec,KeyCheck;
@@ -55,7 +55,7 @@ BEGIN
      END;
 
      _CreatePath(MailerInfo.Outpkts);
-     CheckRegistered(MailerInfo.Outpkts,'SGEdit');
+     CheckRegistered(MailerInfo.Outpkts,'GSEdit');
 END;
 
 

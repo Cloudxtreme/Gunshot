@@ -25,10 +25,10 @@ LABEL            JumpIn;
      BEGIN
           IF Blocked THEN
           BEGIN
-               FastWrite(_Replicate('±',Len),Y,X,ShotgunColours.SGMailDataEntryBack);
-               FastWrite(Stuff,Y,X,ShotgunColours.SGMailDataEntry);
+               FastWrite(_Replicate('±',Len),Y,X,ShotgunColours.GSMailDataEntryBack);
+               FastWrite(Stuff,Y,X,ShotgunColours.GSMailDataEntry);
           END
-          ELSE FastWrite(_PadRight(Stuff,Len),Y,X,ShotgunColours.SGMailDataEntry);
+          ELSE FastWrite(_PadRight(Stuff,Len),Y,X,ShotgunColours.GSMailDataEntry);
           FastW1.GotoXY(X+Length(Stuff),Y);
      END;
 

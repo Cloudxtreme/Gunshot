@@ -1,7 +1,7 @@
 {$IFNDEF DPMI}
   DPMI_ONLY!
 {$ENDIF}
-PROGRAM ShotgunSGFileViewer;
+PROGRAM ShotgunGSFileViewer;
 {$M 64000}
 {$I DEFINES.INC}
 
@@ -1576,13 +1576,13 @@ BEGIN
      InSpec := ParamStr(1);
      IF ((InSpec='-?') OR (InSpec='')) THEN
      BEGIN
-          AppHeader('SGView - SVGA Screen Viewer');
+          AppHeader('GSView - SVGA Screen Viewer');
           Window(1,1,80,25);
           GotoXY(1,7);
           TextColor(7);
-          WriteLn('SGView Command Line Options:');
+          WriteLn('GSView Command Line Options:');
           WriteLn;
-          WriteLn('      SGVIEW.EXE <filespec>');
+          WriteLn('      GSVIEW.EXE <filespec>');
           WriteLn;
           WriteLn('             <filespec>   : Complete path & filename of *.SG screens.');
           WriteLn('                            Wildcards may be used.');

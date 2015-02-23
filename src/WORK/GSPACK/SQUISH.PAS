@@ -34,7 +34,7 @@ VAR  FLastReadSource : File;
      BytesRead       : Word;
      Work33          : Word;
 BEGIN
-     ASSIGN(FLastReadSource,BasePath+'$$SGPACK.SQL');
+     ASSIGN(FLastReadSource,BasePath+'$$GSPACK.SQL');
      {$I-}RESET(FLastReadSource,1);{$I+}
      IF IOResult=0 THEN
      BEGIN
@@ -99,10 +99,10 @@ BEGIN
      OrigBytes := OrigBytes+_FileSize(MessageAreas.Dos_Name+'.SQD');
      OrigBytes := OrigBytes+_FileSize(MessageAreas.Dos_Name+'.SQI');
      OrigBytes := OrigBytes+_FileSize(MessageAreas.Dos_Name+'.SQL');
-     IF _FileExists(MessageAreas.Dos_Name+'.SQD') THEN _RenameFile(MessageAreas.Dos_Name+'.SQD',BasePath+'$$SGPACK.SQD');
-     IF _FileExists(MessageAreas.Dos_Name+'.SQI') THEN _RenameFile(MessageAreas.Dos_Name+'.SQI',BasePath+'$$SGPACK.SQI');
-     IF _FileExists(MessageAreas.Dos_Name+'.SQL') THEN _RenameFile(MessageAreas.Dos_Name+'.SQL',BasePath+'$$SGPACK.SQL');
-     OpenOrCreateMsgArea(SourceBase,'S'+BasePath+'$$SGPACK',MessageAreas.MaxMsgs);
+     IF _FileExists(MessageAreas.Dos_Name+'.SQD') THEN _RenameFile(MessageAreas.Dos_Name+'.SQD',BasePath+'$$GSPACK.SQD');
+     IF _FileExists(MessageAreas.Dos_Name+'.SQI') THEN _RenameFile(MessageAreas.Dos_Name+'.SQI',BasePath+'$$GSPACK.SQI');
+     IF _FileExists(MessageAreas.Dos_Name+'.SQL') THEN _RenameFile(MessageAreas.Dos_Name+'.SQL',BasePath+'$$GSPACK.SQL');
+     OpenOrCreateMsgArea(SourceBase,'S'+BasePath+'$$GSPACK',MessageAreas.MaxMsgs);
      OpenOrCreateMsgArea(DestBase,'S'+MessageAreas.Dos_Name,MessageAreas.MaxMsgs);
      DestBase^.LockMsgBase;
      Temp := 'AREA: '+_PadRight(MessageAreas.Area_Name,41);           WRITE(Temp);
@@ -207,9 +207,9 @@ BEGIN
      FileMode := SetFileMode;
      LastReadSquish;
      INC(TotalMsgs,NumMsgs);
-     _EraseFile(BasePath+'$$SGPACK.SQD');
-     _EraseFile(BasePath+'$$SGPACK.SQI');
-     _EraseFile(BasePath+'$$SGPACK.SQL');
+     _EraseFile(BasePath+'$$GSPACK.SQD');
+     _EraseFile(BasePath+'$$GSPACK.SQI');
+     _EraseFile(BasePath+'$$GSPACK.SQL');
      DoneBytes := DoneBytes+_FileSize(MessageAreas.Dos_Name+'.SQD');
      DoneBytes := DoneBytes+_FileSize(MessageAreas.Dos_Name+'.SQI');
      DoneBytes := DoneBytes+_FileSize(MessageAreas.Dos_Name+'.SQL');

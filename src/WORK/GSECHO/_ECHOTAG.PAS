@@ -12,8 +12,8 @@ VAR  FEchoTag          : FFileObj;
      IsEchoTagFileOpen : Boolean;
 
 
-PROCEDURE OpenSGEchoDat;
-PROCEDURE CloseSGEchoDat;
+PROCEDURE OpenGSEchoDat;
+PROCEDURE CloseGSEchoDat;
 
 
 IMPLEMENTATION
@@ -22,13 +22,13 @@ IMPLEMENTATION
 USES BsFile,Globals,FMode;
 
 
-PROCEDURE OpenSGEchoDat;
+PROCEDURE OpenGSEchoDat;
 BEGIN
      IF NOT(IsEchoTagFileOpen) THEN
      BEGIN
-       IF _FileExists(BaseDirectory+'\DATA\SGECHO.DAT') THEN
+       IF _FileExists(BaseDirectory+'\DATA\GSECHO.DAT') THEN
        BEGIN
-         FEchoTag.OpenFile(BaseDirectory+'\DATA\SGECHO.DAT',SetFileMode);
+         FEchoTag.OpenFile(BaseDirectory+'\DATA\GSECHO.DAT',SetFileMode);
          IsEchoTagFileOpen := True;
        END;
      END
@@ -36,7 +36,7 @@ BEGIN
 END;
 
 
-PROCEDURE CloseSGEchoDat;
+PROCEDURE CloseGSEchoDat;
 BEGIN
      IF IsEchoTagFileOpen THEN
      BEGIN

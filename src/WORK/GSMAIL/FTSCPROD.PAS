@@ -284,7 +284,7 @@ BEGIN
      $010B: GetProductName := 'Xenia';
      $010C: GetProductName := 'GMS';
      $010D: GetProductName := 'HNET';
-     $010E: GetProductName := 'SGMail';
+     $010E: GetProductName := 'GSMail';
      ELSE   GetProductName := 'Unknown';
      END;
 END;

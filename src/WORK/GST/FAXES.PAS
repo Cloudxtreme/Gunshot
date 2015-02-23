@@ -321,7 +321,7 @@ END;
 
 PROCEDURE CreateFaxSetup;
 BEGIN
-     ASSIGN(FFaxDir,'SGT.FAX');
+     ASSIGN(FFaxDir,'GST.FAX');
      {$I-}
      RESET(FFaxDir);
      {$I+}
@@ -370,7 +370,7 @@ VAR  GetMouse    : Word;
           FaxDir.DialPhone := Fields[8].Text;
           _CreatePath(FaxDir.InPath);
           _CreatePath('OUTFAX');
-          ASSIGN(FFaxDir,'SGT.FAX');
+          ASSIGN(FFaxDir,'GST.FAX');
           REWRITE(FFaxDir);
           WRITE(FFaxDir,FaxDir);
           CLOSE(FFaxDir);
@@ -403,7 +403,7 @@ BEGIN
      END;
      CreateFaxSetup;
      GrDisplayMouse(GrHide);
-     DrawWindow(20,20,GraphMaxX-20,GraphMaxY-80,'SGT Services Manager - Class 1 & 2 Fax Manager',5);
+     DrawWindow(20,20,GraphMaxX-20,GraphMaxY-80,'GST Services Manager - Class 1 & 2 Fax Manager',5);
      DoOkButton(GraphMaxX-110,GraphMaxY-130);
      SystemButton(30,GraphMaxY-130,145,GraphMaxY-90,1,False,True);
      SystemIcon(35,GraphMaxY-125,76);

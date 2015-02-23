@@ -46,10 +46,10 @@ END;
 
 
 FUNCTION YouAreConnected(InAddress: AddrType; AreaId: Word): Boolean;
-VAR  EchoTag   : _SGEchoDat_Record;
+VAR  EchoTag   : _GSEchoDat_Record;
      BytesRead : Word;
 BEGIN
-     OpenSGEchoDat;
+     OpenGSEchoDat;
      IF IsEchoTagFileOpen THEN
      BEGIN
        REPEAT
@@ -90,8 +90,8 @@ END;
 
 
 FUNCTION ConnectArea(TheArea: String): Boolean;
-VAR  EchoTag      : _SGEchoDat_Record;
-     FFEchoTag    : File Of _SGEchoDat_Record;
+VAR  EchoTag      : _GSEchoDat_Record;
+     FFEchoTag    : File Of _GSEchoDat_Record;
      MessageArea  : _MessageArea_Record;
      FMessageArea : File Of _MessageArea_Record;
 BEGIN
@@ -116,14 +116,14 @@ BEGIN
              CLOSE(FMessageArea);
              EchoTag.AreaId := MessageArea.AreaId;
              EchoTag.Aka    := DownLink.NetworkAddress;
-             CloseSGEchoDat;
-             ASSIGN(FFEchoTag,BaseDirectory+'\DATA\SGECHO.DAT');
+             CloseGSEchoDat;
+             ASSIGN(FFEchoTag,BaseDirectory+'\DATA\GSECHO.DAT');
              {$I-}RESET(FFEchoTag);{$I+}
              IF (IOResult<>0) THEN REWRITE(FFEchoTag);
              SEEK(FFEchoTag,FileSize(FFEchoTag));
              WRITE(FFEchoTag,EchoTag);
              CLOSE(FFEchoTag);
-             OpenSGEchoDat;
+             OpenGSEchoDat;
              Exit;
            END;
          END;
@@ -139,9 +139,9 @@ END;
 
 
 PROCEDURE DisconnectArea(TheArea: String);
-VAR  EchoTag      : _SGEchoDat_Record;
-     FFEchoTag    : File Of _SGEchoDat_Record;
-     FFEchoTag2   : File Of _SGEchoDat_Record;
+VAR  EchoTag      : _GSEchoDat_Record;
+     FFEchoTag    : File Of _GSEchoDat_Record;
+     FFEchoTag2   : File Of _GSEchoDat_Record;
      MessageArea  : _MessageArea_Record;
      FMessageArea : File Of _MessageArea_Record;
 BEGIN
@@ -156,11 +156,11 @@ BEGIN
            IF YouAreConnected(DownLink.NetworkAddress,MessageArea.AreaId) THEN
            BEGIN
              CLOSE(FMessageArea);
-             CloseSGEchoDat;
-             _EraseFile(BaseDirectory+'\DATA\SGECHO.BAK');
-             _RenameFile(BaseDirectory+'\DATA\SGECHO.DAT',BaseDirectory+'\DATA\SGECHO.BAK');
-             ASSIGN(FFEchoTag2,BaseDirectory+'\DATA\SGECHO.BAK');
-             ASSIGN(FFEchoTag,BaseDirectory+'\DATA\SGECHO.DAT');
+             CloseGSEchoDat;
+             _EraseFile(BaseDirectory+'\DATA\GSECHO.BAK');
+             _RenameFile(BaseDirectory+'\DATA\GSECHO.DAT',BaseDirectory+'\DATA\GSECHO.BAK');
+             ASSIGN(FFEchoTag2,BaseDirectory+'\DATA\GSECHO.BAK');
+             ASSIGN(FFEchoTag,BaseDirectory+'\DATA\GSECHO.DAT');
              REWRITE(FFEchoTag);
              RESET(FFEchoTag2);
              REPEAT
@@ -172,8 +172,8 @@ BEGIN
              CLOSE(FFEchoTag2);
              ERASE(FFEchoTag2);
              CLOSE(FFEchoTag);
-             IF _FileSize(BaseDirectory+'\DATA\SGECHO.DAT')=0 THEN ERASE(FFEchoTag);
-             OpenSGEchoDat;
+             IF _FileSize(BaseDirectory+'\DATA\GSECHO.DAT')=0 THEN ERASE(FFEchoTag);
+             OpenGSEchoDat;
              Exit;
            END
            ELSE
@@ -257,10 +257,10 @@ VAR  Loop         : Word;
      VAR  TFile : Text;
           Crap  : String;
      BEGIN
-          IF _FileExists(BaseDirectory+'\HELP\SGECHO.HLP') THEN
+          IF _FileExists(BaseDirectory+'\HELP\GSECHO.HLP') THEN
           BEGIN
-            StartMessage('SGEcho help');
-            ASSIGN(TFile,BaseDirectory+'\HELP\SGECHO.HLP');
+            StartMessage('GSEcho help');
+            ASSIGN(TFile,BaseDirectory+'\HELP\GSECHO.HLP');
             RESET(TFile);
             REPEAT
               READLN(TFile,Crap);
@@ -269,7 +269,7 @@ VAR  Loop         : Word;
             CLOSE(TFile);
             EndMessage;
           END
-          ELSE WriteLogFile('! Areafix help file \SHOTGUN\HELP\SGECHO.HLP not found.');
+          ELSE WriteLogFile('! Areafix help file \SHOTGUN\HELP\GSECHO.HLP not found.');
      END;
 
      PROCEDURE ChangeCompress(NewComp: String);
@@ -501,8 +501,8 @@ VAR  Loop         : Word;
      END;
 
      PROCEDURE LinkAllAreas;
-     VAR  EchoTag      : _SGEchoDat_Record;
-          FFEchoTag    : File Of _SGEchoDat_Record;
+     VAR  EchoTag      : _GSEchoDat_Record;
+          FFEchoTag    : File Of _GSEchoDat_Record;
           MessageArea  : _MessageArea_Record;
           FMessageArea : File Of _MessageArea_Record;
      BEGIN
@@ -518,14 +518,14 @@ VAR  Loop         : Word;
                 BEGIN
                   EchoTag.AreaId := MessageArea.AreaId;
                   EchoTag.Aka    := DownLink.NetworkAddress;
-                  CloseSGEchoDat;
-                  ASSIGN(FFEchoTag,BaseDirectory+'\DATA\SGECHO.DAT');
+                  CloseGSEchoDat;
+                  ASSIGN(FFEchoTag,BaseDirectory+'\DATA\GSECHO.DAT');
                   {$I-}RESET(FFEchoTag);{$I+}
                   IF (IOResult<>0) THEN REWRITE(FFEchoTag);
                   SEEK(FFEchoTag,FileSize(FFEchoTag));
                   WRITE(FFEchoTag,EchoTag);
                   CLOSE(FFEchoTag);
-                  OpenSGEchoDat;
+                  OpenGSEchoDat;
                 END;
               END;
             END;
@@ -534,17 +534,17 @@ VAR  Loop         : Word;
      END;
 
      PROCEDURE UnlinkAllAreas;
-     VAR  EchoTag    : _SGEchoDat_Record;
-          FFEchoTag  : File Of _SGEchoDat_Record;
-          FFEchoTag2 : File Of _SGEchoDat_Record;
+     VAR  EchoTag    : _GSEchoDat_Record;
+          FFEchoTag  : File Of _GSEchoDat_Record;
+          FFEchoTag2 : File Of _GSEchoDat_Record;
      BEGIN
-          IF _FileExists(BaseDirectory+'\DATA\SGECHO.DAT') THEN
+          IF _FileExists(BaseDirectory+'\DATA\GSECHO.DAT') THEN
           BEGIN
-            CloseSGEchoDat;
-            _EraseFile(BaseDirectory+'\DATA\SGECHO.BAK');
-            _RenameFile(BaseDirectory+'\DATA\SGECHO.DAT',BaseDirectory+'\DATA\SGECHO.BAK');
-            ASSIGN(FFEchoTag2,BaseDirectory+'\DATA\SGECHO.BAK');
-            ASSIGN(FFEchoTag,BaseDirectory+'\DATA\SGECHO.DAT');
+            CloseGSEchoDat;
+            _EraseFile(BaseDirectory+'\DATA\GSECHO.BAK');
+            _RenameFile(BaseDirectory+'\DATA\GSECHO.DAT',BaseDirectory+'\DATA\GSECHO.BAK');
+            ASSIGN(FFEchoTag2,BaseDirectory+'\DATA\GSECHO.BAK');
+            ASSIGN(FFEchoTag,BaseDirectory+'\DATA\GSECHO.DAT');
             REWRITE(FFEchoTag);
             RESET(FFEchoTag2);
             REPEAT
@@ -554,8 +554,8 @@ VAR  Loop         : Word;
             CLOSE(FFEchoTag2);
             ERASE(FFEchoTag2);
             CLOSE(FFEchoTag);
-            IF _FileSize(BaseDirectory+'\DATA\SGECHO.DAT')=0 THEN ERASE(FFEchoTag);
-            OpenSGEchoDat;
+            IF _FileSize(BaseDirectory+'\DATA\GSECHO.DAT')=0 THEN ERASE(FFEchoTag);
+            OpenGSEchoDat;
           END;
      END;
 
@@ -577,13 +577,13 @@ BEGIN
              Orig := DownLink.NetworkAddress;
              Dest := NetworkInfo.Net_Address;
              WriteLogFile('Sending basic setup information to '+AddressToString(DownLink.NetworkAddress));
-             StartMessage('Current SGEcho setup.');
+             StartMessage('Current GSEcho setup.');
              wFidoWriteString('Please check your setup to make sure these settings are correct:');
              wFidoWriteString('');
              wFidoWriteString('  Sysop Name.........:  '+DownLink.SysopName);
              wFidoWriteString('  Network Address....:  '+AddressToString(DownLink.NetworkAddress));
-             wFidoWriteString('  TIC File Password..:  '+DownLink.SGEchoPacket);
-             wFidoWriteString('  Areafix Password...:  '+DownLink.SGEchoAreaFix);
+             wFidoWriteString('  TIC File Password..:  '+DownLink.GSEchoPacket);
+             wFidoWriteString('  Areafix Password...:  '+DownLink.GSEchoAreaFix);
              wFidoWriteString('  Compression Method.:  '+DownLink.Archiver);
              CASE DownLink.NetmailStatus OF
              1:   wFidoWriteString('  Netmail Status.....:  None');
@@ -599,7 +599,7 @@ BEGIN
              EndMessage;
              WriteLogFile('%QUERY - Sending list of all linked areas to '+AddressToString(DownLink.NetworkAddress));
              ListAllLinkedAreas;
-             WriteLogFile('%HELP - Sending SGECHO.HLP to '+AddressToString(DownLink.NetworkAddress));
+             WriteLogFile('%HELP - Sending GSECHO.HLP to '+AddressToString(DownLink.NetworkAddress));
              SendHelp;
            END;
          END;
@@ -622,7 +622,7 @@ BEGIN
          FidoMsgNum := rFidoGetMsgNumber;
          DidIt      := False;
          Temp       := _UpperCase(rFidoGetMsgTo);
-         IF ((Temp='SGECHO') OR (Temp='AREAFIX') OR (Temp='AREAMGR')) THEN
+         IF ((Temp='GSECHO') OR (Temp='AREAFIX') OR (Temp='AREAMGR')) THEN
          BEGIN
            IF ((NOT rFidoIsReceived) AND (NOT rFidoIsLocal)) THEN
            BEGIN
@@ -636,7 +636,7 @@ BEGIN
                REWRITE(StatusFile);
                WriteLogFile('Areafix message.: #'+_String(FidoMsgNum)+' from '+AddressToString(Orig));
                Temp := _RemoveSpaces(_UpperCase(rFidoGetMsgSubject));
-               IF Temp=DownLink.SGEchoAreaFix THEN
+               IF Temp=DownLink.GSEchoAreaFix THEN
                BEGIN
                  REPEAT
                    More := rFidoGetString(Temp);
@@ -671,8 +671,8 @@ BEGIN
                          IF DownLink.AllowPassword THEN
                          BEGIN
                            LogAndStat('%PASSWORD - '+AddressToString(Orig)+' password changed to "'+Temp+'".');
-                           DownLink.SGEchoPacket  := Temp;
-                           DownLink.SGEchoAreaFix := Temp;
+                           DownLink.GSEchoPacket  := Temp;
+                           DownLink.GSEchoAreaFix := Temp;
                            WriteThisNode;
                          END
                          ELSE LogAndStat('%PASSWORD - Not allowed by '+AddressToString(Orig));
@@ -681,7 +681,7 @@ BEGIN
                        BEGIN
                          IF DownLink.AllowHelp THEN
                          BEGIN
-                           LogAndStat('%HELP - Sending SGECHO.HLP to '+AddressToString(Orig));
+                           LogAndStat('%HELP - Sending GSECHO.HLP to '+AddressToString(Orig));
                            SendHelp;
                          END
                          ELSE LogAndStat('%HELP - Not allowed by '+AddressToString(Orig));
@@ -794,7 +794,7 @@ BEGIN
                BEGIN
                  LogAndStat('Areafix password from '+AddressToString(Orig)+' is incorrect.');
                  WriteLogFile('! Areafix password from '+AddressToString(Orig)+' is incorrect.');
-                 WriteLogFile('! Expected: "'+DownLink.SGEchoAreaFix+'"  Received: "'+Temp+'".');
+                 WriteLogFile('! Expected: "'+DownLink.GSEchoAreaFix+'"  Received: "'+Temp+'".');
                END;
                CLOSE(StatusFile);
                IF (_FileSize(TempOutbound+'\AREAFIX.$$$')<>0) THEN SendStatusMsg;

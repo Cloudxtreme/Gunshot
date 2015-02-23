@@ -4,7 +4,7 @@
 
 {$I DEFINES.INC}
 {$M 32000,0,655360}
-PROGRAM SGMailFaxPrinter;
+PROGRAM GSMailFaxPrinter;
 
 
 USES Dos,Crt,ApMisc,ApFaxCvt,ApFaxPrn,BsString,BsFile;

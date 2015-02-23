@@ -22,9 +22,9 @@ VAR  FFile     : File;
 BEGIN
      New(Dupes);
      FillChar(Dupes^,SizeOf(Dupes^),0);
-     IF _FileExists(BaseDirectory+'\DATA\SGECHO.DUP') THEN
+     IF _FileExists(BaseDirectory+'\DATA\GSECHO.DUP') THEN
      BEGIN
-          ASSIGN(FFile,BaseDirectory+'\DATA\SGECHO.DUP');
+          ASSIGN(FFile,BaseDirectory+'\DATA\GSECHO.DUP');
           RESET(FFile,1);
           BLOCKREAD(FFile,Dupes^,SizeOf(Dupes^),BytesRead);
           CLOSE(FFile);
@@ -35,7 +35,7 @@ END;
 PROCEDURE CloseDupeFile;
 VAR  FFile : File;
 BEGIN
-     ASSIGN(FFile,BaseDirectory+'\DATA\SGECHO.DUP');
+     ASSIGN(FFile,BaseDirectory+'\DATA\GSECHO.DUP');
      REWRITE(FFile,1);
      BLOCKWRITE(FFile,Dupes^,SizeOf(Dupes^));
      CLOSE(FFile);

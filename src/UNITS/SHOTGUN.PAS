@@ -61,7 +61,7 @@ TYPE _Stats_Baud             = RECORD
 {=======================================================================================================}
 { NEW!                                                                                                  }
 {                                                                                                       }
-{ \SHOTGUN\SGMAIL\NODELIST\NODELIST.PVT                                                                 }
+{ \SHOTGUN\GSMAIL\NODELIST\NODELIST.PVT                                                                 }
 {                                                                                                       }
 {  - Record for private nodelists (added at compile time to NODELIST.SG).                               }
 {  - Multiple record file.                                                                              }
@@ -79,7 +79,7 @@ TYPE _PrivateNode_Sg         = RECORD
 {=======================================================================================================}
 { CHANGED!                                                                                              }
 {                                                                                                       }
-{ \SHOTGUN\SGMAIL\NODELIST\NODEINDX.SG                                                                  }
+{ \SHOTGUN\GSMAIL\NODELIST\NODEINDX.SG                                                                  }
 {                                                                                                       }
 {  - AKA index for an entry in the NODELIST.SG file.                                                    }
 {  - Multiple record file.                                                                              }
@@ -92,7 +92,7 @@ TYPE _NODEINDX_SG            = RECORD
 {=======================================================================================================}
 { NEW!                                                                                                  }
 {                                                                                                       }
-{ \SHOTGUN\SGMAIL\NODELIST\USERLIST.SG                                                                  }
+{ \SHOTGUN\GSMAIL\NODELIST\USERLIST.SG                                                                  }
 {                                                                                                       }
 {  - Index of all sysops in the NODELIST.SG file.                                                       }
 {  - Multiple record file.                                                                              }
@@ -136,7 +136,7 @@ TYPE _NewsGroup_Record       = RECORD
 {                                                                                                       }
 { \SHOTGUN\DATA\FAXCODES.xxx                                                                            }
 {                                                                                                       }
-{  - Definitions for fax specific settings for SGMail.                                                  }
+{  - Definitions for fax specific settings for GSMail.                                                  }
 {  - File extension corresponds with the individual node.                                               }
 {  - Single record file.                                                                                }
 {                                                                                                       }
@@ -183,7 +183,7 @@ TYPE _External_Apps          = RECORD
 {                                                                                                       }
 { \SHOTGUN\DATA\UNDIAL.DAT                                                                              }
 {                                                                                                       }
-{  - Holds definitions of systems that are undialable by SGMail.                                        }
+{  - Holds definitions of systems that are undialable by GSMail.                                        }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
 {=======================================================================================================}
@@ -201,62 +201,62 @@ TYPE _Undialable_Systems     = RECORD
 {                                                                                                       }
 {=======================================================================================================}
 TYPE _Shotgun_Colours        = RECORD {FUCK NEEDS CONFIGURATION}
-     SGMailNormalText        : Byte;
-     SGMailErrorText         : Byte;
-     SGMailToggles           : Byte;
-     SGMailToggleBrackets    : Byte;
-     SGMailFrame             : Byte;
-     SGMailFrameLabels       : Byte;
-     SGMailInfo              : Byte;
-     SGMailInfoHighlight     : Byte;
-     SGMailTimeDateLabels    : Byte;
-     SGMailTimeDateData      : Byte;
-     SGMailStatusText        : Byte;
-     SGMailStatusHighlight   : Byte;
-     SGMailWindowText        : Byte;
-     SGMailWindowHighlight   : Byte;
-     SGMailWindowFrameHigh   : Byte;
-     SGMailWindowFrameLow    : Byte;
-     SGMailWindowFrameStyle  : Byte;
-     SGMailWindowShadow      : Byte;
-     SGMailWindowTitle       : Byte;
-     SGMailMenuSelected      : Byte;
-     SGMailDataEntry         : Byte;
-     SGMailDataEntryBack     : Byte;
-     SGMailProgressBar       : Byte;
-     SGMailProgressBarBack   : Byte;
-     SGMailProgressChar      : Char;
-     SGMailNewMailLight      : Byte;
-     SGEditMsgText           : Byte;
-     SGEditMsgQuote          : Byte;
-     SGEditMsgKludge         : Byte;
-     SGEditFrame             : Byte;
-     SGEditStatusText        : Byte;
-     SGEditStatusHighlight   : Byte;
-     SGEditStatusBrackets    : Byte;
-     SGEditInfo              : Byte;
-     SGEditInfoData          : Byte;
-     SGEditInfoHighlight     : Byte;
-     SGEditWindowText        : Byte;
-     SGEditWindowHighlight   : Byte;
-     SGEditWindowFrameHigh   : Byte;
-     SGEditWindowFrameLow    : Byte;
-     SGEditWindowFrameStyle  : Byte;
-     SGEditWindowShadow      : Byte;
-     SGEditWindowTitle       : Byte;
-     SGEditDataEntry         : Byte;
-     SGEditDataEntryBack     : Byte;
-     SGEditMenuSelected      : Byte;
-     SGEditProgressBar       : Byte;
-     SGEditProgressBarBack   : Byte;
-     SGEditProgressChar      : Char;
+     GSMailNormalText        : Byte;
+     GSMailErrorText         : Byte;
+     GSMailToggles           : Byte;
+     GSMailToggleBrackets    : Byte;
+     GSMailFrame             : Byte;
+     GSMailFrameLabels       : Byte;
+     GSMailInfo              : Byte;
+     GSMailInfoHighlight     : Byte;
+     GSMailTimeDateLabels    : Byte;
+     GSMailTimeDateData      : Byte;
+     GSMailStatusText        : Byte;
+     GSMailStatusHighlight   : Byte;
+     GSMailWindowText        : Byte;
+     GSMailWindowHighlight   : Byte;
+     GSMailWindowFrameHigh   : Byte;
+     GSMailWindowFrameLow    : Byte;
+     GSMailWindowFrameStyle  : Byte;
+     GSMailWindowShadow      : Byte;
+     GSMailWindowTitle       : Byte;
+     GSMailMenuSelected      : Byte;
+     GSMailDataEntry         : Byte;
+     GSMailDataEntryBack     : Byte;
+     GSMailProgressBar       : Byte;
+     GSMailProgressBarBack   : Byte;
+     GSMailProgressChar      : Char;
+     GSMailNewMailLight      : Byte;
+     GSEditMsgText           : Byte;
+     GSEditMsgQuote          : Byte;
+     GSEditMsgKludge         : Byte;
+     GSEditFrame             : Byte;
+     GSEditStatusText        : Byte;
+     GSEditStatusHighlight   : Byte;
+     GSEditStatusBrackets    : Byte;
+     GSEditInfo              : Byte;
+     GSEditInfoData          : Byte;
+     GSEditInfoHighlight     : Byte;
+     GSEditWindowText        : Byte;
+     GSEditWindowHighlight   : Byte;
+     GSEditWindowFrameHigh   : Byte;
+     GSEditWindowFrameLow    : Byte;
+     GSEditWindowFrameStyle  : Byte;
+     GSEditWindowShadow      : Byte;
+     GSEditWindowTitle       : Byte;
+     GSEditDataEntry         : Byte;
+     GSEditDataEntryBack     : Byte;
+     GSEditMenuSelected      : Byte;
+     GSEditProgressBar       : Byte;
+     GSEditProgressBarBack   : Byte;
+     GSEditProgressChar      : Char;
      END;
 {=======================================================================================================}
 { NEW!                                                                                                  }
 {                                                                                                       }
 { \SHOTGUN\DATA\MAILER2.DAT                                                                             }
 {                                                                                                       }
-{  - Additional configuration for individual SGMail nodes.                                              }
+{  - Additional configuration for individual GSMail nodes.                                              }
 {  - Paths MUST contain a trailing backslash.                                                           }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
@@ -265,24 +265,24 @@ TYPE _Mailer2_Record         = RECORD
      InSecureInbound         : String[40]; {Path where non-secure mail PKTs/bundles are received.       }
      UnpackInSecurePkts      : Boolean;    {True to unpack inbound netmail packets (secure).            }
      MailFromUnlistedSystems : Boolean;    {True to accept mail calls from unlisted systems.            }
-     UseVideoLines           : Byte;       {Video Lines To Use In SGMail                                }
+     UseVideoLines           : Byte;       {Video Lines To Use In GSMail                                }
                                            {0 - 25 Lines                                                }
                                            {1 - 28 Lines                                                }
                                            {2 - 30 Lines                                                }
                                            {3 - 50 Lines                                                }
-     UseZedZapTransfers      : Boolean;    {True to allow 8k ZedZap file transfers in SGMail.           }
+     UseZedZapTransfers      : Boolean;    {True to allow 8k ZedZap file transfers in GSMail.           }
      UseHyrdaTransfers       : Boolean;    {n/a                                                         }
      CallsBeforeFail         : Word;       {FUCK}
      UseBlanker              : Boolean;    {True to use internal screen saver.                          }
      BlankerTimeout          : Word;       {Seconds before screen saver is enabled.                     }
-     UseSound                : Boolean;    {True to allow SGMail to make beeps on mail received etc.    }
+     UseSound                : Boolean;    {True to allow GSMail to make beeps on mail received etc.    }
      SoundStart              : Longint;    {Seconds after midnight sound is enabled.                    }
      SoundEnd                : Longint;    {Seconds after midnight sound is disabled.                   }
-     UseSpeakerToggle        : Boolean;    {True to allow SGMail to control modem speaker on/off.       }
+     UseSpeakerToggle        : Boolean;    {True to allow GSMail to control modem speaker on/off.       }
      SpeakerStart            : Longint;    {Seconds after midnight to turn the modem's speaker on.      }
      SpeakerEnd              : Longint;    {Seconds after midnight to turn the modem's speaker off.     }
      UnpackPackets           : Boolean;    {True to unpack inbound netmail packets (secure).            }
-     AllowNodeToDial         : Boolean;    {True to allow SGMail node to make outbound calls.           }
+     AllowNodeToDial         : Boolean;    {True to allow GSMail node to make outbound calls.           }
      END;
 {=======================================================================================================}
 { CHANGED!                                                                                              }
@@ -380,8 +380,8 @@ TYPE _MessageSub_Record      = RECORD
                                                        {MUST NOT be '0'.                                }
      Sub_Name                : String[30];             {The descriptive name of the sub group.          }
 
-        { The remainder of the record is for setting defaults for new areas created via SGConfig and    }
-        { SGEcho (the echo mail processor).                                                             }
+        { The remainder of the record is for setting defaults for new areas created via GSConfig and    }
+        { GSEcho (the echo mail processor).                                                             }
 
      Dos_Name                : String[50];             {Base directory for new area creation.           }
      Base_Type               : Byte;                   {Message base format:                            }
@@ -434,8 +434,8 @@ TYPE _FileSub_Record         = RECORD
                                                        {MUST NOT be '0'.                                }
      Sub_Name                : String[30];             {The descriptive name of the sub group.          }
 
-        { The remainder of the record is for setting defaults for new areas created via SGConfig and    }
-        { SGFile (the file echo processor).                                                             }
+        { The remainder of the record is for setting defaults for new areas created via GSConfig and    }
+        { GSFile (the file echo processor).                                                             }
 
      View_Access             : Word;                   {Minimum access level required to see the area.  }
      DL_Access               : Word;                   {Minimum access level required to DL files.      }
@@ -476,7 +476,7 @@ TYPE _FileSub_Record         = RECORD
 {                                                                                                       }
 { \SHOTGUN\DATA\HIDDEN.DAT                                                                              }
 {                                                                                                       }
-{  - Definitions for strings that SGMail won't display (in the dialing window).                         }
+{  - Definitions for strings that GSMail won't display (in the dialing window).                         }
 {  - Single record file.                                                                                }
 {                                                                                                       }
 {=======================================================================================================}
@@ -577,7 +577,7 @@ TYPE _UsersBBS_Record        = RECORD
 {                                                                                                       }
 {  - Holds the caller ID information for the current call if available.                                 }
 {  - <xxx> extension corresponds to the node number.                                                    }
-{  - Created by SGMail only.                                                                            }
+{  - Created by GSMail only.                                                                            }
 {                                                                                                       }
 {=======================================================================================================}
 TYPE _CID_Data               = RECORD
@@ -606,7 +606,7 @@ TYPE _Lockout_Record         = RECORD
 {                                                                                                       }
 {  - Data file for configuration of Shotgun's CID support.                                              }
 {  - Requires that the sysop's modem has CID support (both modem and phone line).                       }
-{    and that the user uses SGMail as a front end (for capture and log of the information).             }
+{    and that the user uses GSMail as a front end (for capture and log of the information).             }
 {  - Single record file.                                                                                }
 {                                                                                                       }
 {=======================================================================================================}
@@ -722,25 +722,25 @@ TYPE _FileArea_Record        = RECORD
 {                                                                                                       }
 {=======================================================================================================}
 TYPE _Function_Keys          = RECORD
-     SGMail_F1               : String[60]; {SGMail F1 - Contains one of the following:                  }
+     GSMail_F1               : String[60]; {GSMail F1 - Contains one of the following:                  }
                                            {          - A full path/filename of an executable to run.   }
                                            {          - A ?<err> to exit with an errorlevel of <err>.   }
-     SGMail_F2               : String[60]; {SGMail F2                                                   }
-     SGMail_F3               : String[60]; {SGMail F3                                                   }
-     SGMail_F4               : String[60]; {SGMail F4                                                   }
-     SGMail_F5               : String[60]; {SGMail F5                                                   }
-     SGMail_F6               : String[60]; {SGMail F6                                                   }
-     SGMail_F7               : String[60]; {SGMail F7                                                   }
-     SGMail_F8               : String[60]; {SGMail F8                                                   }
-     SGMail_F9               : String[60]; {SGMail F9                                                   }
-     SGMail_F10              : String[60]; {SGMail F10                                                  }
+     GSMail_F2               : String[60]; {GSMail F2                                                   }
+     GSMail_F3               : String[60]; {GSMail F3                                                   }
+     GSMail_F4               : String[60]; {GSMail F4                                                   }
+     GSMail_F5               : String[60]; {GSMail F5                                                   }
+     GSMail_F6               : String[60]; {GSMail F6                                                   }
+     GSMail_F7               : String[60]; {GSMail F7                                                   }
+     GSMail_F8               : String[60]; {GSMail F8                                                   }
+     GSMail_F9               : String[60]; {GSMail F9                                                   }
+     GSMail_F10              : String[60]; {GSMail F10                                                  }
      END;
 {=======================================================================================================}
 { NEW!                                                                                                  }
 {                                                                                                       }
 { \SHOTGUN\DATA\EVENTSF.xxx                                                                             }
 {                                                                                                       }
-{  - Definitions for events in SGMail denying file requests.                                            }
+{  - Definitions for events in GSMail denying file requests.                                            }
 {  - File extension corresponds with the individual node.                                               }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
@@ -758,18 +758,18 @@ TYPE _Freq_Event             = RECORD
 {                                                                                                       }
 { \SHOTGUN\DATA\MAILER.DAT                                                                              }
 {                                                                                                       }
-{  - Configuration for individual SGMail nodes. Some settings are used by SG as well.                   }
+{  - Configuration for individual GSMail nodes. Some settings are used by SG as well.                   }
 {  - Paths MUST contain a trailing backslash.                                                           }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
 {=======================================================================================================}
 TYPE _Mailer_Record          = RECORD
-     HandleFaxes             : Boolean;                {'TRUE' to have SGMail accept incoming faxes.    }
+     HandleFaxes             : Boolean;                {'TRUE' to have GSMail accept incoming faxes.    }
      Semaphores              : String[40];             {Path to semaphore directory.                    }
      NetMail                 : String[40];             {Path to netmail area.                           }
      InBound                 : String[40];             {Path to where inbound files are stored.         }
      OutBound                : String[40];             {Path to where outgoing mail bundles are stored. }
-     OutPkts                 : String[40];             {Temporary outbound used by SGMail.              }
+     OutPkts                 : String[40];             {Temporary outbound used by GSMail.              }
      NodeList                : String[40];             {Path to the *.SG nodelist files (for netmail).  }
      NodeName                : String[40];             {Name of this node - usually the BBS name.       }
      Banner                  : String[40];             {Path and file name of text file that is sent    }
@@ -796,12 +796,12 @@ TYPE _Mailer_Record          = RECORD
                                                        {with the remote system by using its zone number.}
      PresentAkas             : Boolean;                {'TRUE' if the system should present all of your }
                                                        {network addresses to the remote system.         }
-     MailExit                : Byte;                   {DOS errorlevel SGMail should exit with when any }
+     MailExit                : Byte;                   {DOS errorlevel GSMail should exit with when any }
                                                        {mail/files are received.                        }
      EnableEMSI              : Boolean;                {True to allow EMSI mail sessions.               }
      EnableYooHoo            : Boolean;                {True to allow YooHoo/YooHoo2U mail sessions.    }
      RetryDelay              : Byte;                   {Number of seconds between outgoing calls.       }
-     AnswerOnRing            : Byte;                   {Number of rings before SGMail answers the phone.}
+     AnswerOnRing            : Byte;                   {Number of rings before GSMail answers the phone.}
      BBSSoftware             : String[15];             {The name of your BBS software.                  }
      BBSOnly                 : Boolean;                {True if this line only takes human callers & fax}
      SecondsToBBS            : Byte;                   {Number of seconds before the system considers   }
@@ -833,16 +833,16 @@ TYPE _Mail_History           = RECORD
      AllowedHumanCallers     : Longint; {Number of human callres passed on to the BBS.                  }
      InboundFileRequests     : Longint; {Number of inbound file requests.                               }
      OutboundFileRequests    : Longint; {Number of outbound file requests.                              }
-     SentTotalBytes          : Longint; {Total bytes sent by SGMail.                                    }
-     SentBundleBytes         : Longint; {Total bytes of mail bundles sent by SGMail.                    }
-     SentNetmailBytes        : Longint; {Total bytes of netmail packets sent by SGMail.                 }
-     SentFreqBytes           : Longint; {Total bytes of file requests sent by SGMail.                   }
-     SentOtherBytes          : Longint; {Total bytes of "other" files sent by SGMail.                   }
-     ReceivedTotalBytes      : Longint; {Total bytes received by SGMail.                                }
-     ReceivedBundleBytes     : Longint; {Total bytes of mail bundles received by SGMail.                }
-     ReceivedNetmailBytes    : Longint; {Total bytes of netmail packets received by SGMail.             }
+     SentTotalBytes          : Longint; {Total bytes sent by GSMail.                                    }
+     SentBundleBytes         : Longint; {Total bytes of mail bundles sent by GSMail.                    }
+     SentNetmailBytes        : Longint; {Total bytes of netmail packets sent by GSMail.                 }
+     SentFreqBytes           : Longint; {Total bytes of file requests sent by GSMail.                   }
+     SentOtherBytes          : Longint; {Total bytes of "other" files sent by GSMail.                   }
+     ReceivedTotalBytes      : Longint; {Total bytes received by GSMail.                                }
+     ReceivedBundleBytes     : Longint; {Total bytes of mail bundles received by GSMail.                }
+     ReceivedNetmailBytes    : Longint; {Total bytes of netmail packets received by GSMail.             }
      ReceivedFreqBytes       : Longint; {n/a - for completeness only                                    }
-     ReceivedOtherBytes      : Longint; {Total bytes of "other" files received by SGMail.               }
+     ReceivedOtherBytes      : Longint; {Total bytes of "other" files received by GSMail.               }
      END;
 {=======================================================================================================}
 { CHANGED!                                                                                              }
@@ -890,10 +890,10 @@ TYPE _Link_Groups_Record     = RECORD
 TYPE _Links_Record           = RECORD
      NetworkAddress          : AddrType;               {The network aka of this link.                   }
      SysopName               : String[30];             {The name of the sysop of the system.            }
-     SGFileTIC               : String[8];              {Password for TIC files.                         }
-     SGFileAreaFix           : String[8];              {Password for SGFile's Areafix.                  }
-     SGEchoPacket            : String[8];              {Password for message bundles.                   }
-     SGEchoAreaFix           : String[8];              {Password for SGEcho's Areafix.                  }
+     GSFileTIC               : String[8];              {Password for TIC files.                         }
+     GSFileAreaFix           : String[8];              {Password for GSFile's Areafix.                  }
+     GSEchoPacket            : String[8];              {Password for message bundles.                   }
+     GSEchoAreaFix           : String[8];              {Password for GSEcho's Areafix.                  }
      SendNotify              : Boolean;                {True to send list of echoes using -NOTIFY       }
      AccessLevel             : Word;                   {Defines what areas the remote can access.       }
      Scrap                   : Array[1..37] Of Byte;   {n/a                                             }
@@ -919,14 +919,14 @@ TYPE _Links_Record           = RECORD
                                                        {new file and message echos on your system.      }
      Paused                  : Boolean;                {'TRUE' if the node temporarily has all message  }
                                                        {and file packing suspended.                     }
-     Archiver                : String[3];              {Archiver to use for SGEcho.                     }
+     Archiver                : String[3];              {Archiver to use for GSEcho.                     }
      END;
 {=======================================================================================================}
 { NEW!                                                                                                  }
 {                                                                                                       }
 { \SHOTGUN\DATA\EXTCODES.xxx                                                                            }
 {                                                                                                       }
-{  - Definitions for modem result strings for WFC and SGMail.                                           }
+{  - Definitions for modem result strings for WFC and GSMail.                                           }
 {  - File extension corresponds with the individual node.                                               }
 {  - Single record file.                                                                                }
 {                                                                                                       }
@@ -978,7 +978,7 @@ TYPE _RequestFile            = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\ERRLEVEL.xxx                                                                            }
 {                                                                                                       }
-{  - Definitions for errorlevel drops in the WFC and SGMail.                                            }
+{  - Definitions for errorlevel drops in the WFC and GSMail.                                            }
 {  - File extension corresponds with the individual node.                                               }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
@@ -987,14 +987,14 @@ TYPE _ErrLevel_Record   = RECORD
      ConnectMessage     : String[16];                  {Connect msg to look for. ie: 'CONNECT 14400'.   }
      ConnectSpeed       : Longint;                     {The actual connection speed. ie: '14400'.       }
      ErrorLevel         : Byte;                        {Errorlevel to exit to the batch file (humans).  }
-     Immediate          : Boolean;                     {If 'TRUE' SGMail won't attempt a mail session,  }
+     Immediate          : Boolean;                     {If 'TRUE' GSMail won't attempt a mail session,  }
                                                        {but rather just exit right to the batch file.   }
      AllowHumans        : Boolean;                     {Allow human callers at this baud rate?          }
      END;
 {=======================================================================================================}
 { \SHOTGUN\DATA\EVENTSP.xxx                                                                             }
 {                                                                                                       }
-{  - Definitions for system polling events for SGMail.                                                  }
+{  - Definitions for system polling events for GSMail.                                                  }
 {  - File extension corresponds with the individual node.                                               }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
@@ -1014,7 +1014,7 @@ TYPE _Poll_Event             = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\EVENTSS.xxx                                                                             }
 {                                                                                                       }
-{  - Definitions for mail send (unhold) events for SGMail.                                              }
+{  - Definitions for mail send (unhold) events for GSMail.                                              }
 {  - File extension corresponds with the individual node.                                               }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
@@ -1055,7 +1055,7 @@ TYPE _Origin_Record     = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\PASSWORD.DAT                                                                            }
 {                                                                                                       }
-{  - Structure that holds session passwords used by SGMail.                                             }
+{  - Structure that holds session passwords used by GSMail.                                             }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
 {=======================================================================================================}
@@ -1070,7 +1070,7 @@ TYPE _SessionPW_Record  = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\PBOOK.DAT                                                                               }
 {                                                                                                       }
-{  - Phone book configuration for fast alias name lookups for SGMail.                                   }
+{  - Phone book configuration for fast alias name lookups for GSMail.                                   }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
 {=======================================================================================================}
@@ -1082,7 +1082,7 @@ TYPE _PhoneBook_Record       = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\ROUTE.DAT                                                                               }
 {                                                                                                       }
-{  - File that holds call information for routing netmail messages in SGMail.                           }
+{  - File that holds call information for routing netmail messages in GSMail.                           }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
 {=======================================================================================================}
@@ -1093,24 +1093,24 @@ TYPE _CallRouting_Record     = RECORD
                                                        {through.                                        }
      END;
 {=======================================================================================================}
-{ \SHOTGUN\DATA\SGECHO.DAT                                                                              }
+{ \SHOTGUN\DATA\GSECHO.DAT                                                                              }
 {                                                                                                       }
-{  - Holds areas that are enabled for certain systems for SGEcho.                                       }
+{  - Holds areas that are enabled for certain systems for GSEcho.                                       }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
 {=======================================================================================================}
-TYPE _SGEchoDat_Record       = RECORD
+TYPE _GSEchoDat_Record       = RECORD
      Aka                     : AddrType;               {Network address of the link.                    }
      AreaID                  : Word;                   {AreaID of the file echo connected to the system.}
      END;
 {=======================================================================================================}
-{ \SHOTGUN\DATA\SGFILE.DAT                                                                              }
+{ \SHOTGUN\DATA\GSFILE.DAT                                                                              }
 {                                                                                                       }
-{  - Holds areas that are enabled for certain systems for SGFile.                                       }
+{  - Holds areas that are enabled for certain systems for GSFile.                                       }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
 {=======================================================================================================}
-TYPE _SGFileDat_Record       = RECORD
+TYPE _GSFileDat_Record       = RECORD
      Aka                     : AddrType;               {Network address of the link.                    }
      AreaID                  : Word;                   {AreaID of the file echo connected to the system.}
      END;
@@ -1130,7 +1130,7 @@ TYPE _UUCP_Record            = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\INITS.xxx                                                                               }
 {                                                                                                       }
-{  - Definitions for pre-dial init strings for SGMail.                                                  }
+{  - Definitions for pre-dial init strings for GSMail.                                                  }
 {  - File extension corresponds with the individual node.                                               }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
@@ -1326,7 +1326,7 @@ TYPE _SysColourSVGA          = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\EVENTSB.xxx                                                                             }
 {                                                                                                       }
-{  - Definitions for busy events for SGMail.                                                            }
+{  - Definitions for busy events for GSMail.                                                            }
 {  - File extension corresponds with the individual node.                                               }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
@@ -1342,7 +1342,7 @@ TYPE _Drop_Event             = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\EVENTSE.xxx                                                                             }
 {                                                                                                       }
-{  - Definitions for errorlevel exit events for SGMail.                                                 }
+{  - Definitions for errorlevel exit events for GSMail.                                                 }
 {  - File extension corresponds with the individual node.                                               }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
@@ -1361,7 +1361,7 @@ TYPE _Exit_Event             = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\EVENTSM.xxx                                                                             }
 {                                                                                                       }
-{  - Definitions for mail only events for SGMail.                                                       }
+{  - Definitions for mail only events for GSMail.                                                       }
 {  - File extension corresponds with the individual node.                                               }
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
@@ -1375,9 +1375,9 @@ TYPE _Mail_Event             = RECORD
      Scrap                   : Array[1..32] Of Byte;   {n/a                                             }
      END;
 {=======================================================================================================}
-{ \SHOTGUN\SGMAIL\NETMAIL\FAXxxxxx.FAX                                                                  }
+{ \SHOTGUN\GSMAIL\NETMAIL\FAXxxxxx.FAX                                                                  }
 {                                                                                                       }
-{  - Information for a single received Fax file through SGMail.                                         }
+{  - Information for a single received Fax file through GSMail.                                         }
 {  - Single record file.                                                                                }
 {                                                                                                       }
 {=======================================================================================================}
@@ -1478,7 +1478,7 @@ TYPE _Last10Callers_Record   = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\LASTxxxx.DAT                                                                            }
 {                                                                                                       }
-{  - Information on the last caller to the system (for SGMail's use).                                   }
+{  - Information on the last caller to the system (for GSMail's use).                                   }
 {  - xxxx corresponds to the individual node number.                                                    }
 {  - Single record file.                                                                                }
 {                                                                                                       }
@@ -1491,12 +1491,12 @@ TYPE _Lasthuman_Record       = RECORD
 {=======================================================================================================}
 { \SHOTGUN\DATA\LCALLSGM.xxx                                                                            }
 {                                                                                                       }
-{  - Information on the last mail call to/from the system (for SGMail's use).                           }
+{  - Information on the last mail call to/from the system (for GSMail's use).                           }
 {  - xxx corresponds to the individual node number.                                                     }
 {  - Single record file.                                                                                }
 {                                                                                                       }
 {=======================================================================================================}
-TYPE _LastSGMailCalls_Record = RECORD
+TYPE _LastGSMailCalls_Record = RECORD
      ToSystem                : String[40];             {Name of the last system your system called.     }
      ToLocation              : String[40];             {Location of the last system your system called. }
      ToAddress               : String[20];             {Net AKA of the last system your system called.  }
@@ -1844,7 +1844,7 @@ TYPE _Raw_File               = RECORD
 {  - Multiple record file.                                                                              }
 {                                                                                                       }
 {=======================================================================================================}
-TYPE _SGFileKill_Record      = RECORD
+TYPE _GSFileKill_Record      = RECORD
      AreaName                : String[12];             {Echo list name of the area to kill.             }
      Scrap                   : Array[1..128] Of Byte;  {n/a                                             }
      END;
@@ -1944,13 +1944,13 @@ TYPE _Command                = RECORD
      ANSIString              : String[40];             {String displayed to the user in text mode.      }
      END;
 {=======================================================================================================}
-{ \SHOTGUN\DATA\SGCONFIG.DAT                                                                            }
+{ \SHOTGUN\DATA\GSCONFIG.DAT                                                                            }
 {                                                                                                       }
-{  - Various settings for SGConfig.                                                                     }
+{  - Various settings for GSConfig.                                                                     }
 {  - Single record file.                                                                                }
 {                                                                                                       }
 {=======================================================================================================}
-TYPE _SGConfig_Record        = RECORD
+TYPE _GSConfig_Record        = RECORD
      Vertical                : Byte;                   {PixelToMickey for the mouse - y axis.           }
      Horizontal              : Byte;                   {PixelToMickey for the mouse - x axis.           }
      Printer                 : Byte;                   {Printer port of connected printer.              }

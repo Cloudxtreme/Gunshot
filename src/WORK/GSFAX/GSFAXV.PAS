@@ -4,7 +4,7 @@
 
 {$I DEFINES.INC}
 {$M 32000,0,655360}
-PROGRAM SGMailFaxViewer;
+PROGRAM GSMailFaxViewer;
 
 
 USES Dos,Crt,ApMisc,ApFaxCvt,BsMulti,BsFile;

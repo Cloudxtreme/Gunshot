@@ -144,10 +144,10 @@ VAR  TryCount : Byte;
 BEGIN
      FOR Loop := 1 TO 30 DO
      BEGIN
-       IF _FileExists(BaseDirectory+'\SGFILE.$$$') THEN
+       IF _FileExists(BaseDirectory+'\GSFILE.$$$') THEN
        BEGIN
          IF Loop=1 THEN FOR Loop2 := 6 TO 25 DO FastWrite(_Replicate(' ',80),Loop2,1,7);
-         FastWrite('SGFile busy. <Esc> aborts. Timeout: '+_String(Loop)+' ',7,1,14);
+         FastWrite('GSFile busy. <Esc> aborts. Timeout: '+_String(Loop)+' ',7,1,14);
          _Delay(1000);
        END
        ELSE
@@ -241,11 +241,11 @@ BEGIN
        CLOSE(FScanners);
      END
      ELSE Status := False;
-     CheckRegistered(BaseDirectory,'SGFile');
+     CheckRegistered(BaseDirectory,'GSFile');
      bsSetLog(OurAppName,'',NodeNumber);
      IF NOT(Status) THEN
      BEGIN
-       WriteLogFile('! Missing data file(s)! Run SGConfig.');
+       WriteLogFile('! Missing data file(s)! Run GSConfig.');
        WriteLogFile('! Check for - \SHOTGUN\DATA\LINKS.DAT');
        WriteLogFile('!             \SHOTGUN\DATA\MAILER.DAT');
        WriteLogFile('!             \SHOTGUN\DATA\SYSTEM.DAT');
@@ -284,9 +284,9 @@ END;
 PROCEDURE Help;
 BEGIN
      DrawOpeningScreen;
-     WriteLn('SGFile Command Line Options:');
+     WriteLn('GSFile Command Line Options:');
      WriteLn;
-     WriteLn('      SGFILE.EXE <arg> <arg> ...');
+     WriteLn('      GSFILE.EXE <arg> <arg> ...');
      WriteLn;
      WriteLn('             -N<xxx>      : xxx is the node number to use.');
      WriteLn('             -NOSCAN      : Prevents virus checking of files.');
@@ -372,7 +372,7 @@ END;
 PROCEDURE DrawOpeningScreen;
 BEGIN
      _HideCursor;
-     AppHeader('SGFile - TIC File Processor For Shotgun Professional');
+     AppHeader('GSFile - TIC File Processor For Shotgun Professional');
 END;
 
 
@@ -429,7 +429,7 @@ END;
 PROCEDURE MakeUsBusy;
 VAR  TFile : File;
 BEGIN
-     ASSIGN(TFile,BaseDirectory+'\SGFILE.$$$');
+     ASSIGN(TFile,BaseDirectory+'\GSFILE.$$$');
      REWRITE(TFile,1);
      CLOSE(TFile);
 END;
@@ -437,7 +437,7 @@ END;
 
 PROCEDURE KillOurBusy;
 BEGIN
-     _EraseFile(BaseDirectory+'\SGFILE.$$$');
+     _EraseFile(BaseDirectory+'\GSFILE.$$$');
 END;
 
 
@@ -466,7 +466,7 @@ BEGIN
          IF rFidoOpenMessage(Loop) THEN
          BEGIN
            Temp := _UpperCase(rFidoGetMsgTo);
-           IF ((Temp='SGFILE') OR (Temp='RAID')) THEN
+           IF ((Temp='GSFILE') OR (Temp='RAID')) THEN
            BEGIN
              IF ((NOT rFidoIsReceived) AND (NOT rFidoIsLocal)) THEN
              BEGIN

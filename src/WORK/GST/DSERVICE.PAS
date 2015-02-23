@@ -23,11 +23,11 @@ PROCEDURE DeleteService(Index: Word);
 VAR  FDialDir2 : File Of Dial_Dir;
      Counter   : Word;
 BEGIN
-     ASSIGN(FDialDir,'SGT.DIR');
-     RENAME(FDialDir,'SGT.BK$');
+     ASSIGN(FDialDir,'GST.DIR');
+     RENAME(FDialDir,'GST.BK$');
      Counter := 0;
-     ASSIGN(FDialDir2,'SGT.BK$');
-     ASSIGN(FDialDir,'SGT.DIR');
+     ASSIGN(FDialDir2,'GST.BK$');
+     ASSIGN(FDialDir,'GST.DIR');
      REWRITE(FDialDir);
      RESET(FDialDir2);
      REPEAT
@@ -39,7 +39,7 @@ BEGIN
      ERASE(FDialDir2);
      CLOSE(FDialDir);
      PickInfo.NumItems := 0;
-     ASSIGN(FDialDir,'SGT.DIR');
+     ASSIGN(FDialDir,'GST.DIR');
      RESET(FDialDir);
      REPEAT
            READ(FDialDir,DialDir);

@@ -387,7 +387,7 @@ BEGIN
      GotoXY(6,6);   WRITE('        Nodelist Flags');
      GotoXY(6,7);   WRITE('     BBS Software Name');
      GotoXY(6,8);   WRITE('      Maximum Baudrate');
-     GotoXY(6,10);  WRITE('  Have SGMail Handle Faxes');
+     GotoXY(6,10);  WRITE('  Have GSMail Handle Faxes');
      GotoXY(6,11);  WRITE('    Allow ZedZap Transfers');
      GotoXY(6,12);  WRITE('          Mail Only System');
      GotoXY(6,13);  WRITE('   Delay Before First Call');
@@ -535,7 +535,7 @@ BEGIN
      SEEK(FInits,Number-1);
      READ(FInits,Inits);
      CLOSE(FInits);
-     DrawWindow(10,8,72,15,'EDIT SGMAIL PRE-DIAL INIT ENTRY',True);
+     DrawWindow(10,8,72,15,'EDIT GSMAIL PRE-DIAL INIT ENTRY',True);
      AddObject(28,10,1,20,AddressToString(Inits.CallAddress),True);
      AddObject(28,11,1,40,Inits.InitString,True);
      AddButton(62,13,' QUIT ',True,1,16);
@@ -662,7 +662,7 @@ BEGIN
      REWRITE(FPickListFile);
      IF PickListItems<>0 THEN Reload;
      CLOSE(FPickListFile);
-     SetUpPickList('SGMAIL PRE-DIAL INIT STRINGS - NODE #'+_String(CurrentNode));
+     SetUpPickList('GSMAIL PRE-DIAL INIT STRINGS - NODE #'+_String(CurrentNode));
      REPEAT
            Action := DoPickList;
            CASE Action OF

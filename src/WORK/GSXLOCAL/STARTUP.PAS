@@ -835,7 +835,7 @@ BEGIN
           ClrScr;
           TEXTCOLOR(4);
           WRITELN('CRITICAL ERROR!!! Missing a required data file in the '+DATA_Directory+'\');
-          WRITELN('directory. Please run SGCONFIG.EXE to correct the problem.');
+          WRITELN('directory. Please run GSCONFIG.EXE to correct the problem.');
           WRITELN;
           TEXTCOLOR(7);
           Halt;

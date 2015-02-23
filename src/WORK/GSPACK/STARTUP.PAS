@@ -19,7 +19,7 @@ VAR  Temp : String;
      Code : Integer;
      Loop : Word;
 BEGIN
-     AppHeader('SGPack - Message Base Packer For Shotgun Professional');
+     AppHeader('GSPack - Message Base Packer For Shotgun Professional');
      BaseDirectory := _UpperCase(_GetFilePath(ParamStr(0)));
      IF BaseDirectory[LENGTH(BaseDirectory)]='\' THEN Delete(BaseDirectory,LENGTH(BaseDirectory),1);
      ChDir(BaseDirectory);
@@ -76,9 +76,9 @@ BEGIN
                Window(1,1,80,25);
                GotoXY(1,7);
                TextColor(7);
-               WriteLn('SGPack Command Line Options:');
+               WriteLn('GSPack Command Line Options:');
                WriteLn;
-               WriteLn('      SGPACK.EXE <arg> <arg> ...');
+               WriteLn('      GSPACK.EXE <arg> <arg> ...');
                WriteLn;
                WriteLn('             -N<xxx>           : xxx is the node number to use.');
                WriteLn('             -NORECV           : Deletes all messages marked as received.');
@@ -95,7 +95,7 @@ BEGIN
      FastWrite('Progress:',7,25,7);
      FastWrite('같같같같같같같같같같같같같같같같같같같같',7,35,7);
      FastWrite(_Replicate('�',80),8,1,1);
-     CheckRegistered(BaseDirectory,'SGPack');
+     CheckRegistered(BaseDirectory,'GSPack');
      bsSetLog(OurAppName,'',NodeNumber);
 END;
 

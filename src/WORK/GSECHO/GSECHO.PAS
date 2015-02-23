@@ -5,7 +5,7 @@ Hello there???
 {$I DEFINES.INC}
 
 {$M 32768,0,655360}
-PROGRAM SgEcho;
+PROGRAM GSEcho;
 
 
 USES StartUp,BsFile,Globals,BsLog,BsMulti,BsVideo,Scanning,
@@ -22,13 +22,13 @@ BEGIN
      WeGiveUp := False;
      TryCount := 31;
      REPEAT
-       IF NOT(_FileExists(BaseDirectory+'\SGECHO.$$$')) THEN
+       IF NOT(_FileExists(BaseDirectory+'\GSECHO.$$$')) THEN
        BEGIN
-         ASSIGN(FunkyFile,BaseDirectory+'\SGECHO.$$$');
+         ASSIGN(FunkyFile,BaseDirectory+'\GSECHO.$$$');
          REWRITE(FunkyFile,1);
          CLOSE(FunkyFile);
          CreateTemporaryDirs;
-         CheckRegistered(TempUnpack,'SGEcho');
+         CheckRegistered(TempUnpack,'GSEcho');
          IF Toss THEN bsSetLog(OurAppName,'[TOSS]',NodeNumber)
                  ELSE bsSetLog(OurAppName,'[SCAN]',NodeNumber);
          WriteNodeFile;
@@ -75,7 +75,7 @@ BEGIN
        BEGIN
          DEC(TryCount);
          _Delay(1000);
-         FastWrite('SGEcho busy. Timeout: '+_String(TryCount)+' ',7,1,14);
+         FastWrite('GSEcho busy. Timeout: '+_String(TryCount)+' ',7,1,14);
          IF TryCount=0 THEN
          BEGIN
            FastWrite('                         ',7,1,7);

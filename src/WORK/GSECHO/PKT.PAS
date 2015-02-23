@@ -89,8 +89,8 @@ VAR  AreaIDCrc : String[8];
      TFile     : Text;
      Temp      : String;
      Work      : Word;
-     EchoTag   : _SGEchoDat_Record;
-     FFEchoTag : File Of _SGEchoDat_Record;
+     EchoTag   : _GSEchoDat_Record;
+     FFEchoTag : File Of _GSEchoDat_Record;
 BEGIN
      IF UpLink.AreaCreate THEN
      BEGIN
@@ -174,14 +174,14 @@ BEGIN
          {Add the creating node to the area}
          EchoTag.AreaId := NewId;
          EchoTag.Aka    := UpLink.NetworkAddress;
-         CloseSGEchoDat;
-         ASSIGN(FFEchoTag,BaseDirectory+'\DATA\SGECHO.DAT');
+         CloseGSEchoDat;
+         ASSIGN(FFEchoTag,BaseDirectory+'\DATA\GSECHO.DAT');
          {$I-}RESET(FFEchoTag);{$I+}
          IF (IOResult<>0) THEN REWRITE(FFEchoTag);
          SEEK(FFEchoTag,FileSize(FFEchoTag));
          WRITE(FFEchoTag,EchoTag);
          CLOSE(FFEchoTag);
-         OpenSGEchoDat;
+         OpenGSEchoDat;
          AutoCreateIt := True;
          Exit;
        END;
@@ -191,10 +191,10 @@ END;
 
 
 FUNCTION CanAccessArea(InAddress: AddrType): Boolean;
-VAR  EchoTag   : _SGEchoDat_Record;
+VAR  EchoTag   : _GSEchoDat_Record;
      BytesRead : Word;
 BEGIN
-     OpenSGEchoDat;
+     OpenGSEchoDat;
      IF IsEchoTagFileOpen THEN
      BEGIN
        REPEAT
@@ -531,7 +531,7 @@ VAR  Temp         : String;
      END;
 
      PROCEDURE ExportEchomail;
-     VAR  EchoTag     : _SGEchoDat_Record;
+     VAR  EchoTag     : _GSEchoDat_Record;
           NeedsExport : Boolean;
           Temp        : String;
           PktHeader   : PakdMessageHeadr;
@@ -544,7 +544,7 @@ VAR  Temp         : String;
           BytesRead   : Word;
      BEGIN
           NeedsExport := False;
-          OpenSGEchoDat;
+          OpenGSEchoDat;
           IF IsEchoTagFileOpen THEN
           BEGIN
             {Add The Seen-Bys}
@@ -586,7 +586,7 @@ VAR  Temp         : String;
               INC(NumPaths);
               Paths[NumPaths].Net  := NetworkInfo.Net_Address.Net;
               Paths[NumPaths].Node := NetworkInfo.Net_Address.Node;
-              OpenSGEchoDat;
+              OpenGSEchoDat;
               REPEAT
                 FEchoTag.BlkRead(EchoTag,SizeOf(EchoTag),BytesRead);
                 IF (BytesRead<>0) THEN
@@ -680,7 +680,7 @@ VAR  Temp         : String;
      PROCEDURE WriteToEchomail;
      VAR  AreaType : Char;
           Loop     : Word;
-          EchoTag  : _SGEchoDat_Record;
+          EchoTag  : _GSEchoDat_Record;
      BEGIN
           IF NOT(IsADupe(MsgId,TossMessageArea.AreaId)) THEN
           BEGIN
@@ -734,11 +734,11 @@ BEGIN
        IF CanDoEcho THEN
        BEGIN
          Temp := _UpperCase(rPktGetPktPassword);
-         IF (Temp<>UpLink.SGEchoPacket) THEN
+         IF (Temp<>UpLink.GSEchoPacket) THEN
          BEGIN
            rPktCloseUpPacket;
            bsWriteLog(' ! Packet password error from: '+AddressToString(Orig),False);
-           bsWriteLog(' ! Expected: "'+UpLink.SGEchoPacket+'" Received: "'+Temp+'"',False);
+           bsWriteLog(' ! Expected: "'+UpLink.GSEchoPacket+'" Received: "'+Temp+'"',False);
            RenameToSec(FName);
            Exit;
          END;

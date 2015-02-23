@@ -40,7 +40,7 @@ VAR  C    : Word;
      END;
 
 BEGIN
-     ASSIGN(FDialDir,'SGT.DIR');
+     ASSIGN(FDialDir,'GST.DIR');
      RESET(FDialDir);
      SEEK(FDialDir,Index-1);
      READ(FDialDir,DialDir);
@@ -106,7 +106,7 @@ BEGIN
      DialDir.F9       := Fields[13].Text;
      DialDir.F10      := Fields[14].Text;
      KillWindow;
-     ASSIGN(FDialDir,'SGT.DIR');
+     ASSIGN(FDialDir,'GST.DIR');
      RESET(FDialDir);
      SEEK(FDialDir,Index-1);
      WRITE(FDialDir,DialDir);

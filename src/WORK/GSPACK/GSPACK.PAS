@@ -1,5 +1,5 @@
 {$I DEFINES.INC}
-PROGRAM SGPack;
+PROGRAM GSPack;
 
 
 USES Fido,Squish,Jam,Globals,Startup,Crt,ApTimer,MkFFile,BsLog,
@@ -36,9 +36,9 @@ BEGIN
      WeGiveUp := False;
      TryCount := 31;
      REPEAT
-       IF NOT(_FileExists(BaseDirectory+'\SGPACK.$$$')) THEN
+       IF NOT(_FileExists(BaseDirectory+'\GSPACK.$$$')) THEN
        BEGIN
-         ASSIGN(FunkyFile,BaseDirectory+'\SGPACK.$$$');
+         ASSIGN(FunkyFile,BaseDirectory+'\GSPACK.$$$');
          REWRITE(FunkyFile,1);
          CLOSE(FunkyFile);
          Window(1,9,80,25);
@@ -100,7 +100,7 @@ BEGIN
        BEGIN
          DEC(TryCount);
          _Delay(1000);
-         FastWrite('SGPack busy. Timeout: '+_String(TryCount)+' ',7,1,14);
+         FastWrite('GSPack busy. Timeout: '+_String(TryCount)+' ',7,1,14);
          IF TryCount=0 THEN
          BEGIN
            FastWrite('                         ',7,1,7);

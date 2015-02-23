@@ -4,7 +4,7 @@
 {$ELSE}
   {$M 32000,0,655360}
 {$ENDIF}
-PROGRAM SGTServicesManager;
+PROGRAM GSTServicesManager;
 
 
 {$IFDEF DPMI}
@@ -25,7 +25,7 @@ VAR  C : Word;
 
 
 BEGIN
-     HelpFile := 'SGT.HLP';
+     HelpFile := 'GST.HLP';
      TextMode(Co80);
      Window(1,1,80,25);
      IF NOT(IsMouseInstalled) THEN
@@ -38,17 +38,17 @@ BEGIN
      BaseDir := _UpperCase(_GetFilePath(ParamStr(0)));
      BaseDir := Path(BaseDir);
      ChDir(BaseDir);
-     FireUpGfx(BaseDir+'\SGT.GXL',BaseDir,640);
+     FireUpGfx(BaseDir+'\GST.GXL',BaseDir,640);
      DoIntro;
      DrawMainScr;
      REPEAT
            c := MouseHandler(False);
            CASE C OF
            0:   TimeSlice;
-           1:   IF _FileExists('SGT.CFG')
+           1:   IF _FileExists('GST.CFG')
                    THEN DoServiceDialer
                    ELSE GiveWarning;
-           2:   IF _FileExists('SGT.CFG')
+           2:   IF _FileExists('GST.CFG')
                    THEN DoFaxes
                    ELSE GiveWarning;
            3:   DoConfiguration;

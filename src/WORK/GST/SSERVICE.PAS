@@ -26,7 +26,7 @@ VAR  DialDir1  : Dial_Dir;
      FFileSize : Longint;
      I,J       : Longint;
 BEGIN
-     ASSIGN(FDialDir,'SGT.DIR');
+     ASSIGN(FDialDir,'GST.DIR');
      RESET(FDialDir);
      FFileSize := FileSize(FDialDir);
      FOR i := 1 TO FFileSize DO
@@ -47,7 +47,7 @@ BEGIN
      END;
      CLOSE(FDialDir);
      PickInfo.NumItems := 0;
-     ASSIGN(FDialDir,'SGT.DIR');
+     ASSIGN(FDialDir,'GST.DIR');
      RESET(FDialDir);
      REPEAT
            READ(FDialDir,DialDir);

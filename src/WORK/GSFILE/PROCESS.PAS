@@ -166,18 +166,18 @@ BEGIN
      BEGIN
        IF DoPw THEN
        BEGIN
-         IF (_UpperCase(LinksInfo.SGFileTIC)<>TicFile.Password) THEN GotIt := False;
+         IF (_UpperCase(LinksInfo.GSFileTIC)<>TicFile.Password) THEN GotIt := False;
          IF NOT(GotIt) THEN
          BEGIN
            WriteLogFile('  ! TIC password from '+AddressToString(TicFile.AkaFrom)+' is incorrect.');
-           WriteLogFile('  ! Expected: "'+LinksInfo.SGFileTIC+'"  Received: "'+TicFile.Password+'".');
+           WriteLogFile('  ! Expected: "'+LinksInfo.GSFileTIC+'"  Received: "'+TicFile.Password+'".');
            MoveToBadPath;
          END;
        END;
      END
      ELSE
      BEGIN
-       WriteLogFile('  ! Link not found: '+AddressToString(TicFile.AkaFrom)+'. Check your LINKS setup in SGConfig.');
+       WriteLogFile('  ! Link not found: '+AddressToString(TicFile.AkaFrom)+'. Check your LINKS setup in GSConfig.');
        MoveToBadPath;
      END;
      LoadTheLink := GotIt;
@@ -229,8 +229,8 @@ END;
 
 FUNCTION LoadTheArea: Boolean;
 VAR  GotIt    : Boolean;
-     EchoTag  : _SGFileDat_Record;
-     FEchoTag : File Of _SGFileDat_Record;
+     EchoTag  : _GSFileDat_Record;
+     FEchoTag : File Of _GSFileDat_Record;
      TheCrc   : String[8];
      NewId    : Word;
      Loop     : Word;
@@ -316,7 +316,7 @@ BEGIN
            {Connect The Node That Sent It}
            EchoTag.AreaId := NewId;
            EchoTag.Aka    := LinksInfo.NetworkAddress;
-           ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+           ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
            {$I-}RESET(FEchoTag);{$I+}
            IF IOResult<>0 THEN REWRITE(FEchoTag);
            SEEK(FEchoTag,FileSize(FEchoTag));
@@ -326,7 +326,7 @@ BEGIN
          END
          ELSE
          BEGIN
-           WriteLogFile('  ! File sub group #'+_String(LinkGroups.CreateFileGroup)+' not configured! Run SGConfig.');
+           WriteLogFile('  ! File sub group #'+_String(LinkGroups.CreateFileGroup)+' not configured! Run GSConfig.');
            MoveToBadPath;
          END;
        END
@@ -340,7 +340,7 @@ BEGIN
      ELSE
      BEGIN
        GotIt := False;
-       ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+       ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
        {$I-}RESET(FEchoTag);{$I+}
        IF IOResult=0 THEN
        BEGIN
@@ -901,8 +901,8 @@ BEGIN
      ELSE
      BEGIN
        {COPY THE FILE INTO THE PASSTHROUGH}
-       _CreatePath(BaseDirectory+'\SGFILEP');
-       _BigCopyFile(TicFile.FileName,BaseDirectory+'\!20',BaseDirectory+'\SGFILEP');
+       _CreatePath(BaseDirectory+'\GSFILEP');
+       _BigCopyFile(TicFile.FileName,BaseDirectory+'\!20',BaseDirectory+'\GSFILEP');
      END;
      {PACK FOR OTHER NODES}
      PackOutboundTics;
@@ -916,7 +916,7 @@ VAR  FNode     : File Of _NodeFile_Record;
      Node      : _NodeFile_Record;
 BEGIN
      FillChar(Node,SizeOf(Node),0);
-     Node.User     := 'SGFile';
+     Node.User     := 'GSFile';
      Node.Activity := 'Importing Network File Echoes (TIC)';
      Node.Node     := NodeNumber;
      ASSIGN(FNode,BaseDirectory+'\INTRNODE\NODE'+_String(NodeNumber)+'.$$$');
@@ -999,10 +999,10 @@ END;
 
 
 PROCEDURE PackOutboundTics;
-VAR  EchoTag      : _SGFileDat_Record;
-     EchoTag2     : _SGFileDat_Record;
-     FPackEchoTag : File Of _SGFileDat_Record;
-     FEchoTag     : File Of _SGFileDat_Record;
+VAR  EchoTag      : _GSFileDat_Record;
+     EchoTag2     : _GSFileDat_Record;
+     FPackEchoTag : File Of _GSFileDat_Record;
+     FEchoTag     : File Of _GSFileDat_Record;
      Temp         : String;
      TFile        : Text;
      TFile2       : Text;
@@ -1063,7 +1063,7 @@ VAR  EchoTag      : _SGFileDat_Record;
 
      PROCEDURE MakeSeenBys;
      BEGIN
-       ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+       ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
        {$I-}RESET(FEchoTag);{$I+}
        IF IOResult=0 THEN
        BEGIN
@@ -1101,9 +1101,9 @@ BEGIN
        Exit;
      END;
      IF FileArea.PassThrough
-        THEN NewCrc := FileCrc32(BaseDirectory+'\SGFILEP\'+FileDefs.File_Name)
+        THEN NewCrc := FileCrc32(BaseDirectory+'\GSFILEP\'+FileDefs.File_Name)
         ELSE NewCrc := FileCrc32(FileArea.Area_Path+FileDefs.File_Name);
-     ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+     ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
      RESET(FEchoTag);
      REPEAT
        READ(FEchoTag,EchoTag);
@@ -1123,7 +1123,7 @@ BEGIN
                IF NOT(GetNetAddress(LinksInfo.AkaToUse)) THEN
                BEGIN
                  WriteLogFile('  ! The aka you defined for '+AddressToString(LinksInfo.NetworkAddress)+
-                              ' ('+_String(LinksInfo.AkaToUse)+') does not exist! Run SGConfig.');
+                              ' ('+_String(LinksInfo.AkaToUse)+') does not exist! Run GSConfig.');
                END
                ELSE
                BEGIN
@@ -1160,13 +1160,13 @@ BEGIN
                    WRITELN(TFile,'Seenby '+AddressToString(EchoTag.Aka));
                  UNTIL EOF(FPackEchoTag);
                  CLOSE(FPackEchoTag);
-                 WRITELN(TFile,'Pw '+LinksInfo.SGFileTIC);
+                 WRITELN(TFile,'Pw '+LinksInfo.GSFileTIC);
                  CLOSE(TFile);
                  IF FileArea.PassThrough THEN
                  BEGIN
-                   CreateAttachment(BaseDirectory+'\SGFILEP\'+FileDefs.File_Name,OutTic);
+                   CreateAttachment(BaseDirectory+'\GSFILEP\'+FileDefs.File_Name,OutTic);
                    WriteLogFile('  > Added TIC for node '+AddressToString(LinksInfo.NetworkAddress)+
-                                '  File: '+BaseDirectory+'\SGFILEP\'+FileDefs.File_Name);
+                                '  File: '+BaseDirectory+'\GSFILEP\'+FileDefs.File_Name);
                  END
                  ELSE
                  BEGIN
@@ -1217,46 +1217,46 @@ END;
 
 FUNCTION PurgeThisArea(InString: String): Boolean;
 VAR  Work        : Byte;
-     FSGFileKill : File Of _SGFileKill_Record;
-     SGFileKill  : _SGFileKill_Record;
+     FGSFileKill : File Of _GSFileKill_Record;
+     GSFileKill  : _GSFileKill_Record;
 BEGIN
      InString := _UpperCase(InString);
      IF _FileExists(BaseDirectory+'\DATA\SGFPURGE.DAT') THEN
      BEGIN
-       ASSIGN(FSGFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
-       RESET(FSGFileKill);
+       ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+       RESET(FGSFileKill);
        REPEAT
-         READ(FSGFileKill,SGFileKill);
-         SGFileKill.AreaName := _UpperCase(SGFileKill.AreaName);
-         IF Pos('*',SGFileKill.AreaName)=0 THEN
+         READ(FGSFileKill,GSFileKill);
+         GSFileKill.AreaName := _UpperCase(GSFileKill.AreaName);
+         IF Pos('*',GSFileKill.AreaName)=0 THEN
          BEGIN
-           IF SGFileKill.AreaName=InString THEN
+           IF GSFileKill.AreaName=InString THEN
            BEGIN
              PurgeThisArea := True;
-             CLOSE(FSGFileKill);
+             CLOSE(FGSFileKill);
              Exit;
            END;
          END
-         ELSE IF (SGFileKill.AreaName[1]<>'*') THEN
+         ELSE IF (GSFileKill.AreaName[1]<>'*') THEN
          BEGIN
-           Work := Pos('*',SGFileKill.AreaName);
+           Work := Pos('*',GSFileKill.AreaName);
            DEC(Work);
-           SGFileKill.AreaName := _Mid(SGFileKill.AreaName,1,Work);
-           IF _Mid(InString,1,Work)=SGFileKill.AreaName THEN
+           GSFileKill.AreaName := _Mid(GSFileKill.AreaName,1,Work);
+           IF _Mid(InString,1,Work)=GSFileKill.AreaName THEN
            BEGIN
              PurgeThisArea := True;
-             CLOSE(FSGFileKill);
+             CLOSE(FGSFileKill);
              Exit;
            END;
          END
-         ELSE IF (SGFileKill.AreaName[1]='*') THEN
+         ELSE IF (GSFileKill.AreaName[1]='*') THEN
          BEGIN
            PurgeThisArea := True;
-           CLOSE(FSGFileKill);
+           CLOSE(FGSFileKill);
            Exit;
          END;
-       UNTIL EOF(FSGFileKill);
-       CLOSE(FSGFileKill);
+       UNTIL EOF(FGSFileKill);
+       CLOSE(FGSFileKill);
      END;
      PurgeThisArea := False;
 END;

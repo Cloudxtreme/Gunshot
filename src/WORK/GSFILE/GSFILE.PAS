@@ -2,7 +2,7 @@
 Hello there???
 {$ENDIF}
 {$I DEFINES.INC}
-PROGRAM SgFile;
+PROGRAM GSFile;
 {$M 32000,0,655360}
 
 
@@ -51,7 +51,7 @@ BEGIN
                    BEGIN
                      IF PurgeThisArea(TicFile.AreaTag) THEN
                      BEGIN
-                       WriteLogFile('  ! SGFile auto-purge for this area: '+TicFile.AreaTag);
+                       WriteLogFile('  ! GSFile auto-purge for this area: '+TicFile.AreaTag);
                        WriteLogFile('   Ã Erasing file..: '+OriginalArcName);
                        WriteLogFile('   À Erasing TIC...: '+CurrentTicFile);
                        _EraseFile(Mailer.Inbound+OriginalArcName);

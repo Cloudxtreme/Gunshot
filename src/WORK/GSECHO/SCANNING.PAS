@@ -36,7 +36,7 @@ VAR  CurrentArea : Longint;
      TFile       : Text;
      Work        : Word;
      DoThisOne   : Boolean;
-     EchoTag     : _SGEchoDat_Record;
+     EchoTag     : _GSEchoDat_Record;
 LABEL              SkipBy;
 
      PROCEDURE DoPercent;
@@ -58,7 +58,7 @@ LABEL              SkipBy;
           FillChar(SeenBys,SizeOf(SeenBys),0);
           SeenBys[1].Net  := NetworkInfo.Net_Address.Net;
           SeenBys[1].Node := NetworkInfo.Net_Address.Node;
-          OpenSGEchoDat;
+          OpenGSEchoDat;
           IF IsEchoTagFileOpen THEN
           BEGIN
             REPEAT
@@ -85,7 +85,7 @@ LABEL              SkipBy;
      BEGIN
           PktHeader.OrigNet  := NetworkInfo.Net_Address.Net;
           PktHeader.OrigNode := NetworkInfo.Net_Address.Node;
-          OpenSGEchoDat;
+          OpenGSEchoDat;
           IF IsEchoTagFileOpen THEN
           BEGIN
             REPEAT
@@ -185,7 +185,7 @@ BEGIN
      Window(1,10,80,25); ClrScr;
      FastWrite('컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴�',9,1,8);
      IF NOT(_FileExists(BaseDirectory+'\DATA\MA000000.DAT')) THEN Exit;
-     IF NOT(_FileExists(BaseDirectory+'\DATA\SGECHO.DAT')) THEN Exit;
+     IF NOT(_FileExists(BaseDirectory+'\DATA\GSECHO.DAT')) THEN Exit;
      FastWrite('%',7,76,7);
      FastWrite('Scanning:',7,2,7);
      FastWrite('Area Tag:',8,2,7);
@@ -215,7 +215,7 @@ BEGIN
          RESET(FEToss);
        END;
      END;
-     OpenSGEchoDat;
+     OpenGSEchoDat;
      ASSIGN(FScanMessageArea,BaseDirectory+'\DATA\MA000000.DAT');
      RESET(FScanMessageArea);
      TotalAreas := FileSize(FScanMessageArea);

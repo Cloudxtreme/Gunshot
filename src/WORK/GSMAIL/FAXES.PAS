@@ -89,10 +89,10 @@ VAR  L            : LongInt;
      PROCEDURE draw_status(InString: String; Level: Word);
      BEGIN
           CASE Level OF
-          0:   FastWrite(_PadRight(InString,35),10,33,ShotgunColours.SGMailWindowHighlight);
-          1:   FastWrite(_PadRight(InString,35),11,33,ShotgunColours.SGMailWindowHighlight);
-          2:   FastWrite(_PadRight(InString,35),12,33,ShotgunColours.SGMailWindowHighlight);
-          3:   FastWrite(_PadRight(InString,35),13,33,ShotgunColours.SGMailWindowHighlight);
+          0:   FastWrite(_PadRight(InString,35),10,33,ShotgunColours.GSMailWindowHighlight);
+          1:   FastWrite(_PadRight(InString,35),11,33,ShotgunColours.GSMailWindowHighlight);
+          2:   FastWrite(_PadRight(InString,35),12,33,ShotgunColours.GSMailWindowHighlight);
+          3:   FastWrite(_PadRight(InString,35),13,33,ShotgunColours.GSMailWindowHighlight);
           END;
      END;
 
@@ -175,14 +175,14 @@ BEGIN
      WhereXYAbs(KeepXY);
      SaveScreen(3);
      FastWrite(' Press Esc to abort the session                                         INBOUND ',
-               Window2+7,1,ShotgunColours.SGMailStatusHighlight);
+               Window2+7,1,ShotgunColours.GSMailStatusHighlight);
      DrawWindow(15,7,70,15,'',True);
-     FastWrite(_PadBoth('INCOMING FAX CALL',53),8,16,ShotgunColours.SGMailWindowHighlight);
+     FastWrite(_PadBoth('INCOMING FAX CALL',53),8,16,ShotgunColours.GSMailWindowHighlight);
      InvertedBox(17,9,68,14);
-     FastWrite(' Call From: ',10,20,ShotgunColours.SGMailWindowText);
-     FastWrite(' Fax Speed: ',11,20,ShotgunColours.SGMailWindowText);
-     FastWrite('    Status: ',12,20,ShotgunColours.SGMailWindowText);
-     FastWrite('Last Error: ',13,20,ShotgunColours.SGMailWindowText);
+     FastWrite(' Call From: ',10,20,ShotgunColours.GSMailWindowText);
+     FastWrite(' Fax Speed: ',11,20,ShotgunColours.GSMailWindowText);
+     FastWrite('    Status: ',12,20,ShotgunColours.GSMailWindowText);
+     FastWrite('Last Error: ',13,20,ShotgunColours.GSMailWindowText);
 END;
 
 
@@ -262,7 +262,7 @@ BEGIN
           StatusWindow('Initializing Modem');
           InitializeModem;
           StatusWindow('Waiting for a call or event');
-          WriteNodeFile('SGMail','Waiting For A Caller','');
+          WriteNodeFile('GSMail','Waiting For A Caller','');
           TimerWait := 20;
           NewTimerSecs(InitTimer,TimerWait);
           ResetDialTimer;

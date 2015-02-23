@@ -25,9 +25,9 @@ VAR  FFile : File;
      BRead : Word;
 BEGIN
      FillChar(CommDef,SizeOf(CommDef),0);
-     IF _FileExists('SGT.CFG') THEN
+     IF _FileExists('GST.CFG') THEN
      BEGIN
-          ASSIGN(FFile,'SGT.CFG');
+          ASSIGN(FFile,'GST.CFG');
           RESET(FFile,1);
           BLOCKREAD(FFile,CommDef,SizeOf(CommDef),BRead);
           CLOSE(FFile);
@@ -51,7 +51,7 @@ BEGIN
           CommDef.DataInit2    := '';
           CommDef.DataInit3    := '';
           CommDef.YappToUse    := 2;
-          ASSIGN(FFile,'SGT.CFG');
+          ASSIGN(FFile,'GST.CFG');
           REWRITE(FFile,1);
           BLOCKWRITE(FFile,CommDef,SizeOf(CommDef));
           CLOSE(FFile);
@@ -339,7 +339,7 @@ BEGIN
      _CreatePath(CommDef.DLDir);
      _CreatePath(CommDef.ULDir);
      KillWindow;
-     ASSIGN(FFile,'SGT.CFG');
+     ASSIGN(FFile,'GST.CFG');
      REWRITE(FFile,1);
      BLOCKWRITE(FFile,CommDef,SizeOf(CommDef));
      CLOSE(FFile);

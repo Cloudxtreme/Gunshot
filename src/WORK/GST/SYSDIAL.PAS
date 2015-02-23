@@ -175,7 +175,7 @@ BEGIN
                      3:   IF (CommDef.DataInit2<>'') THEN SendCommandString(CommDef.DataInit2,True,True);
                      4:   IF (CommDef.DataInit3<>'') THEN SendCommandString(CommDef.DataInit3,True,True);
                      5:   BEGIN
-                               ASSIGN(FDialDir,'SGT.DIR');
+                               ASSIGN(FDialDir,'GST.DIR');
                                RESET(FDialDir);
                                SEEK(FDialDir,CallQueue[TheCurrent]-1);
                                READ(FDialDir,DialDir);

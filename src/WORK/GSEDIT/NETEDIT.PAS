@@ -250,7 +250,7 @@ BEGIN
      FastWrite('ALT-R ....... Reply To Message      ',15,22,27);
      FastWrite('ALT-D ....... Dump To Text File     ',16,22,27);
      FastWrite('ALT-E ....... Edit Current Message  ',17,22,27);
-     FastWrite('ALT-X [ESC] . Quit Back To SGMail   ',18,22,27);
+     FastWrite('ALT-X [ESC] . Quit Back To GSMail   ',18,22,27);
      FastWrite('F1 .......... Editor Help Screen    ',20,22,27);
      FastWrite('F2 .......... DOS Shell             ',21,22,27);
      C := ReadKey;
@@ -437,7 +437,7 @@ BEGIN
                                Save_Screen3;
                                ClrScr;
                                _ShowCursor;
-                               PutEnviro('PROMPT=Enter EXIT to return to SGEdit!!$_$p$g');
+                               PutEnviro('PROMPT=Enter EXIT to return to GSEdit!!$_$p$g');
                                DoExec(GetEnv('COMSPEC'),' /C '+GetEnv('COMSPEC'),SwapMethod,MailerInfo.Outpkts);
                                ChDir(Shotgun_Directory);
                                _HideCursor;

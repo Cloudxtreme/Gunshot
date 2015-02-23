@@ -39,7 +39,7 @@ VAR  LastRead        : Last_Read;
      FLastReadSource : File Of Last_Read;
      FLastReadDest   : File Of Last_Read;
 BEGIN
-     ASSIGN(FLastReadSource,BasePath+'$$SGPACK.JLR');
+     ASSIGN(FLastReadSource,BasePath+'$$GSPACK.JLR');
      {$I-}RESET(FLastReadSource);{$I+}
      IF IOResult=0 THEN
      BEGIN
@@ -90,11 +90,11 @@ BEGIN
      OrigBytes := OrigBytes+_FileSize(MessageAreas.Dos_Name+'.JDX');
      OrigBytes := OrigBytes+_FileSize(MessageAreas.Dos_Name+'.JHR');
      OrigBytes := OrigBytes+_FileSize(MessageAreas.Dos_Name+'.JLR');
-     IF _FileExists(MessageAreas.Dos_Name+'.JDT') THEN _RenameFile(MessageAreas.Dos_Name+'.JDT',BasePath+'$$SGPACK.JDT');
-     IF _FileExists(MessageAreas.Dos_Name+'.JDX') THEN _RenameFile(MessageAreas.Dos_Name+'.JDX',BasePath+'$$SGPACK.JDX');
-     IF _FileExists(MessageAreas.Dos_Name+'.JHR') THEN _RenameFile(MessageAreas.Dos_Name+'.JHR',BasePath+'$$SGPACK.JHR');
-     IF _FileExists(MessageAreas.Dos_Name+'.JLR') THEN _RenameFile(MessageAreas.Dos_Name+'.JLR',BasePath+'$$SGPACK.JLR');
-     OpenOrCreateMsgArea(SourceBase,'J'+BasePath+'$$SGPACK',MessageAreas.MaxMsgs);
+     IF _FileExists(MessageAreas.Dos_Name+'.JDT') THEN _RenameFile(MessageAreas.Dos_Name+'.JDT',BasePath+'$$GSPACK.JDT');
+     IF _FileExists(MessageAreas.Dos_Name+'.JDX') THEN _RenameFile(MessageAreas.Dos_Name+'.JDX',BasePath+'$$GSPACK.JDX');
+     IF _FileExists(MessageAreas.Dos_Name+'.JHR') THEN _RenameFile(MessageAreas.Dos_Name+'.JHR',BasePath+'$$GSPACK.JHR');
+     IF _FileExists(MessageAreas.Dos_Name+'.JLR') THEN _RenameFile(MessageAreas.Dos_Name+'.JLR',BasePath+'$$GSPACK.JLR');
+     OpenOrCreateMsgArea(SourceBase,'J'+BasePath+'$$GSPACK',MessageAreas.MaxMsgs);
      OpenOrCreateMsgArea(DestBase,'J'+MessageAreas.Dos_Name,MessageAreas.MaxMsgs);
      DestBase^.LockMsgBase;
      Temp := 'AREA: '+_PadRight(MessageAreas.Area_Name,41);           WRITE(Temp);
@@ -199,10 +199,10 @@ BEGIN
      FileMode := SetFileMode;
      LastReadJam;
      INC(TotalMsgs,NumMsgs);
-     _EraseFile(BasePath+'$$SGPACK.JDT');
-     _EraseFile(BasePath+'$$SGPACK.JDX');
-     _EraseFile(BasePath+'$$SGPACK.JHR');
-     _EraseFile(BasePath+'$$SGPACK.JLR');
+     _EraseFile(BasePath+'$$GSPACK.JDT');
+     _EraseFile(BasePath+'$$GSPACK.JDX');
+     _EraseFile(BasePath+'$$GSPACK.JHR');
+     _EraseFile(BasePath+'$$GSPACK.JLR');
      DoneBytes := DoneBytes+_FileSize(MessageAreas.Dos_Name+'.JDT');
      DoneBytes := DoneBytes+_FileSize(MessageAreas.Dos_Name+'.JDX');
      DoneBytes := DoneBytes+_FileSize(MessageAreas.Dos_Name+'.JHR');

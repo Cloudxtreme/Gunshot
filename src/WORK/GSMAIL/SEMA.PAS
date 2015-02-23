@@ -62,7 +62,7 @@ BEGIN
           StatusWindow('Initializing Modem');
           InitializeModem;
           StatusWindow('Waiting for a call or event');
-          WriteNodeFile('SGMail','Waiting For A Caller','');
+          WriteNodeFile('GSMail','Waiting For A Caller','');
           TimerWait := 20;
           NewTimerSecs(InitTimer,TimerWait);
           ResetDialTimer;
@@ -80,7 +80,7 @@ BEGIN
           _ShowCursor;
           InitializeModem;
           StatusWindow('Waiting for a call or event');
-          WriteNodeFile('SGMail','Waiting For A Caller','');
+          WriteNodeFile('GSMail','Waiting For A Caller','');
           TimerWait := 20;
           NewTimerSecs(InitTimer,TimerWait);
           ResetDialTimer;
@@ -95,8 +95,8 @@ BEGIN
      IF _FileExists(MailerInfo.Semaphores+'RESET.'+_String(SimNode)) THEN
      BEGIN
           KillSaver;
-          StatusWindow('SGMail reset via external process');
-          bsWriteLog('SGMail reset via external process',False);
+          StatusWindow('GSMail reset via external process');
+          bsWriteLog('GSMail reset via external process',False);
           Finished := True;
           HaltCode := 0;
      END

@@ -59,10 +59,10 @@ BEGIN
      OutTextXY(45,75,15,255,1,'System Name');
      OutTextXY(285,75,15,255,1,'Phone Number');
      NewPickList(35,95,22,50,True);
-     IF NOT(_FileExists('SGT.DIR')) THEN
+     IF NOT(_FileExists('GST.DIR')) THEN
      BEGIN
           FillChar(DialDir,SizeOf(DialDir),0);
-          ASSIGN(FDialDir,'SGT.DIR');
+          ASSIGN(FDialDir,'GST.DIR');
           REWRITE(FDialDir);
           DialDir.Name    := 'GUNN Data Systems I [33.6k]';
           DialDir.Phone   := '1-250-365-3693';
@@ -74,7 +74,7 @@ BEGIN
      END
      ELSE
      BEGIN
-          ASSIGN(FDialDir,'SGT.DIR');
+          ASSIGN(FDialDir,'GST.DIR');
           RESET(FDialDir);
           REPEAT
                 READ(FDialDir,DialDir);

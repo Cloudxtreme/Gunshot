@@ -19,8 +19,8 @@ USES Dos,CnfgVars,Defaults,BsMouse,Crt,BsAkas,IntrFace,Misc,Shotgun,
 
 PROCEDURE MouseSpeed;
 BEGIN
-     CheckFile('SGCONFIG.DAT');
-     ASSIGN(FConfigSetup,BaseDirectory+'\DATA\SGCONFIG.DAT');
+     CheckFile('GSCONFIG.DAT');
+     ASSIGN(FConfigSetup,BaseDirectory+'\DATA\GSCONFIG.DAT');
      RESET(FConfigSetup);
      READ(FConfigSetup,ConfigSetup);
      CLOSE(FConfigSetup);
@@ -195,8 +195,8 @@ END;
 
 
 PROCEDURE ClearTaggedEchos;
-VAR  EchoTag    : _SGFileDat_Record;
-     MEchoTag   : _SGEchoDat_Record;
+VAR  EchoTag    : _GSFileDat_Record;
+     MEchoTag   : _GSEchoDat_Record;
      LastNode   : AddrType;
      FFLinks    : FFileObj;
      FEchoTag   : FFileObj;
@@ -247,8 +247,8 @@ VAR  EchoTag    : _SGFileDat_Record;
 BEGIN
      IF NOT(_FileExists(BaseDirectory+'\DATA\LINKS.DAT')) THEN
      BEGIN
-          _EraseFile(BaseDirectory+'\DATA\SGFILE.DAT');
-          _EraseFile(BaseDirectory+'\DATA\SGECHO.DAT');
+          _EraseFile(BaseDirectory+'\DATA\GSFILE.DAT');
+          _EraseFile(BaseDirectory+'\DATA\GSECHO.DAT');
           Exit;
      END;
 
@@ -257,14 +257,14 @@ BEGIN
      FEchoTag2.Init(16384);
      FFLinks.OpenFile(BaseDirectory+'\DATA\LINKS.DAT',SetFileMode);
 
-     {SGFile Echos}
+     {GSFile Echos}
      FillChar(LastNode,SizeOf(LastNode),0);
-     PromptHole('Clearing SGFile links..........');
-     IF _FileExists(BaseDirectory+'\DATA\SGFILE.DAT') THEN
+     PromptHole('Clearing GSFile links..........');
+     IF _FileExists(BaseDirectory+'\DATA\GSFILE.DAT') THEN
      BEGIN
-          _RenameFile(BaseDirectory+'\DATA\SGFILE.DAT',BaseDirectory+'\DATA\SGFILE.BAK');
-          FEchoTag.OpenFile(BaseDirectory+'\DATA\SGFILE.DAT',SetFileMode);
-          FEchoTag2.OpenFile(BaseDirectory+'\DATA\SGFILE.BAK',SetFileMode);
+          _RenameFile(BaseDirectory+'\DATA\GSFILE.DAT',BaseDirectory+'\DATA\GSFILE.BAK');
+          FEchoTag.OpenFile(BaseDirectory+'\DATA\GSFILE.DAT',SetFileMode);
+          FEchoTag2.OpenFile(BaseDirectory+'\DATA\GSFILE.BAK',SetFileMode);
           REPEAT
                 FEchoTag2.BlkRead(EchoTag,SizeOf(EchoTag),BytesRead);
                 IF ((BytesRead<>0) AND (GotThisNode)) THEN
@@ -274,19 +274,19 @@ BEGIN
           UNTIL BytesRead=0;
           FEchoTag.CloseFile;
           FEchoTag2.CloseFile;
-          _EraseFile(BaseDirectory+'\DATA\SGFILE.BAK');
-          IF _FileSize(BaseDirectory+'\DATA\SGFILE.DAT')=0 THEN _EraseFile(BaseDirectory+'\DATA\SGFILE.DAT');
+          _EraseFile(BaseDirectory+'\DATA\GSFILE.BAK');
+          IF _FileSize(BaseDirectory+'\DATA\GSFILE.DAT')=0 THEN _EraseFile(BaseDirectory+'\DATA\GSFILE.DAT');
      END;
      DoAck;
 
-     {SGEcho Echos}
+     {GSEcho Echos}
      FillChar(LastNode,SizeOf(LastNode),0);
-     PromptHole('Clearing SGEcho links..........');
-     IF _FileExists(BaseDirectory+'\DATA\SGECHO.DAT') THEN
+     PromptHole('Clearing GSEcho links..........');
+     IF _FileExists(BaseDirectory+'\DATA\GSECHO.DAT') THEN
      BEGIN
-          _RenameFile(BaseDirectory+'\DATA\SGECHO.DAT',BaseDirectory+'\DATA\SGECHO.BAK');
-          FEchoTag.OpenFile(BaseDirectory+'\DATA\SGECHO.DAT',SetFileMode);
-          FEchoTag2.OpenFile(BaseDirectory+'\DATA\SGECHO.BAK',SetFileMode);
+          _RenameFile(BaseDirectory+'\DATA\GSECHO.DAT',BaseDirectory+'\DATA\GSECHO.BAK');
+          FEchoTag.OpenFile(BaseDirectory+'\DATA\GSECHO.DAT',SetFileMode);
+          FEchoTag2.OpenFile(BaseDirectory+'\DATA\GSECHO.BAK',SetFileMode);
           REPEAT
                 FEchoTag2.BlkRead(MEchoTag,SizeOf(MEchoTag),BytesRead);
                 IF ((BytesRead<>0) AND (GotThisNode2)) THEN
@@ -296,8 +296,8 @@ BEGIN
           UNTIL BytesRead=0;
           FEchoTag.CloseFile;
           FEchoTag2.CloseFile;
-          _EraseFile(BaseDirectory+'\DATA\SGECHO.BAK');
-          IF _FileSize(BaseDirectory+'\DATA\SGECHO.DAT')=0 THEN _EraseFile(BaseDirectory+'\DATA\SGECHO.DAT');
+          _EraseFile(BaseDirectory+'\DATA\GSECHO.BAK');
+          IF _FileSize(BaseDirectory+'\DATA\GSECHO.DAT')=0 THEN _EraseFile(BaseDirectory+'\DATA\GSECHO.DAT');
      END;
      DoAck;
 
@@ -343,7 +343,7 @@ BEGIN
      Dispose(FileInfo2);
      Dispose(CBVSetup);
      WriteLn;
-     TextColor(14); WriteLn('Exit from SGCONFIG');
+     TextColor(14); WriteLn('Exit from GSCONFIG');
      TextColor(7);
      WriteLn;
      Halt;

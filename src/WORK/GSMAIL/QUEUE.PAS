@@ -32,7 +32,7 @@ VAR  Loop         : Word;
      VAR  Loop2 : Word;
      BEGIN
        KillSaver;
-       FOR Loop2 := QueueWindowTop TO (Window2-1) DO FastWrite(_Replicate(' ',22),Loop2,2,ShotgunColours.SGMailNormalText);
+       FOR Loop2 := QueueWindowTop TO (Window2-1) DO FastWrite(_Replicate(' ',22),Loop2,2,ShotgunColours.GSMailNormalText);
      END;
 
 BEGIN

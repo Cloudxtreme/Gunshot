@@ -48,7 +48,7 @@ LABEL                  Skip1,Skip2,PasswordFailure1,PasswordFailure2;
 
      PROCEDURE WriteTheNodeFile;
      BEGIN
-          WriteNodeFile('SGMail','Mail Session ('+AddressToString(RemoteSystem.Akas[1])+')',_String(ConnectRate));
+          WriteNodeFile('GSMail','Mail Session ('+AddressToString(RemoteSystem.Akas[1])+')',_String(ConnectRate));
      END;
 
 BEGIN
@@ -60,7 +60,7 @@ BEGIN
      MailSessionType := StartupMailSession(CallingOut);
      CASE MailSessionType OF
      0:   BEGIN {FTS-0001}
-               WriteNodeFile('SGMail','Mail Session',_String(ConnectRate));
+               WriteNodeFile('GSMail','Mail Session',_String(ConnectRate));
                SessionType := 'FTS-1';
                ReceivedMail := False;
                _HideCursor;

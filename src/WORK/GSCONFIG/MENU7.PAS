@@ -8,7 +8,7 @@ INTERFACE
 PROCEDURE DoLinkManager;
 PROCEDURE DoUUCP;
 PROCEDURE DoPhoneBook;
-PROCEDURE DoSGFileKill;
+PROCEDURE DoGSFileKill;
 PROCEDURE DoEditNodes;
 PROCEDURE DoFaxSetup;
 
@@ -20,18 +20,18 @@ USES IntrFace,BsMouse,BsString,BsFile,Crt,Defaults,CnfgVars,Misc,Shotgun,MkFFile
 
 
 FUNCTION FileEchoTagged(SystemAka: AddrType; AreaID: Word; CheckForDat: Boolean): Boolean;
-VAR  EchoTag     : _SGFileDat_Record;
+VAR  EchoTag     : _GSFileDat_Record;
      BytesRead   : Word;
 BEGIN
      IF CheckForDat THEN
      BEGIN
-          IF NOT(_FileExists(BaseDirectory+'\DATA\SGFILE.DAT')) THEN
+          IF NOT(_FileExists(BaseDirectory+'\DATA\GSFILE.DAT')) THEN
           BEGIN
                FileEchoTagged := False;
                Exit;
           END;
      END;
-     WorkingFile.OpenFile(BaseDirectory+'\DATA\SGFILE.DAT',SetFileMode);
+     WorkingFile.OpenFile(BaseDirectory+'\DATA\GSFILE.DAT',SetFileMode);
      REPEAT
            WorkingFile.BlkRead(EchoTag,SizeOf(EchoTag),BytesRead);
            IF (BytesRead<>0) THEN
@@ -53,8 +53,8 @@ END;
 
 
 FUNCTION TagTheFileEcho(PItem: Longint): Boolean;
-VAR  EchoTag   : _SGFileDat_Record;
-     FEchoTag  : File Of _SGFileDat_Record;
+VAR  EchoTag   : _GSFileDat_Record;
+     FEchoTag  : File Of _GSFileDat_Record;
      TheId     : Word;
 BEGIN
      ASSIGN(FPickListFile,WorkDir+'\PICK.LST');
@@ -63,13 +63,13 @@ BEGIN
      READ(FPickListFile,PickListFile);
      TheId := _Numeric(_RemoveSpaces(PickListFile.B));
      CLOSE(FPickListFile);
-     IF _FileExists(BaseDirectory+'\DATA\SGFILE.DAT') THEN
+     IF _FileExists(BaseDirectory+'\DATA\GSFILE.DAT') THEN
      BEGIN
           IF NOT(FileEchoTagged(Links.NetworkAddress,TheID,False)) THEN
           BEGIN
                EchoTag.Aka    := Links.NetworkAddress;
                EchoTag.AreaID := TheId;
-               ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+               ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
                RESET(FEchoTag);
                SEEK(FEchoTag,FileSize(FEchoTag));
                WRITE(FEchoTag,EchoTag);
@@ -82,7 +82,7 @@ BEGIN
      BEGIN
           EchoTag.Aka    := Links.NetworkAddress;
           EchoTag.AreaID := TheId;
-          ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+          ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
           REWRITE(FEchoTag);
           WRITE(FEchoTag,EchoTag);
           CLOSE(FEchoTag);
@@ -212,9 +212,9 @@ END;
 
 
 FUNCTION DeleteTheFileEcho(PItem: Longint): Boolean;
-VAR  EchoTag    : _SGFileDat_Record;
-     FEchoTag   : File Of _SGFileDat_Record;
-     FEchoTag2  : File Of _SGFileDat_Record;
+VAR  EchoTag    : _GSFileDat_Record;
+     FEchoTag   : File Of _GSFileDat_Record;
+     FEchoTag2  : File Of _GSFileDat_Record;
      TheId      : Word;
 BEGIN
      ASSIGN(FPickListFile,WorkDir+'\PICK.LST');
@@ -223,14 +223,14 @@ BEGIN
      READ(FPickListFile,PickListFile);
      TheId := _Numeric(_RemoveSpaces(PickListFile.B));
      CLOSE(FPickListFile);
-     IF _FileExists(BaseDirectory+'\DATA\SGFILE.DAT') THEN
+     IF _FileExists(BaseDirectory+'\DATA\GSFILE.DAT') THEN
      BEGIN
           IF FileEchoTagged(Links.NetworkAddress,TheID,False) THEN
           BEGIN
-               ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
-               RENAME(FEchoTag,BaseDirectory+'\DATA\SGFILE.BAK');
-               ASSIGN(FEchoTag2,BaseDirectory+'\DATA\SGFILE.BAK');
-               ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+               ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
+               RENAME(FEchoTag,BaseDirectory+'\DATA\GSFILE.BAK');
+               ASSIGN(FEchoTag2,BaseDirectory+'\DATA\GSFILE.BAK');
+               ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
                REWRITE(FEchoTag);
                RESET(FEchoTag2);
                REPEAT
@@ -241,7 +241,7 @@ BEGIN
                CLOSE(FEchoTag);
                CLOSE(FEchoTag2);
                ERASE(FEchoTag2);
-               IF _FileSize(BaseDirectory+'\DATA\SGFILE.DAT')=0 THEN ERASE(FEchoTag);
+               IF _FileSize(BaseDirectory+'\DATA\GSFILE.DAT')=0 THEN ERASE(FEchoTag);
                DeleteTheFileEcho := True;
           END
           ELSE DeleteTheFileEcho := False;
@@ -289,7 +289,7 @@ BEGIN
      PickList_B_Title := 'Area ID   ';
      PickListX        := 11;
      PickListY        := 4;
-     IF _FileExists(BaseDirectory+'\DATA\SGFILE.DAT')
+     IF _FileExists(BaseDirectory+'\DATA\GSFILE.DAT')
         THEN NeedToCheck := False
         ELSE NeedToCheck := True;
      ASSIGN(FPickListFile,WorkDir+'\PICK.LST');
@@ -385,18 +385,18 @@ END;
 
 
 FUNCTION MessageEchoTagged(SystemAka: AddrType; AreaID: Word; CheckForDat: Boolean): Boolean;
-VAR  EchoTag   : _SGEchoDat_Record;
+VAR  EchoTag   : _GSEchoDat_Record;
      BytesRead : Word;
 BEGIN
      IF CheckForDat THEN
      BEGIN
-          IF NOT(_FileExists(BaseDirectory+'\DATA\SGECHO.DAT')) THEN
+          IF NOT(_FileExists(BaseDirectory+'\DATA\GSECHO.DAT')) THEN
           BEGIN
                MessageEchoTagged := False;
                Exit;
           END;
      END;
-     WorkingFile.OpenFile(BaseDirectory+'\DATA\SGECHO.DAT',SetFileMode);
+     WorkingFile.OpenFile(BaseDirectory+'\DATA\GSECHO.DAT',SetFileMode);
      REPEAT
            WorkingFile.BlkRead(EchoTag,SizeOf(EchoTag),BytesRead);
            IF (BytesRead<>0) THEN
@@ -418,8 +418,8 @@ END;
 
 
 FUNCTION TagTheMessageEcho(PItem: Longint): Boolean;
-VAR  EchoTag   : _SGEchoDat_Record;
-     FEchoTag  : File Of _SGEchoDat_Record;
+VAR  EchoTag   : _GSEchoDat_Record;
+     FEchoTag  : File Of _GSEchoDat_Record;
      TheId     : Word;
 BEGIN
      ASSIGN(FPickListFile,WorkDir+'\PICK.LST');
@@ -428,13 +428,13 @@ BEGIN
      READ(FPickListFile,PickListFile);
      TheId := _Numeric(_RemoveSpaces(PickListFile.B));
      CLOSE(FPickListFile);
-     IF _FileExists(BaseDirectory+'\DATA\SGECHO.DAT') THEN
+     IF _FileExists(BaseDirectory+'\DATA\GSECHO.DAT') THEN
      BEGIN
           IF NOT(MessageEchoTagged(Links.NetworkAddress,TheID,False)) THEN
           BEGIN
                EchoTag.Aka    := Links.NetworkAddress;
                EchoTag.AreaID := TheId;
-               ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGECHO.DAT');
+               ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSECHO.DAT');
                RESET(FEchoTag);
                SEEK(FEchoTag,FileSize(FEchoTag));
                WRITE(FEchoTag,EchoTag);
@@ -447,7 +447,7 @@ BEGIN
      BEGIN
           EchoTag.Aka    := Links.NetworkAddress;
           EchoTag.AreaID := TheId;
-          ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGECHO.DAT');
+          ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSECHO.DAT');
           REWRITE(FEchoTag);
           WRITE(FEchoTag,EchoTag);
           CLOSE(FEchoTag);
@@ -457,9 +457,9 @@ END;
 
 
 FUNCTION DeleteTheMessageEcho(PItem: Longint): Boolean;
-VAR  EchoTag    : _SGEchoDat_Record;
-     FEchoTag   : File Of _SGEchoDat_Record;
-     FEchoTag2  : File Of _SGEchoDat_Record;
+VAR  EchoTag    : _GSEchoDat_Record;
+     FEchoTag   : File Of _GSEchoDat_Record;
+     FEchoTag2  : File Of _GSEchoDat_Record;
      TheId      : Word;
 BEGIN
      ASSIGN(FPickListFile,WorkDir+'\PICK.LST');
@@ -468,14 +468,14 @@ BEGIN
      READ(FPickListFile,PickListFile);
      TheId := _Numeric(_RemoveSpaces(PickListFile.B));
      CLOSE(FPickListFile);
-     IF _FileExists(BaseDirectory+'\DATA\SGECHO.DAT') THEN
+     IF _FileExists(BaseDirectory+'\DATA\GSECHO.DAT') THEN
      BEGIN
           IF MessageEchoTagged(Links.NetworkAddress,TheID,False) THEN
           BEGIN
-               ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGECHO.DAT');
-               RENAME(FEchoTag,BaseDirectory+'\DATA\SGECHO.BAK');
-               ASSIGN(FEchoTag2,BaseDirectory+'\DATA\SGECHO.BAK');
-               ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGECHO.DAT');
+               ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSECHO.DAT');
+               RENAME(FEchoTag,BaseDirectory+'\DATA\GSECHO.BAK');
+               ASSIGN(FEchoTag2,BaseDirectory+'\DATA\GSECHO.BAK');
+               ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSECHO.DAT');
                REWRITE(FEchoTag);
                RESET(FEchoTag2);
                REPEAT
@@ -486,7 +486,7 @@ BEGIN
                CLOSE(FEchoTag);
                CLOSE(FEchoTag2);
                ERASE(FEchoTag2);
-               IF _FileSize(BaseDirectory+'\DATA\SGECHO.DAT')=0 THEN ERASE(FEchoTag);
+               IF _FileSize(BaseDirectory+'\DATA\GSECHO.DAT')=0 THEN ERASE(FEchoTag);
                DeleteTheMessageEcho := True;
           END
           ELSE DeleteTheMessageEcho := False;
@@ -534,7 +534,7 @@ BEGIN
      PickList_B_Title := 'Area ID   ';
      PickListX        := 11;
      PickListY        := 4;
-     IF _FileExists(BaseDirectory+'\DATA\SGECHO.DAT')
+     IF _FileExists(BaseDirectory+'\DATA\GSECHO.DAT')
         THEN NeedToCheck := False
         ELSE NeedToCheck := True;
      ASSIGN(FPickListFile,WorkDir+'\PICK.LST');
@@ -865,10 +865,10 @@ LABEL           AllOverAgain;
           Links.AllowList      := ToBoolean(Objects^[15].Stuff);
           Links.AllowQuery     := ToBoolean(Objects^[16].Stuff);
           Links.AllowUnlinked  := ToBoolean(Objects^[17].Stuff);
-          Links.SGFileTIC      := _UpperCase(Objects^[18].Stuff);
-          Links.SGFileAreaFix  := _UpperCase(Objects^[19].Stuff);
-          Links.SGEchoPacket   := _UpperCase(Objects^[20].Stuff);
-          Links.SGEchoAreaFix  := _UpperCase(Objects^[21].Stuff);
+          Links.GSFileTIC      := _UpperCase(Objects^[18].Stuff);
+          Links.GSFileAreaFix  := _UpperCase(Objects^[19].Stuff);
+          Links.GSEchoPacket   := _UpperCase(Objects^[20].Stuff);
+          Links.GSEchoAreaFix  := _UpperCase(Objects^[21].Stuff);
           Links.Archiver       := _UpperCase(Objects^[22].Stuff);
      END;
 
@@ -932,10 +932,10 @@ BEGIN
      AddObject(44,14,6,3,FromBoolean(Links.AllowList),True);
      AddObject(44,15,6,3,FromBoolean(Links.AllowQuery),True);
      AddObject(44,16,6,3,FromBoolean(Links.AllowUnlinked),True);
-     AddObject(21,19,1,8,Links.SGFileTIC,True);
-     AddObject(44,19,1,8,Links.SGFileAreaFix,True);
-     AddObject(21,20,1,8,Links.SGEchoPacket,True);
-     AddObject(44,20,1,8,Links.SGEchoAreaFix,True);
+     AddObject(21,19,1,8,Links.GSFileTIC,True);
+     AddObject(44,19,1,8,Links.GSFileAreaFix,True);
+     AddObject(21,20,1,8,Links.GSEchoPacket,True);
+     AddObject(44,20,1,8,Links.GSEchoAreaFix,True);
      AddObject(21,21,1,3,Links.Archiver,True);
      AddButton(5,23,' QUIT ',True,1,16);
      AddButton(13,23,' FILE ECHOES ',True,1,33);
@@ -967,8 +967,8 @@ BEGIN
      GotoXY(3,19);  WRITE('    TIC Password');
      GotoXY(3,20);  WRITE('    PKT Password');
      GotoXY(3,21);  WRITE('        Archiver');
-     GotoXY(31,19); WRITE('SGFile AFix');
-     GotoXY(31,20); WRITE('SGEcho AFix');
+     GotoXY(31,19); WRITE('GSFile AFix');
+     GotoXY(31,20); WRITE('GSEcho AFix');
      TextColor_BS(14);
      GotoXY(26,5);
      WRITE(GetNetAddress(Links.AkaToUse));
@@ -1439,16 +1439,16 @@ BEGIN
 END;
 
 
-PROCEDURE EditSGFileKill(Number: Longint);
+PROCEDURE EditGSFileKill(Number: Longint);
 BEGIN
      _SaveWindow(WorkDir+'\EDITACC.SCR');
-     ASSIGN(FSGFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
-     RESET(FSGFileKill);
-     SEEK(FSGFileKill,Number-1);
-     READ(FSGFileKill,SGFileKill);
-     CLOSE(FSGFileKill);
-     DrawWindow(10,8,44,14,'EDIT SGFILE AUTO-PURGE ENTRY',True);
-     AddObject(28,10,1,12,SGFileKill.AreaName,True);
+     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+     RESET(FGSFileKill);
+     SEEK(FGSFileKill,Number-1);
+     READ(FGSFileKill,GSFileKill);
+     CLOSE(FGSFileKill);
+     DrawWindow(10,8,44,14,'EDIT GSFILE AUTO-PURGE ENTRY',True);
+     AddObject(28,10,1,12,GSFileKill.AreaName,True);
      AddButton(34,12,' QUIT ',True,1,16);
      DrawObjects;
      DrawButtons;
@@ -1460,68 +1460,68 @@ BEGIN
      DoObjects;
      ClearObjects;
      ClearButtons;
-     SGFileKill.AreaName := _UpperCase(Objects^[1].Stuff);
-     ASSIGN(FSGFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
-     RESET(FSGFileKill);
-     SEEK(FSGFileKill,Number-1);
-     WRITE(FSGFileKill,SGFileKill);
-     CLOSE(FSGFileKill);
+     GSFileKill.AreaName := _UpperCase(Objects^[1].Stuff);
+     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+     RESET(FGSFileKill);
+     SEEK(FGSFileKill,Number-1);
+     WRITE(FGSFileKill,GSFileKill);
+     CLOSE(FGSFileKill);
      LoadWindow(WorkDir+'\EDITACC.SCR');
 END;
 
 
-PROCEDURE DeleteSGFileKill(Number: Longint);
+PROCEDURE DeleteGSFileKill(Number: Longint);
 BEGIN
-     _EraseFileRecord(BaseDirectory+'\DATA\SGFPURGE.DAT',SizeOf(SGFileKill),Number);
+     _EraseFileRecord(BaseDirectory+'\DATA\SGFPURGE.DAT',SizeOf(GSFileKill),Number);
 END;
 
 
-PROCEDURE AddSGFileKill;
+PROCEDURE AddGSFileKill;
 BEGIN
-     FillChar(SGFileKill,SizeOf(SGFileKill),0);
-     ASSIGN(FSGFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
-     {$I-}RESET(FSGFileKill);{$I+}
-     IF (IOResult<>0) THEN REWRITE(FSGFileKill)
-                      ELSE SEEK(FSGFileKill,FileSize(FSGFileKill));
-     WRITE(FSGFileKill,SGFileKill);
-     CLOSE(FSGFileKill);
+     FillChar(GSFileKill,SizeOf(GSFileKill),0);
+     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+     {$I-}RESET(FGSFileKill);{$I+}
+     IF (IOResult<>0) THEN REWRITE(FGSFileKill)
+                      ELSE SEEK(FGSFileKill,FileSize(FGSFileKill));
+     WRITE(FGSFileKill,GSFileKill);
+     CLOSE(FGSFileKill);
 END;
 
 
-PROCEDURE InsertSGFileKill(Number: Longint);
+PROCEDURE InsertGSFileKill(Number: Longint);
 VAR  Counting : Longint;
 BEGIN
-     FillChar(SGFileKill,SizeOf(SGFileKill),0);
+     FillChar(GSFileKill,SizeOf(GSFileKill),0);
      IF _FileExists(BaseDirectory+'\DATA\SGFPURGE.DAT') THEN
      BEGIN
-          ASSIGN(FSGFileKill2,BaseDirectory+'\DATA\SGFPURGE.DAT');
-          RENAME(FSGFileKill2,BaseDirectory+'\DATA\SGFPURGE.BAK');
-          ASSIGN(FSGFileKill2,BaseDirectory+'\DATA\SGFPURGE.BAK');
-          ASSIGN(FSGFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
-          RESET(FSGFileKill2);
-          REWRITE(FSGFileKill);
+          ASSIGN(FGSFileKill2,BaseDirectory+'\DATA\SGFPURGE.DAT');
+          RENAME(FGSFileKill2,BaseDirectory+'\DATA\SGFPURGE.BAK');
+          ASSIGN(FGSFileKill2,BaseDirectory+'\DATA\SGFPURGE.BAK');
+          ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+          RESET(FGSFileKill2);
+          REWRITE(FGSFileKill);
           Counting := 0;
           REPEAT
-                READ(FSGFileKill2,SGFileKill2);
+                READ(FGSFileKill2,GSFileKill2);
                 INC(Counting);
-                IF Counting=Number THEN WRITE(FSGFileKill,SGFileKill);
-                WRITE(FSGFileKill,SGFileKill2);
-          UNTIL EOF(FSGFileKill2);
-          CLOSE(FSGFileKill);
-          CLOSE(FSGFileKill2);
-          ERASE(FSGFileKill2);
+                IF Counting=Number THEN WRITE(FGSFileKill,GSFileKill);
+                WRITE(FGSFileKill,GSFileKill2);
+          UNTIL EOF(FGSFileKill2);
+          CLOSE(FGSFileKill);
+          CLOSE(FGSFileKill2);
+          ERASE(FGSFileKill2);
      END
      ELSE
      BEGIN
-          ASSIGN(FSGFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
-          REWRITE(FSGFileKill);
-          WRITE(FSGFileKill,SGFileKill);
-          CLOSE(FSGFileKill);
+          ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+          REWRITE(FGSFileKill);
+          WRITE(FGSFileKill,GSFileKill);
+          CLOSE(FGSFileKill);
      END;
 END;
 
 
-PROCEDURE DoSGFileKill;
+PROCEDURE DoGSFileKill;
 VAR  Loop       : Word;
      OuttaHere  : Boolean;
      Action     : Word;
@@ -1529,15 +1529,15 @@ LABEL             OverAgain;
 
      PROCEDURE Reload;
      BEGIN
-          ASSIGN(FSGFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
-          RESET(FSGFileKill);
+          ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+          RESET(FGSFileKill);
           REPEAT
-                Read(FSGFileKill,SGFileKill);
-                PickListFile.A := SGFileKill.AreaName;
+                Read(FGSFileKill,GSFileKill);
+                PickListFile.A := GSFileKill.AreaName;
                 PickListFile.B := '';
                 WRITE(FPickListFile,PickListFile);
-          UNTIL EOF(FSGFileKill);
-          CLOSE(FSGFileKill);
+          UNTIL EOF(FGSFileKill);
+          CLOSE(FGSFileKill);
      END;
 
 BEGIN
@@ -1546,12 +1546,12 @@ BEGIN
      PickItem        := 0;
      PickTop         := 0;
      PickListItems   := 0;
-     ASSIGN(FSGFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
-     {$I-}RESET(FSGFileKill);{$I+}
+     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+     {$I-}RESET(FGSFileKill);{$I+}
      IF IOResult=0 THEN
      BEGIN
-          PickListItems := FileSize(FSGFileKill);
-          CLOSE(FSGFileKill);
+          PickListItems := FileSize(FGSFileKill);
+          CLOSE(FGSFileKill);
           PickItem := 1;
           PickTop  := 1;
      END;
@@ -1571,18 +1571,18 @@ BEGIN
      REWRITE(FPickListFile);
      IF PickListItems<>0 THEN Reload;
      CLOSE(FPickListFile);
-     SetUpPickList('SGFILE AUTO-PURGE CONFIGURATION');
+     SetUpPickList('GSFILE AUTO-PURGE CONFIGURATION');
      REPEAT
            Action := DoPickList;
            CASE Action OF
            0:   OuttaHere := True; {NORMAL QUIT}
            1:   IF (PickItem<>0) THEN
                 BEGIN {EDIT}
-                     EditSGFileKill(PickItem);
-                     ASSIGN(FSGFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
-                     RESET(FSGFileKill);
-                     PickListItems := FileSize(FSGFileKill);
-                     CLOSE(FSGFileKill);
+                     EditGSFileKill(PickItem);
+                     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+                     RESET(FGSFileKill);
+                     PickListItems := FileSize(FGSFileKill);
+                     CLOSE(FGSFileKill);
                      ASSIGN(FPickListFile,WorkDir+'\PICK.LST');
                      REWRITE(FPickListFile);
                      Reload;
@@ -1593,7 +1593,7 @@ BEGIN
                 BEGIN {DELETE}
                      IF Confirmed THEN
                      BEGIN
-                          DeleteSGFileKill(PickItem);
+                          DeleteGSFileKill(PickItem);
                           IF PickItem=PickListItems THEN DEC(PickItem);
                           DEC(PickListItems);
                           IF PickTop>PickListItems THEN DEC(PickTop);
@@ -1609,13 +1609,13 @@ BEGIN
                      BEGIN
                           PickItem := 1;
                           PickTop  := 1;
-                          AddSGFileKill;
-                          EditSGFileKill(PickListItems+1);
+                          AddGSFileKill;
+                          EditGSFileKill(PickListItems+1);
                      END
                      ELSE
                      BEGIN
-                          InsertSGFileKill(PickItem);
-                          EditSGFileKill(PickItem);
+                          InsertGSFileKill(PickItem);
+                          EditGSFileKill(PickItem);
                      END;
                      INC(PickListItems);
                      ASSIGN(FPickListFile,WorkDir+'\PICK.LST');
@@ -1630,8 +1630,8 @@ BEGIN
                           PickItem := 1;
                           PickTop  := 1;
                      END;
-                     AddSGFileKill;
-                     EditSGFileKill(PickListItems+1);
+                     AddGSFileKill;
+                     EditGSFileKill(PickListItems+1);
                      INC(PickListItems);
                      ASSIGN(FPickListFile,WorkDir+'\PICK.LST');
                      REWRITE(FPickListFile);

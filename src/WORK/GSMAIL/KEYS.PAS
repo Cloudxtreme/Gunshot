@@ -90,25 +90,25 @@ BEGIN
      SaveScreen(2);
      LoadItUp;
      DrawWindow(10,6,70,18,AddressToString(NodeListAka),True);
-     FastWrite('         System:',8,13,ShotgunColours.SGMailWindowText);
-     FastWrite('          Sysop:',9,13,ShotgunColours.SGMailWindowText);
-     FastWrite('       Location:',10,13,ShotgunColours.SGMailWindowText);
-     FastWrite('          Phone:',11,13,ShotgunColours.SGMailWindowText);
-     FastWrite('           Baud:',12,13,ShotgunColours.SGMailWindowText);
-     FastWrite('          Flags:',13,13,ShotgunColours.SGMailWindowText);
-     FastWrite('Continuous Mail:',14,13,ShotgunColours.SGMailWindowText);
-     FastWrite('      Mail Only:',15,13,ShotgunColours.SGMailWindowText);
-     FastWrite('  File Requests:',16,13,ShotgunColours.SGMailWindowText);
-     FastWrite(NodeListSystem,8,31,ShotgunColours.SGMailWindowHighlight);
-     FastWrite(NodeListSysop,9,31,ShotgunColours.SGMailWindowHighlight);
-     FastWrite(NodeListLocation,10,31,ShotgunColours.SGMailWindowHighlight);
-     FastWrite(NodeListPhone,11,31,ShotgunColours.SGMailWindowHighlight);
-     FastWrite(_String(NodeListBaud),12,31,ShotgunColours.SGMailWindowHighlight);
-     FastWrite(NodeListFlags,13,31,ShotgunColours.SGMailWindowHighlight);
+     FastWrite('         System:',8,13,ShotgunColours.GSMailWindowText);
+     FastWrite('          Sysop:',9,13,ShotgunColours.GSMailWindowText);
+     FastWrite('       Location:',10,13,ShotgunColours.GSMailWindowText);
+     FastWrite('          Phone:',11,13,ShotgunColours.GSMailWindowText);
+     FastWrite('           Baud:',12,13,ShotgunColours.GSMailWindowText);
+     FastWrite('          Flags:',13,13,ShotgunColours.GSMailWindowText);
+     FastWrite('Continuous Mail:',14,13,ShotgunColours.GSMailWindowText);
+     FastWrite('      Mail Only:',15,13,ShotgunColours.GSMailWindowText);
+     FastWrite('  File Requests:',16,13,ShotgunColours.GSMailWindowText);
+     FastWrite(NodeListSystem,8,31,ShotgunColours.GSMailWindowHighlight);
+     FastWrite(NodeListSysop,9,31,ShotgunColours.GSMailWindowHighlight);
+     FastWrite(NodeListLocation,10,31,ShotgunColours.GSMailWindowHighlight);
+     FastWrite(NodeListPhone,11,31,ShotgunColours.GSMailWindowHighlight);
+     FastWrite(_String(NodeListBaud),12,31,ShotgunColours.GSMailWindowHighlight);
+     FastWrite(NodeListFlags,13,31,ShotgunColours.GSMailWindowHighlight);
      IF (Pos('CM',NodeListFlags)<>0) THEN Temp := 'Yes' ELSE Temp := 'No';
-     FastWrite(Temp,14,31,ShotgunColours.SGMailWindowHighlight);
+     FastWrite(Temp,14,31,ShotgunColours.GSMailWindowHighlight);
      IF (Pos('MO',NodeListFlags)<>0) THEN Temp := 'Yes' ELSE Temp := 'No';
-     FastWrite(Temp,15,31,ShotgunColours.SGMailWindowHighlight);
+     FastWrite(Temp,15,31,ShotgunColours.GSMailWindowHighlight);
      ReqMethod := 0;
      IF (Pos('XA',NodeListFlags)<>0) THEN ReqMethod := 1;
      IF (Pos('XB',NodeListFlags)<>0) THEN ReqMethod := 2;
@@ -117,7 +117,7 @@ BEGIN
      IF (Pos('XR',NodeListFlags)<>0) THEN ReqMethod := 5;
      IF (Pos('XW',NodeListFlags)<>0) THEN ReqMethod := 6;
      IF (Pos('XX',NodeListFlags)<>0) THEN ReqMethod := 7;
-     FastWrite(Flags[ReqMethod],16,31,ShotgunColours.SGMailWindowHighlight);
+     FastWrite(Flags[ReqMethod],16,31,ShotgunColours.GSMailWindowHighlight);
      C := #0;
      REPEAT
        IF KeyPressed THEN
@@ -175,8 +175,8 @@ LABEL             Skip1,Skip2;
                BEGIN
                     READ(FPickList,PickList);
                     INC(TheOne);
-                    IF TheOne=Current THEN FastWrite(PickList.Text,Loop,3,ShotgunColours.SGMailMenuSelected)
-                                      ELSE FastWrite(PickList.Text,Loop,3,ShotgunColours.SGMailWindowText);
+                    IF TheOne=Current THEN FastWrite(PickList.Text,Loop,3,ShotgunColours.GSMailMenuSelected)
+                                      ELSE FastWrite(PickList.Text,Loop,3,ShotgunColours.GSMailWindowText);
                END;
           END;
      END;
@@ -367,8 +367,8 @@ LABEL             Skip1,Skip2;
                BEGIN
                     READ(FPickList,PickList);
                     INC(TheOne);
-                    IF TheOne=Current THEN FastWrite(PickList.Text,Loop,3,ShotgunColours.SGMailMenuSelected)
-                                      ELSE FastWrite(PickList.Text,Loop,3,ShotgunColours.SGMailWindowText);
+                    IF TheOne=Current THEN FastWrite(PickList.Text,Loop,3,ShotgunColours.GSMailMenuSelected)
+                                      ELSE FastWrite(PickList.Text,Loop,3,ShotgunColours.GSMailWindowText);
                END;
           END;
      END;
@@ -542,8 +542,8 @@ LABEL            ToTheMenu,ToTheShell;
      BEGIN
           FOR Loop2 := 1 TO 19 DO
           BEGIN
-               IF Loop2=Current THEN TheAttr := ShotgunColours.SGMailMenuSelected
-                                ELSE TheAttr := ShotgunColours.SGMailWindowText;
+               IF Loop2=Current THEN TheAttr := ShotgunColours.GSMailMenuSelected
+                                ELSE TheAttr := ShotgunColours.GSMailWindowText;
                FastWrite(' '+TheMenu[Loop2]+' ',TopLine+1+Loop2,12,TheAttr);
           END;
      END;
@@ -558,7 +558,7 @@ LABEL            ToTheMenu,ToTheShell;
           _ShowCursor;
           InitializeModem;
           StatusWindow('Waiting for a call or event');
-          WriteNodeFile('SGMail','Waiting For A Caller','');
+          WriteNodeFile('GSMail','Waiting For A Caller','');
           TimerWait := 20;
           NewTimerSecs(InitTimer,TimerWait);
           LastTime := '';
@@ -592,7 +592,7 @@ BEGIN
      TheMenu[14] := 'Transmit Files      Alt+T';
      TheMenu[15] := 'Undialable Systems  Alt+U';
      TheMenu[16] := 'View Fax Base       Alt+V';
-     TheMenu[17] := 'Quit SGMail         Alt+X';
+     TheMenu[17] := 'Quit GSMail         Alt+X';
      TheMenu[18] := 'Shell To DOS        F2   ';
      TheMenu[19] := 'Mail History        ?    ';
      TopLine := Window1-11;
@@ -607,16 +607,16 @@ BEGIN
          59..68: {F1-F10  Programmable Function Keys}
               BEGIN
                 CASE Ord(C) OF
-                59:  Temp := FunctionKeys.SGMail_F1;
-                60:  Temp := FunctionKeys.SGMail_F2;
-                61:  Temp := FunctionKeys.SGMail_F3;
-                62:  Temp := FunctionKeys.SGMail_F4;
-                63:  Temp := FunctionKeys.SGMail_F5;
-                64:  Temp := FunctionKeys.SGMail_F6;
-                65:  Temp := FunctionKeys.SGMail_F7;
-                66:  Temp := FunctionKeys.SGMail_F8;
-                67:  Temp := FunctionKeys.SGMail_F9;
-                68:  Temp := FunctionKeys.SGMail_F10;
+                59:  Temp := FunctionKeys.GSMail_F1;
+                60:  Temp := FunctionKeys.GSMail_F2;
+                61:  Temp := FunctionKeys.GSMail_F3;
+                62:  Temp := FunctionKeys.GSMail_F4;
+                63:  Temp := FunctionKeys.GSMail_F5;
+                64:  Temp := FunctionKeys.GSMail_F6;
+                65:  Temp := FunctionKeys.GSMail_F7;
+                66:  Temp := FunctionKeys.GSMail_F8;
+                67:  Temp := FunctionKeys.GSMail_F9;
+                68:  Temp := FunctionKeys.GSMail_F10;
                 END;
                 IF _UpperCase(Temp)='%MENU' THEN GOTO ToTheMenu;
                 IF _UpperCase(Temp)='%SHELL' THEN GOTO ToTheShell;
@@ -674,7 +674,7 @@ BEGIN
                 SetOrigVideoMode;
                 bsOffHook(NodeInfo.OffHook);
                 WHILE KeyPressed DO Crap := ReadKey;
-                DoExec(Shotgun_Directory+'\BIN\SGEDIT.EXE','-N'+_String(SimNode),
+                DoExec(Shotgun_Directory+'\BIN\GSEDIT.EXE','-N'+_String(SimNode),
                        SwapMethod,Shotgun_Directory+'\NODE'+_String(SimNode));
                 SetOurVideoMode;
                 ChDir(Shotgun_Directory);
@@ -702,7 +702,7 @@ BEGIN
                   StatusWindow('Initializing Modem');
                   InitializeModem;
                   StatusWindow('Waiting for a call or event');
-                  WriteNodeFile('SGMail','Waiting For A Caller','');
+                  WriteNodeFile('GSMail','Waiting For A Caller','');
                   TimerWait := 20;
                   NewTimerSecs(InitTimer,TimerWait);
                 END;
@@ -734,7 +734,7 @@ BEGIN
                 StatusWindow('Initializing Modem');
                 InitializeModem;
                 StatusWindow('Waiting for a call or event');
-                WriteNodeFile('SGMail','Waiting For A Caller','');
+                WriteNodeFile('GSMail','Waiting For A Caller','');
                 TimerWait := 20;
                 NewTimerSecs(InitTimer,TimerWait);
                 ResetDialTimer;
@@ -776,7 +776,7 @@ BEGIN
                 StatusWindow('Initializing Modem');
                 InitializeModem;
                 StatusWindow('Waiting for a call or event');
-                WriteNodeFile('SGMail','Waiting For A Caller','');
+                WriteNodeFile('GSMail','Waiting For A Caller','');
                 TimerWait := 20;
                 NewTimerSecs(InitTimer,TimerWait);
                 ResetDialTimer;
@@ -787,7 +787,7 @@ BEGIN
                 SetOrigVideoMode;
                 bsOffHook(NodeInfo.OffHook);
                 WHILE KeyPressed DO Crap := ReadKey;
-                DoExec('SGCONFIG.EXE','-N'+_String(SimNode),SwapMethod,
+                DoExec('GSCONFIG.EXE','-N'+_String(SimNode),SwapMethod,
                        Shotgun_Directory+'\NODE'+_String(SimNode));
                 SetOurVideoMode;
                 ChDir(Shotgun_Directory);
@@ -820,7 +820,7 @@ BEGIN
                 StatusWindow('Hanging Up Modem');
                 bsOnHook(NodeInfo.OnHook);
                 StatusWindow('Waiting for a call or event');
-                WriteNodeFile('SGMail','Waiting For A Caller','');
+                WriteNodeFile('GSMail','Waiting For A Caller','');
                 TimerWait := 20;
                 NewTimerSecs(InitTimer,TimerWait);
                 ResetDialTimer;
@@ -831,7 +831,7 @@ BEGIN
            ToTheMenu:
            SaveScreen(1);
            _HideCursor;
-           DrawWindow(9,TopLine,41,TopLine+22,'SGMAIL MENU',True);
+           DrawWindow(9,TopLine,41,TopLine+22,'GSMAIL MENU',True);
            InvertedBox(11,TopLine+1,39,TopLine+21);
            Current := 1;
            DrawTheMenu;
@@ -906,7 +906,7 @@ BEGIN
            SetOrigVideoMode;
            bsOffHook(NodeInfo.OffHook);
            WHILE KeyPressed DO Crap := ReadKey;
-           PutEnviro('PROMPT=Enter EXIT to return to SGMail!!$_$p$g');
+           PutEnviro('PROMPT=Enter EXIT to return to GSMail!!$_$p$g');
            DoExec(GetEnv('COMSPEC'),' /C '+GetEnv('COMSPEC'),SwapMethod,
                   Shotgun_Directory+'\NODE'+_String(SimNode));
            SetOurVideoMode;
@@ -958,17 +958,17 @@ VAR  Work    : String;
 
      PROCEDURE DrawIt;
      BEGIN
-          FastWrite(_PadRight(Work,50),CurYPos,16,ShotgunColours.SGMailWindowText);
+          FastWrite(_PadRight(Work,50),CurYPos,16,ShotgunColours.GSMailWindowText);
           IF CurYPos=15 THEN
           BEGIN
             Get(16,12,67,15);
             Put(16,11);
-            FastWrite('File(s):',CurYPos,7,ShotgunColours.SGMailWindowText);
+            FastWrite('File(s):',CurYPos,7,ShotgunColours.GSMailWindowText);
           END
           ELSE
           BEGIN
             INC(CurYPos);
-            FastWrite('File(s):',CurYPos,7,ShotgunColours.SGMailWindowText);
+            FastWrite('File(s):',CurYPos,7,ShotgunColours.GSMailWindowText);
           END;
      END;
 
@@ -977,7 +977,7 @@ BEGIN
      SaveScreen(1);
      DrawWindow(3,9,70,17,Title,True);
      InvertedBox(5,10,68,16);
-     FastWrite('File(s):',11,7,ShotgunColours.SGMailWindowText);
+     FastWrite('File(s):',11,7,ShotgunColours.GSMailWindowText);
      Entered := 0;
      IF Not(IsTransmit) THEN
      BEGIN
@@ -987,7 +987,7 @@ BEGIN
      END;
      CurYPos := 11;
      REPEAT
-       Work := _UpperCase(aGetInput(16,CurYPos,50,ShotgunColours.SGMailDataEntry,'',True,True));
+       Work := _UpperCase(aGetInput(16,CurYPos,50,ShotgunColours.GSMailDataEntry,'',True,True));
        IF ((Work<>'') AND (Work<>#27)) THEN
        BEGIN
          IF Work[1]='@' THEN
@@ -1078,8 +1078,8 @@ LABEL             Skip1,Skip2,PassOn;
                IF (TheOne<=NumItems) THEN
                BEGIN
                     TTemp := PickList^[TheOne].Text;
-                    IF TheOne=Current THEN FastWrite(TTemp,LLoop,3,ShotgunColours.SGMailMenuSelected)
-                                      ELSE FastWrite(TTemp,LLoop,3,ShotgunColours.SGMailWindowText);
+                    IF TheOne=Current THEN FastWrite(TTemp,LLoop,3,ShotgunColours.GSMailMenuSelected)
+                                      ELSE FastWrite(TTemp,LLoop,3,ShotgunColours.GSMailWindowText);
                END;
                INC(TheOne);
           END;
@@ -1157,13 +1157,13 @@ BEGIN
           YYPos := 2;
           DrawWindow(2,2,78,24,'Mail Session Queue',True);
      END;
-     FastWrite(_PadRight('  [  ] Immediate  [  ]       [  ]',80),Window2+7,1,ShotgunColours.SGMailWindowText);
-     FastWrite('F1',Window2+7,4,ShotgunColours.SGMailWindowHighlight);
-     FastWrite('F2',Window2+7,20,ShotgunColours.SGMailWindowHighlight);
-     FastWrite('F3',Window2+7,31,ShotgunColours.SGMailWindowHighlight);
-     FastWrite('Immediate',Window2+7,8,ShotgunColours.SGMailWindowText);
-     FastWrite('Hold',Window2+7,24,ShotgunColours.SGMailWindowText);
-     FastWrite('Mark As Sent',Window2+7,35,ShotgunColours.SGMailWindowText);
+     FastWrite(_PadRight('  [  ] Immediate  [  ]       [  ]',80),Window2+7,1,ShotgunColours.GSMailWindowText);
+     FastWrite('F1',Window2+7,4,ShotgunColours.GSMailWindowHighlight);
+     FastWrite('F2',Window2+7,20,ShotgunColours.GSMailWindowHighlight);
+     FastWrite('F3',Window2+7,31,ShotgunColours.GSMailWindowHighlight);
+     FastWrite('Immediate',Window2+7,8,ShotgunColours.GSMailWindowText);
+     FastWrite('Hold',Window2+7,24,ShotgunColours.GSMailWindowText);
+     FastWrite('Mark As Sent',Window2+7,35,ShotgunColours.GSMailWindowText);
      _HideCursor;
      Top     := 1;
      Current := 1;
@@ -1326,8 +1326,8 @@ LABEL             Skip1,Skip2;
                IF (TheOne<=NumItems) THEN
                BEGIN
                     TTemp := PickList^[TheOne].Text;
-                    IF TheOne=Current THEN FastWrite(TTemp,LLoop,3,ShotgunColours.SGMailMenuSelected)
-                                      ELSE FastWrite(TTemp,LLoop,3,ShotgunColours.SGMailWindowText);
+                    IF TheOne=Current THEN FastWrite(TTemp,LLoop,3,ShotgunColours.GSMailMenuSelected)
+                                      ELSE FastWrite(TTemp,LLoop,3,ShotgunColours.GSMailWindowText);
                END;
                INC(TheOne);
           END;
@@ -1498,8 +1498,8 @@ LABEL             Skip1,Skip2;
                IF (TheOne<=NumItems) THEN
                BEGIN
                     TTemp := PickList^[TheOne].Text;
-                    IF TheOne=Current THEN FastWrite(TTemp,LLoop,5,ShotgunColours.SGMailMenuSelected)
-                                      ELSE FastWrite(TTemp,LLoop,5,ShotgunColours.SGMailWindowText);
+                    IF TheOne=Current THEN FastWrite(TTemp,LLoop,5,ShotgunColours.GSMailMenuSelected)
+                                      ELSE FastWrite(TTemp,LLoop,5,ShotgunColours.GSMailWindowText);
                END;
                INC(TheOne);
           END;
@@ -1659,9 +1659,9 @@ BEGIN
      SaveScreen(1);
      DrawWindow(5,9,68,16,Title,True);
      InvertedBox(7,10,66,14);
-     FastWrite('Address:',12,11,ShotgunColours.SGMailWindowText);
-     FastWrite('Enter the full zone:net/node number or user searchstring',15,9,ShotgunColours.SGMailWindowText);
-     Work := _UpperCase(aGetInput(22,12,40,ShotgunColours.SGMailDataEntry,Stuff,True,True));
+     FastWrite('Address:',12,11,ShotgunColours.GSMailWindowText);
+     FastWrite('Enter the full zone:net/node number or user searchstring',15,9,ShotgunColours.GSMailWindowText);
+     Work := _UpperCase(aGetInput(22,12,40,ShotgunColours.GSMailDataEntry,Stuff,True,True));
      RestoreScreen(1);
      GotoXYAbs(OldXY);
      _ShowCursor;

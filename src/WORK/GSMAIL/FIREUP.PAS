@@ -52,7 +52,7 @@ BEGIN
           ClrScr;
           WRITELN('Invalid startup parameter.');
           WRITELN;
-          WRITELN(' USAGE:  SGMAIL -Nxxx     (xxx-node number)');
+          WRITELN(' USAGE:  GSMAIL -Nxxx     (xxx-node number)');
           WRITELN;
           Halt(1);
      END;
@@ -77,7 +77,7 @@ BEGIN
 
      get_params;
      LoadVars;
-     CheckRegistered(MailerInfo.Outpkts,'SGMail');
+     CheckRegistered(MailerInfo.Outpkts,'GSMail');
      IF NOT(IsItRegistered) THEN
      BEGIN
           FNodeIndx.Done;
@@ -130,23 +130,23 @@ BEGIN
           WRITELN('Please check your com port');
           WRITELN('settings....');
           WRITELN;
-          WRITELN('SGMail exiting.....');
+          WRITELN('GSMail exiting.....');
           WRITELN;
           TextColor(7);
           Halt(1);
      END;
      bsOnHook(NodeInfo.OnHook);
      DrawTheScreen;
-     FastWrite('#'+_String(SimNode),1,8,ShotgunColours.SGMailStatusHighlight);
+     FastWrite('#'+_String(SimNode),1,8,ShotgunColours.GSMailStatusHighlight);
      ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork);
      SEEK(FNetwork,CurrentAka-1);
      READ(FNetwork,Network);
      CLOSE(FNetwork);
-     FastWrite(AddressToString(NetWork.Net_Address),2,8,ShotgunColours.SGMailStatusHighlight);
-     FastWrite(LastUserOnline.Name,1,34,ShotgunColours.SGMailStatusHighlight);
-     FastWrite(LastUserOnline.TimeOn,2,34,ShotgunColours.SGMailStatusHighlight);
-     FastWrite(LastUserOnline.TimeOff,3,34,ShotgunColours.SGMailStatusHighlight);
+     FastWrite(AddressToString(NetWork.Net_Address),2,8,ShotgunColours.GSMailStatusHighlight);
+     FastWrite(LastUserOnline.Name,1,34,ShotgunColours.GSMailStatusHighlight);
+     FastWrite(LastUserOnline.TimeOn,2,34,ShotgunColours.GSMailStatusHighlight);
+     FastWrite(LastUserOnline.TimeOff,3,34,ShotgunColours.GSMailStatusHighlight);
      LastCalls;
      SystemInformation(True);
      {Operating System}
@@ -187,7 +187,7 @@ BEGIN
      CallingOut   := False;
      ReceivedMail := False;
      StatusWindow('Waiting for a call or event');
-     WriteNodeFile('SGMail','Waiting For A Caller','');
+     WriteNodeFile('GSMail','Waiting For A Caller','');
      CfgRescanTime := _FileDate(MailerInfo.Semaphores+'CFGSCAN.NOW');
      MsgRescanTime := _FileDate(MailerInfo.Semaphores+'RESCAN.NOW');
 END;
@@ -216,7 +216,7 @@ END;
 
 PROCEDURE LoadVars;
 BEGIN
-     ASSIGN(FConfigSetup,Shotgun_Directory+'\DATA\SGCONFIG.DAT');
+     ASSIGN(FConfigSetup,Shotgun_Directory+'\DATA\GSCONFIG.DAT');
      RESET(FConfigSetup);
      READ(FConfigSetup,ConfigSetup);
      CLOSE(FConfigSetup);
@@ -251,7 +251,7 @@ BEGIN
      RESET(FShotgunColours);
      READ(FShotgunColours,ShotgunColours);
      CLOSE(FShotgunColours);
-     FillChar(Progress,SizeOf(Progress),ShotgunColours.SGMailProgressChar);
+     FillChar(Progress,SizeOf(Progress),ShotgunColours.GSMailProgressChar);
      Progress[0] := #40;
 
      ASSIGN(FFunctionKeys,Shotgun_Directory+'\DATA\FKEYS.DAT');

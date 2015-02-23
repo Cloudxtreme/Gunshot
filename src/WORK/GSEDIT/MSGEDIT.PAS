@@ -1021,7 +1021,7 @@ BEGIN
                                  OldY := WhereY;
                                  Save_Screen;
                                  ClrScr;
-                                 PutEnviro('PROMPT=Enter EXIT to return to SGEdit!!$_$p$g');
+                                 PutEnviro('PROMPT=Enter EXIT to return to GSEdit!!$_$p$g');
                                  DoExec(GetEnv('COMSPEC'),' /C '+GetEnv('COMSPEC'),SwapMethod,MailerInfo.Outpkts);
                                  ChDir(Shotgun_Directory);
                                  Restore_Screen;

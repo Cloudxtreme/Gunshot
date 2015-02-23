@@ -383,7 +383,7 @@ BEGIN
           ClrScr;
           TEXTCOLOR(4);
           WRITELN('CRITICAL ERROR!!! Missing a required data file in the '+DATA_Directory+'\');
-          WRITELN('directory. Please run SGCONFIG.EXE to correct the problem.');
+          WRITELN('directory. Please run GSCONFIG.EXE to correct the problem.');
           WRITELN;
           TEXTCOLOR(7);
           Halt;
@@ -575,9 +575,9 @@ BEGIN
                IF NOT(LocalLogon) THEN
                BEGIN
                     Comm_DeInit;
-                    PPointer := DoExec(BIN_Directory+'\SGXCOMM.EXE',CommandLine,SwappingMethod,NODE_Directory);
+                    PPointer := DoExec(BIN_Directory+'\GSXCOMM.EXE',CommandLine,SwappingMethod,NODE_Directory);
                END
-               ELSE PPointer := DoExec(BIN_Directory+'\SGXLOCAL.EXE',CommandLine,SwappingMethod,NODE_Directory);
+               ELSE PPointer := DoExec(BIN_Directory+'\GSXLOCAL.EXE',CommandLine,SwappingMethod,NODE_Directory);
                IF PPointer=0 THEN PPointer := DosExitCode;
                Halt(PPointer);
           END;

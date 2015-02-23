@@ -159,7 +159,7 @@ BEGIN
      IF (Temp='-?') THEN
      BEGIN
           WRITELN;
-          WRITELN('  Syntax:       SG2GED.EXE -TAGGED<usernum>');
+          WRITELN('  Syntax:       GS2GED.EXE -TAGGED<usernum>');
           WRITELN;
           WRITELN('                    -TAGGED    Optionally list only user tagged areas');
           WRITELN;

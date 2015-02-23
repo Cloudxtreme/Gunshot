@@ -196,7 +196,7 @@ BEGIN
      REWRITE(FPickListFile);
      IF PickListItems<>0 THEN Reload;
      CLOSE(FPickListFile);
-     SetUpPickList('SGMAIL EVENTS - ERRORLEVEL EXIT - NODE #'+_String(CurrentNode));
+     SetUpPickList('GSMAIL EVENTS - ERRORLEVEL EXIT - NODE #'+_String(CurrentNode));
      REPEAT
            Action := DoPickList;
            CASE Action OF
@@ -439,7 +439,7 @@ BEGIN
      REWRITE(FPickListFile);
      IF PickListItems<>0 THEN Reload;
      CLOSE(FPickListFile);
-     SetUpPickList('SGMAIL EVENTS - MAILER NODE BUSY - NODE #'+_String(CurrentNode));
+     SetUpPickList('GSMAIL EVENTS - MAILER NODE BUSY - NODE #'+_String(CurrentNode));
      REPEAT
            Action := DoPickList;
            CASE Action OF
@@ -695,7 +695,7 @@ BEGIN
      REWRITE(FPickListFile);
      IF PickListItems<>0 THEN Reload;
      CLOSE(FPickListFile);
-     SetUpPickList('SGMAIL EVENTS - POLL ANOTHER NODE - NODE #'+_String(CurrentNode));
+     SetUpPickList('GSMAIL EVENTS - POLL ANOTHER NODE - NODE #'+_String(CurrentNode));
      REPEAT
            Action := DoPickList;
            CASE Action OF
@@ -938,7 +938,7 @@ BEGIN
      REWRITE(FPickListFile);
      IF PickListItems<>0 THEN Reload;
      CLOSE(FPickListFile);
-     SetUpPickList('SGMAIL EVENTS - MAIL-ONLY - NODE #'+_String(CurrentNode));
+     SetUpPickList('GSMAIL EVENTS - MAIL-ONLY - NODE #'+_String(CurrentNode));
      REPEAT
            Action := DoPickList;
            CASE Action OF
@@ -1024,7 +1024,7 @@ BEGIN
      SEEK(FCallRouting,Number-1);
      READ(FCallRouting,CallRouting);
      CLOSE(FCallRouting);
-     DrawWindow(8,8,70,15,'EDIT SGMAIL CALL ROUTING ENTRY',True);
+     DrawWindow(8,8,70,15,'EDIT GSMAIL CALL ROUTING ENTRY',True);
      AddObject(28,10,1,20,CallRouting.SourceAddr,True);
      AddObject(28,11,1,20,AddressToString(CallRouting.DestAddr),True);
      AddButton(60,13,' QUIT ',True,1,16);
@@ -1151,7 +1151,7 @@ BEGIN
      REWRITE(FPickListFile);
      IF PickListItems<>0 THEN Reload;
      CLOSE(FPickListFile);
-     SetUpPickList('SGMAIL CALL ROUTING CONFIGURATION');
+     SetUpPickList('GSMAIL CALL ROUTING CONFIGURATION');
      REPEAT
            Action := DoPickList;
            CASE Action OF
@@ -1407,7 +1407,7 @@ BEGIN
      REWRITE(FPickListFile);
      IF PickListItems<>0 THEN Reload;
      CLOSE(FPickListFile);
-     SetUpPickList('SGMAIL EVENTS - SEND MAIL (UNHOLD) - NODE #'+_String(CurrentNode));
+     SetUpPickList('GSMAIL EVENTS - SEND MAIL (UNHOLD) - NODE #'+_String(CurrentNode));
      REPEAT
            Action := DoPickList;
            CASE Action OF
@@ -1863,7 +1863,7 @@ BEGIN
      REWRITE(FPickListFile);
      IF PickListItems<>0 THEN Reload;
      CLOSE(FPickListFile);
-     SetUpPickList('SGMAIL EVENTS - NO FILE REQUESTS - NODE #'+_String(CurrentNode));
+     SetUpPickList('GSMAIL EVENTS - NO FILE REQUESTS - NODE #'+_String(CurrentNode));
      REPEAT
            Action := DoPickList;
            CASE Action OF

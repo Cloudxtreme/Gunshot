@@ -24,7 +24,7 @@ BEGIN
      SEEK(FNetwork,CurrentAka-1);
      READ(FNetwork,Network);
      CLOSE(FNetwork);
-     FastWrite(_PadRight(AddressToString(NetWork.Net_Address),20),2,8,ShotgunColours.SGMailStatusHighlight);
+     FastWrite(_PadRight(AddressToString(NetWork.Net_Address),20),2,8,ShotgunColours.GSMailStatusHighlight);
 END;
 
 
@@ -75,26 +75,26 @@ VAR  Temp : String;
 
      PROCEDURE DateStuff;
      BEGIN
-          FastWrite(_PadRight(_DayOfWeek+' '+_GetPrettyDate,27),Window2+5,23,ShotgunColours.SGMailTimeDateData);
-          FastWrite(_PadRight(_GetPrettyTime,8),Window2+5,9,ShotgunColours.SGMailTimeDateData);
+          FastWrite(_PadRight(_DayOfWeek+' '+_GetPrettyDate,27),Window2+5,23,ShotgunColours.GSMailTimeDateData);
+          FastWrite(_PadRight(_GetPrettyTime,8),Window2+5,9,ShotgunColours.GSMailTimeDateData);
           {Users}
           IF MailerInfo.MailOnly THEN Temp := ' ' ELSE Temp := 'þ';
-          FastWrite(Temp,5,4,ShotgunColours.SGMailToggles);
+          FastWrite(Temp,5,4,ShotgunColours.GSMailToggles);
           {Faxes}
           IF MailerInfo.HandleFaxes THEN Temp := 'þ' ELSE Temp := ' ';
-          FastWrite(Temp,6,4,ShotgunColours.SGMailToggles);
+          FastWrite(Temp,6,4,ShotgunColours.GSMailToggles);
           {Freqs}
           IF MailerInfo.AllowFreqs THEN Temp := 'þ' ELSE Temp := ' ';
-          FastWrite(Temp,7,4,ShotgunColours.SGMailToggles);
+          FastWrite(Temp,7,4,ShotgunColours.GSMailToggles);
           {EMSI}
           IF MailerInfo.EnableEMSI THEN Temp := 'þ' ELSE Temp := ' ';
-          FastWrite(Temp,5,14,ShotgunColours.SGMailToggles);
+          FastWrite(Temp,5,14,ShotgunColours.GSMailToggles);
           {YooHoo}
           IF MailerInfo.EnableYooHoo THEN Temp := 'þ' ELSE Temp := ' ';
-          FastWrite(Temp,6,14,ShotgunColours.SGMailToggles);
+          FastWrite(Temp,6,14,ShotgunColours.GSMailToggles);
           {ZedZap}
           IF Mailer2Info.UseZedZapTransfers THEN Temp := 'þ' ELSE Temp := ' ';
-          FastWrite(Temp,7,14,ShotgunColours.SGMailToggles);
+          FastWrite(Temp,7,14,ShotgunColours.GSMailToggles);
      END;
 
 BEGIN
@@ -103,28 +103,28 @@ BEGIN
           KillSaver;
           DataChanged := False;
           {Clear Out Old Stuff}
-          FastWrite(_PadRight('',39),Window2+1,2,ShotgunColours.SGMailInfoHighlight);
-          FastWrite(_PadRight('',39),Window2+2,2,ShotgunColours.SGMailInfo);
-          FastWrite(_PadRight('',39),Window2+3,2,ShotgunColours.SGMailInfo);
-          FastWrite(_PadRight('',38),Window2+1,42,ShotgunColours.SGMailInfoHighlight);
-          FastWrite(_PadRight('',38),Window2+2,42,ShotgunColours.SGMailInfo);
-          FastWrite(_PadRight('',38),Window2+3,42,ShotgunColours.SGMailInfo);
+          FastWrite(_PadRight('',39),Window2+1,2,ShotgunColours.GSMailInfoHighlight);
+          FastWrite(_PadRight('',39),Window2+2,2,ShotgunColours.GSMailInfo);
+          FastWrite(_PadRight('',39),Window2+3,2,ShotgunColours.GSMailInfo);
+          FastWrite(_PadRight('',38),Window2+1,42,ShotgunColours.GSMailInfoHighlight);
+          FastWrite(_PadRight('',38),Window2+2,42,ShotgunColours.GSMailInfo);
+          FastWrite(_PadRight('',38),Window2+3,42,ShotgunColours.GSMailInfo);
           {CALL TOTALS}
-          FastWrite(_PadRight(_String(LCallers.MailCalls),5),1,76,ShotgunColours.SGMailStatusHighlight);
-          FastWrite(_PadRight(_String(LCallers.BBSCalls),5),2,76,ShotgunColours.SGMailStatusHighlight);
-          FastWrite(_PadRight(_String(LCallers.FAXCalls),5),3,76,ShotgunColours.SGMailStatusHighlight);
+          FastWrite(_PadRight(_String(LCallers.MailCalls),5),1,76,ShotgunColours.GSMailStatusHighlight);
+          FastWrite(_PadRight(_String(LCallers.BBSCalls),5),2,76,ShotgunColours.GSMailStatusHighlight);
+          FastWrite(_PadRight(_String(LCallers.FAXCalls),5),3,76,ShotgunColours.GSMailStatusHighlight);
           {FROM}
-          FastWrite(_Mid(LCallers.FrmSystem,1,38),Window2+1,3,ShotgunColours.SGMailInfoHighlight);
-          FastWrite(_Mid(LCallers.FrmLocation,1,38),Window2+2,3,ShotgunColours.SGMailInfo);
-          FastWrite(LCallers.FrmCallDate+', '+LCallers.FrmCallTime,Window2+3,3,ShotgunColours.SGMailInfo);
+          FastWrite(_Mid(LCallers.FrmSystem,1,38),Window2+1,3,ShotgunColours.GSMailInfoHighlight);
+          FastWrite(_Mid(LCallers.FrmLocation,1,38),Window2+2,3,ShotgunColours.GSMailInfo);
+          FastWrite(LCallers.FrmCallDate+', '+LCallers.FrmCallTime,Window2+3,3,ShotgunColours.GSMailInfo);
           Temp := LCallers.FrmAddress;
-          FastWrite(Temp,Window2+3,40-LENGTH(Temp),ShotgunColours.SGMailInfo);
+          FastWrite(Temp,Window2+3,40-LENGTH(Temp),ShotgunColours.GSMailInfo);
           {TO}
-          FastWrite(_Mid(LCallers.ToSystem,1,37),Window2+1,43,ShotgunColours.SGMailInfoHighlight);
-          FastWrite(_Mid(LCallers.ToLocation,1,37),Window2+2,43,ShotgunColours.SGMailInfo);
-          FastWrite(LCallers.ToCallDate+', '+LCallers.ToCallTime,Window2+3,43,ShotgunColours.SGMailInfo);
+          FastWrite(_Mid(LCallers.ToSystem,1,37),Window2+1,43,ShotgunColours.GSMailInfoHighlight);
+          FastWrite(_Mid(LCallers.ToLocation,1,37),Window2+2,43,ShotgunColours.GSMailInfo);
+          FastWrite(LCallers.ToCallDate+', '+LCallers.ToCallTime,Window2+3,43,ShotgunColours.GSMailInfo);
           Temp := LCallers.ToAddress;
-          FastWrite(Temp,Window2+3,79-LENGTH(Temp),ShotgunColours.SGMailInfo);
+          FastWrite(Temp,Window2+3,79-LENGTH(Temp),ShotgunColours.GSMailInfo);
      END
      ELSE TimeSlice;
      IF IsFirst THEN

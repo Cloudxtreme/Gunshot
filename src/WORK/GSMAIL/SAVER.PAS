@@ -35,8 +35,8 @@ BEGIN
      IF SaverActive THEN
      BEGIN
           RestoreScreen(93);
-          FastWrite(_PadRight(_DayOfWeek+' '+_GetPrettyDate,27),Window2+5,23,ShotgunColours.SGMailTimeDateData);
-          FastWrite(_PadRight(_GetPrettyTime,8),Window2+5,9,ShotgunColours.SGMailTimeDateData);
+          FastWrite(_PadRight(_DayOfWeek+' '+_GetPrettyDate,27),Window2+5,23,ShotgunColours.GSMailTimeDateData);
+          FastWrite(_PadRight(_GetPrettyTime,8),Window2+5,9,ShotgunColours.GSMailTimeDateData);
           GotoXYAbs(SaverCurXY);
           IF NOT(DialWindowActive) THEN _ShowCursor;
           NewTimerSecs(SaverTimer,Mailer2Info.BlankerTimeout);
@@ -71,7 +71,7 @@ VAR  Loop : Word;
             CASE WhichSaver OF
             0:   BEGIN
                    FastWrite('ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿',SaverY,SaverX,TheAttr);
-                   FastWrite('³ SGMail Waiting... ³',SaverY+1,SaverX,TheAttr);
+                   FastWrite('³ GSMail Waiting... ³',SaverY+1,SaverX,TheAttr);
                    FastWrite('ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ',SaverY+2,SaverX,TheAttr);
                  END;
             1:   BEGIN
@@ -127,7 +127,7 @@ VAR  Loop : Word;
             CASE WhichSaver OF
             0:   BEGIN
                    FastWrite('ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿',SaverY,SaverX,TheAttr);
-                   FastWrite('³ SGMail Waiting... ³',SaverY+1,SaverX,TheAttr);
+                   FastWrite('³ GSMail Waiting... ³',SaverY+1,SaverX,TheAttr);
                    FastWrite('ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ',SaverY+2,SaverX,TheAttr);
                  END;
             1:   BEGIN

@@ -26,7 +26,7 @@ VAR  AllDone : Boolean;
      TopLine : Word;
 BEGIN
      TopLine := Window1-3;
-     WriteNodeFile('SGMail','Node Temporarily Offline','');
+     WriteNodeFile('GSMail','Node Temporarily Offline','');
      WhereXYAbs(OldXY);
      _HideCursor;
      SaveScreen(1);
@@ -34,7 +34,7 @@ BEGIN
      IF IsExternal THEN DrawWindow(20,TopLine,67,TopLine+4,'BUSY EVENT - EXTERNAL PROCESS',True)
                    ELSE DrawWindow(20,TopLine,67,TopLine+4,'BUSY EVENT',True);
      InvertedBox(22,TopLine+1,65,TopLine+3);
-     FastWrite('Press ESC to force an end to this event.',TopLine+2,24,ShotgunColours.SGMailWindowText);
+     FastWrite('Press ESC to force an end to this event.',TopLine+2,24,ShotgunColours.GSMailWindowText);
      AllDone := False;
      REPEAT
            IF KeyPressed THEN
@@ -59,8 +59,8 @@ BEGIN
                    THEN AllDone := True
                    ELSE TimeSlice;
            END;
-           FastWrite(_PadRight(_DayOfWeek+' '+_GetPrettyDate,27),Window2+5,23,ShotgunColours.SGMailTimeDateData);
-           FastWrite(_PadRight(_GetPrettyTime,8),Window2+5,9,ShotgunColours.SGMailTimeDateData);
+           FastWrite(_PadRight(_DayOfWeek+' '+_GetPrettyDate,27),Window2+5,23,ShotgunColours.GSMailTimeDateData);
+           FastWrite(_PadRight(_GetPrettyTime,8),Window2+5,9,ShotgunColours.GSMailTimeDateData);
            _Delay(1000);
      UNTIL AllDone;
      RestoreScreen(1);

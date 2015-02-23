@@ -35,13 +35,13 @@ END;
 PROCEDURE UpdateConnectRate;
 BEGIN
      FastWrite(_PadRight('COM'+_String(NodeInfo.ComPort)+':'+_String(ActualBaud),11),
-               Window2+7,57,ShotgunColours.SGMailStatusHighlight);
+               Window2+7,57,ShotgunColours.GSMailStatusHighlight);
 END;
 
 
 PROCEDURE UpdateOnlineTime;
 BEGIN
-     FastWrite(OnlineTime,Window2+7,70,ShotgunColours.SGMailStatusHighlight);
+     FastWrite(OnlineTime,Window2+7,70,ShotgunColours.GSMailStatusHighlight);
 END;
 
 
@@ -51,10 +51,10 @@ BEGIN
      Textcolor(7);
      Textbackground(0);
      ClrScr;
-     WorkAttr := Trunc(ShotgunColours.SGMailStatusText/16);
+     WorkAttr := Trunc(ShotgunColours.GSMailStatusText/16);
      WorkAttr := WorkAttr*16;
      FastWrite(_PadRight('                 ³                                    ³            ³ ',80),Window2+7,1,WorkAttr);
-     FastWrite('F1 - Help',Window2+7,2,ShotgunColours.SGMailStatusText);
+     FastWrite('F1 - Help',Window2+7,2,ShotgunColours.GSMailStatusText);
      Window(1,1,80,NumLines-1);
      UpdateConnectRate;
      UpdateOnlineTime;
@@ -135,7 +135,7 @@ VAR   CurFileSize         : Longint;
 
      PROCEDURE ClearProgress;
      BEGIN
-          FastWrite('±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±',15,27,ShotgunColours.SGMailProgressBarBack);
+          FastWrite('±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±',15,27,ShotgunColours.GSMailProgressBarBack);
           pCurrent := 0;
      END;
 
@@ -145,15 +145,15 @@ BEGIN
           IF doing_receive
              THEN DrawWindow(18,8,65,17,'RECEIVING FILE(S)',True)
              ELSE DrawWindow(18,8,65,17,'SENDING FILE(S)',True);
-          FastWrite(' Protocol:                  Speed:  ',10,21,ShotgunColours.SGMailWindowText);
-          FastWrite('     File:                   Time:  ',11,21,ShotgunColours.SGMailWindowText);
-          FastWrite('     Size:                   Left:  ',12,21,ShotgunColours.SGMailWindowText);
-          FastWrite('     Sent:                    CPS:  ',13,21,ShotgunColours.SGMailWindowText);
+          FastWrite(' Protocol:                  Speed:  ',10,21,ShotgunColours.GSMailWindowText);
+          FastWrite('     File:                   Time:  ',11,21,ShotgunColours.GSMailWindowText);
+          FastWrite('     Size:                   Left:  ',12,21,ShotgunColours.GSMailWindowText);
+          FastWrite('     Sent:                    CPS:  ',13,21,ShotgunColours.GSMailWindowText);
           {Progress indicator}
           InvertedBox(25,14,58,16);
           ClearProgress;
           {Baud Rate}
-          FastWrite(_String(ActualBaud),Info.Speed[2],Info.Speed[1],ShotgunColours.SGMailWindowHighlight);
+          FastWrite(_String(ActualBaud),Info.Speed[2],Info.Speed[1],ShotgunColours.GSMailWindowHighlight);
           {Protocol}
           CurProtocol := GetProtocol(P);
           S           := ProtocolTypeString[CurProtocol];
@@ -162,7 +162,7 @@ BEGIN
           bcCrc32     : S := S+'/Crc32';
           bcCrcK      : S := S+'/Crc';
           END;
-          FastWrite(S,Info.Protocol[2],Info.Protocol[1],ShotgunColours.SGMailWindowHighlight);
+          FastWrite(S,Info.Protocol[2],Info.Protocol[1],ShotgunColours.GSMailWindowHighlight);
      END;
      {Update time online}
      IF (OnlineTime<>'Offline') THEN
@@ -185,20 +185,20 @@ BEGIN
                CurBytesTransferred := GetBytesTransferred(P);
                CurElapsedTics      := GetElapsedTics(P);
                {File Name}
-               FastWrite(_PadRight(GetFileName(P),12),Info.FileName[2],Info.FileName[1],ShotgunColours.SGMailWindowHighlight);
+               FastWrite(_PadRight(GetFileName(P),12),Info.FileName[2],Info.FileName[1],ShotgunColours.GSMailWindowHighlight);
                {File Size}
                IF CurFileSize=0 THEN S := ''
                                 ELSE S := _String(CurFileSize);
-               FastWrite(_PadRight(S,9),Info.Size[2],Info.Size[1],ShotgunColours.SGMailWindowHighlight);
+               FastWrite(_PadRight(S,9),Info.Size[2],Info.Size[1],ShotgunColours.GSMailWindowHighlight);
                {Estimated time}
                FastWrite(_PadRight(FormatMinSec(EstimateTransferSecs(P,CurFileSize)),6),
-                         Info.Time[2],Info.Time[1],ShotgunColours.SGMailWindowHighlight);
+                         Info.Time[2],Info.Time[1],ShotgunColours.GSMailWindowHighlight);
                {Time remaining}
                FastWrite(_PadRight(FormatMinSec(EstimateTransferSecs(P,CurBytesRemaining)),6),
-                         Info.Left[2],Info.Left[1],ShotgunColours.SGMailWindowHighlight);
+                         Info.Left[2],Info.Left[1],ShotgunColours.GSMailWindowHighlight);
                {Bytes Transferred}
                FastWrite(_PadRight(_String(CurBytesTransferred),9),
-                         Info.Sent[2],Info.Sent[1],ShotgunColours.SGMailWindowHighlight);
+                         Info.Sent[2],Info.Sent[1],ShotgunColours.GSMailWindowHighlight);
                {CPS}
                IF CurElapsedTics>0 THEN
                BEGIN
@@ -206,7 +206,7 @@ BEGIN
                     ActualCPS := Trunc(R/(CurElapsedTics/18.2));
                END
                ELSE ActualCPS := 0;
-               FastWrite(_PadRight(_String(ActualCPS),6),Info.CPS[2],Info.CPS[1],ShotgunColours.SGMailWindowHighlight);
+               FastWrite(_PadRight(_String(ActualCPS),6),Info.CPS[2],Info.CPS[1],ShotgunColours.GSMailWindowHighlight);
                {Progress Indicator}
                IF CurFileSize=0
                   THEN ClearProgress
@@ -400,8 +400,8 @@ VAR  Prots   : Array[1..6] Of String[17];
      BEGIN
           FOR Loop := 1 TO 6 DO
           BEGIN
-               IF Loop=Current THEN FastWrite(Prots[Loop],9+Loop,14,ShotgunColours.SGMailMenuSelected)
-                               ELSE FastWrite(Prots[Loop],9+Loop,14,ShotgunColours.SGMailWindowText);
+               IF Loop=Current THEN FastWrite(Prots[Loop],9+Loop,14,ShotgunColours.GSMailMenuSelected)
+                               ELSE FastWrite(Prots[Loop],9+Loop,14,ShotgunColours.GSMailWindowText);
           END;
      END;
 
@@ -502,8 +502,8 @@ LABEL               Tab;
                IF (Loop<=LENGTH(Drives)) THEN
                BEGIN
                     IF ((Loop=CurrentDrive) AND (NOT(Clear)))
-                       THEN FastWrite('   '+Drives[Loop]+':   ',5+Loop,5,ShotgunColours.SGMailMenuSelected)
-                       ELSE FastWrite('   '+Drives[Loop]+':   ',5+Loop,5,ShotgunColours.SGMailWindowText);
+                       THEN FastWrite('   '+Drives[Loop]+':   ',5+Loop,5,ShotgunColours.GSMailMenuSelected)
+                       ELSE FastWrite('   '+Drives[Loop]+':   ',5+Loop,5,ShotgunColours.GSMailWindowText);
                END;
           END;
      END;
@@ -539,23 +539,23 @@ LABEL               Tab;
                        THEN Temp := ' '+_PadRight(FileInfo^[Loop+Top-1].FName,13)+'<DIR>'
                        ELSE Temp := ' '+_PadRight(FileInfo^[Loop+Top-1].FName,13)+'     ';
                     IF ((Loop+Top-1=CurrentFile) AND (NOT(Clear)))
-                       THEN FastWrite(Temp,5+Loop,15,ShotgunColours.SGMailMenuSelected)
-                       ELSE FastWrite(Temp,5+Loop,15,ShotgunColours.SGMailWindowText);
+                       THEN FastWrite(Temp,5+Loop,15,ShotgunColours.GSMailMenuSelected)
+                       ELSE FastWrite(Temp,5+Loop,15,ShotgunColours.GSMailWindowText);
                END
-               ELSE FastWrite('                   ',5+Loop,15,ShotgunColours.SGMailWindowText);
+               ELSE FastWrite('                   ',5+Loop,15,ShotgunColours.GSMailWindowText);
           END;
      END;
 
      PROCEDURE RedrawPath;
      BEGIN
-          FastWrite('Current Path:',22,5,ShotgunColours.SGMailWindowHighlight);
-          FastWrite(_PadRight(TheDirectory,58),22,20,ShotgunColours.SGMailWindowHighlight);
+          FastWrite('Current Path:',22,5,ShotgunColours.GSMailWindowHighlight);
+          FastWrite(_PadRight(TheDirectory,58),22,20,ShotgunColours.GSMailWindowHighlight);
      END;
 
      PROCEDURE RedrawQueue;
      VAR  Loop : Word;
      BEGIN
-          FOR Loop := 1 TO 15 DO FastWrite(_PadRight(FileQueue^[Loop],39),5+Loop,38,ShotgunColours.SGMailWindowText);
+          FOR Loop := 1 TO 15 DO FastWrite(_PadRight(FileQueue^[Loop],39),5+Loop,38,ShotgunColours.GSMailWindowText);
      END;
 
      FUNCTION InQueue(InString: String): Boolean;
@@ -586,9 +586,9 @@ BEGIN {68}
      InvertedBox(4,5,13,21);
      InvertedBox(14,5,35,21);
      InvertedBox(36,5,77,21);
-     FastWrite('Drives ',5,5,ShotgunColours.SGMailWindowHighlight);
-     FastWrite('Files ',5,15,ShotgunColours.SGMailWindowHighlight);
-     FastWrite('Upload Queue ',5,37,ShotgunColours.SGMailWindowHighlight);
+     FastWrite('Drives ',5,5,ShotgunColours.GSMailWindowHighlight);
+     FastWrite('Files ',5,15,ShotgunColours.GSMailWindowHighlight);
+     FastWrite('Upload Queue ',5,37,ShotgunColours.GSMailWindowHighlight);
      TheDirectory := 'C:\';
      Top          := 1;
      RedrawDrives(False);
@@ -933,7 +933,7 @@ BEGIN
                                TextColor(7);
                                ClrScr;
                                WHILE KeyPressed DO Crap := ReadKey;
-                               PutEnviro('PROMPT=Enter EXIT to return to SGMail!!$_$p$g');
+                               PutEnviro('PROMPT=Enter EXIT to return to GSMail!!$_$p$g');
                                DoExec(GetEnv('COMSPEC'),' /C '+GetEnv('COMSPEC'),
                                       SwapMethod,Shotgun_Directory+'\NODE'+_String(SimNode));
                                ChDir(Shotgun_Directory);

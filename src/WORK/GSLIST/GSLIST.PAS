@@ -124,9 +124,9 @@ BEGIN
          Window(1,1,80,25);
          GotoXY(1,7);
          TextColor(7);
-         WriteLn('SGList Command Line Options:');
+         WriteLn('GSList Command Line Options:');
          WriteLn;
-         WriteLn('      SGLIST.EXE <arg> <arg> ...');
+         WriteLn('      GSLIST.EXE <arg> <arg> ...');
          WriteLn;
          WriteLn('             -DOCDROMS        : Include CD Roms in the listing.');
          WriteLn('             -ONEFILE         : Create a single text file.');
@@ -142,7 +142,7 @@ END;
 
 PROCEDURE StartUp;
 BEGIN
-     AppHeader('SGList - Filelist Generator For Shotgun Professional');
+     AppHeader('GSList - Filelist Generator For Shotgun Professional');
      GetCommandLine;
      BaseDirectory := _UpperCase(_GetFilePath(ParamStr(0)));
      Dec(BaseDirectory[0]);

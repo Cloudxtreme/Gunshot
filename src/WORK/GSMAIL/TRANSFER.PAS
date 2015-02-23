@@ -664,7 +664,7 @@ VAR  Loop : Word;
 BEGIN
      IF NumberOfQueues=MaxMailQueues THEN
      BEGIN
-          bsWriteLog('SGMail transfer queue full.',False);
+          bsWriteLog('GSMail transfer queue full.',False);
           Exit;
      END;
      IF EventType='MAIL' THEN

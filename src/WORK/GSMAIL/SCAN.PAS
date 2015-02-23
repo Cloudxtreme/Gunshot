@@ -24,7 +24,7 @@ BEGIN
      ClearOutOutpkts;
      StatusWindow('Scanning message base');
      bsWriteLog('Scanning message base',False);
-     FastWrite('   ',Window2+5,55,ShotgunColours.SGMailNewMailLight);
+     FastWrite('   ',Window2+5,55,ShotgunColours.GSMailNewMailLight);
      RescanBase;
 END;
 
@@ -48,10 +48,10 @@ BEGIN
      IF _FileExists(MailerInfo.Semaphores+'FAX.'+_String(SimNode)) THEN ThereAreFaxes := True;
      IF ThereAreFaxes THEN
      BEGIN
-          FastWrite('Fax',Window2+5,51,128+ShotgunColours.SGMailNewMailLight);
+          FastWrite('Fax',Window2+5,51,128+ShotgunColours.GSMailNewMailLight);
           DoSound(2);
      END
-     ELSE FastWrite('   ',Window2+5,51,ShotgunColours.SGMailNewMailLight);
+     ELSE FastWrite('   ',Window2+5,51,ShotgunColours.GSMailNewMailLight);
 END;
 
 
@@ -207,7 +207,7 @@ BEGIN
      BEGIN
        SaveScreen(1);
        DrawWindow(45,Window1-4,78,Window1,'OUTBOUND MAIL SCAN',True);
-       FastWrite('같같같같같같같같같같같같같같같',Window1-2,47,ShotgunColours.SGMailProgressBarBack);
+       FastWrite('같같같같같같같같같같같같같같같',Window1-2,47,ShotgunColours.GSMailProgressBarBack);
        FOR Loop := 1 TO NumMsgs DO
        BEGIN
          GetTheMessage(Loop);
@@ -361,7 +361,7 @@ BEGIN
        RestoreScreen(1);
        IF ThereAreMsgs THEN
        BEGIN
-         FastWrite('New',Window2+5,55,128+ShotgunColours.SGMailNewMailLight);
+         FastWrite('New',Window2+5,55,128+ShotgunColours.GSMailNewMailLight);
          DoSound(1);
        END;
      END;

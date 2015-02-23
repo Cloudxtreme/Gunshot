@@ -37,8 +37,8 @@ BEGIN
           IF NOT(_FileExists(BaseDirectory+'\DATA\FKEYS.DAT')) THEN
           BEGIN
                FillChar(FunctionKeys,SizeOf(FunctionKeys),0);
-               FunctionKeys.SGMail_F1 := '%MENU';
-               FunctionKeys.SGMail_F2 := '%SHELL';
+               FunctionKeys.GSMail_F1 := '%MENU';
+               FunctionKeys.GSMail_F2 := '%SHELL';
                ASSIGN(FFunctionKeys,BaseDirectory+'\DATA\FKEYS.DAT');
                REWRITE(FFunctionKeys);
                WRITE(FFunctionKeys,FunctionKeys);
@@ -816,9 +816,9 @@ BEGIN
                CLOSE(FColours2);
           END;
      END
-     ELSE IF FileName='SGCONFIG.DAT' THEN
+     ELSE IF FileName='GSCONFIG.DAT' THEN
      BEGIN
-          IF NOT(_FileExists(BaseDirectory+'\DATA\SGCONFIG.DAT')) THEN
+          IF NOT(_FileExists(BaseDirectory+'\DATA\GSCONFIG.DAT')) THEN
           BEGIN
                ConfigSetup.Vertical     := 20;
                ConfigSetup.Horizontal   := 10;
@@ -826,7 +826,7 @@ BEGIN
                ConfigSetup.AnsiEditor   := '';
                ConfigSetup.RipEditor    := '';
                ConfigSetup.PrinterModel := 1;
-               ASSIGN(FConfigSetup,BaseDirectory+'\DATA\SGCONFIG.DAT');
+               ASSIGN(FConfigSetup,BaseDirectory+'\DATA\GSCONFIG.DAT');
                REWRITE(FConfigSetup);
                WRITE(FConfigSetup,ConfigSetup);
                CLOSE(FConfigSetup);
@@ -931,7 +931,7 @@ BEGIN
      CheckFile('MAILER2.DAT');
      CheckFile('COLOURS.ANS');
      CheckFile('COLOURS.VGA');
-     CheckFile('SGCONFIG.DAT');
+     CheckFile('GSCONFIG.DAT');
      CheckFile('CALLBACK.DAT');
      CheckFile('NETWORK.DAT');
      CheckFile('ORIGINS.DAT');

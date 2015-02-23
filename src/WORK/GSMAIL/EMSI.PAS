@@ -171,7 +171,7 @@ BEGIN
      {THESE NEVER CHANGE!}
      YourSystem.LinkCodes          := '8N1,PUA';
      YourSystem.MailerProductCode  := '010E';
-     YourSystem.MailerName         := 'SGMail';
+     YourSystem.MailerName         := 'GSMail';
      YourSystem.MailerVersion      := ShotgunVersion;
      IF Pos('/Gold+',OurAppName)<>0
         THEN YourSystem.MailerSerialNumber := 'Gold+'
@@ -493,7 +493,7 @@ BEGIN
           ELSE DoZap := False;
        IF (ConnectRate<14400) THEN DoZap := False;
        _Delay(2000);
-       bsSendString('SGMail '+ShotgunVersion+#10);
+       bsSendString('GSMail '+ShotgunVersion+#10);
        IF DoEMSI THEN bsSendString(EMSI_REQ);
        IF MailerInfo.MailOnly THEN
        BEGIN

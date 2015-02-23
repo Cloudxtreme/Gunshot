@@ -1688,7 +1688,7 @@ PROCEDURE DoAreasBBSExport;
 VAR  AreaFile     : File;
      ExpFile      : String;
      C            : Char;
-     EchoTag      : _SGEchoDat_Record;
+     EchoTag      : _GSEchoDat_Record;
      BytesRead    : Word;
      LLen         : Word;
      Buffer       : Array[1..4192] Of Char;
@@ -1732,7 +1732,7 @@ BEGIN
        REWRITE(AreaFile,1);
        LLen := 0; AddTheString(';'+#$0D#$0A);
        BLOCKWRITE(AreaFile,Buffer,LLen);
-       LLen := 0; AddTheString('; AREAS.BBS File Created By SGConfig'+#$0D#$0A);
+       LLen := 0; AddTheString('; AREAS.BBS File Created By GSConfig'+#$0D#$0A);
        BLOCKWRITE(AreaFile,Buffer,LLen);
        LLen := 0; AddTheString(';'+#$0D#$0A);
        BLOCKWRITE(AreaFile,Buffer,LLen);
@@ -1747,9 +1747,9 @@ BEGIN
          2:   AddTheString('$');
          END;
          AddTheString(MessageArea.Dos_Name+' '+MessageArea.Area_Tag);
-         IF _FileExists(BaseDirectory+'\DATA\SGECHO.DAT') THEN
+         IF _FileExists(BaseDirectory+'\DATA\GSECHO.DAT') THEN
          BEGIN
-           WorkingFile.OpenFile(BaseDirectory+'\DATA\SGECHO.DAT',SetFileMode);
+           WorkingFile.OpenFile(BaseDirectory+'\DATA\GSECHO.DAT',SetFileMode);
            REPEAT
              WorkingFile.BlkRead(EchoTag,SizeOf(EchoTag),BytesRead);
              IF (BytesRead<>0) THEN

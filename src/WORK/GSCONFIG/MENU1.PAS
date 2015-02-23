@@ -41,9 +41,9 @@ END;
 
 PROCEDURE DoConfigSetup;
 BEGIN
-     CheckFile('SGCONFIG.DAT');
+     CheckFile('GSCONFIG.DAT');
      CheckFile('EXTERNAL.DAT');
-     ASSIGN(FConfigSetup,BaseDirectory+'\DATA\SGCONFIG.DAT');
+     ASSIGN(FConfigSetup,BaseDirectory+'\DATA\GSCONFIG.DAT');
      RESET(FConfigSetup);
      READ(FConfigSetup,ConfigSetup);
      CLOSE(FConfigSetup);
@@ -104,7 +104,7 @@ BEGIN
      ExternalApps.SpellChecker := _RemoveLeftSpaces(Objects^[8].Stuff);
      ExternalApps.THDProScan   := _RemoveLeftSpaces(Objects^[9].Stuff);
      _SetPixelToMickey(ConfigSetup.Horizontal,ConfigSetup.Vertical);
-     ASSIGN(FConfigSetup,BaseDirectory+'\DATA\SGCONFIG.DAT');
+     ASSIGN(FConfigSetup,BaseDirectory+'\DATA\GSCONFIG.DAT');
      REWRITE(FConfigSetup);
      WRITE(FConfigSetup,ConfigSetup);
      CLOSE(FConfigSetup);

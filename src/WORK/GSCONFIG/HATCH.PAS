@@ -104,8 +104,8 @@ VAR  OrigAddr     : AddrType;
      TFile        : Text;
      OutTic       : Outgoing_Tic;
      TicFileName  : String;
-     EchoTag      : _SGFileDat_Record;
-     FEchoTag     : File Of _SGFileDat_Record;
+     EchoTag      : _GSFileDat_Record;
+     FEchoTag     : File Of _GSFileDat_Record;
      SBF          : Text;
      Temp         : String;
 
@@ -113,7 +113,7 @@ VAR  OrigAddr     : AddrType;
      BEGIN
           ASSIGN(SBF,WorkDir+'\SBF.$$$');
           REWRITE(SBF);
-          ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+          ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
           {$I-}RESET(FEchoTag);{$I+}
           IF IOResult=0 THEN
           BEGIN
@@ -156,7 +156,7 @@ BEGIN
      UNTIL ((EOF(FFileArea)) OR (OutTic.Area<>''));
      CLOSE(FFileArea);
      MakeSeenBys;
-     ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+     ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
      {$I-}RESET(FEchoTag);{$I+}
      IF IOResult=0 THEN
      BEGIN
@@ -175,7 +175,7 @@ BEGIN
                            IF AkasMatch(Links.NetworkAddress,EchoTag.Aka) THEN
                            BEGIN
                                 OutTic.Origin := GetNetAddress(Links.AkaToUse);
-                                OutTic.Pw     := 'Pw '+_UpperCase(Links.SGFileTIC);
+                                OutTic.Pw     := 'Pw '+_UpperCase(Links.GSFileTIC);
                            END;
                      UNTIL ((EOF(FLinks)) OR (OutTic.Origin<>''));
                      CLOSE(FLinks);

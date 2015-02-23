@@ -37,8 +37,8 @@ VAR  LastRead   : Word;
      BEGIN
           IsOk := True;
           {
-          IF _Mid(InString,1,6)='SGECHO' THEN IsOk := False;
-          IF _Mid(InString,1,6)='SGFILE' THEN IsOk := False;
+          IF _Mid(InString,1,6)='GSECHO' THEN IsOk := False;
+          IF _Mid(InString,1,6)='GSFILE' THEN IsOk := False;
           IF _Mid(InString,1,7)='ARCMAIL' THEN IsOk := False;
           IF _Mid(InString,1,7)='AREAFIX' THEN IsOk := False;
           IF _Mid(InString,1,7)='AREAMGR' THEN IsOk := False;

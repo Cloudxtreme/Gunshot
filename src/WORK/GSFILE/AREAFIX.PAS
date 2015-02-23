@@ -63,12 +63,12 @@ END;
 
 
 FUNCTION YouAreConnected(AreaId: Word): Boolean;
-VAR  EchoTag   : _SGFileDat_Record;
+VAR  EchoTag   : _GSFileDat_Record;
      BytesRead : Word;
 BEGIN
-     IF _FileExists(BaseDirectory+'\DATA\SGFILE.DAT') THEN
+     IF _FileExists(BaseDirectory+'\DATA\GSFILE.DAT') THEN
      BEGIN
-       IF BufferedFile.OpenFile(BaseDirectory+'\DATA\SGFILE.DAT',SetFileMode) THEN
+       IF BufferedFile.OpenFile(BaseDirectory+'\DATA\GSFILE.DAT',SetFileMode) THEN
        BEGIN
          REPEAT
            BufferedFile.BlkRead(EchoTag,SizeOf(EchoTag),BytesRead);
@@ -93,8 +93,8 @@ END;
 
 
 PROCEDURE LinkAllAreas;
-VAR  EchoTag  : _SGFileDat_Record;
-     FEchoTag : File Of _SGFileDat_Record;
+VAR  EchoTag  : _GSFileDat_Record;
+     FEchoTag : File Of _GSFileDat_Record;
 BEGIN
      ASSIGN(FFileArea,BaseDirectory+'\DATA\FA000000.DAT');
      RESET(FFileArea);
@@ -108,7 +108,7 @@ BEGIN
            BEGIN
              EchoTag.AreaId := FileArea.AreaId;
              EchoTag.Aka    := LinksInfo.NetworkAddress;
-             ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+             ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
              {$I-}RESET(FEchoTag);{$I+}
              IF (IOResult<>0) THEN REWRITE(FEchoTag);
              SEEK(FEchoTag,FileSize(FEchoTag));
@@ -123,16 +123,16 @@ END;
 
 
 PROCEDURE UnlinkAllAreas;
-VAR  EchoTag   : _SGFileDat_Record;
-     FEchoTag  : File Of _SGFileDat_Record;
-     FEchoTag2 : File Of _SGFileDat_Record;
+VAR  EchoTag   : _GSFileDat_Record;
+     FEchoTag  : File Of _GSFileDat_Record;
+     FEchoTag2 : File Of _GSFileDat_Record;
 BEGIN
-     IF _FileExists(BaseDirectory+'\DATA\SGFILE.DAT') THEN
+     IF _FileExists(BaseDirectory+'\DATA\GSFILE.DAT') THEN
      BEGIN
-       _EraseFile(BaseDirectory+'\DATA\SGFILE.BAK');
-       _RenameFile(BaseDirectory+'\DATA\SGFILE.DAT',BaseDirectory+'\DATA\SGFILE.BAK');
-       ASSIGN(FEchoTag2,BaseDirectory+'\DATA\SGFILE.BAK');
-       ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+       _EraseFile(BaseDirectory+'\DATA\GSFILE.BAK');
+       _RenameFile(BaseDirectory+'\DATA\GSFILE.DAT',BaseDirectory+'\DATA\GSFILE.BAK');
+       ASSIGN(FEchoTag2,BaseDirectory+'\DATA\GSFILE.BAK');
+       ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
        REWRITE(FEchoTag);
        RESET(FEchoTag2);
        REPEAT
@@ -142,14 +142,14 @@ BEGIN
        CLOSE(FEchoTag2);
        ERASE(FEchoTag2);
        CLOSE(FEchoTag);
-       IF _FileSize(BaseDirectory+'\DATA\SGFILE.DAT')=0 THEN ERASE(FEchoTag);
+       IF _FileSize(BaseDirectory+'\DATA\GSFILE.DAT')=0 THEN ERASE(FEchoTag);
      END;
 END;
 
 
 FUNCTION ConnectArea(TheArea: String): Boolean;
-VAR  EchoTag  : _SGFileDat_Record;
-     FEchoTag : File Of _SGFileDat_Record;
+VAR  EchoTag  : _GSFileDat_Record;
+     FEchoTag : File Of _GSFileDat_Record;
 BEGIN
      ConnectArea := True;
      ASSIGN(FFileArea,BaseDirectory+'\DATA\FA000000.DAT');
@@ -174,7 +174,7 @@ BEGIN
                CLOSE(FFileArea);
                EchoTag.AreaId := FileArea.AreaId;
                EchoTag.Aka    := LinksInfo.NetworkAddress;
-               ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+               ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
                {$I-}RESET(FEchoTag);{$I+}
                IF IOResult<>0 THEN REWRITE(FEchoTag);
                SEEK(FEchoTag,FileSize(FEchoTag));
@@ -196,9 +196,9 @@ END;
 
 
 PROCEDURE DisconnectArea(TheArea: String);
-VAR  EchoTag   : _SGFileDat_Record;
-     FEchoTag  : File Of _SGFileDat_Record;
-     FEchoTag2 : File Of _SGFileDat_Record;
+VAR  EchoTag   : _GSFileDat_Record;
+     FEchoTag  : File Of _GSFileDat_Record;
+     FEchoTag2 : File Of _GSFileDat_Record;
 BEGIN
      ASSIGN(FFileArea,BaseDirectory+'\DATA\FA000000.DAT');
      RESET(FFileArea);
@@ -213,10 +213,10 @@ BEGIN
              IF YouAreConnected(FileArea.AreaId) THEN
              BEGIN
                CLOSE(FFileArea);
-               _EraseFile(BaseDirectory+'\DATA\SGFILE.BAK');
-               _RenameFile(BaseDirectory+'\DATA\SGFILE.DAT',BaseDirectory+'\DATA\SGFILE.BAK');
-               ASSIGN(FEchoTag2,BaseDirectory+'\DATA\SGFILE.BAK');
-               ASSIGN(FEchoTag,BaseDirectory+'\DATA\SGFILE.DAT');
+               _EraseFile(BaseDirectory+'\DATA\GSFILE.BAK');
+               _RenameFile(BaseDirectory+'\DATA\GSFILE.DAT',BaseDirectory+'\DATA\GSFILE.BAK');
+               ASSIGN(FEchoTag2,BaseDirectory+'\DATA\GSFILE.BAK');
+               ASSIGN(FEchoTag,BaseDirectory+'\DATA\GSFILE.DAT');
                REWRITE(FEchoTag);
                RESET(FEchoTag2);
                REPEAT
@@ -228,7 +228,7 @@ BEGIN
                CLOSE(FEchoTag2);
                ERASE(FEchoTag2);
                CLOSE(FEchoTag);
-               IF _FileSize(BaseDirectory+'\DATA\SGFILE.DAT')=0 THEN ERASE(FEchoTag);
+               IF _FileSize(BaseDirectory+'\DATA\GSFILE.DAT')=0 THEN ERASE(FEchoTag);
                Exit;
              END
              ELSE
@@ -293,7 +293,7 @@ BEGIN
                WRITELN(TFile,'Path '+AddressToString(NetworkInfo.Net_Address)+PathTime);
                WRITELN(TFile,'Seenby '+AddressToString(NetworkInfo.Net_Address));
                WRITELN(TFile,'Seenby '+AddressToString(LinksInfo.NetworkAddress));
-               WRITELN(TFile,'Pw '+LinksInfo.SGFileTIC);
+               WRITELN(TFile,'Pw '+LinksInfo.GSFileTIC);
                CLOSE(TFile);
                CreateAttachment(FileArea.Area_Path+FileDefs.File_Name,OutTic);
                WriteLogFile('  > Added TIC for node '+AddressToString(LinksInfo.NetworkAddress)+
@@ -347,10 +347,10 @@ VAR  Loop       : Word;
      VAR  TFile : Text;
           Crap  : String;
      BEGIN
-          IF _FileExists(BaseDirectory+'\HELP\SGFILE.HLP') THEN
+          IF _FileExists(BaseDirectory+'\HELP\GSFILE.HLP') THEN
           BEGIN
-            StartMessage('SGFile help');
-            ASSIGN(TFile,BaseDirectory+'\HELP\SGFILE.HLP');
+            StartMessage('GSFile help');
+            ASSIGN(TFile,BaseDirectory+'\HELP\GSFILE.HLP');
             RESET(TFile);
             REPEAT
               READLN(TFile,Crap);
@@ -359,7 +359,7 @@ VAR  Loop       : Word;
             CLOSE(TFile);
             EndMessage;
           END
-          ELSE WriteLogFile('  ! Areafix help file \SHOTGUN\HELP\SGFILE.HLP not found.');
+          ELSE WriteLogFile('  ! Areafix help file \SHOTGUN\HELP\GSFILE.HLP not found.');
      END;
 
      PROCEDURE SendStatusMsg;
@@ -605,13 +605,13 @@ BEGIN
            Orig := LinksInfo.NetworkAddress;
            Dest := NetworkInfo.Net_Address;
            WriteLogFile('  ? Sending basic setup information to '+AddressToString(LinksInfo.NetworkAddress));
-           StartMessage('Current SGFile setup.');
+           StartMessage('Current GSFile setup.');
            wFidoWriteString('Please check your setup to make sure these settings are correct:');
            wFidoWriteString('');
            wFidoWriteString('  Sysop Name.........:  '+LinksInfo.SysopName);
            wFidoWriteString('  Network Address....:  '+AddressToString(LinksInfo.NetworkAddress));
-           wFidoWriteString('  TIC File Password..:  '+LinksInfo.SGFileTIC);
-           wFidoWriteString('  Areafix Password...:  '+LinksInfo.SGFileAreaFix);
+           wFidoWriteString('  TIC File Password..:  '+LinksInfo.GSFileTIC);
+           wFidoWriteString('  Areafix Password...:  '+LinksInfo.GSFileAreaFix);
            CASE LinksInfo.NetmailStatus OF
            1:   wFidoWriteString('  Netmail Status.....:  None');
            2:   wFidoWriteString('  Netmail Status.....:  Hold');
@@ -626,7 +626,7 @@ BEGIN
            EndMessage;
            WriteLogFile('  ? %QUERY - Sending list of all linked areas to '+AddressToString(LinksInfo.NetworkAddress));
            ListAllLinkedAreas;
-           WriteLogFile('  ? %HELP - Sending SGFILE.HLP to '+AddressToString(LinksInfo.NetworkAddress));
+           WriteLogFile('  ? %HELP - Sending GSFILE.HLP to '+AddressToString(LinksInfo.NetworkAddress));
            SendHelp;
          END;
        UNTIL EOF(FLinksInfo);
@@ -648,7 +648,7 @@ BEGIN
          FidoMsgNum := rFidoGetMsgNumber;
          DidIt      := False;
          Temp       := _UpperCase(rFidoGetMsgTo);
-         IF ((Temp='SGFILE') OR (Temp='RAID')) THEN
+         IF ((Temp='GSFILE') OR (Temp='RAID')) THEN
          BEGIN
            IF ((NOT rFidoIsReceived) AND (NOT rFidoIsLocal)) THEN
            BEGIN
@@ -662,7 +662,7 @@ BEGIN
                REWRITE(StatusFile);
                WriteLogFile('Areafix message.: #'+_String(FidoMsgNum)+' from '+AddressToString(LinksInfo.NetworkAddress));
                Temp := _RemoveSpaces(_UpperCase(rFidoGetMsgSubject));
-               IF Temp=LinksInfo.SGFileAreaFix THEN
+               IF Temp=LinksInfo.GSFileAreaFix THEN
                BEGIN
                  REPEAT
                    More := rFidoGetString(Temp);
@@ -697,8 +697,8 @@ BEGIN
                          IF LinksInfo.AllowPassword THEN
                          BEGIN
                            LogAndStat('%PASSWORD - '+AddressToString(Orig)+' password changed to "'+Temp+'".');
-                           LinksInfo.SGFileTic     := Temp;
-                           LinksInfo.SGFileAreaFix := Temp;
+                           LinksInfo.GSFileTic     := Temp;
+                           LinksInfo.GSFileAreaFix := Temp;
                            WriteThisNode;
                          END
                          ELSE LogAndStat('%PASSWORD - Not allowed by '+AddressToString(Orig));
@@ -707,7 +707,7 @@ BEGIN
                        BEGIN
                          IF LinksInfo.AllowHelp THEN
                          BEGIN
-                           LogAndStat('%HELP - Sending SGFILE.HLP to '+AddressToString(Orig));
+                           LogAndStat('%HELP - Sending GSFILE.HLP to '+AddressToString(Orig));
                            SendHelp;
                          END
                          ELSE LogAndStat('%HELP - Not allowed by '+AddressToString(Orig));
@@ -810,7 +810,7 @@ BEGIN
                BEGIN
                  LogAndStat('Areafix password from '+AddressToString(Orig)+' is incorrect.');
                  WriteLogFile('  ! Areafix password from '+AddressToString(Orig)+' is incorrect.');
-                 WriteLogFile('  ! Expected: "'+LinksInfo.SGFileAreaFix+'"  Received: "'+Temp+'".');
+                 WriteLogFile('  ! Expected: "'+LinksInfo.GSFileAreaFix+'"  Received: "'+Temp+'".');
                END;
                CLOSE(StatusFile);
                IF (_FileSize(BaseDirectory+'\!21\AREAFIX.$$$')<>0) THEN SendStatusMsg;

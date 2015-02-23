@@ -4,7 +4,7 @@
 
 {$I DEFINES.INC}
 {$M 32000,0,655360}
-PROGRAM SGMailFrontEnd;
+PROGRAM GSMailFrontEnd;
 
 
 USES Sema,Globals,ApTimer,NList,Info,Misc,BsMulti,ApCom,ApPort,Crt,
@@ -52,7 +52,7 @@ BEGIN
                 Exit;
            END;
      UNTIL FoundOne;
-     WriteNodeFile('SGMail','Outbound Call','');
+     WriteNodeFile('GSMail','Outbound Call','');
      KillSaver;
      SystemInformation(False);
      DialPhone(MailQueuePointer);
@@ -116,7 +116,7 @@ BEGIN
                      StatusWindow('Initializing Modem');
                      InitializeModem;
                      StatusWindow('Waiting for a call or event');
-                     WriteNodeFile('SGMail','Waiting For A Caller','');
+                     WriteNodeFile('GSMail','Waiting For A Caller','');
                      TimerWait := 20;
                      Waiting   := False;
                      RingCount := 0;
@@ -139,7 +139,7 @@ BEGIN
      RingCount        := 0;
      NewTimerSecs(InitTimer,TimerWait);
      ResetDialTimer;
-     WriteNodeFile('SGMail','Waiting For A Caller','');
+     WriteNodeFile('GSMail','Waiting For A Caller','');
      SystemInformation(False);
      REPEAT
        SitAndWait;
@@ -157,7 +157,7 @@ BEGIN
              StatusWindow('Initializing Modem');
              InitializeModem;
              StatusWindow('Waiting for a call or event');
-             WriteNodeFile('SGMail','Waiting For A Caller','');
+             WriteNodeFile('GSMail','Waiting For A Caller','');
              TimerWait := 20;
              NewTimerSecs(InitTimer,TimerWait);
              NewTimerSecs(DialTimer,MailerInfo.RetryDelay);
@@ -197,8 +197,8 @@ BEGIN
                        BEGIN
                          RescanRequired := False;
                          ConnectRate := ErrLevel.ConnectSpeed;
-                         IF CallingOut THEN WriteNodeFile('SGMail','Outbound Connect',_String(ConnectRate))
-                                       ELSE WriteNodeFile('SGMail','Incoming Call',_String(ConnectRate));
+                         IF CallingOut THEN WriteNodeFile('GSMail','Outbound Connect',_String(ConnectRate))
+                                       ELSE WriteNodeFile('GSMail','Incoming Call',_String(ConnectRate));
                          IF ErrLevel.Immediate THEN
                          BEGIN
                            StatusWindow('Immediate Exit ErrorLevel: '+_String(ErrLevel.ErrorLevel));
@@ -235,8 +235,8 @@ BEGIN
                                bsWriteLog('Rejecting human caller at speed '+_String(ErrLevel.ConnectSpeed),False);
                                PutString(bsBBSPort,_String(ErrLevel.ConnectSpeed)+
                                          ' BPS connections are not supported on this system.'+#$0A#$0D);
-                               StatusWindow('Displaying \SHOTGUN\SGMAIL\TOOSLOW.TXT');
-                               bsWriteLog('Displaying \SHOTGUN\SGMAIL\TOOSLOW.TXT',False);
+                               StatusWindow('Displaying \SHOTGUN\GSMAIL\TOOSLOW.TXT');
+                               bsWriteLog('Displaying \SHOTGUN\GSMAIL\TOOSLOW.TXT',False);
                                SendTooSlowBanner;
                                DrainOutBuffer(bsBBSPort,Secs2Tics(60));
                                UpdateBBS2(False);
@@ -256,7 +256,7 @@ BEGIN
                                  StatusWindow('Exiting due to mail received. ErrorLevel: '+_String(MailerInfo.MailExit));
                                  bsWriteLog('Exiting due to mail received. ErrorLevel: '+_String(MailerInfo.MailExit),False);
                                  HaltCode := MailerInfo.MailExit;
-                                 WriteNodeFile('SGMail','Processing Network Mail','');
+                                 WriteNodeFile('GSMail','Processing Network Mail','');
                                  Finished := True;
                                END;
                                CreateSemaphore(3);
@@ -271,7 +271,7 @@ BEGIN
                            StatusWindow('Initializing Modem');
                            InitializeModem;
                            StatusWindow('Waiting for a call or event');
-                           WriteNodeFile('SGMail','Waiting For A Caller','');
+                           WriteNodeFile('GSMail','Waiting For A Caller','');
                          END;
                          TimerWait := 20;
                          NewTimerSecs(InitTimer,TimerWait);
@@ -299,7 +299,7 @@ BEGIN
                            StatusWindow('Initializing Modem');
                            InitializeModem;
                            StatusWindow('Waiting for a call or event');
-                           WriteNodeFile('SGMail','Waiting For A Caller','');
+                           WriteNodeFile('GSMail','Waiting For A Caller','');
                            TimerWait := 20;
                            NewTimerSecs(InitTimer,TimerWait);
                            NewTimerSecs(DialTimer,MailerInfo.RetryDelay);
@@ -404,7 +404,7 @@ BEGIN
        StatusWindow('ErrorLevel: '+_String(ExitEvent.Errorlevel));
        bsWriteLog('Exit Event: '+ExitEvent.Description,False);
        bsWriteLog('ErrorLevel: '+_String(ExitEvent.Errorlevel),False);
-       WriteNodeFile('SGMail','Running External Event','');
+       WriteNodeFile('GSMail','Running External Event','');
        bsClearInBuffer;
        bsOffHook(NodeInfo.OffHook);
        HaltCode := ExitEvent.ErrorLevel;
@@ -418,7 +418,7 @@ BEGIN
        END
        ELSE IF ((HaltCode=5) OR (HaltCode=10)) THEN
        BEGIN
-         WriteNodeFile('SGMail','Node Temporarily Offline','');
+         WriteNodeFile('GSMail','Node Temporarily Offline','');
          bsClearInBuffer;
          bsOffHook(NodeInfo.OffHook);
        END;
