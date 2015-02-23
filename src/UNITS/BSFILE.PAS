@@ -561,6 +561,7 @@ BEGIN
 END;
 
 
+{$IFDEF MSDOS}
 FUNCTION IsCDROMDrive(wDrive: Word): Boolean; ASSEMBLER;
 VAR  wTempDrive: word;
 ASM  mov  ax,wDrive
@@ -587,6 +588,13 @@ ASM  mov  ax,wDrive
      or   ax,ax
 @no_mscdex:
 END;
+{$ENDIF}
+{$IFNDEF MSDOS}
+FUNCTION IsCDROMDrive(wDrive: Word): Boolean;
+BEGIN
+  WriteLn('REEPORT BSFILE IsCDROMDrive'); Halt;
+END;
+{$ENDIF}
 
 
 FUNCTION NetworkDrive(wDrive: Char): Boolean;

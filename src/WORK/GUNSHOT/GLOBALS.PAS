@@ -306,8 +306,10 @@ VAR  FArcDefs                : File Of _Archiver_Record;
      ToggleChar              : Array[1..4] Of Char;
      DoingToggle             : Boolean;
      LastActivity            : Word;
+{$IFDEF MSDOS}
      SAVESCRN_Scr2           : SAVESCRN_AScreen;
      SAVESCRN_Scr            : SAVESCRN_AScreen;
+{$ENDIF}
      SAVESCRN_X              : Word;
      SAVESCRN_Y              : Word;
      SAVESCRN_Attr           : Byte;
@@ -360,6 +362,9 @@ VAR  FArcDefs                : File Of _Archiver_Record;
      RIP                     : ^RIPobj;
      RipInitialized          : Boolean;
      NodeListSystem          : String[40];
+{$IFNDEF MSDOS}
+     SocketHandle            : Longint;
+{$ENDIF}
 
 
 IMPLEMENTATION

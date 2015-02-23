@@ -132,7 +132,7 @@ BEGIN
        LastPosY := Y;
        WorkX := XPos+(LastPosX-1);
        WorkY := YPos+(LastPosY-1);
-       apGotoXY(WorkX,WorkY);
+       FastW1.GotoXY(WorkX,WorkY);
      END;
 END;
 

@@ -18,8 +18,10 @@ BEGIN
      FNodeIndx.Init(32768);
      FNodeList.Init(32768);
      FUserList.Init(32768);
+{$IFDEF MSDOS}
      New(SaveScreen2);
      New(SaveScreen3);
+{$ENDIF}
      Gunshot_Directory := Temp[1]+':\GUNSHOT';
      ChDir(Gunshot_Directory);
      SimNode         := 1;
@@ -64,8 +66,10 @@ BEGIN
      FNodeIndx.Done;
      FNodeList.Done;
      FUserList.Done;
+{$IFDEF MSDOS}
      Dispose(SaveScreen2);
      Dispose(SaveScreen3);
+{$ENDIF}
 END;
 
 

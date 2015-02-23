@@ -322,8 +322,10 @@ Implementation
 Uses FMode,BsString;
 
 
+{$IFDEF MSDOS}
 Var
   Regs           : registers;
+{$ENDIF}
 
 
 Constructor Root.Init;

@@ -105,7 +105,9 @@ uses
 {$ENDIF}
 {$ENDIF}
 
+{$IFDEF MSDOS}
 {$DEFINE UseAsm}   {Define to use Asm statements for better speed}
+{$ENDIF}
 
 function BrowseFile(XLow, YLow, XHigh, YHigh, Attr : Byte;
                     var TopLine : LongInt;

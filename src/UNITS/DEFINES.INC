@@ -2,3 +2,7 @@
   {$IFNDEF DPMI}
   {$ENDIF}
 {$ENDIF}
+
+{$IFNDEF MSDOS}
+  {$PACKRECORDS 1}
+{$ENDIF}

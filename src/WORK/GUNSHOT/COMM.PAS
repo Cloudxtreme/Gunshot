@@ -102,6 +102,9 @@ BEGIN
           8:   SetUart(COM8,NewAddr,NodeInfo.IRQ,TVector[NodeInfo.IRQ]);
           END;
      END;
+{$IFNDEF MSDOS}
+     //REETODO Apro_Use_Old_Handle := SocketHandle;
+{$ENDIF}
      CASE ThePort OF
      1:   InitPortKeep(BBSPort,COM1,BufferSize,BufferSize+30);
      2:   InitPortKeep(BBSPort,COM2,BufferSize,BufferSize+30);

@@ -405,10 +405,13 @@ type
   end;
 
 var
+{$IFDEF MSDOS}
   Regs : Registers;
+{$ENDIF}
   SHByte : Byte; {absolute $40 : $84;}
 
 begin
+{$IFDEF MSDOS}
   SHByte := Byte(Ptr(BiosDataSele, $84)^);
 
   ReinitFastWrite;
@@ -443,6 +446,13 @@ begin
           ScreenHeight := SHByte + 1
     end;
   end;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  ReinitFastWrite;
+  ScreenWidth := 80; // REETODO
+  ScreenHeight := 25; // REETODO
+  VideoMode := 3; // CO80
+{$ENDIF}
 
   {Set VideoSegment}
   if VideoMode = 7 then

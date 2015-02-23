@@ -601,6 +601,7 @@ BEGIN
                     DoNodeActivity(40,'');
                     DoDataEntryScreen(Menu^[Reserve[MainLoop]].Second);
                   END;
+{$IFDEF MSDOS}                  
              111: IF NOT(LocalLogon) THEN
                   BEGIN
                     DoNodeActivity(41,'');
@@ -608,6 +609,7 @@ BEGIN
                             Menu^[Reserve[MainLoop]].Second,
                             Menu^[Reserve[MainLoop]].Sub);
                   END;
+{$ENDIF}                  
              112: BEGIN
                     CreateCustomDropFile(Menu^[Reserve[MainLoop]].Second,
                                          Menu^[Reserve[MainLoop]].Third);

@@ -257,6 +257,14 @@ BEGIN
                END;
           END;
      END;
+{$IFNDEF MSDOS}
+     // REENOTE We hackishly pass the socket handle via the baud rate parameter
+     IF ActualBaud > 0 THEN
+     BEGIN
+          SocketHandle := ActualBaud;
+	      ActualBaud := 57600;
+     END;
+{$ENDIF}
      IF ActualBaud=0 THEN LocalLogon := true;
      IF NOT(LocalLogon) THEN LogonUser := 999999999;
      IF (EventMinutes<>32000) THEN

@@ -720,6 +720,7 @@ const
     JustFilename := Copy(PathName, Succ(I), 64);
   end;
 
+{$IFDEF MSDOS}
   function ExistFile(FName : string) : Boolean;
     {-Return true if file is found}
   var
@@ -739,6 +740,14 @@ const
       ExistFile := (not Odd(Flags)) and (CX and (VolumeID+Directory) = 0);
     end;
   end;
+{$ENDIF}
+{$IFNDEF MSDOS}
+  function ExistFile(FName : string) : Boolean;
+    {-Return true if file is found}
+  begin
+    WriteLn('REEPORT APMISC ExistFile'); Halt;
+  end;
+{$ENDIF}
 
   function StringToHeap(S : string) : StringPtr;
     {-Allocate space for s and return pointer}

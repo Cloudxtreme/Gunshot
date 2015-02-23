@@ -177,4 +177,8 @@ errors.}
   {$Q-,T-,X-}
 {$ENDIF}
 
+{$IFNDEF MSDOS}
+  {$PACKRECORDS 1}
+{$ENDIF}
+
 

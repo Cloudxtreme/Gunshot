@@ -124,9 +124,11 @@ VAR   FMailerInfo        : File Of _Mailer_Record;
       PhoneBook          : _PhoneBook_Record;
       SystemInfo         : _SystemDat_Record;
       SimNode            : Word;
+{$IFDEF MSDOS}
       SaveScreen1        : Array[1..4000] Of Byte;
       SaveScreen2        : ^SaveScrn_2;
       SaveScreen3        : ^SaveScrn_3;
+{$ENDIF}
       Gunshot_Directory  : String[80];
       NumMsgs            : Word;
       Indexes            : Array[1..3000] Of Word;
