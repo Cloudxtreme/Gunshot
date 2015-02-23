@@ -1,7 +1,7 @@
 {$IFNDEF DPMI}
   DPMI_ONLY!
 {$ENDIF}
-PROGRAM ShotgunSVGA;
+PROGRAM GunshotSVGA;
 {$M 64000}
 {$I DEFINES.INC}
 
@@ -554,13 +554,13 @@ BEGIN
                   Search_String;
                 END;
            108: BEGIN
-                  IF ((NodeInfo^.UseBlaster) AND (_FileExists(Shotgun_Directory+
+                  IF ((NodeInfo^.UseBlaster) AND (_FileExists(Gunshot_Directory+
                      '\SOUND\'+Menu^[Reserve[MainLoop]].Second))) THEN
                   BEGIN
                     bsWriteLog('Playing audio file: '+Menu^[Reserve[MainLoop]].Second,False);
                     Save_Mouse;
                     ExecuteDOSCommand(Bin_Directory+'\PLAYVOC.EXE '+
-                                      Shotgun_Directory+'\SOUND\'+
+                                      Gunshot_Directory+'\SOUND\'+
                                       Menu^[Reserve[MainLoop]].Second+' $$BB$$SS$$');
                     Load_Mouse;
                   END;
@@ -578,8 +578,8 @@ BEGIN
                                        Menu^[Reserve[MainLoop]].Third);
                 END;
            113: BEGIN
-                  IF _FileExists(Shotgun_Directory+'\FLICS\'+Menu^[Reserve[MainLoop]].Second)
-                     THEN PlayFLIFile(Shotgun_Directory+'\FLICS\'+Menu^[Reserve[MainLoop]].Second);
+                  IF _FileExists(Gunshot_Directory+'\FLICS\'+Menu^[Reserve[MainLoop]].Second)
+                     THEN PlayFLIFile(Gunshot_Directory+'\FLICS\'+Menu^[Reserve[MainLoop]].Second);
                 END;
            114: BEGIN
                   DoNodeActivity(12,'');

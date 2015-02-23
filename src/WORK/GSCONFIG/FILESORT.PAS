@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES IntrFace,BsMouse,BsString,Crt,Defaults,CnfgVars,Hatch,BsVideo,
-     FileMan,Import,Dos,Dispatch,FastW1,Valid,Shotgun,BsFile;
+     FileMan,Import,Dos,Dispatch,FastW1,Valid,Gunshot,BsFile;
 
 
 PROCEDURE DoFileOrder;

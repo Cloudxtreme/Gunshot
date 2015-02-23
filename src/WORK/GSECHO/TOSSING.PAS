@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,Dos,DupeBase,BsFile,BsTime,BsString,Pkt,
-     BsLog,Shotgun,BsExec,Crt,ApTimer,BsPkt;
+     BsLog,Gunshot,BsExec,Crt,ApTimer,BsPkt;
 
 
 FUNCTION TwoDigit(InVal: Word): String;

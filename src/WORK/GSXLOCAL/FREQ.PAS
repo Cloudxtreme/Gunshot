@@ -34,13 +34,13 @@ PROCEDURE RequestIt(FName,AreaName,CDRom: String; CDNum,RFArea,RFGroup: Word);
 VAR  AreaType : Char;
      MaxMsgs  : Word;
 BEGIN
-     _CreatePath(Shotgun_Directory+'\FREQ');
+     _CreatePath(Gunshot_Directory+'\FREQ');
      RequestFile.RequestDate := _ProperDateNoTime;
      RequestFile.FileName    := FName;
      RequestFile.FileArea    := RFArea;
      RequestFile.FileGroup   := RFGroup;
      RequestFile.CDRom       := CDNum;
-     ASSIGN(FRequestFile,Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
+     ASSIGN(FRequestFile,Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
      {$I-}RESET(FRequestFile);{$I+}
      IF (IOResult<>0) THEN REWRITE(FRequestFile);
      SEEK(FRequestFile,FileSize(FRequestFile));

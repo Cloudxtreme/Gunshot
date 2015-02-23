@@ -5,7 +5,7 @@ UNIT _Fields;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 PROCEDURE SystemField        (Raw: _Raw_File);

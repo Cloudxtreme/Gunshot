@@ -123,7 +123,7 @@ BEGIN
                clear_scan_dir;
                GOTO virus_found;
           END;
-          Chdir(Shotgun_Directory);
+          Chdir(Gunshot_Directory);
           {SCAN THE ARCHIVE}
           IF Scanners.ScanUploads=1 THEN
           BEGIN
@@ -257,7 +257,7 @@ BEGIN
           AddFile(SCAN_Directory,FileUploadSub,FileUploadArea);
           ChangeMouse(DefaultMouse);
           Clear_Scan_Dir;
-          Chdir(Shotgun_Directory);
+          Chdir(Gunshot_Directory);
           Scrapped := False;
           virus_found:
      END;
@@ -268,7 +268,7 @@ BEGIN
           DisplayGraphicFile('ULCREDIT',False,True,True);
           Get_Enter;
      END;
-     Chdir(Shotgun_Directory);
+     Chdir(Gunshot_Directory);
      ASSIGN(FFileArea,DATA_Directory+'\FA'+ZeroPadded(CurrentFileSub)+'.DAT');
      reset(FFileArea);
      Seek(FFileArea,(CurrentFileArea-1));

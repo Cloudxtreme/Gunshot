@@ -11,7 +11,7 @@ FUNCTION LoadFromBank(InString: String): Word;
 IMPLEMENTATION
 
 
-USES Globals,Gr2_Bp,_Win,BHandler,_Icons,_Text,Gx2_BpVC,Gx2_Bp,Shotgun;
+USES Globals,Gr2_Bp,_Win,BHandler,_Icons,_Text,Gx2_BpVC,Gx2_Bp,Gunshot;
 
 
 FUNCTION LoadFromBank(InString: String): Word;

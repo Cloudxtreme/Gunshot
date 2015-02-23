@@ -14,7 +14,7 @@ IMPLEMENTATION
 USES Globals,ApTimer,AllGone,Crt,QBack,BsMulti,ErrorLog,SBuffer,GetQuote,
      Screens,KeyInput,NList,Dos,ExtDos,Upload,ReplyFil,Time,_Text,MiscMsg,
      _BHandle,Gr2_Bp,BsGraph,_Pick,_Fields,_Mouse,Commands,MkGlobT,
-     Shotgun,BsString,BsAkas,BsFile;
+     Gunshot,BsString,BsAkas,BsFile;
 
 
 VAR  OuttaHere          : Boolean;
@@ -950,7 +950,7 @@ LABEL PressedEnter,TryAgain,CtrlY;
                END;
           END;
           Clear_Scan_Dir;
-          Chdir(Shotgun_Directory);
+          Chdir(Gunshot_Directory);
           DrawTheEditWindow;
           RedrawMessage(False,True);
      END;

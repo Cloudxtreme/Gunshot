@@ -16,7 +16,7 @@ PROCEDURE DoFaxSetup;
 IMPLEMENTATION
 
 
-USES IntrFace,BsMouse,BsString,BsFile,Crt,Defaults,CnfgVars,Misc,Shotgun,MkFFile,FMode,BsAkas,Valid;
+USES IntrFace,BsMouse,BsString,BsFile,Crt,Defaults,CnfgVars,Misc,Gunshot,MkFFile,FMode,BsAkas,Valid;
 
 
 FUNCTION FileEchoTagged(SystemAka: AddrType; AreaID: Word; CheckForDat: Boolean): Boolean;
@@ -1442,7 +1442,7 @@ END;
 PROCEDURE EditGSFileKill(Number: Longint);
 BEGIN
      _SaveWindow(WorkDir+'\EDITACC.SCR');
-     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\GSFPURGE.DAT');
      RESET(FGSFileKill);
      SEEK(FGSFileKill,Number-1);
      READ(FGSFileKill,GSFileKill);
@@ -1461,7 +1461,7 @@ BEGIN
      ClearObjects;
      ClearButtons;
      GSFileKill.AreaName := _UpperCase(Objects^[1].Stuff);
-     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\GSFPURGE.DAT');
      RESET(FGSFileKill);
      SEEK(FGSFileKill,Number-1);
      WRITE(FGSFileKill,GSFileKill);
@@ -1472,14 +1472,14 @@ END;
 
 PROCEDURE DeleteGSFileKill(Number: Longint);
 BEGIN
-     _EraseFileRecord(BaseDirectory+'\DATA\SGFPURGE.DAT',SizeOf(GSFileKill),Number);
+     _EraseFileRecord(BaseDirectory+'\DATA\GSFPURGE.DAT',SizeOf(GSFileKill),Number);
 END;
 
 
 PROCEDURE AddGSFileKill;
 BEGIN
      FillChar(GSFileKill,SizeOf(GSFileKill),0);
-     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\GSFPURGE.DAT');
      {$I-}RESET(FGSFileKill);{$I+}
      IF (IOResult<>0) THEN REWRITE(FGSFileKill)
                       ELSE SEEK(FGSFileKill,FileSize(FGSFileKill));
@@ -1492,12 +1492,12 @@ PROCEDURE InsertGSFileKill(Number: Longint);
 VAR  Counting : Longint;
 BEGIN
      FillChar(GSFileKill,SizeOf(GSFileKill),0);
-     IF _FileExists(BaseDirectory+'\DATA\SGFPURGE.DAT') THEN
+     IF _FileExists(BaseDirectory+'\DATA\GSFPURGE.DAT') THEN
      BEGIN
-          ASSIGN(FGSFileKill2,BaseDirectory+'\DATA\SGFPURGE.DAT');
-          RENAME(FGSFileKill2,BaseDirectory+'\DATA\SGFPURGE.BAK');
-          ASSIGN(FGSFileKill2,BaseDirectory+'\DATA\SGFPURGE.BAK');
-          ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+          ASSIGN(FGSFileKill2,BaseDirectory+'\DATA\GSFPURGE.DAT');
+          RENAME(FGSFileKill2,BaseDirectory+'\DATA\GSFPURGE.BAK');
+          ASSIGN(FGSFileKill2,BaseDirectory+'\DATA\GSFPURGE.BAK');
+          ASSIGN(FGSFileKill,BaseDirectory+'\DATA\GSFPURGE.DAT');
           RESET(FGSFileKill2);
           REWRITE(FGSFileKill);
           Counting := 0;
@@ -1513,7 +1513,7 @@ BEGIN
      END
      ELSE
      BEGIN
-          ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+          ASSIGN(FGSFileKill,BaseDirectory+'\DATA\GSFPURGE.DAT');
           REWRITE(FGSFileKill);
           WRITE(FGSFileKill,GSFileKill);
           CLOSE(FGSFileKill);
@@ -1529,7 +1529,7 @@ LABEL             OverAgain;
 
      PROCEDURE Reload;
      BEGIN
-          ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+          ASSIGN(FGSFileKill,BaseDirectory+'\DATA\GSFPURGE.DAT');
           RESET(FGSFileKill);
           REPEAT
                 Read(FGSFileKill,GSFileKill);
@@ -1546,7 +1546,7 @@ BEGIN
      PickItem        := 0;
      PickTop         := 0;
      PickListItems   := 0;
-     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\GSFPURGE.DAT');
      {$I-}RESET(FGSFileKill);{$I+}
      IF IOResult=0 THEN
      BEGIN
@@ -1579,7 +1579,7 @@ BEGIN
            1:   IF (PickItem<>0) THEN
                 BEGIN {EDIT}
                      EditGSFileKill(PickItem);
-                     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+                     ASSIGN(FGSFileKill,BaseDirectory+'\DATA\GSFPURGE.DAT');
                      RESET(FGSFileKill);
                      PickListItems := FileSize(FGSFileKill);
                      CLOSE(FGSFileKill);

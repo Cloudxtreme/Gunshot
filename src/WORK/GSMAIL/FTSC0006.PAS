@@ -17,7 +17,7 @@ IMPLEMENTATION
 
 
 USES Globals,DrawScrn,BsLog,ApTimer,FtscProd,Version,Comm,
-     ApMisc,ApPort,ApCom,BsMulti,Misc,Shotgun,BsAkas,
+     ApMisc,ApPort,ApCom,BsMulti,Misc,Gunshot,BsAkas,
      BsString,BsFile,BsCom,EMSI;
 
 
@@ -320,7 +320,7 @@ VAR  WorkAddr : AddrType;
      PROCEDURE MatchTheZone;
      BEGIN
           AllDone := False;
-          ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+          ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
           RESET(FNetwork);
           REPEAT
                 READ(FNetwork,Network);
@@ -349,7 +349,7 @@ BEGIN
      OurPacket.Hello_Version := 1;
      OurPacket.Product       := FTSCProductCode;
      {OUR NETWORK ADDRESS}
-     ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+     ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork);
      SEEK(FNetwork,CurrentAka-1);
      READ(FNetwork,Network);
@@ -376,10 +376,10 @@ BEGIN
      END
      ELSE MatchTheZone;
      {APPLY SESSION PASSWORD}
-     IF _FileExists('\SHOTGUN\DATA\PASSWORD.DAT') THEN
+     IF _FileExists('\GUNSHOT\DATA\PASSWORD.DAT') THEN
      BEGIN
           AllDone := False;
-          ASSIGN(FSessionPW,'\SHOTGUN\DATA\PASSWORD.DAT');
+          ASSIGN(FSessionPW,'\GUNSHOT\DATA\PASSWORD.DAT');
           RESET(FSessionPW);
           REPEAT
                 READ(FSessionPW,SessionPW);

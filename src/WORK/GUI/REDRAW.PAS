@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,Gr2_Bp,BsGraph,BsString,Cutouts,_Images,
-     _Icons,_Win,_Text,_Bezier,Gx2_Bp,Shotgun,BsFile;
+     _Icons,_Win,_Text,_Bezier,Gx2_Bp,Gunshot,BsFile;
 
 
 {==========================================================================}

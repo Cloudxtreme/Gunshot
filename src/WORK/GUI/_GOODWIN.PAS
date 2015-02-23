@@ -11,7 +11,7 @@ FUNCTION CheckRightWindows: Boolean;
 IMPLEMENTATION
 
 
-USES Globals,_VSave,Shotgun;
+USES Globals,_VSave,Gunshot;
 
 
 FUNCTION CheckRightWindows: Boolean;

@@ -11,7 +11,7 @@ PROCEDURE ProcessAreaFix;
 IMPLEMENTATION
 
 
-USES MkFFile,Shotgun,Globals,BsLog,Common,BsFido,
+USES MkFFile,Gunshot,Globals,BsLog,Common,BsFido,
      BsString,BsAkas,KeyCheck,BsFile,FMode,_EchoTag;
 
 
@@ -269,7 +269,7 @@ VAR  Loop         : Word;
             CLOSE(TFile);
             EndMessage;
           END
-          ELSE WriteLogFile('! Areafix help file \SHOTGUN\HELP\GSECHO.HLP not found.');
+          ELSE WriteLogFile('! Areafix help file \GUNSHOT\HELP\GSECHO.HLP not found.');
      END;
 
      PROCEDURE ChangeCompress(NewComp: String);

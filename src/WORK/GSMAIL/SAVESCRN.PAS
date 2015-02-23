@@ -22,7 +22,7 @@ VAR  Work       : ^WorkScreen;
 BEGIN
      New(Work);
      Move(MEM[SegB800:0],Work^,ScreenBytes);
-     ASSIGN(FFile,Shotgun_Directory+'\TEMP\SGM'+_String(SimNode)+'.'+_String(Num));
+     ASSIGN(FFile,Gunshot_Directory+'\TEMP\GSM'+_String(SimNode)+'.'+_String(Num));
      REWRITE(FFile,1);
      BLOCKWRITE(FFile,Work^,SizeOf(Work^));
      CLOSE(FFile);
@@ -35,10 +35,10 @@ TYPE WorkScreen = Array[1..8000] Of Byte;
 VAR  Work       : ^WorkScreen;
      FFile      : File;
 BEGIN
-     IF _FileExists(Shotgun_Directory+'\TEMP\SGM'+_String(SimNode)+'.'+_String(Num)) THEN
+     IF _FileExists(Gunshot_Directory+'\TEMP\GSM'+_String(SimNode)+'.'+_String(Num)) THEN
      BEGIN
           New(Work);
-          ASSIGN(FFile,Shotgun_Directory+'\TEMP\SGM'+_String(SimNode)+'.'+_String(Num));
+          ASSIGN(FFile,Gunshot_Directory+'\TEMP\GSM'+_String(SimNode)+'.'+_String(Num));
           RESET(FFile,1);
           BLOCKREAD(FFile,Work^,SizeOf(Work^));
           CLOSE(FFile);

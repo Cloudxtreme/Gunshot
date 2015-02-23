@@ -13,7 +13,7 @@ IMPLEMENTATION
 
 USES Globals,Screens,BsLog,Toggle,KeyInput,BsString,MiscStr,TagArea,
      GotKeys,MiscMsg,JamGet,ReadNew,MsgHeadr,ChangeMA,MFireUp,Gfx,
-     MkGlobT,MkMsgAbs,MkOpen,Shotgun;
+     MkGlobT,MkMsgAbs,MkOpen,Gunshot;
 
 
 PROCEDURE Search_String;

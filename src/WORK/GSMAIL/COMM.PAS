@@ -234,7 +234,7 @@ BEGIN
           ReturnOk := True;
           Exit;
      END;
-     ASSIGN(FErrLevel,Shotgun_Directory+'\DATA\ERRLEVEL.'+_String(SimNode));
+     ASSIGN(FErrLevel,Gunshot_Directory+'\DATA\ERRLEVEL.'+_String(SimNode));
      RESET(FErrLevel);
      REPEAT
            READ(FErrLevel,ErrLevel);

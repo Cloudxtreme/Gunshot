@@ -11,7 +11,7 @@ PROCEDURE ShowUserList;
 IMPLEMENTATION
 
 
-USES Globals,BsLog,KeyInput,SBuffer,Screens,Gfx,Shotgun,BsString,BsFile;
+USES Globals,BsLog,KeyInput,SBuffer,Screens,Gfx,Gunshot,BsString,BsFile;
 
 
 PROCEDURE ShowUserList;

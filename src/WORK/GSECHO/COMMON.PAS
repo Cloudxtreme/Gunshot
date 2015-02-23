@@ -5,7 +5,7 @@ UNIT Common;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 FUNCTION  IsOurNode(InAddress: AddrType): Boolean;

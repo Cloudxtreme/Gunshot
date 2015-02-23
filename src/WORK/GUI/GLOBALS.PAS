@@ -5,7 +5,7 @@ UNIT Globals;
 INTERFACE
 
 
-USES Gx2_Bp,Tx2_Bp,Version,Shotgun;
+USES Gx2_Bp,Tx2_Bp,Version,Gunshot;
 
 
 {DRAWING PRIMITIVES    1 - Background          !}
@@ -187,7 +187,7 @@ VAR   Disabled         : GXHeader;
       P                : GXHeader;
       BMPFile          : GXHeader;
       IconHdr          : GXHeader;
-      Shotgun_Dir      : String;
+      Gunshot_Dir      : String;
       WallPaper        : String;
       SystemFont       : TxHeader;
       HelvFont         : TxHeader;

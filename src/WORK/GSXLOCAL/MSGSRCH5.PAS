@@ -11,7 +11,7 @@ PROCEDURE all_new_mail;
 IMPLEMENTATION
 
 
-USES Globals,Screens,BsLog,Toggle,KeyInput,MiscStr,TagArea,Shotgun,
+USES Globals,Screens,BsLog,Toggle,KeyInput,MiscStr,TagArea,Gunshot,
      GotKeys,MiscMsg,JamGet,ReadNew,MsgHeadr,ChangeMA,MFireUp,LstReads;
 
 

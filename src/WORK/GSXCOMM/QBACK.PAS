@@ -36,9 +36,9 @@ BEGIN
      TextColor(7);
      Window(1,1,80,25);
      ClrScr;
-     PutEnviro('PROMPT=Enter EXIT to return to Shotgun Professional!!$_$p$g');
+     PutEnviro('PROMPT=Enter EXIT to return to Gunshot Professional!!$_$p$g');
      ExecuteDosCommand(GetEnv('COMSPEC'));
-     Chdir(Shotgun_Directory);
+     Chdir(Gunshot_Directory);
      REPEAT
            IF KeyPressed THEN c := ReadKey;
      UNTIL NOT(KeyPressed);

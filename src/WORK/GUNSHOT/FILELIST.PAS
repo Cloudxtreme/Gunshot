@@ -263,7 +263,7 @@ BEGIN
      CommandLine := ArcDefs.ArcPath+ArcUtils.MoveArc+' '+
                     System_Info.FileListName+'.'+Temp+' *.*';
      RUN_PROGRAM(CommandLine);
-     ChDir(Shotgun_Directory);
+     ChDir(Gunshot_Directory);
      dl_file(HOLD_Directory+'\'+System_Info.FileListName+'.'+Temp);
      _EraseFile(HOLD_Directory+'\'+System_Info.FileListName+'.'+Temp);
      IF system_info.Suspend_FList=1 THEN AdjustUsersTime(True,ElapsedTimeInSecs(WorkTimer));

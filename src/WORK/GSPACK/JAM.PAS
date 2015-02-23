@@ -11,7 +11,7 @@ PROCEDURE PackJam;
 IMPLEMENTATION
 
 
-USES Globals,MkOpen,MkMsgAbs,MkGlobT,Crt,Shotgun,
+USES Globals,MkOpen,MkMsgAbs,MkGlobT,Crt,Gunshot,
      FMode,BsFile,BsString,BsVideo,Common;
 
 

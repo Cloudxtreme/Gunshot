@@ -5,7 +5,7 @@ UNIT Misc;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 FUNCTION  IsOurNode     (InAddress: AddrType): Boolean;
@@ -19,7 +19,7 @@ USES Globals,BsAkas;
 
 FUNCTION IsOurNode(InAddress: AddrType): Boolean;
 BEGIN
-     ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+     ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork);
      REPEAT
            READ(FNetwork,Network);

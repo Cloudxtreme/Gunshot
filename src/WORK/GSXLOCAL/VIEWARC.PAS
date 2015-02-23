@@ -83,7 +83,7 @@ BEGIN
                 END;
           UNTIL ((EOF(FArcUtils)) OR (AllDone));
           CLOSE(FArcUtils);
-          Chdir(Shotgun_Directory);
+          Chdir(Gunshot_Directory);
           IF NOT(AllDone) THEN GOTO SkipIn;
      END
      ELSE

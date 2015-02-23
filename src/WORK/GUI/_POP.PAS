@@ -11,7 +11,7 @@ FUNCTION DoPopUp: Word;
 IMPLEMENTATION
 
 
-USES Globals,Gr2_Bp,_Win,_Text,BHandler,_Icons,WinDefs,Shotgun,BsFile,
+USES Globals,Gr2_Bp,_Win,_Text,BHandler,_Icons,WinDefs,Gunshot,BsFile,
      _FSelect,BsString,_VSave,Gx2_Bp,Img2_Bp,BsGraph,_GoodWin;
 
 

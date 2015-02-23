@@ -12,7 +12,7 @@ PROCEDURE CreateMessages;
 IMPLEMENTATION
 
 
-USES BsFido,Globals,BsAkas,Version,Shotgun,MkOpen,MkMsgAbs,
+USES BsFido,Globals,BsAkas,Version,Gunshot,MkOpen,MkMsgAbs,
      Dos,MkString,MkDos,BsTime,BsFile,Process,BsString,KeyCheck;
 
 

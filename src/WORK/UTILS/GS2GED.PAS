@@ -1,4 +1,4 @@
-USES Shotgun,BsString,BsAkas,BsVideo;
+USES Gunshot,BsString,BsAkas,BsVideo;
 
 
 VAR  MsgAreas    : _MessageArea_Record;
@@ -27,7 +27,7 @@ END;
 
 PROCEDURE DoSysopName;
 BEGIN
-     ASSIGN(FSystemDat,'\SHOTGUN\DATA\SYSTEM.DAT');
+     ASSIGN(FSystemDat,'\GUNSHOT\DATA\SYSTEM.DAT');
      {$I-}RESET(FSystemDat);{$I+}
      IF IOResult=0 THEN
      BEGIN
@@ -46,7 +46,7 @@ END;
 
 PROCEDURE DoAkas;
 BEGIN
-     ASSIGN(FNetwork,'\SHOTGUN\DATA\NETWORK.DAT');
+     ASSIGN(FNetwork,'\GUNSHOT\DATA\NETWORK.DAT');
      {$I-}RESET(FNetwork);{$I+}
      IF IOResult=0 THEN
      BEGIN
@@ -72,7 +72,7 @@ BEGIN
           IsMsgTagged := False;
           Exit;
      END;
-     ASSIGN(FFile,'\SHOTGUN\MSGTAGS\'+_String(User_Number)+'.BBS');
+     ASSIGN(FFile,'\GUNSHOT\MSGTAGS\'+_String(User_Number)+'.BBS');
      {$I-}RESET(FFile,1);{$I+}
      IF IOResult=0 THEN
      BEGIN
@@ -104,13 +104,13 @@ VAR  EchoId   : String;
      AkaNo    : String;
 LABEL           SkipIt;
 BEGIN
-     ASSIGN(FMsgSubs,'\SHOTGUN\DATA\MSGAREA.SUB');
+     ASSIGN(FMsgSubs,'\GUNSHOT\DATA\MSGAREA.SUB');
      {$I-}RESET(FMsgSubs);{$I+}
      IF IOResult=0 THEN
      BEGIN
        REPEAT
          READ(FMsgSubs,MsgSubs);
-         ASSIGN(FMsgAreas,'\SHOTGUN\DATA\MA'+ZeroPadded(MsgSubs.Sub_Num)+'.DAT');
+         ASSIGN(FMsgAreas,'\GUNSHOT\DATA\MA'+ZeroPadded(MsgSubs.Sub_Num)+'.DAT');
          {$I-}RESET(FMsgAreas);{$I+}
          IF IOResult=0 THEN
          BEGIN
@@ -155,7 +155,7 @@ BEGIN
           User_Number := _Numeric(Temp);
           DoTagged    := True;
      END;
-     AppHeader('Shotgun To GoldED Config Utility');
+     AppHeader('Gunshot To GoldED Config Utility');
      IF (Temp='-?') THEN
      BEGIN
           WRITELN;

@@ -20,7 +20,7 @@ VAR  c : char;
 BEGIN
      Save_Screen;
      ExecuteDosCommand(GetEnv('COMSPEC'));
-     Chdir(Shotgun_Directory);
+     Chdir(Gunshot_Directory);
      Load_Screen;
      REPEAT
            IF KeyPressed THEN c := ReadKey;

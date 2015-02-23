@@ -11,7 +11,7 @@ PROCEDURE ChangeFileGroup;
 IMPLEMENTATION
 
 
-USES Globals,SBuffer,Screens,MiscStr,GotKeys,BaseInfo,Shotgun,TagArea,
+USES Globals,SBuffer,Screens,MiscStr,GotKeys,BaseInfo,Gunshot,TagArea,
      ANSIMisc,KeyInput,ToggMsg,FilHeadr,Commands,FilGroup,BsString;
 
 

@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,MiscStr,Screens,GotKeys,TagArea,Gfx,
-     KeyInput,ToggMsg,MsgHeadr,Shotgun,MsgGroup;
+     KeyInput,ToggMsg,MsgHeadr,Gunshot,MsgGroup;
 
 
 PROCEDURE ChangeMessageGroup;

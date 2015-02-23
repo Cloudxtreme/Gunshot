@@ -13,7 +13,7 @@ FUNCTION  GotAccessToSomeFileAreas(TheSub: Word): Boolean;
 IMPLEMENTATION
 
 
-USES Globals,FilHeadr,Shotgun,MiscStr,GotKeys;
+USES Globals,FilHeadr,Gunshot,MiscStr,GotKeys;
 
 
 PROCEDURE NextFileGroup;

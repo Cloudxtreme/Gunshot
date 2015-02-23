@@ -18,7 +18,7 @@ IMPLEMENTATION
 
 
 USES IntrFace,BsMouse,BsString,BsFile,Crt,Defaults,CnfgVars,FMode,
-     Dos,Dispatch,FastW1,Valid,Misc,Shotgun,BsMulti,BsAkas,BsVideo;
+     Dos,Dispatch,FastW1,Valid,Misc,Gunshot,BsMulti,BsAkas,BsVideo;
 
 
 PROCEDURE GlobalMessageChange(Number: Longint);

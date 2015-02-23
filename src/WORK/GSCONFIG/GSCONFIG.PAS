@@ -27,7 +27,7 @@ USES BsOvr,Dos,Crt,Intrface,BsMouse,CNFGVARS,Menu1,Menu2,Menu3,Menu4,
 {$O Menu8a   }
 {$O Menu8b   }
 {$O MenuOpt  }
-{$O Shotgun  }
+{$O Gunshot  }
 
 
 PROCEDURE SetUpMenu;
@@ -60,7 +60,7 @@ BEGIN
      AddMenuObject(8,0,Header,' Nodes '       ,1,49,'');
      DrawPullDownMenu;
      {INFO MENU}
-     AddMenuObject(1,1,Item,' About Shotgun       ',0,ORD('A'),'Version information');
+     AddMenuObject(1,1,Item,' About Gunshot       ',0,ORD('A'),'Version information');
      AddMenuObject(1,2,Item,' Config Setup        ',0,ORD('C'),'Change the configuration environment settings');
      AddMenuObject(1,3,SBar,'                     ',0,0,'');
      AddMenuObject(1,4,Item,' DOS Shell        F2 ',0,ORD('D'),'Shell out temorarily to DOS');

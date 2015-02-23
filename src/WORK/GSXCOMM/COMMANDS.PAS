@@ -12,7 +12,7 @@ FUNCTION GetCommandString   (Screen: String; Index: Word): String;
 IMPLEMENTATION
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 FUNCTION GetCommandKeyPress(Screen: String; Index: Word): Char;

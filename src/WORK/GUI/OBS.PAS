@@ -19,7 +19,7 @@ PROCEDURE WriteFile;
 IMPLEMENTATION
 
 
-USES Globals,Redraw,Gr2_Bp,BsGraph,_Text,_Bezier,Shotgun;
+USES Globals,Redraw,Gr2_Bp,BsGraph,_Text,_Bezier,Gunshot;
 
 
 FUNCTION CheckObject(x,y: Word): Boolean;

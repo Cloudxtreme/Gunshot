@@ -185,7 +185,7 @@ BEGIN
      TextMode(co80);
      TEXTCOLOR(7);
      ClrScr;
-     WRITELN('CRITICAL ERROR!!! Shotgun can only handle 255 lines!');
+     WRITELN('CRITICAL ERROR!!! Gunshot can only handle 255 lines!');
      WRITELN;
      Halt;
 END;
@@ -197,7 +197,7 @@ BEGIN
      TextMode(co80);
      ClrScr;
      TEXTCOLOR(10);
-     WRITELN('This program is a component of the Shotgun Professional package.');
+     WRITELN('This program is a component of the Gunshot Professional package.');
      WRITELN('You do not directly execute this program manually yourself.');
      TEXTCOLOR(7);
      WRITELN;
@@ -287,9 +287,9 @@ BEGIN
      sysop_next            := false;
      user_pages            := 0;
      time_for_downloads    := 0;
-     DATA_Directory        := Shotgun_Directory+'\DATA';
-     INTR_Directory        := Shotgun_Directory+'\INTRNODE';
-     BIN_Directory         := Shotgun_Directory+'\BIN';
+     DATA_Directory        := Gunshot_Directory+'\DATA';
+     INTR_Directory        := Gunshot_Directory+'\INTRNODE';
+     BIN_Directory         := Gunshot_Directory+'\BIN';
      ASSIGN(FSystemInfo,DATA_Directory+'\SYSTEM.DAT');
      RESET(FSystemInfo);
      READ(FSystemInfo,system_info);
@@ -307,27 +307,27 @@ BEGIN
      END;
      IF System_Info.NodeDrive='' THEN
      BEGIN
-          NODE_Directory := Shotgun_Directory+'\NODE'+NodeString;
+          NODE_Directory := Gunshot_Directory+'\NODE'+NodeString;
      END
      ELSE
      BEGIN
-          Temp := Shotgun_Directory;
+          Temp := Gunshot_Directory;
           Delete(Temp,1,1);
           NODE_Directory := System_Info.NodeDrive+Temp+'\NODE'+NodeString;
      END;
-     SIG_Directory  := Shotgun_Directory+'\ANSISIGS';
+     SIG_Directory  := Gunshot_Directory+'\ANSISIGS';
      HOLD_Directory := NODE_Directory+'\HOLDFILE';
      SCAN_Directory := NODE_Directory+'\SCAN_DIR';
      CD_Directory   := NODE_Directory+'\CD_TEMP';
-     RESOURCES      := Shotgun_Directory+'\RESOURCE\';
+     RESOURCES      := Gunshot_Directory+'\RESOURCE\';
      _CreatePath(NODE_Directory);
      _CreatePath(HOLD_Directory);
      _CreatePath(SCAN_Directory);
      _CreatePath(SIG_Directory);
      _CreatePath(BIN_Directory);
      _CreatePath(CD_Directory);
-     _CreatePath(Shotgun_Directory+'\MSGTAGS');
-     _CreatePath(Shotgun_Directory+'\FILETAGS');
+     _CreatePath(Gunshot_Directory+'\MSGTAGS');
+     _CreatePath(Gunshot_Directory+'\FILETAGS');
 END;
 
 
@@ -440,12 +440,12 @@ BEGIN
      NodeNumber  := 1;
      STR(NodeNumber,NodeString);
      Temp := _UpperCase(_GetFilePath(ParamStr(0)));
-     Shotgun_Directory := Temp[1]+':\SHOTGUN';
-     ChDir(shotgun_directory);
+     Gunshot_Directory := Temp[1]+':\GUNSHOT';
+     ChDir(gunshot_directory);
      get_params;
-     _CreatePath(shotgun_directory+'\NODE'+NodeString);
+     _CreatePath(gunshot_directory+'\NODE'+NodeString);
      IF (NodeNumber>255) THEN CantDoIt(NodeNumber);
-     CheckRegistered(shotgun_directory+'\NODE'+NodeString,'Shotgun');
+     CheckRegistered(gunshot_directory+'\NODE'+NodeString,'Gunshot');
      bsSetLog(OurAppName,'',NodeNumber);
      defines;
      read_system_data;
@@ -476,7 +476,7 @@ BEGIN
      CLOSE(TFile);
      Work := _Numeric(Temp);
 
-     ASSIGN(FLangDir,Shotgun_Directory+'\DATA\LANGUAGE.DAT');
+     ASSIGN(FLangDir,Gunshot_Directory+'\DATA\LANGUAGE.DAT');
      RESET(FLangDir);
      {$I-}
      SEEK(FLangDir,Work-1);
@@ -511,13 +511,13 @@ VAR  dos_ver  : word;
 BEGIN
      {SEND OUR INITIAL SYSTEM PACKS}
      SendSystemFile(LANG_Directory+'\COLOURS.VGA');
-     SendSystemFile(Shotgun_Directory+'\ICONS\BPRESS.MSE');
-     SendSystemFile(Shotgun_Directory+'\ICONS\BUSY.MSE');
-     SendSystemFile(Shotgun_Directory+'\ICONS\DEFAULT.MSE');
-     SendSystemFile(Shotgun_Directory+'\ICONS\FILEDRAG.MSE');
-     SendSystemFile(Shotgun_Directory+'\ICONS\INSERT.MSE');
-     SendSystemFile(Shotgun_Directory+'\ICONS\MSGDRAG.MSE');
-     SendSystemFile(Shotgun_Directory+'\ICONS\WINMOVE.MSE');
+     SendSystemFile(Gunshot_Directory+'\ICONS\BPRESS.MSE');
+     SendSystemFile(Gunshot_Directory+'\ICONS\BUSY.MSE');
+     SendSystemFile(Gunshot_Directory+'\ICONS\DEFAULT.MSE');
+     SendSystemFile(Gunshot_Directory+'\ICONS\FILEDRAG.MSE');
+     SendSystemFile(Gunshot_Directory+'\ICONS\INSERT.MSE');
+     SendSystemFile(Gunshot_Directory+'\ICONS\MSGDRAG.MSE');
+     SendSystemFile(Gunshot_Directory+'\ICONS\WINMOVE.MSE');
      IF ((Colours.InternalImage>0) AND (Colours.InternalImage<6)) THEN
      BEGIN
           PutStringTimeout(BBSPort,#255#119+Chr(Colours.InternalImage)+#13,YappDelay);
@@ -573,20 +573,20 @@ BEGIN
                DoNodeActivity(0,'');
                IF ((TermType='Dos') OR (TermType='Extended Dos')) THEN
                BEGIN
-                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\GST.HLP')
-                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\GST.HLP',True);
-                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\GST.EXE')
-                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\GST.EXE',True);
-                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\PLAYVOC.EXE')
-                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\PLAYVOC.EXE',True);
-                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\PLAYFLI.EXE')
-                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\PLAYFLI.EXE',True);
-                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\MODEMS.DAT')
-                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\MODEMS.DAT',True);
-                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\YAPP.GXL')
-                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\YAPP.GXL',True);
-                    IF _FileExists(Shotgun_Directory+'\NEWYAPP\YAPP16.EXE')
-                       THEN dl_file(Shotgun_Directory+'\NEWYAPP\YAPP16.EXE',True);
+                    IF _FileExists(Gunshot_Directory+'\NEWYAPP\GST.HLP')
+                       THEN dl_file(Gunshot_Directory+'\NEWYAPP\GST.HLP',True);
+                    IF _FileExists(Gunshot_Directory+'\NEWYAPP\GST.EXE')
+                       THEN dl_file(Gunshot_Directory+'\NEWYAPP\GST.EXE',True);
+                    IF _FileExists(Gunshot_Directory+'\NEWYAPP\PLAYVOC.EXE')
+                       THEN dl_file(Gunshot_Directory+'\NEWYAPP\PLAYVOC.EXE',True);
+                    IF _FileExists(Gunshot_Directory+'\NEWYAPP\PLAYFLI.EXE')
+                       THEN dl_file(Gunshot_Directory+'\NEWYAPP\PLAYFLI.EXE',True);
+                    IF _FileExists(Gunshot_Directory+'\NEWYAPP\MODEMS.DAT')
+                       THEN dl_file(Gunshot_Directory+'\NEWYAPP\MODEMS.DAT',True);
+                    IF _FileExists(Gunshot_Directory+'\NEWYAPP\YAPP.GXL')
+                       THEN dl_file(Gunshot_Directory+'\NEWYAPP\YAPP.GXL',True);
+                    IF _FileExists(Gunshot_Directory+'\NEWYAPP\YAPP16.EXE')
+                       THEN dl_file(Gunshot_Directory+'\NEWYAPP\YAPP16.EXE',True);
                     PutStringTimeout(BBSPort,#255#130#13,YappDelay);
                END
                ELSE
@@ -599,8 +599,8 @@ BEGIN
           END;
           Dispatcher(0);
      END;
-     IF _FileExists(Shotgun_Directory+'\FLICS\BACKGRND.FLI')
-        THEN PlayFLIFile(Shotgun_Directory+'\FLICS\BACKGRND.FLI');
+     IF _FileExists(Gunshot_Directory+'\FLICS\BACKGRND.FLI')
+        THEN PlayFLIFile(Gunshot_Directory+'\FLICS\BACKGRND.FLI');
      DisplayGraphicFile('BACKGRND',False,True,True);
 END;
 
@@ -800,7 +800,7 @@ BEGIN
           DumpUser;
           make_door_files(0,1);
           ExecuteDosCommand('PRELOG.BAT '+NodeString+' '+ComString+' '+BaudString);
-          Chdir(Shotgun_Directory);
+          Chdir(Gunshot_Directory);
           ReloadUser;
      END;
      FlushInBuffer(BBSPort);

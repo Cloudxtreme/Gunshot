@@ -11,7 +11,7 @@ FUNCTION LoadMouseFromBank(InString: String): Boolean;
 IMPLEMENTATION
 
 
-USES Globals,Gr2_Bp,_Win,BHandler,_Icons,_Text,Shotgun;
+USES Globals,Gr2_Bp,_Win,BHandler,_Icons,_Text,Gunshot;
 
 
 FUNCTION LoadMouseFromBank(InString: String): Boolean;

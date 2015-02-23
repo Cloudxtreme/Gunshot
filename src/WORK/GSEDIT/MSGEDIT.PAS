@@ -1023,7 +1023,7 @@ BEGIN
                                  ClrScr;
                                  PutEnviro('PROMPT=Enter EXIT to return to GSEdit!!$_$p$g');
                                  DoExec(GetEnv('COMSPEC'),' /C '+GetEnv('COMSPEC'),SwapMethod,MailerInfo.Outpkts);
-                                 ChDir(Shotgun_Directory);
+                                 ChDir(Gunshot_Directory);
                                  Restore_Screen;
                                  GotoXY(OldX,OldY);
                             END;

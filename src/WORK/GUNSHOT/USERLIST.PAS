@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,BsLog,ANSIMisc,KeyInput,SBuffer,
-     Screens,Commands,Shotgun,BsString,BsFile;
+     Screens,Commands,Gunshot,BsString,BsFile;
 
 
 PROCEDURE ShowUserList;

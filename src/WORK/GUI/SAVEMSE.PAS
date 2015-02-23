@@ -11,7 +11,7 @@ PROCEDURE SaveMouseToBank(InString: String);
 IMPLEMENTATION
 
 
-USES Globals,Gr2_Bp,_Win,BHandler,_Icons,_Text,Shotgun;
+USES Globals,Gr2_Bp,_Win,BHandler,_Icons,_Text,Gunshot;
 
 
 PROCEDURE SaveMouseToBank(InString: String);

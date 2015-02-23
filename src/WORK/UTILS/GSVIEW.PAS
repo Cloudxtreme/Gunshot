@@ -1,12 +1,12 @@
 {$IFNDEF DPMI}
   DPMI_ONLY!
 {$ENDIF}
-PROGRAM ShotgunGSFileViewer;
+PROGRAM GunshotGSFileViewer;
 {$M 64000}
 {$I DEFINES.INC}
 
 
-USES Gx2_Bp,Gx2_BpVC,Gr2_Bp,Fx2_Bp,Tx2_Bp,Shotgun,MkFFile,Dos,
+USES Gx2_Bp,Gx2_BpVC,Gr2_Bp,Fx2_Bp,Tx2_Bp,Gunshot,MkFFile,Dos,
      Img2_Bp,BsGraph,BsString,BsFile,Crt,BsMulti,BsVideo,FMode;
 
 
@@ -1590,7 +1590,7 @@ BEGIN
           Halt;
      END;
      IF SGDirectory[LENGTH(SGDirectory)]='\' THEN DEC(SGDirectory[0]);
-     SGDirectory := '\SHOTGUN';
+     SGDirectory := '\GUNSHOT';
      RESOURCES := SGDirectory+'\RESLOCAL\';
      GraphicsLibrary := SGDirectory+'\BIN\GUI.GXL';
      New(GFXBuffer);

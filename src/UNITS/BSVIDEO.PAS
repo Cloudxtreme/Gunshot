@@ -122,8 +122,8 @@ BEGIN
      FastWrite('À',5,1,25);
      FastWrite('ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ',5,2,16);
      FastWrite(InString,2,3,31);
-     FastWrite(ShotgunVersion,2,79-LENGTH(ShotgunVersion),31);
-     FastWrite(ShotgunCopyright,4,10,27);
+     FastWrite(GunshotVersion,2,79-LENGTH(GunshotVersion),31);
+     FastWrite(GunshotCopyright,4,10,27);
      GotoXY(1,7);
 END;
 

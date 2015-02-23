@@ -18,7 +18,7 @@ Interface
 
 
 Uses
-  Dos,Shotgun,BsString;
+  Dos,Gunshot,BsString;
 
 
 Type MKDateType = Record

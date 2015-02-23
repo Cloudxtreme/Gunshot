@@ -65,7 +65,7 @@ BEGIN
                WRITE(FShuttle,Shuttle);
                Shuttle.KeyPress := 'D';
                Shuttle.Action   := 5;
-               Shuttle.Text     := '\SHOTGUN\SGT_120.EXE';
+               Shuttle.Text     := '\GUNSHOT\GST_120.EXE';
                WRITE(FShuttle,Shuttle);
                CLOSE(FShuttle);
           END;
@@ -438,7 +438,7 @@ BEGIN
                FillChar(System_Info,SizeOf(System_Info),0);
                System_Info.sysop             := 'NEW SYSOP';
                System_Info.alias             := '';
-               System_Info.bbs_name          := 'NEW SHOTGUN SYSTEM';
+               System_Info.bbs_name          := 'NEW GUNSHOT SYSTEM';
                System_Info.location          := 'SOMEWHERE';
                System_Info.sys_idle          := 5*60;
                System_Info.page_start        := 10*3600;
@@ -473,7 +473,7 @@ BEGIN
                System_Info.FileAttach        := NoDrive(BaseDirectory)+'\ATTACH\';
                System_Info.CheckDupes        := 1;
                System_Info.CheckDupesCD      := 0;
-               System_Info.QWKPacketName     := 'SHOTGUN';
+               System_Info.QWKPacketName     := 'GUNSHOT';
                System_Info.QWKBBSId          := 'Unknown system';
                System_Info.QWKBBSPhone       := '-unpublished-';
                System_Info.QWKWelcome        := 'WELCOME';
@@ -728,7 +728,7 @@ BEGIN
                FaxCodes.FaxID                  := '000 000 0000';
                FaxCodes.FaxSendBPS             := 4;
                FaxCodes.FaxRecvBPS             := 4;
-               FaxCodes.FaxCoverPage           := '\SHOTGUN\DATA\COVER.TXT';
+               FaxCodes.FaxCoverPage           := '\GUNSHOT\DATA\COVER.TXT';
                FaxCodes.FaxPageHeader          := '$D   $T   From: $S   $I                            Page: $P/$N';
                FaxCodes.SetHardwareCompression := 'AT&H1&I0';
                ASSIGN(FFaxCodes,BaseDirectory+'\DATA\FAXCODES.'+_String(CurrentNode));
@@ -865,7 +865,7 @@ BEGIN
           IF NOT(_FileExists(BaseDirectory+'\DATA\ORIGINS.DAT')) THEN
           BEGIN
                FillChar(NetOrigins,SizeOf(NetOrigins),0);
-               NetOrigins.Net_Origin := 'Shotgun Professional SVGA Communications!';
+               NetOrigins.Net_Origin := 'Gunshot Professional SVGA Communications!';
                ASSIGN(FNetOrigins,BaseDirectory+'\DATA\ORIGINS.DAT');
                REWRITE(FNetOrigins);
                WRITE(FNetOrigins,NetOrigins);
@@ -942,7 +942,7 @@ BEGIN
      CheckFile('OPENING.DAT');
      CheckFile('NEWUSER.VGA');
      CheckFile('NEWUSER.ANS');
-     CheckFile('SGSCHEME.DAT');
+     CheckFile('GSSCHEME.DAT');
      CheckFile('FKEYS.DAT');
      CheckFile('EXTERNAL.DAT');
      CheckFile('HIDDEN.DAT');

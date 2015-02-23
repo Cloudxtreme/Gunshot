@@ -136,10 +136,10 @@ BEGIN
      BEGIN
           STR(loop,temp);
           IF loop=0 THEN temp := '';
-          IF _FileExists(Shotgun_Directory+'\FLICS\WELCOME'+temp+'.FLI') THEN
+          IF _FileExists(Gunshot_Directory+'\FLICS\WELCOME'+temp+'.FLI') THEN
           BEGIN
                bsWriteLog('Reading welcome screen (FLI) #'+_String(Loop),True);
-               PlayFLIFile(Shotgun_Directory+'\FLICS\WELCOME'+temp+'.FLI');
+               PlayFLIFile(Gunshot_Directory+'\FLICS\WELCOME'+temp+'.FLI');
           END
           ELSE IF DisplayGraphicFile('WELCOME'+temp,false,True,False) THEN
           BEGIN
@@ -182,10 +182,10 @@ PROCEDURE do_user_access;
 VAR  TheirAccess : String;
 BEGIN
      TheirAccess := _String(UserRecord.Security);
-     IF _FileExists(Shotgun_Directory+'\FLICS\UA'+TheirAccess+'.FLI') THEN
+     IF _FileExists(Gunshot_Directory+'\FLICS\UA'+TheirAccess+'.FLI') THEN
      BEGIN
           bsWriteLog('Reading user access screen #'+TheirAccess,True);
-          PlayFLIFile(Shotgun_Directory+'\FLICS\UA'+TheirAccess+'.FLI');
+          PlayFLIFile(Gunshot_Directory+'\FLICS\UA'+TheirAccess+'.FLI');
      END
      ELSE IF DisplayGraphicFile('UA'+TheirAccess,false,True,False) THEN
      BEGIN

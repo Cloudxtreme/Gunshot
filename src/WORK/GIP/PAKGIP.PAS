@@ -3,7 +3,7 @@
 PROGRAM GIPCompiler;
 
 
-USES Dos,ApMisc,Crt,FastW1,BsVideo,Version,Shotgun,BsKeys,BsString,BsFile,BsComp;
+USES Dos,ApMisc,Crt,FastW1,BsVideo,Version,Gunshot,BsKeys,BsString,BsFile,BsComp;
 
 
 TYPE BigBuffer       = Array[1..8192] Of Byte;
@@ -38,7 +38,7 @@ VAR  SAVESCRNScr     : SAVESCRNAScreen;
      FMouseDef2      : File Of _Mouse_Def;
      GIPHeader       : _GIPHeader;
      GIPFileHeader   : _GIPFileHeader;
-     ShotgunDir      : String[40];
+     GunshotDir      : String[40];
      TheFileName     : String[40];
      SOUNDDir        : String[40];
      FLICSDir        : String[40];
@@ -224,19 +224,19 @@ END;
 
 
 BEGIN
-     ShotgunDir  := ParamStr(1);
+     GunshotDir  := ParamStr(1);
      TheFileName := ParamStr(2);
      IF _UpperCase(ParamStr(3))='-REALNAME'
         THEN UseRealName := True
         ELSE UseRealName := False;
-     IF ShotgunDir[LENGTH(ShotgunDir)]='\' THEN Delete(ShotgunDir,LENGTH(ShotgunDir),1);
-     IF ((ShotgunDir='') OR (TheFileName='') OR NOT(_FileExists(TheFileName))) THEN
+     IF GunshotDir[LENGTH(GunshotDir)]='\' THEN Delete(GunshotDir,LENGTH(GunshotDir),1);
+     IF ((GunshotDir='') OR (TheFileName='') OR NOT(_FileExists(TheFileName))) THEN
      BEGIN
-          AppHeader('GIP Compiler/Creator For Shotgun Professional');
+          AppHeader('GIP Compiler/Creator For Gunshot Professional');
           WRITELN('   Syntax:   PAKGIP.EXE <basedir> <filename> <arg> ... ');
           WRITELN;
-          WRITELN('   <basedir>   Main Shotgun or Gui directory. ie: C:\SHOTGUN');
-          WRITELN('   <filename>  Full path/file name of SG file. ie: C:\SHOTGUN\TEST.SG');
+          WRITELN('   <basedir>   Main Gunshot or Gui directory. ie: C:\GUNSHOT');
+          WRITELN('   <filename>  Full path/file name of SG file. ie: C:\GUNSHOT\TEST.SG');
           WRITELN('   -REALNAME   Make the GIP have the same name as the *.SG file(s)');
           WRITELN('');
           HALT;
@@ -248,16 +248,16 @@ BEGIN
      GIPHeader.Date := ProperDate;
 
      SaveTheScreen;
-     DrawWindow(15,10,65,14,'GIP Compiler/Creator '+ShotgunVersion);
+     DrawWindow(15,10,65,14,'GIP Compiler/Creator '+GunshotVersion);
      InvertedBox(17,11,63,13);
-     SOUNDDir    := ShotgunDir+'\SOUND\';
-     FONTDir     := ShotgunDir+'\FONTS\';
-     ICONDir     := ShotgunDir+'\ICONS\';
-     JPEGDir     := ShotgunDir+'\IMAGES\';
-     FLICSDir    := ShotgunDir+'\FLICS\';
-     WorkDir     := ShotgunDir+'\!1\';
+     SOUNDDir    := GunshotDir+'\SOUND\';
+     FONTDir     := GunshotDir+'\FONTS\';
+     ICONDir     := GunshotDir+'\ICONS\';
+     JPEGDir     := GunshotDir+'\IMAGES\';
+     FLICSDir    := GunshotDir+'\FLICS\';
+     WorkDir     := GunshotDir+'\!1\';
      _CreatePath(WorkDir);
-     ChDir(ShotgunDir);
+     ChDir(GunshotDir);
      New(Buffer);
      FastWrite('Calculating CRCs:                  ',12,25,31);
      FastWrite(_PadRight(_NoPath(TheFileName),12),12,44,27);
@@ -1008,7 +1008,7 @@ BEGIN
           ERASE(FFile2);
      END;
      CLOSE(FFile);
-     ChDir(ShotgunDir);
+     ChDir(GunshotDir);
      Dec(WorkDir[0]);
      _NukeDir(WorkDir,False);
      Dispose(Buffer);

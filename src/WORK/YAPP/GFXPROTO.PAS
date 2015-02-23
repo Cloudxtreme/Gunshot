@@ -15,7 +15,7 @@ IMPLEMENTATION
 
 
 USES ApCom,ApPort,ApTimer,Globals,BsComp,ApMisc,Crt,BsFile,
-     AnsiSide,Gr2_Bp,BsGraph,_Win,_Text,Shotgun,FMode,BsString;
+     AnsiSide,Gr2_Bp,BsGraph,_Win,_Text,Gunshot,FMode,BsString;
 
 
 PROCEDURE RequestResource(FName: String);

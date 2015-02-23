@@ -229,7 +229,7 @@ BEGIN
           dtColours^.EditTextDisabled  := (7*16)+8;
           dtApp^.MenuBarY              := 2;
         END;
-     4: BEGIN {Shotgun Professional}
+     4: BEGIN {Gunshot Professional}
           dtColours^.MenuNormal        := (7*16)+0;
           dtColours^.MenuHighlight     := (7*16)+4;
           dtColours^.MenuSNormal       := (15*16)+0;
@@ -372,7 +372,7 @@ BEGIN
           FOR Loop := dtApp^.MenuBarY+1 TO (dtApp^.VideoMode-1) DO FastWrite(DeskTopFill,Loop,1,dtColours^.DeskTopFill);
         END;
      3,4:
-        BEGIN {Norton Utilities, Shotgun Professional}
+        BEGIN {Norton Utilities, Gunshot Professional}
           FOR Loop := dtApp^.MenuBarY+1 TO (dtApp^.VideoMode-1) DO FastWrite(DeskTopMenu,Loop,1,dtColours^.DeskTopFill);
         END;
      END;

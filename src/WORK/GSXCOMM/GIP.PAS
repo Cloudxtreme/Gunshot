@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,MiscStr,Screens,SBuffer,GotKeys,
-     KeyInput,BsLog,Dos,Gfx,Shotgun,BsString;
+     KeyInput,BsLog,Dos,Gfx,Gunshot,BsString;
 
 
 PROCEDURE ViewGipTopics(Category,TheDir: String);

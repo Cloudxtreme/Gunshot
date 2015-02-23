@@ -5,7 +5,7 @@ UNIT Misc;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE ResetDialTimer;
@@ -25,9 +25,9 @@ VAR  Inits  : _Mailer_Inits;
      FInits : File Of _Mailer_Inits;
 BEGIN
      IF MailerInfo.HandleFaxes THEN bsSendCommandString('AT+FCLASS=0',NodeInfo.CommandDelay);
-     IF _FileExists(Shotgun_Directory+'\DATA\INITS.'+_String(SimNode)) THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\INITS.'+_String(SimNode)) THEN
      BEGIN
-       ASSIGN(FInits,Shotgun_Directory+'\DATA\INITS.'+_String(SimNode));
+       ASSIGN(FInits,Gunshot_Directory+'\DATA\INITS.'+_String(SimNode));
        RESET(FInits);
        REPEAT
          READ(FInits,Inits);
@@ -49,10 +49,10 @@ BEGIN
      IF Mailer2Info.UseZedZapTransfers
         THEN DoZap := True
         ELSE DoZap := False;
-     IF _FileExists('\SHOTGUN\DATA\PASSWORD.DAT') THEN
+     IF _FileExists('\GUNSHOT\DATA\PASSWORD.DAT') THEN
      BEGIN
           AllDone := False;
-          ASSIGN(FSessionPW,'\SHOTGUN\DATA\PASSWORD.DAT');
+          ASSIGN(FSessionPW,'\GUNSHOT\DATA\PASSWORD.DAT');
           RESET(FSessionPW);
           REPEAT
                 READ(FSessionPW,SessionPW);
@@ -90,7 +90,7 @@ END;
 
 FUNCTION IsOurNode(InAddress: AddrType): Boolean;
 BEGIN
-     ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+     ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork);
      REPEAT
            READ(FNetwork,Network);

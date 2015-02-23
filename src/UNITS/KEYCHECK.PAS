@@ -136,7 +136,7 @@ BEGIN
      IF StillGood THEN
      BEGIN
        IsItRegistered := True;
-       OurAppName := App+' '+ShotgunVersion+'/Gold+';
+       OurAppName := App+' '+GunshotVersion+'/Gold+';
      END;
 END;
 

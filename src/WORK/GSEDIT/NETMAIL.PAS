@@ -5,7 +5,7 @@ UNIT NetMail;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE IndexAreas;
@@ -442,7 +442,7 @@ BEGIN
      BEGIN
           IF FastBaseHdr.Dest.Zone=0 THEN
           BEGIN
-               ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+               ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
                RESET(FNetwork);
                REPEAT
                      READ(FNetwork,Network);

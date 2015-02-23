@@ -5,7 +5,7 @@ UNIT GFX;
 INTERFACE
 
 
-USES ApTimer,Globals,Shotgun;
+USES ApTimer,Globals,Gunshot;
 
 
 TYPE Pick_Info    = RECORD
@@ -1119,7 +1119,7 @@ BEGIN
                                          ELSE R := 'Offline';
                END;
      107: R := UserRecord.password;
-     108: R := ShotgunVersion;
+     108: R := GunshotVersion;
      109: R := UsersFirstName;
      110: R := UsersLastName;
      111: STR(totals.total_calls,R);

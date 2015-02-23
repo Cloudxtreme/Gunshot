@@ -11,7 +11,7 @@ PROCEDURE SaveToBank(InString: String);
 IMPLEMENTATION
 
 
-USES Gr2_Bp,Globals,_Win,BHandler,_Icons,_Text,Gx2_BpVC,Gx2_Bp,Shotgun;
+USES Gr2_Bp,Globals,_Win,BHandler,_Icons,_Text,Gx2_BpVC,Gx2_Bp,Gunshot;
 
 
 PROCEDURE SaveToBank(InString: String);

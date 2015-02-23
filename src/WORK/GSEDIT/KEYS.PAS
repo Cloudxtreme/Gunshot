@@ -5,7 +5,7 @@ UNIT Keys;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 FUNCTION  SelectedAName    (InString: String; VAR TheAka: AddrType): Boolean;
@@ -70,7 +70,7 @@ BEGIN
      New(PickList);
      NumItems := 0;
 
-     ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+     ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork);
      REPEAT
            READ(FNetwork,Network);
@@ -420,9 +420,9 @@ END;
 FUNCTION InTheBook(TheName: String): Boolean;
 BEGIN
      TheName := _UpperCase(TheName);
-     IF _FileExists(Shotgun_Directory+'\DATA\PBOOK.DAT') THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\PBOOK.DAT') THEN
      BEGIN
-          ASSIGN(FPhoneBook,Shotgun_Directory+'\DATA\PBOOK.DAT');
+          ASSIGN(FPhoneBook,Gunshot_Directory+'\DATA\PBOOK.DAT');
           RESET(FPhoneBook);
           REPEAT
                 READ(FPhoneBook,PhoneBook);

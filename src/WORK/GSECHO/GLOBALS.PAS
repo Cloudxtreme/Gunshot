@@ -5,7 +5,7 @@ UNIT Globals;
 INTERFACE
 
 
-USES Shotgun,MkFFile,ApTimer,BsPkt,MkMsgAbs;
+USES Gunshot,MkFFile,ApTimer,BsPkt,MkMsgAbs;
 
 
 TYPE TwoDimensionAddr  = RECORD

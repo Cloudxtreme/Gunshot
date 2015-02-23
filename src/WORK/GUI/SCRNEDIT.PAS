@@ -14,7 +14,7 @@ IMPLEMENTATION
 USES Globals,Gr2_Bp,Cutouts,SetWork,Gx2_Bp,BsGraph,_Keys,Drag1,Drag2,Obs,
      _Icons,_Text,PalBoxes,DoDraw,Redraw,ObjSet,Crt,BHandler,_Pop,_Default,
      BsString,MiscDefs,_Win,LoadIcon,_FSelect,IconMisc,ImgDefs,_VSave,
-     Shotgun;
+     Gunshot;
 
 
 PROCEDURE ScreenEditor;

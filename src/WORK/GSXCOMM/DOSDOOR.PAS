@@ -58,7 +58,7 @@ BEGIN
                     ClrScr;
                     DumpUser;
                     ExecuteDosCommand(CommandPath+CommandLine);
-                    Chdir(Shotgun_Directory);
+                    Chdir(Gunshot_Directory);
                     Window(1,1,80,24);
                     TextColor(7);
                     TextBackground(0);
@@ -71,7 +71,7 @@ BEGIN
                          DoErrorLog(14,_String(NodeInfo.ComPort));
                          ClrScr;
                          WRITELN('Cannot initialize port!!!!');
-                         WRITELN('Shotgun is shutting down.');
+                         WRITELN('Gunshot is shutting down.');
                          WRITELN;
                          Halt;
                     END;
@@ -128,7 +128,7 @@ BEGIN
                ClrScr;
                DumpUser;
                ExecuteDosCommand(CommandPath+CommandLine);
-               Chdir(Shotgun_Directory);
+               Chdir(Gunshot_Directory);
                Window(1,1,80,24);
                TextColor(7);
                TextBackground(0);
@@ -141,7 +141,7 @@ BEGIN
                     DoErrorLog(14,_String(NodeInfo.ComPort));
                     ClrScr;
                     WRITELN('Cannot initialize port!!!!');
-                    WRITELN('Shotgun is shutting down.');
+                    WRITELN('Gunshot is shutting down.');
                     WRITELN;
                     Halt;
                END;

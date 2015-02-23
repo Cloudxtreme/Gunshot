@@ -109,7 +109,7 @@ BEGIN
                     PageUser.UserAlias  := UserRecord.Alias;
                     PageUser.Message    := Fields[1].Text;
                     PageUser.LineNumber := NodeNumber;
-                    ASSIGN(FPageUser,Shotgun_Directory+'\NODE'+_String(PageNode)+'\PAGE.NOW');
+                    ASSIGN(FPageUser,Gunshot_Directory+'\NODE'+_String(PageNode)+'\PAGE.NOW');
                     REWRITE(FPageUser);
                     WRITE(FPageUser,PageUser);
                     CLOSE(FPageUser);

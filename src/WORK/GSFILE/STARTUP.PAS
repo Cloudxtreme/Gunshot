@@ -25,7 +25,7 @@ PROCEDURE Help;
 IMPLEMENTATION
 
 
-USES FastW1,BsString,Globals,BsFile,BsMulti,Shotgun,Process,KeyCheck,
+USES FastW1,BsString,Globals,BsFile,BsMulti,Gunshot,Process,KeyCheck,
      Crt,LogFile,Dos,BsKeys,BsVideo,BsFido,BsExec,BsTime,ApTimer,BsLog;
 
 
@@ -246,12 +246,12 @@ BEGIN
      IF NOT(Status) THEN
      BEGIN
        WriteLogFile('! Missing data file(s)! Run GSConfig.');
-       WriteLogFile('! Check for - \SHOTGUN\DATA\LINKS.DAT');
-       WriteLogFile('!             \SHOTGUN\DATA\MAILER.DAT');
-       WriteLogFile('!             \SHOTGUN\DATA\SYSTEM.DAT');
-       WriteLogFile('!             \SHOTGUN\DATA\NETWORK.DAT');
-       WriteLogFile('!             \SHOTGUN\DATA\ARCHIVE.DAT');
-       WriteLogFile('!             \SHOTGUN\DATA\SCANNERS.DAT');
+       WriteLogFile('! Check for - \GUNSHOT\DATA\LINKS.DAT');
+       WriteLogFile('!             \GUNSHOT\DATA\MAILER.DAT');
+       WriteLogFile('!             \GUNSHOT\DATA\SYSTEM.DAT');
+       WriteLogFile('!             \GUNSHOT\DATA\NETWORK.DAT');
+       WriteLogFile('!             \GUNSHOT\DATA\ARCHIVE.DAT');
+       WriteLogFile('!             \GUNSHOT\DATA\SCANNERS.DAT');
      END;
      CASE SystemInfo.SwapMethod OF
      1:   SwapMethod := USE_EMS or USE_XMS;
@@ -372,7 +372,7 @@ END;
 PROCEDURE DrawOpeningScreen;
 BEGIN
      _HideCursor;
-     AppHeader('GSFile - TIC File Processor For Shotgun Professional');
+     AppHeader('GSFile - TIC File Processor For Gunshot Professional');
 END;
 
 

@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,Gr2_Bp,_Pick,MiscStr,Screens,GotKeys,_Mouse,
-     TagArea,KeyInput,ToggMsg,FilHeadr,Shotgun,FilGroup;
+     TagArea,KeyInput,ToggMsg,FilHeadr,Gunshot,FilGroup;
 
 
 PROCEDURE ChangeFileGroup;

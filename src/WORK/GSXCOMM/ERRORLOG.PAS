@@ -69,7 +69,7 @@ BEGIN
      105: Line := Line+'0105: Buffer Creation Error'+#13#10;
      106: Line := Line+'0106: Buffer Creation Error'+#13#10;
      END;
-     ASSIGN(log_file,Shotgun_Directory+'\LOGS\ERRORLOG.'+NodeString);
+     ASSIGN(log_file,Gunshot_Directory+'\LOGS\ERRORLOG.'+NodeString);
      {$I-}RESET(log_file,1);{$I+}
      IF IOResult<>0 THEN
      BEGIN

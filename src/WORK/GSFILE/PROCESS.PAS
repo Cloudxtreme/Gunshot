@@ -5,7 +5,7 @@ UNIT Process;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 FUNCTION  LoadTheTic: Boolean;
@@ -1144,7 +1144,7 @@ BEGIN
                    END;
                  END;
                  WRITELN(TFile,'Crc '+NewCrc);
-                 WRITELN(TFile,'Created by '+OurAppName+' '+ShotgunCopyright);
+                 WRITELN(TFile,'Created by '+OurAppName+' '+GunshotCopyright);
                  ASSIGN(TFile2,Mailer.Inbound+CurrentTicFile);
                  RESET(TFile2);
                  REPEAT
@@ -1221,9 +1221,9 @@ VAR  Work        : Byte;
      GSFileKill  : _GSFileKill_Record;
 BEGIN
      InString := _UpperCase(InString);
-     IF _FileExists(BaseDirectory+'\DATA\SGFPURGE.DAT') THEN
+     IF _FileExists(BaseDirectory+'\DATA\GSFPURGE.DAT') THEN
      BEGIN
-       ASSIGN(FGSFileKill,BaseDirectory+'\DATA\SGFPURGE.DAT');
+       ASSIGN(FGSFileKill,BaseDirectory+'\DATA\GSFPURGE.DAT');
        RESET(FGSFileKill);
        REPEAT
          READ(FGSFileKill,GSFileKill);

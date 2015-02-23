@@ -5,7 +5,7 @@ UNIT _Win;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE DrawWindow     (x1,y1,x2,y2: word; title: String; Number: Word);

@@ -13,7 +13,7 @@ IMPLEMENTATION
 
 
 USES Crt,Globals,ApPort,ApCom,BsLog,ApAbsFax,ApFax12,ApFaxCvt,ApTimer,
-     ApMisc,FastW1,SaveScrn,DrawScrn,BsMulti,Comm,Dos,Shotgun,
+     ApMisc,FastW1,SaveScrn,DrawScrn,BsMulti,Comm,Dos,Gunshot,
      BsFile,BsString,BsKeys,BsCom,BsExec,Scan,Sema,BsVideo,Misc;
 
 
@@ -89,10 +89,10 @@ VAR  L            : LongInt;
      PROCEDURE draw_status(InString: String; Level: Word);
      BEGIN
           CASE Level OF
-          0:   FastWrite(_PadRight(InString,35),10,33,ShotgunColours.GSMailWindowHighlight);
-          1:   FastWrite(_PadRight(InString,35),11,33,ShotgunColours.GSMailWindowHighlight);
-          2:   FastWrite(_PadRight(InString,35),12,33,ShotgunColours.GSMailWindowHighlight);
-          3:   FastWrite(_PadRight(InString,35),13,33,ShotgunColours.GSMailWindowHighlight);
+          0:   FastWrite(_PadRight(InString,35),10,33,GunshotColours.GSMailWindowHighlight);
+          1:   FastWrite(_PadRight(InString,35),11,33,GunshotColours.GSMailWindowHighlight);
+          2:   FastWrite(_PadRight(InString,35),12,33,GunshotColours.GSMailWindowHighlight);
+          3:   FastWrite(_PadRight(InString,35),13,33,GunshotColours.GSMailWindowHighlight);
           END;
      END;
 
@@ -175,14 +175,14 @@ BEGIN
      WhereXYAbs(KeepXY);
      SaveScreen(3);
      FastWrite(' Press Esc to abort the session                                         INBOUND ',
-               Window2+7,1,ShotgunColours.GSMailStatusHighlight);
+               Window2+7,1,GunshotColours.GSMailStatusHighlight);
      DrawWindow(15,7,70,15,'',True);
-     FastWrite(_PadBoth('INCOMING FAX CALL',53),8,16,ShotgunColours.GSMailWindowHighlight);
+     FastWrite(_PadBoth('INCOMING FAX CALL',53),8,16,GunshotColours.GSMailWindowHighlight);
      InvertedBox(17,9,68,14);
-     FastWrite(' Call From: ',10,20,ShotgunColours.GSMailWindowText);
-     FastWrite(' Fax Speed: ',11,20,ShotgunColours.GSMailWindowText);
-     FastWrite('    Status: ',12,20,ShotgunColours.GSMailWindowText);
-     FastWrite('Last Error: ',13,20,ShotgunColours.GSMailWindowText);
+     FastWrite(' Call From: ',10,20,GunshotColours.GSMailWindowText);
+     FastWrite(' Fax Speed: ',11,20,GunshotColours.GSMailWindowText);
+     FastWrite('    Status: ',12,20,GunshotColours.GSMailWindowText);
+     FastWrite('Last Error: ',13,20,GunshotColours.GSMailWindowText);
 END;
 
 
@@ -206,7 +206,7 @@ BEGIN
      ELSE FaxFile := Temp;
      FName := _NoPath(FaxFile);
      FPath := _GetFilePath(FaxFile);
-     IF FPath='' THEN FPath := Shotgun_Directory+'\';
+     IF FPath='' THEN FPath := Gunshot_Directory+'\';
      Dec(FPath[0]);
      {%1 Com Port}
      Work := Pos('%1',FaxComm);
@@ -246,8 +246,8 @@ BEGIN
           SetOrigVideoMode;
           bsClosePort(True);
           ChDir(FPath);
-          DoExec(FName,FaxComm,SwapMethod,Shotgun_Directory+'\NODE'+_String(SimNode));
-          ChDir(Shotgun_Directory);
+          DoExec(FName,FaxComm,SwapMethod,Gunshot_Directory+'\NODE'+_String(SimNode));
+          ChDir(Gunshot_Directory);
           bsOpenPort(NodeInfo.ComPort,NodeInfo.ComDevice,NodeInfo.BaudRate,
                      16384,False,NodeInfo.PortAddr,NodeInfo.IRQ,NodeInfo.Fifos,
                      NodeInfo.FlowControl,NodeInfo.ptBufferGetChar,

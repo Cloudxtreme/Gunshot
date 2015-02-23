@@ -89,10 +89,10 @@ BEGIN
      BEGIN
           STR(loop,temp);
           IF loop=0 THEN temp := '';
-          IF _FileExists(Shotgun_Directory+'\FLICS\WELCOME'+temp+'.FLI') THEN
+          IF _FileExists(Gunshot_Directory+'\FLICS\WELCOME'+temp+'.FLI') THEN
           BEGIN
                bsWriteLog('Reading welcome screen (FLI) #'+_String(Loop),False);
-               PlayFLIFile(Shotgun_Directory+'\FLICS\WELCOME'+temp+'.FLI');
+               PlayFLIFile(Gunshot_Directory+'\FLICS\WELCOME'+temp+'.FLI');
           END
           ELSE IF DisplayGraphicFile('WELCOME'+temp,false,True,False) THEN
           BEGIN
@@ -127,12 +127,12 @@ BEGIN
           STR(loop,temp);
           IF loop=0 THEN temp := '';
           BEGIN
-               IF _FileExists(Shotgun_Directory+'\FLICS\ONCE'+temp+'.FLI') THEN
+               IF _FileExists(Gunshot_Directory+'\FLICS\ONCE'+temp+'.FLI') THEN
                BEGIN
-                    FilesDate := _FileDate(Shotgun_Directory+'\FLICS\ONCE'+temp+'.FLI');
+                    FilesDate := _FileDate(Gunshot_Directory+'\FLICS\ONCE'+temp+'.FLI');
                     IF ((FilesDate<>0) AND (FilesDate>RealLastCall)) THEN
                     BEGIN
-                         PlayFLIFile(Shotgun_Directory+'\FLICS\ONCE'+temp+'.FLI');
+                         PlayFLIFile(Gunshot_Directory+'\FLICS\ONCE'+temp+'.FLI');
                     END;
                END
                ELSE IF _FileExists(SGDirectory+'\ONCE'+temp+'.SG') THEN
@@ -193,10 +193,10 @@ PROCEDURE do_user_access;
 VAR  TheirAccess : String;
 BEGIN
      TheirAccess := _String(UserRecord.Security);
-     IF _FileExists(Shotgun_Directory+'\FLICS\UA'+TheirAccess+'.FLI') THEN
+     IF _FileExists(Gunshot_Directory+'\FLICS\UA'+TheirAccess+'.FLI') THEN
      BEGIN
           bsWriteLog('Reading user access screen #'+TheirAccess,False);
-          PlayFLIFile(Shotgun_Directory+'\FLICS\UA'+TheirAccess+'.FLI');
+          PlayFLIFile(Gunshot_Directory+'\FLICS\UA'+TheirAccess+'.FLI');
      END
      ELSE IF DisplayGraphicFile('UA'+TheirAccess,false,True,False) THEN
      BEGIN

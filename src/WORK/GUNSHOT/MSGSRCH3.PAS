@@ -13,7 +13,7 @@ IMPLEMENTATION
 
 USES Globals,Screens,BsLog,Toggle,ANSIMisc,KeyInput,MiscStr,TagArea,
      GotKeys,MiscMsg,JamGet,ReadNew,MsgHeadr,ChangeMA,MFireUp,LstReads,
-     Shotgun,BsString;
+     Gunshot,BsString;
 
 
 PROCEDURE All_Mail;

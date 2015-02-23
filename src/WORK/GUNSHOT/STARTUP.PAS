@@ -26,7 +26,7 @@ USES ErrorLog,Globals,Crt,BsExec,ApTimer,Screens,KeyInput,ANSIMisc,
      MsgSrch2,FileSrch,ListFile,CBVMisc,CBV,FilHeadr,MsgHeadr,AllGone,
      GotKeys,UserFile,Time,NodeFile,Reload,Execute,Calls,CID,MiscStr,
      Report,DoorFile,ViewTFil,DoFreqs,CheckUsr,Commands,Version,CDs,
-     OvrVars,BsFile,BsString,BsTime,KeyCheck,Shotgun;
+     OvrVars,BsFile,BsString,BsTime,KeyCheck,Gunshot;
 
 
 VAR  NodeSelected   : Boolean;
@@ -147,9 +147,9 @@ BEGIN
      sysop_next            := false;
      user_pages            := 0;
      time_for_downloads    := 0;
-     DATA_Directory        := Shotgun_Directory+'\DATA';
-     INTR_Directory        := Shotgun_Directory+'\INTRNODE';
-     BIN_Directory         := Shotgun_Directory+'\BIN';
+     DATA_Directory        := Gunshot_Directory+'\DATA';
+     INTR_Directory        := Gunshot_Directory+'\INTRNODE';
+     BIN_Directory         := Gunshot_Directory+'\BIN';
      ASSIGN(FSystemInfo,DATA_Directory+'\SYSTEM.DAT');
      RESET(FSystemInfo);
      READ(FSystemInfo,system_info);
@@ -167,15 +167,15 @@ BEGIN
      END;
      IF System_Info.NodeDrive='' THEN
      BEGIN
-          NODE_Directory := Shotgun_Directory+'\NODE'+NodeString;
+          NODE_Directory := Gunshot_Directory+'\NODE'+NodeString;
      END
      ELSE
      BEGIN
-          Temp := Shotgun_Directory;
+          Temp := Gunshot_Directory;
           Delete(Temp,1,1);
           NODE_Directory := System_Info.NodeDrive+Temp+'\NODE'+NodeString;
      END;
-     SIG_Directory  := Shotgun_Directory+'\ANSISIGS';
+     SIG_Directory  := Gunshot_Directory+'\ANSISIGS';
      HOLD_Directory := NODE_Directory+'\HOLDFILE';
      SCAN_Directory := NODE_Directory+'\SCAN_DIR';
      CD_Directory   := NODE_Directory+'\CD_TEMP';
@@ -185,8 +185,8 @@ BEGIN
      _CreatePath(SIG_Directory);
      _CreatePath(BIN_Directory);
      _CreatePath(CD_Directory);
-     _CreatePath(Shotgun_Directory+'\MSGTAGS');
-     _CreatePath(Shotgun_Directory+'\FILETAGS');
+     _CreatePath(Gunshot_Directory+'\MSGTAGS');
+     _CreatePath(Gunshot_Directory+'\FILETAGS');
 END;
 
 
@@ -281,14 +281,14 @@ BEGIN
           Selectors[Loop] := Chr(48+Loop);
           SelectOK[Loop]  := False;
      END;
-     ASSIGN(FLangDir,Shotgun_Directory+'\DATA\LANGUAGE.DAT');
+     ASSIGN(FLangDir,Gunshot_Directory+'\DATA\LANGUAGE.DAT');
      RESET(FLangDir);
      Languages := FileSize(FLangDir);
      CLOSE(FLangDir);
      IF Languages=1 THEN
      BEGIN
           LanguageNum := 1;
-          ASSIGN(FLangDir,Shotgun_Directory+'\DATA\LANGUAGE.DAT');
+          ASSIGN(FLangDir,Gunshot_Directory+'\DATA\LANGUAGE.DAT');
           RESET(FLangDir);
           READ(FLangDir,LangDir);
           CLOSE(FLangDir);
@@ -297,7 +297,7 @@ BEGIN
      ELSE
      BEGIN
           NewTimerSecs(UsersTicker,system_info.Sys_Idle);
-          ASSIGN(FLangDir,Shotgun_Directory+'\DATA\LANGUAGE.DAT');
+          ASSIGN(FLangDir,Gunshot_Directory+'\DATA\LANGUAGE.DAT');
           RESET(FLangDir);
           Loop := 0;
           REPEAT
@@ -317,7 +317,7 @@ BEGIN
                 INC(Loop);
           UNTIL ((Loop=26) OR (SelectLang<>0));
           IF SelectLang=0 THEN SelectLang := 1;
-          ASSIGN(FLangDir,Shotgun_Directory+'\DATA\LANGUAGE.DAT');
+          ASSIGN(FLangDir,Gunshot_Directory+'\DATA\LANGUAGE.DAT');
           RESET(FLangDir);
           SEEK(FLangDir,SelectLang-1);
           READ(FLangDir,LangDir);
@@ -343,7 +343,7 @@ BEGIN
      DoErrorLog(40,_String(TheOne));
      TEXTCOLOR(7);
      ClrScr;
-     WRITELN('CRITICAL ERROR!!! Shotgun can only handle 255 lines!');
+     WRITELN('CRITICAL ERROR!!! Gunshot can only handle 255 lines!');
      WRITELN;
      Halt;
 END;
@@ -359,9 +359,9 @@ BEGIN
      doing_logon  := true;
      NodeNumber   := 1;
      STR(NodeNumber,NodeString);
-     Shotgun_Directory := _UpperCase(_GetFilePath(ParamStr(0)));
-     IF Shotgun_Directory[Length(Shotgun_Directory)]='\' THEN Dec(Shotgun_Directory[0]);
-     ChDir(shotgun_directory);
+     Gunshot_Directory := _UpperCase(_GetFilePath(ParamStr(0)));
+     IF Gunshot_Directory[Length(Gunshot_Directory)]='\' THEN Dec(Gunshot_Directory[0]);
+     ChDir(gunshot_directory);
      get_params;
      HighVideo;
      Textcolor(7);
@@ -370,9 +370,9 @@ BEGIN
      TextMode(C80);
      Window(1,1,80,24);
      IF NOT(DirectWrites) THEN DirectVideo := False;
-     _CreatePath(shotgun_directory+'\NODE'+NodeString);
+     _CreatePath(gunshot_directory+'\NODE'+NodeString);
      IF (NodeNumber>255) THEN CantDoIt(NodeNumber);
-     CheckRegistered(shotgun_directory+'\NODE'+NodeString,'Shotgun');
+     CheckRegistered(gunshot_directory+'\NODE'+NodeString,'Gunshot');
      bsSetLog(OurAppName,'',NodeNumber);
      defines;
      read_system_data;
@@ -977,7 +977,7 @@ BEGIN
           DumpUser;
           make_door_files(0,1);
           ExecuteDosCommand('PRELOG.BAT '+NodeString+' '+ComString+' '+BaudString);
-          Chdir(Shotgun_Directory);
+          Chdir(Gunshot_Directory);
           ReloadUser;
      END;
 END;

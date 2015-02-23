@@ -5,7 +5,7 @@ UNIT _Mouse;
 INTERFACE
 
 
-USES Globals,Gx2_Bp,Dos,Shotgun;
+USES Globals,Gx2_Bp,Dos,Gunshot;
 
 
 VAR MouseVisible  : Boolean;

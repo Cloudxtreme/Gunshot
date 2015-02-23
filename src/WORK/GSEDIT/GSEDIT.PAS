@@ -20,8 +20,8 @@ BEGIN
      FUserList.Init(32768);
      New(SaveScreen2);
      New(SaveScreen3);
-     Shotgun_Directory := Temp[1]+':\SHOTGUN';
-     ChDir(Shotgun_Directory);
+     Gunshot_Directory := Temp[1]+':\GUNSHOT';
+     ChDir(Gunshot_Directory);
      SimNode         := 1;
      FOR loop := 1 TO Paramcount DO
      BEGIN
@@ -32,18 +32,18 @@ BEGIN
                SimNode := _Numeric(Temp);
           END;
      END;
-     ASSIGN(FSystemInfo,Shotgun_Directory+'\DATA\SYSTEM.DAT');
+     ASSIGN(FSystemInfo,Gunshot_Directory+'\DATA\SYSTEM.DAT');
      RESET(FSystemInfo);
      READ(FSystemInfo,SystemInfo);
      CLOSE(FSystemInfo);
 
-     ASSIGN(FMailerInfo,Shotgun_Directory+'\DATA\MAILER.DAT');
+     ASSIGN(FMailerInfo,Gunshot_Directory+'\DATA\MAILER.DAT');
      RESET(FMailerInfo);
      SEEK(FMailerInfo,SimNode-1);
      READ(FMailerInfo,MailerInfo);
      CLOSE(FMailerInfo);
 
-     ASSIGN(FExternalApps,Shotgun_Directory+'\DATA\EXTERNAL.DAT');
+     ASSIGN(FExternalApps,Gunshot_Directory+'\DATA\EXTERNAL.DAT');
      RESET(FExternalApps);
      READ(FExternalApps,ExternalApps);
      CLOSE(FExternalApps);

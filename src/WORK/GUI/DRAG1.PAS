@@ -16,7 +16,7 @@ PROCEDURE GetBezierDraw;
 IMPLEMENTATION
 
 
-USES Globals,BsGraph,Gr2_Bp,Gx2_Bp,_Keys,Obs,Redraw,_Bezier,Shotgun;
+USES Globals,BsGraph,Gr2_Bp,Gx2_Bp,_Keys,Obs,Redraw,_Bezier,Gunshot;
 
 
 PROCEDURE GetPolyDraw;

@@ -2,7 +2,7 @@
   REAL MODE ONLY!
 {$ENDIF}
 {$M 48000,0,655360}
-PROGRAM ShotgunANSI;
+PROGRAM GunshotANSI;
 {$I DEFINES.INC}
 
 
@@ -699,7 +699,7 @@ BEGIN
        DoErrorLog(14,_String(NodeInfo.ComPort));
        ClrScr;
        WRITELN('Cannot initialize port!!!!');
-       WRITELN('Shotgun is shutting down.');
+       WRITELN('Gunshot is shutting down.');
        WRITELN;
      END;
 END.

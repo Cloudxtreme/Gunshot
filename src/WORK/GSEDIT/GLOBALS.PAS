@@ -5,7 +5,7 @@ UNIT Globals;
 INTERFACE
 
 
-USES  Shotgun,Dos,MkFFile,ApTimer;
+USES  Gunshot,Dos,MkFFile,ApTimer;
 
 
 CONST edSave             : Byte = 1;
@@ -127,7 +127,7 @@ VAR   FMailerInfo        : File Of _Mailer_Record;
       SaveScreen1        : Array[1..4000] Of Byte;
       SaveScreen2        : ^SaveScrn_2;
       SaveScreen3        : ^SaveScrn_3;
-      Shotgun_Directory  : String[80];
+      Gunshot_Directory  : String[80];
       NumMsgs            : Word;
       Indexes            : Array[1..3000] Of Word;
       Current            : Word;

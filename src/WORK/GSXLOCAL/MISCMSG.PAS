@@ -5,7 +5,7 @@ UNIT MiscMsg;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 FUNCTION  TimeToLongint   (St: String)                           : Longint;

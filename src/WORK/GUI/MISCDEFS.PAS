@@ -14,7 +14,7 @@ IMPLEMENTATION
 
 
 USES Globals,Gr2_Bp,_Win,PalBoxes,BHandler,BsGraph,Crt,
-     BsKeys,BsString,Dos,Tx2_Bp,PickLst,_Text,Shotgun;
+     BsKeys,BsString,Dos,Tx2_Bp,PickLst,_Text,Gunshot;
 
 
 PROCEDURE DoChangeWindow;

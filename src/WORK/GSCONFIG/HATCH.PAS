@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES CnfgVars,BsString,BsFile,BsCrc,Defaults,Version,Dos,
-     TicName,Misc,Shotgun,BsFido,MkMisc,BsAkas,KeyCheck;
+     TicName,Misc,Gunshot,BsFido,MkMisc,BsAkas,KeyCheck;
 
 
 
@@ -141,7 +141,7 @@ BEGIN
      OutTic.FileName := 'File '+_NoPath(FileName);
      OutTic.Desc     := 'Desc '+Desc;
      OutTic.Crc      := 'Crc '+FileCrc32(FileName);
-     OutTic.Sig      := OurAppName+' '+ShotgunCopyright;
+     OutTic.Sig      := OurAppName+' '+GunshotCopyright;
      OutTic.Area     := '';
      OutTic.AreaName := '';
      ASSIGN(FFileArea,BaseDirectory+'\DATA\FA000000.DAT');

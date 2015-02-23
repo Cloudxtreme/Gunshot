@@ -12,7 +12,7 @@ PROCEDURE SortSeenBys;
 IMPLEMENTATION
 
 
-USES BsPkt,Globals,BsFile,BsLog,Shotgun,BsAkas,Common,BsFido,_EchoTag,
+USES BsPkt,Globals,BsFile,BsLog,Gunshot,BsAkas,Common,BsFido,_EchoTag,
      BsString,Crt,BsVideo,BsCrc,MkOpen,MkMsgAbs,DupeBase,KeyCheck;
 
 

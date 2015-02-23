@@ -5,7 +5,7 @@ UNIT NList;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 FUNCTION NodeListEntryFound(InAddr: AddrType): Boolean;

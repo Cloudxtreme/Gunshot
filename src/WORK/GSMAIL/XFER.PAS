@@ -57,55 +57,55 @@ VAR  TTT : String;
           SaveScreen(1);
           IF CallingOut
              THEN FastWrite(' Press Esc to abort the session                                        OUTBOUND ',
-                            NumLines,1,ShotgunColours.GSMailStatusHighlight)
+                            NumLines,1,GunshotColours.GSMailStatusHighlight)
              ELSE FastWrite(' Press Esc to abort the session                                         INBOUND ',
-                            NumLines,1,ShotgunColours.GSMailStatusHighlight);
+                            NumLines,1,GunshotColours.GSMailStatusHighlight);
           DrawWindow(3,2,78,NumLines-2,'',True);
-          CASE ShotgunColours.GSMailWindowFrameStyle OF
+          CASE GunshotColours.GSMailWindowFrameStyle OF
           1:   BEGIN {3D}
-                 FastWrite('À',6,3,ShotgunColours.GSMailWindowFrameHigh);
-                 FastWrite(_Replicate('Ä',74)+'Ù',6,4,ShotgunColours.GSMailWindowFrameLow);
-                 FastWrite('Ú'+_Replicate('Ä',74),15,3,ShotgunColours.GSMailWindowFrameHigh);
-                 FastWrite('¿',15,78,ShotgunColours.GSMailWindowFrameLow);
+                 FastWrite('À',6,3,GunshotColours.GSMailWindowFrameHigh);
+                 FastWrite(_Replicate('Ä',74)+'Ù',6,4,GunshotColours.GSMailWindowFrameLow);
+                 FastWrite('Ú'+_Replicate('Ä',74),15,3,GunshotColours.GSMailWindowFrameHigh);
+                 FastWrite('¿',15,78,GunshotColours.GSMailWindowFrameLow);
                END;
           2:   BEGIN {Standard}
-                 FastWrite('Ã'+_Replicate('Ä',74)+'´',6,3,ShotgunColours.GSMailWindowFrameLow);
-                 FastWrite('Ã'+_Replicate('Ä',74)+'´',15,3,ShotgunColours.GSMailWindowFrameLow);
+                 FastWrite('Ã'+_Replicate('Ä',74)+'´',6,3,GunshotColours.GSMailWindowFrameLow);
+                 FastWrite('Ã'+_Replicate('Ä',74)+'´',15,3,GunshotColours.GSMailWindowFrameLow);
                END;
           END;
-          FOR Loop := 7 TO 14 DO FastWrite('³',Loop,53,ShotgunColours.GSMailWindowFrameLow);
+          FOR Loop := 7 TO 14 DO FastWrite('³',Loop,53,GunshotColours.GSMailWindowFrameLow);
      END;
 
      PROCEDURE ClearDataAreas;
      VAR  Loop : Word;
      BEGIN
-          FastWrite('Block Size :         ',7,55,ShotgunColours.GSMailWindowText);
-          FastWrite('CRC Type   :         ',8,55,ShotgunColours.GSMailWindowText);
-          FastWrite('Errors     :         ',9,55,ShotgunColours.GSMailWindowText);
-          FastWrite('File Start :         ',10,55,ShotgunColours.GSMailWindowText);
-          FastWrite('Total Time :',11,55,ShotgunColours.GSMailWindowText);
-          FastWrite('Status   :                    Speed :',7,6,ShotgunColours.GSMailWindowText);
-          FastWrite('Protocol :                    Time  :          ',8,6,ShotgunColours.GSMailWindowText);
-          FastWrite('Filename :                    Left  :          ',9,6,ShotgunColours.GSMailWindowText);
-          FastWrite('Bytes    :                    CPS   :          ',10,6,ShotgunColours.GSMailWindowText);
-          FastWrite('Sent     :                    Eff % :          ',11,6,ShotgunColours.GSMailWindowText);
-          FastWrite('Current  :',13,6,ShotgunColours.GSMailWindowText);
-          FastWrite('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°',13,17,ShotgunColours.GSMailProgressBarBack);
-          FastWrite('    ',13,48,ShotgunColours.GSMailWindowText);
+          FastWrite('Block Size :         ',7,55,GunshotColours.GSMailWindowText);
+          FastWrite('CRC Type   :         ',8,55,GunshotColours.GSMailWindowText);
+          FastWrite('Errors     :         ',9,55,GunshotColours.GSMailWindowText);
+          FastWrite('File Start :         ',10,55,GunshotColours.GSMailWindowText);
+          FastWrite('Total Time :',11,55,GunshotColours.GSMailWindowText);
+          FastWrite('Status   :                    Speed :',7,6,GunshotColours.GSMailWindowText);
+          FastWrite('Protocol :                    Time  :          ',8,6,GunshotColours.GSMailWindowText);
+          FastWrite('Filename :                    Left  :          ',9,6,GunshotColours.GSMailWindowText);
+          FastWrite('Bytes    :                    CPS   :          ',10,6,GunshotColours.GSMailWindowText);
+          FastWrite('Sent     :                    Eff % :          ',11,6,GunshotColours.GSMailWindowText);
+          FastWrite('Current  :',13,6,GunshotColours.GSMailWindowText);
+          FastWrite('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°',13,17,GunshotColours.GSMailProgressBarBack);
+          FastWrite('    ',13,48,GunshotColours.GSMailWindowText);
           IF (SessionType<>'FTS-1') THEN
           BEGIN
             IF TransferMode=Transmit THEN
             BEGIN
-              FastWrite('Total    :',14,6,ShotgunColours.GSMailWindowText);
-              FastWrite('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°',14,17,ShotgunColours.GSMailProgressBarBack);
-              FastWrite('    ',14,48,ShotgunColours.GSMailWindowText);
+              FastWrite('Total    :',14,6,GunshotColours.GSMailWindowText);
+              FastWrite('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°',14,17,GunshotColours.GSMailProgressBarBack);
+              FastWrite('    ',14,48,GunshotColours.GSMailWindowText);
             END
-            ELSE FastWrite(_Replicate(' ',46),14,6,ShotgunColours.GSMailWindowText);
+            ELSE FastWrite(_Replicate(' ',46),14,6,GunshotColours.GSMailWindowText);
           END;
-          FastWrite('Sync With Remote',7,17,ShotgunColours.GSMailWindowHighlight);
+          FastWrite('Sync With Remote',7,17,GunshotColours.GSMailWindowHighlight);
           FastWrite(_PadRight(' ###  Filename       Status     Bytes     Date        CPS    Time',74),
-                    16,4,ShotgunColours.GSMailMenuSelected);
-          FOR Loop := 17 TO NumLines-3 DO FastWrite(_Replicate(' ',74),Loop,4,ShotgunColours.GSMailWindowText);
+                    16,4,GunshotColours.GSMailMenuSelected);
+          FOR Loop := 17 TO NumLines-3 DO FastWrite(_Replicate(' ',74),Loop,4,GunshotColours.GSMailWindowText);
           pCurrent := 0;
      END;
 
@@ -113,17 +113,17 @@ BEGIN
   CASE WhichWay OF
   0:   BEGIN
          DrawMainWindow;
-         FastWrite(_Mid(RemoteSystem.BBSName,1,60),3,5,ShotgunColours.GSMailWindowHighlight);
+         FastWrite(_Mid(RemoteSystem.BBSName,1,60),3,5,GunshotColours.GSMailWindowHighlight);
          IF RemoteSystem.MailerVersion=''
            THEN TTT := RemoteSystem.MailerName
            ELSE TTT := RemoteSystem.MailerName+' '+RemoteSystem.MailerVersion;
-         FastWrite(TTT,3,77-LENGTH(TTT),ShotgunColours.GSMailWindowText);
-         FastWrite(RemoteSystem.Location,4,5,ShotgunColours.GSMailWindowText);
-         FastWrite(RemoteSystem.Sysop,5,5,ShotgunColours.GSMailWindowText);
+         FastWrite(TTT,3,77-LENGTH(TTT),GunshotColours.GSMailWindowText);
+         FastWrite(RemoteSystem.Location,4,5,GunshotColours.GSMailWindowText);
+         FastWrite(RemoteSystem.Sysop,5,5,GunshotColours.GSMailWindowText);
          TTT := AddressToString(RemoteSystem.Akas[1]);
-         FastWrite(TTT,4,77-LENGTH(TTT),ShotgunColours.GSMailWindowText);
-         FastWrite(SessionType,5,77-LENGTH(SessionType),ShotgunColours.GSMailWindowText);
-         FastWrite(_String(ConnectRate),7,44,ShotgunColours.GSMailWindowHighlight);
+         FastWrite(TTT,4,77-LENGTH(TTT),GunshotColours.GSMailWindowText);
+         FastWrite(SessionType,5,77-LENGTH(SessionType),GunshotColours.GSMailWindowText);
+         FastWrite(_String(ConnectRate),7,44,GunshotColours.GSMailWindowHighlight);
        END;
   1,2: ClearDataAreas;
   3:   BEGIN
@@ -135,19 +135,19 @@ BEGIN
   4:   BEGIN
          DrawMainWindow;
          ClearDataAreas;
-         FastWrite(SessionType,5,77-LENGTH(SessionType),ShotgunColours.GSMailWindowText);
-         FastWrite(_String(ConnectRate),7,44,ShotgunColours.GSMailWindowHighlight);
+         FastWrite(SessionType,5,77-LENGTH(SessionType),GunshotColours.GSMailWindowText);
+         FastWrite(_String(ConnectRate),7,44,GunshotColours.GSMailWindowHighlight);
        END;
   5:   BEGIN
-         FastWrite(_Mid(RemoteSystem.BBSName,1,60),3,5,ShotgunColours.GSMailWindowHighlight);
+         FastWrite(_Mid(RemoteSystem.BBSName,1,60),3,5,GunshotColours.GSMailWindowHighlight);
          IF RemoteSystem.MailerVersion=''
            THEN TTT := RemoteSystem.MailerName
            ELSE TTT := RemoteSystem.MailerName+' '+RemoteSystem.MailerVersion;
-         FastWrite(TTT,3,77-LENGTH(TTT),ShotgunColours.GSMailWindowText);
-         FastWrite(RemoteSystem.Location,4,5,ShotgunColours.GSMailWindowText);
-         FastWrite(RemoteSystem.Sysop,5,5,ShotgunColours.GSMailWindowText);
+         FastWrite(TTT,3,77-LENGTH(TTT),GunshotColours.GSMailWindowText);
+         FastWrite(RemoteSystem.Location,4,5,GunshotColours.GSMailWindowText);
+         FastWrite(RemoteSystem.Sysop,5,5,GunshotColours.GSMailWindowText);
          TTT := AddressToString(RemoteSystem.Akas[1]);
-         FastWrite(TTT,4,77-LENGTH(TTT),ShotgunColours.GSMailWindowText);
+         FastWrite(TTT,4,77-LENGTH(TTT),GunshotColours.GSMailWindowText);
        END;
   END;
 END;
@@ -174,25 +174,25 @@ VAR   CurFileSize         : Longint;
 
       PROCEDURE ClearProgress;
       BEGIN
-           FastWrite('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°',13,17,ShotgunColours.GSMailProgressBarBack);
-           FastWrite('    ',13,48,ShotgunColours.GSMailWindowText);
+           FastWrite('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°',13,17,GunshotColours.GSMailProgressBarBack);
+           FastWrite('    ',13,48,GunshotColours.GSMailWindowText);
            pCurrent := 0;
       END;
 
       PROCEDURE ClearData;
       BEGIN
-           FastWrite('Protocol :                    Time  :          ',8,6,ShotgunColours.GSMailWindowText);
-           FastWrite('Filename :                    Left  :          ',9,6,ShotgunColours.GSMailWindowText);
-           FastWrite('Bytes    :                    CPS   :          ',10,6,ShotgunColours.GSMailWindowText);
-           FastWrite('Sent     :                    Eff % :          ',11,6,ShotgunColours.GSMailWindowText);
-           FastWrite('Block Size :         ',7,55,ShotgunColours.GSMailWindowText);
-           FastWrite('CRC Type   :         ',8,55,ShotgunColours.GSMailWindowText);
-           FastWrite('Errors     :         ',9,55,ShotgunColours.GSMailWindowText);
-           FastWrite('File Start :         ',10,55,ShotgunColours.GSMailWindowText);
+           FastWrite('Protocol :                    Time  :          ',8,6,GunshotColours.GSMailWindowText);
+           FastWrite('Filename :                    Left  :          ',9,6,GunshotColours.GSMailWindowText);
+           FastWrite('Bytes    :                    CPS   :          ',10,6,GunshotColours.GSMailWindowText);
+           FastWrite('Sent     :                    Eff % :          ',11,6,GunshotColours.GSMailWindowText);
+           FastWrite('Block Size :         ',7,55,GunshotColours.GSMailWindowText);
+           FastWrite('CRC Type   :         ',8,55,GunshotColours.GSMailWindowText);
+           FastWrite('Errors     :         ',9,55,GunshotColours.GSMailWindowText);
+           FastWrite('File Start :         ',10,55,GunshotColours.GSMailWindowText);
       END;
 
 BEGIN
-     FastWrite(HoursMinutesSeconds(ElapsedTimeInSecs(SessionTimer)),11,68,ShotgunColours.GSMailWindowHighlight);
+     FastWrite(HoursMinutesSeconds(ElapsedTimeInSecs(SessionTimer)),11,68,GunshotColours.GSMailWindowHighlight);
      IF ((Starting) OR (Ending)) THEN
      BEGIN
        ClearData;
@@ -224,28 +224,28 @@ BEGIN
            IF Protocol=ZModem THEN TheProto := 'ZModem       '
                               ELSE TheProto := 'XModem       ';
            IF ((CurBytesTransferred>CurFileSize) AND (CurFileSize<>0)) THEN CurBytesTransferred := CurFileSize;
-           FastWrite(TheProto,8,17,ShotgunColours.GSMailWindowHighlight);
+           FastWrite(TheProto,8,17,GunshotColours.GSMailWindowHighlight);
            Temp := TheFile;
            Ext  := _GetFileExtension(Temp);
-                IF Ext='REQ' THEN FastWrite('File Request',9,17,ShotgunColours.GSMailWindowHighlight)
-           ELSE IF Ext='PKT' THEN FastWrite('Mail Packet ',9,17,ShotgunColours.GSMailWindowHighlight)
-           ELSE FastWrite(_PadRight(Temp,12),9,17,ShotgunColours.GSMailWindowHighlight);
+                IF Ext='REQ' THEN FastWrite('File Request',9,17,GunshotColours.GSMailWindowHighlight)
+           ELSE IF Ext='PKT' THEN FastWrite('Mail Packet ',9,17,GunshotColours.GSMailWindowHighlight)
+           ELSE FastWrite(_PadRight(Temp,12),9,17,GunshotColours.GSMailWindowHighlight);
            IF (TheProto<>'XModem       ') THEN
            BEGIN
              S := _String(CurFileSize);
-             FastWrite(_PadRight(S,9),10,17,ShotgunColours.GSMailWindowHighlight);
-             FastWrite(_PadRight(_String(CurBytesTransferred),9),11,17,ShotgunColours.GSMailWindowHighlight);
+             FastWrite(_PadRight(S,9),10,17,GunshotColours.GSMailWindowHighlight);
+             FastWrite(_PadRight(_String(CurBytesTransferred),9),11,17,GunshotColours.GSMailWindowHighlight);
              FastWrite(_PadRight(FormatMinSec(EstimateTransferSecs(P,CurFileSize)),6),
-                       8,44,ShotgunColours.GSMailWindowHighlight);
+                       8,44,GunshotColours.GSMailWindowHighlight);
              FastWrite(_PadRight(FormatMinSec(EstimateTransferSecs(P,CurBytesRemaining)),6),
-                       9,44,ShotgunColours.GSMailWindowHighlight);
+                       9,44,GunshotColours.GSMailWindowHighlight);
            END
            ELSE
            BEGIN
-             FastWrite('n/a      ',10,17,ShotgunColours.GSMailWindowHighlight);
-             FastWrite('n/a      ',11,17,ShotgunColours.GSMailWindowHighlight);
-             FastWrite('n/a   ',8,44,ShotgunColours.GSMailWindowHighlight);
-             FastWrite('n/a   ',9,44,ShotgunColours.GSMailWindowHighlight);
+             FastWrite('n/a      ',10,17,GunshotColours.GSMailWindowHighlight);
+             FastWrite('n/a      ',11,17,GunshotColours.GSMailWindowHighlight);
+             FastWrite('n/a   ',8,44,GunshotColours.GSMailWindowHighlight);
+             FastWrite('n/a   ',9,44,GunshotColours.GSMailWindowHighlight);
            END;
            IF CurElapsedTics>0 THEN
            BEGIN
@@ -254,19 +254,19 @@ BEGIN
              LastCPS   := ActualCPS;
            END
            ELSE ActualCPS := 0;
-           FastWrite(_PadRight(_String(ActualCPS),6),10,44,ShotgunColours.GSMailWindowHighlight);
+           FastWrite(_PadRight(_String(ActualCPS),6),10,44,GunshotColours.GSMailWindowHighlight);
            MaxCPS := ConnectRate DIV 10;
            IF MaxCPS>0 THEN Efficiency := (ActualCPS/MaxCPS)*100.0
                        ELSE Efficiency := 0.0;
            Eff := Round(Efficiency);
            LastPercent := _String(Eff)+'%';
-           FastWrite(_PadRight(_String(Eff),8),11,44,ShotgunColours.GSMailWindowHighlight);
+           FastWrite(_PadRight(_String(Eff),8),11,44,GunshotColours.GSMailWindowHighlight);
            IF (CurFileSize<>0) THEN DoProgressBar(CurBytesTransferred,CurFileSize,30,pCurrent,17,13,True);
            IF ((TransferMode=Transmit) AND (SessionType<>'FTS-1')) THEN
            BEGIN
              IF (BytesToSend<>0) THEN DoProgressBar(BytesActuallySent+CurBytesTransferred,BytesToSend,30,pTotal,17,14,True);
            END;
-           FastWrite(_PadRight(_String(GetBlockSize(P)),9),7,68,ShotgunColours.GSMailWindowHighlight);
+           FastWrite(_PadRight(_String(GetBlockSize(P)),9),7,68,GunshotColours.GSMailWindowHighlight);
            CASE GetCheckType(P) OF
            bcNone:      Temp := bcsNone;
            bcCheckSum1: Temp := bcsCheckSum1;
@@ -275,9 +275,9 @@ BEGIN
            bcCrc32:     Temp := bcsCrc32;
            bcCrcK:      Temp := bcsCrcK;
            END;
-           FastWrite(_PadRight(Temp,9),8,68,ShotgunColours.GSMailWindowHighlight);
-           FastWrite(_PadRight(_String(GetTotalErrors(P)),9),9,68,ShotgunColours.GSMailWindowHighlight);
-           FastWrite(_PadRight(_String(GetInitialFilePos(P)),9),10,68,ShotgunColours.GSMailWindowHighlight);
+           FastWrite(_PadRight(Temp,9),8,68,GunshotColours.GSMailWindowHighlight);
+           FastWrite(_PadRight(_String(GetTotalErrors(P)),9),9,68,GunshotColours.GSMailWindowHighlight);
+           FastWrite(_PadRight(_String(GetInitialFilePos(P)),9),10,68,GunshotColours.GSMailWindowHighlight);
          END;
        END;
      END;
@@ -300,43 +300,43 @@ VAR  TheExt    : String;
           BEGIN
             Get(4,18,77,NumLines-3);
             Put(4,17);
-            FastWrite(_Replicate(' ',74),NumLines-3,4,ShotgunColours.GSMailWindowText);
+            FastWrite(_Replicate(' ',74),NumLines-3,4,GunshotColours.GSMailWindowText);
             CurrentYPos := NumLines-3;
           END;
      END;
 
      PROCEDURE DoSent;
      BEGIN
-          FastWrite(_String(FileCount),CurrentYPos,5,ShotgunColours.GSMailWindowText);
-          FastWrite(_NoPath(GetPathName(P)),CurrentYPos,10,ShotgunColours.GSMailWindowText);
-          FastWrite('Complete',CurrentYPos,25,ShotgunColours.GSMailWindowText);
-          FastWrite(_String(FSize),CurrentYPos,36,ShotgunColours.GSMailWindowText);
-          FastWrite(_UnpackedDate(_FileDate(GetPathName(P))),CurrentYPos,46,ShotgunColours.GSMailWindowText);
-          FastWrite(_String(LastCPS),CurrentYPos,58,ShotgunColours.GSMailWindowText);
-          FastWrite(FormatMinSec(Tics2Secs(GetElapsedTics(P))),CurrentYPos,65,ShotgunColours.GSMailWindowText);
+          FastWrite(_String(FileCount),CurrentYPos,5,GunshotColours.GSMailWindowText);
+          FastWrite(_NoPath(GetPathName(P)),CurrentYPos,10,GunshotColours.GSMailWindowText);
+          FastWrite('Complete',CurrentYPos,25,GunshotColours.GSMailWindowText);
+          FastWrite(_String(FSize),CurrentYPos,36,GunshotColours.GSMailWindowText);
+          FastWrite(_UnpackedDate(_FileDate(GetPathName(P))),CurrentYPos,46,GunshotColours.GSMailWindowText);
+          FastWrite(_String(LastCPS),CurrentYPos,58,GunshotColours.GSMailWindowText);
+          FastWrite(FormatMinSec(Tics2Secs(GetElapsedTics(P))),CurrentYPos,65,GunshotColours.GSMailWindowText);
           AdvancePointer;
      END;
 
      PROCEDURE DoStart;
      BEGIN
-          FastWrite(_String(FileCount),CurrentYPos,5,ShotgunColours.GSMailWindowHighlight);
-          FastWrite(_NoPath(GetPathName(P)),CurrentYPos,10,ShotgunColours.GSMailWindowHighlight);
-          FastWrite('Current ',CurrentYPos,25,ShotgunColours.GSMailWindowHighlight);
+          FastWrite(_String(FileCount),CurrentYPos,5,GunshotColours.GSMailWindowHighlight);
+          FastWrite(_NoPath(GetPathName(P)),CurrentYPos,10,GunshotColours.GSMailWindowHighlight);
+          FastWrite('Current ',CurrentYPos,25,GunshotColours.GSMailWindowHighlight);
      END;
 
      PROCEDURE DoFail;
      BEGIN
-          FastWrite(_String(FileCount),CurrentYPos,5,ShotgunColours.GSMailWindowText);
-          FastWrite(_NoPath(GetPathName(P)),CurrentYPos,10,ShotgunColours.GSMailWindowText);
-          FastWrite('Failed  ',CurrentYPos,25,ShotgunColours.GSMailWindowText);
+          FastWrite(_String(FileCount),CurrentYPos,5,GunshotColours.GSMailWindowText);
+          FastWrite(_NoPath(GetPathName(P)),CurrentYPos,10,GunshotColours.GSMailWindowText);
+          FastWrite('Failed  ',CurrentYPos,25,GunshotColours.GSMailWindowText);
           AdvancePointer;
      END;
 
      PROCEDURE DoSkip;
      BEGIN
-          FastWrite(_String(FileCount),CurrentYPos,5,ShotgunColours.GSMailWindowText);
-          FastWrite(_NoPath(GetPathName(P)),CurrentYPos,10,ShotgunColours.GSMailWindowText);
-          FastWrite('Skipped ',CurrentYPos,25,ShotgunColours.GSMailWindowText);
+          FastWrite(_String(FileCount),CurrentYPos,5,GunshotColours.GSMailWindowText);
+          FastWrite(_NoPath(GetPathName(P)),CurrentYPos,10,GunshotColours.GSMailWindowText);
+          FastWrite('Skipped ',CurrentYPos,25,GunshotColours.GSMailWindowText);
           AdvancePointer;
      END;
 
@@ -569,7 +569,7 @@ BEGIN
                    BEGIN
                         IF transferMode=transmit THEN
                         BEGIN
-                             ASSIGN(FListFile,Shotgun_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
+                             ASSIGN(FListFile,Gunshot_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
                              {$I-}RESET(FListFile);{$I+}
                              IF IOResult=0 THEN;
                         END;
@@ -596,7 +596,7 @@ BEGIN
                         BEGIN
                              {$I-}CLOSE(FListFile);{$I+}
                              IF IOResult=0 THEN;
-                             _EraseFile(Shotgun_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
+                             _EraseFile(Gunshot_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
                         END;
                    END
                    ELSE Success := False;
@@ -619,7 +619,7 @@ BEGIN
           END;
      END;
      SrcFilename := FileName;
-     FastWrite('Sending         ',7,17,ShotgunColours.GSMailWindowHighlight);
+     FastWrite('Sending         ',7,17,GunshotColours.GSMailWindowHighlight);
      TransferFiles;
      IF ((FilesActuallySent=0) AND (FilesToSend<>0)) THEN Success := False;
      TransmitFiles := Success;
@@ -642,7 +642,7 @@ BEGIN
      END;
      SrcFilename := FileName;
      IF Proto='Z' THEN ReceivedMail := False;
-     FastWrite('Receiving       ',7,17,ShotgunColours.GSMailWindowHighlight);
+     FastWrite('Receiving       ',7,17,GunshotColours.GSMailWindowHighlight);
      TransferFiles;
      ReceiveFiles  := Success;
      IF WeAbort THEN ReceiveFiles := False;

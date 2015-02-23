@@ -1,9 +1,9 @@
 {$M 32000,0,655360}
-PROGRAM ShotgunNodelistCompiler;
+PROGRAM GunshotNodelistCompiler;
 
 {$I DEFINES.INC}
 USES Dos,Crt,ApTimer,FastW1,BsVideo,FMode,Version,
-     Shotgun,MkFFile,BsString,BsFile,BsKeys,BsAkas;
+     Gunshot,MkFFile,BsString,BsFile,BsKeys,BsAkas;
 
 
 TYPE MassiveBuffer    = Array[1..32768] Of Char;
@@ -235,7 +235,7 @@ PROCEDURE StartUp;
 BEGIN
      FileMode := SetFileMode;
      ClrScr;
-     AppHeader('NLC - Shotgun Professional Nodelist Compiler - Type II');
+     AppHeader('NLC - Gunshot Professional Nodelist Compiler - Type II');
      GotoXY(1,9);
      ReadInCfg;
      ProcessList := ParamStr(1);

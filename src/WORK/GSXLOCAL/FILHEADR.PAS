@@ -11,7 +11,7 @@ PROCEDURE header(Sub,Area: Word; Direction: Boolean);
 IMPLEMENTATION
 
 
-USES Globals,MiscStr,ErrorLog,GotKeys,CDS,Shotgun,BsString;
+USES Globals,MiscStr,ErrorLog,GotKeys,CDS,Gunshot,BsString;
 
 
 PROCEDURE header(Sub,Area: Word; Direction: Boolean);

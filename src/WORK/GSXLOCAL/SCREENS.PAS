@@ -14,7 +14,7 @@ IMPLEMENTATION
 
 
 USES Status,Globals,_Main,ErrorLog,SBuffer,_Pick,_Mouse,
-     Gr2_Bp,ExtDos,BsComp,Shotgun,BsFile,BsString;
+     Gr2_Bp,ExtDos,BsComp,Gunshot,BsFile,BsString;
 
 
 PROCEDURE SetUpTextFile;

@@ -26,7 +26,7 @@ IMPLEMENTATION
 
 
 USES Globals,DrawScrn,FireUp,Info,Comm,ApTimer,Misc,Saver,Scan,Dos,
-     Time,NList,BsMulti,Transfer,Events,Shotgun,BsAkas,BsFile,BsKeys,
+     Time,NList,BsMulti,Transfer,Events,Gunshot,BsAkas,BsFile,BsKeys,
      BsString,BsTime,BsLog;
 
 
@@ -113,7 +113,7 @@ BEGIN
      Node.Activity := InString2;
      Node.Baud     := InString3;
      Node.Node     := SimNode;
-     ASSIGN(FNode,Shotgun_Directory+'\INTRNODE\NODE'+_String(SimNode)+'.$$$');
+     ASSIGN(FNode,Gunshot_Directory+'\INTRNODE\NODE'+_String(SimNode)+'.$$$');
      {$I-}RESET(FNode);{$I+}
      IF IOResult<>0 THEN REWRITE(FNode);
      WRITE(FNode,Node);
@@ -134,11 +134,11 @@ BEGIN
           LCallers.BBSCalls  := 0;
           LCallers.MailCalls := 0;
           LCallers.FaxCalls  := 0;
-          ASSIGN(FLCallers,Shotgun_Directory+'\DATA\LCALLSGM.'+_String(SimNode));
+          ASSIGN(FLCallers,Gunshot_Directory+'\DATA\LCALLSGM.'+_String(SimNode));
           REWRITE(FLCallers);
           WRITE(FLCallers,LCallers);
           CLOSE(FLCallers);
-          ASSIGN(FMailHistory,Shotgun_Directory+'\DATA\MAILHIST.'+_String(SimNode));
+          ASSIGN(FMailHistory,Gunshot_Directory+'\DATA\MAILHIST.'+_String(SimNode));
           RESET(FMailHistory);
           FOR Loop := 1 TO 6 DO
           BEGIN
@@ -163,7 +163,7 @@ BEGIN
      LCallers.ToAddress  := AddressToString(RemoteSystem.Akas[1]);
      LCallers.ToCallDate := _MMDDYYYY;
      LCallers.ToCallTime := _GetPrettyTime;
-     ASSIGN(FLCallers,Shotgun_Directory+'\DATA\LCALLSGM.'+_String(SimNode));
+     ASSIGN(FLCallers,Gunshot_Directory+'\DATA\LCALLSGM.'+_String(SimNode));
      REWRITE(FLCallers);
      WRITE(FLCallers,LCallers);
      CLOSE(FLCallers);
@@ -179,7 +179,7 @@ BEGIN
      LCallers.FrmCallDate := _MMDDYYYY;
      LCallers.FrmCallTime := _GetPrettyTime;
      INC(LCallers.MailCalls);
-     ASSIGN(FLCallers,Shotgun_Directory+'\DATA\LCALLSGM.'+_String(SimNode));
+     ASSIGN(FLCallers,Gunshot_Directory+'\DATA\LCALLSGM.'+_String(SimNode));
      REWRITE(FLCallers);
      WRITE(FLCallers,LCallers);
      CLOSE(FLCallers);
@@ -190,7 +190,7 @@ PROCEDURE UpdateBBS;
 BEGIN
      DataChanged := True;
      INC(LCallers.BBSCalls);
-     ASSIGN(FLCallers,Shotgun_Directory+'\DATA\LCALLSGM.'+_String(SimNode));
+     ASSIGN(FLCallers,Gunshot_Directory+'\DATA\LCALLSGM.'+_String(SimNode));
      REWRITE(FLCallers);
      WRITE(FLCallers,LCallers);
      CLOSE(FLCallers);
@@ -209,7 +209,7 @@ PROCEDURE UpdateFAX;
 BEGIN
      DataChanged := True;
      INC(LCallers.FAXCalls);
-     ASSIGN(FLCallers,Shotgun_Directory+'\DATA\LCALLSGM.'+_String(SimNode));
+     ASSIGN(FLCallers,Gunshot_Directory+'\DATA\LCALLSGM.'+_String(SimNode));
      REWRITE(FLCallers);
      WRITE(FLCallers,LCallers);
      CLOSE(FLCallers);
@@ -231,7 +231,7 @@ END;
 
 PROCEDURE ClearCIDSemaphore;
 BEGIN
-     _EraseFile(Shotgun_Directory+'\INTRNODE\CIDDATA.'+_String(SimNode));
+     _EraseFile(Gunshot_Directory+'\INTRNODE\CIDDATA.'+_String(SimNode));
      FillChar(CIDSemaphore,SizeOf(CIDSemaphore),0);
 END;
 
@@ -240,7 +240,7 @@ PROCEDURE DumpCIDSemaphore;
 BEGIN
      IF ((CIDSemaphore.Name<>'') OR (CIDSemaphore.Number<>'')) THEN
      BEGIN
-          ASSIGN(FCIDSemaphore,Shotgun_Directory+'\INTRNODE\CIDDATA.'+_String(SimNode));
+          ASSIGN(FCIDSemaphore,Gunshot_Directory+'\INTRNODE\CIDDATA.'+_String(SimNode));
           REWRITE(FCIDSemaphore);
           WRITE(FCIDSemaphore,CIDSemaphore);
           CLOSE(FCIDSemaphore);
@@ -258,7 +258,7 @@ END;
 
 PROCEDURE UpdateHistory;
 BEGIN
-     ASSIGN(FMailHistory,Shotgun_Directory+'\DATA\MAILHIST.'+_String(SimNode));
+     ASSIGN(FMailHistory,Gunshot_Directory+'\DATA\MAILHIST.'+_String(SimNode));
      RESET(FMailHistory);
      SEEK(FMailHistory,6);
      WRITE(FMailHistory,MailHistory);

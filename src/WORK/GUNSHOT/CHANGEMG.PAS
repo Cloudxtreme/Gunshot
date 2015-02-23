@@ -11,7 +11,7 @@ PROCEDURE ChangeMessageGroup;
 IMPLEMENTATION
 
 
-USES Globals,SBuffer,Screens,MiscStr,GotKeys,BaseInfo,MsgGroup,Shotgun,
+USES Globals,SBuffer,Screens,MiscStr,GotKeys,BaseInfo,MsgGroup,Gunshot,
      TagArea,ANSIMisc,KeyInput,BsString,ToggMsg,MsgHeadr,Commands;
 
 

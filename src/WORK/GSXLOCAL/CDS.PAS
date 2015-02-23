@@ -14,7 +14,7 @@ PROCEDURE StartCDToggle;
 IMPLEMENTATION
 
 
-USES Globals,Shotgun,BsFile;
+USES Globals,Gunshot,BsFile;
 
 
 FUNCTION IsCDOnline(Num: Word): Boolean;

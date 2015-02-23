@@ -13,7 +13,7 @@ IMPLEMENTATION
 
 USES Globals,ApTimer,AllGone,ApPort,ApCom,ApMisc,Carrier,Crt,QBack,GetQuote,
      BsMulti,ErrorLog,BsString,SBuffer,Screens,KeyInput,NList,Dos,SaveScrn,
-     ExtDos,Upload,ReplyFil,Gfx,Time,Commands,MkGlobT,MiscMsg,Shotgun,BsAkas,
+     ExtDos,Upload,ReplyFil,Gfx,Time,Commands,MkGlobT,MiscMsg,Gunshot,BsAkas,
      BsFile;
 
 
@@ -869,7 +869,7 @@ LABEL PressedEnter,TryAgain,CtrlY;
                END;
           END;
           Clear_Scan_Dir;
-          Chdir(Shotgun_Directory);
+          Chdir(Gunshot_Directory);
           DrawTheEditWindow;
           RedrawMessage(False,True);
      END;

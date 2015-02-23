@@ -1,14 +1,14 @@
 {$M 32000,0,655360}
-PROGRAM ShotgunDiffApplier;
+PROGRAM GunshotDiffApplier;
 
 {$I DEFINES.INC}
 
-USES Dos,Crt,FastW1,Shotgun,Version,FMode,DoAuto,BsVideo,BsString,BsFile;
+USES Dos,Crt,FastW1,Gunshot,Version,FMode,DoAuto,BsVideo,BsString,BsFile;
 
 
 PROCEDURE StartUp;
 BEGIN
-     AppHeader('DoDiff - Shotgun Professional Nodediff Applier');
+     AppHeader('DoDiff - Gunshot Professional Nodediff Applier');
      ProcessDiff := _UpperCase(ParamStr(1));
      ProcessList := _UpperCase(ParamStr(2));
 END;

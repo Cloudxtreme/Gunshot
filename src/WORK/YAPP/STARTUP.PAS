@@ -447,12 +447,12 @@ BEGIN
      IF (ParamStr(4)='$$BB$$SS$$') THEN Sig := 'YAPP';
      IF (ParamStr(4)='$$JJ$$PP$$') THEN Sig := 'CYBER';
      IF Sig='' THEN Halt;
-     SGT_Directory := _UpperCase(_GetFilePath(ParamStr(0)));
-     IF SGT_Directory[Length(SGT_Directory)]='\' THEN DEC(SGT_Directory[0]);
-     ChDir(SGT_directory);
-     SESSION_Directory := SGT_directory+'\SESSION';
-     RESOURCES         := SGT_directory+'\RESOURCE\';
-     GIP_Directory     := SGT_directory+'\GIPS\';
+     GST_Directory := _UpperCase(_GetFilePath(ParamStr(0)));
+     IF GST_Directory[Length(GST_Directory)]='\' THEN DEC(GST_Directory[0]);
+     ChDir(GST_directory);
+     SESSION_Directory := GST_directory+'\SESSION';
+     RESOURCES         := GST_directory+'\RESOURCE\';
+     GIP_Directory     := GST_directory+'\GIPS\';
      _CreatePath(SESSION_Directory);
      _CreatePath(RESOURCES);
      _CreatePath(GIP_Directory);
@@ -489,7 +489,7 @@ BEGIN
      YWindow := GraphMaxY-50;
      {Load Icon Work Buffer}
      gxCreateVirtual(gxCMM,IconHdr,TheDisplay,30,30);
-     gxOpenLib(gxGXL,SGT_Directory+'\YAPP.GXL',GraphLib,Nil,0);
+     gxOpenLib(gxGXL,GST_Directory+'\YAPP.GXL',GraphLib,Nil,0);
      LoadTheFont('GUI_____.GFT',SystemFont);
      LoadTheFont('HELV____.GFT',HelvFont);
      LoadTheFont('ROMAN___.GFT',RomanFont);

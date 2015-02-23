@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,MiscStr,SBuffer,Screens,KeyInput,GotKeys,BsFile,
-     TagArea,ToggCD,Gfx,CDS,Commands,Shotgun,FilHeadr,BsString;
+     TagArea,ToggCD,Gfx,CDS,Commands,Gunshot,FilHeadr,BsString;
 
 
 PROCEDURE CDRomManager;

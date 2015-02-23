@@ -22,7 +22,7 @@ IMPLEMENTATION
 
 
 USES FMode,BsVideo,Crt,Globals,BsString,BsFile,BsLog,MkMsgAbs,MkDos,
-     KeyCheck,Shotgun,BsExec,Dos,BsFido,Common,Version,MkOpen,MkString,
+     KeyCheck,Gunshot,BsExec,Dos,BsFido,Common,Version,MkOpen,MkString,
      BsAkas,BsTime,_EchoTag;
 
 
@@ -72,7 +72,7 @@ END;
 
 PROCEDURE Help;
 BEGIN
-     AppHeader('GSEcho - Echo Mail Processor For Shotgun Professional');
+     AppHeader('GSEcho - Echo Mail Processor For Gunshot Professional');
      Window(1,1,80,25);
      GotoXY(1,7);
      TextColor(7);
@@ -83,7 +83,7 @@ BEGIN
      WriteLn('             -N<xxx>      : xxx is the node number to use.');
      WriteLn('             -TOSS        : Toss inbound mail into the system.');
      WriteLn('             -SCAN        : Pack mail for sending to other systems.');
-     WriteLn('             -ECHOTOSS    : Use Shotgun''s ECHOTOSS features during SCAN.');
+     WriteLn('             -ECHOTOSS    : Use Gunshot''s ECHOTOSS features during SCAN.');
      WriteLn('             -NOSTRIP     : Don''t strip message control lines during TOSS.');
      WriteLn('             -NODUPES     : Disable dupe message detection.');
      WriteLn('             -KEEPAFIX    : Keep a copy of areafix messages.');
@@ -155,8 +155,8 @@ BEGIN
        END;
      END;
      IF Toss
-        THEN AppHeader('GSEcho - Echo Mail Processor For Shotgun Professional [TOSS]')
-        ELSE AppHeader('GSEcho - Echo Mail Processor For Shotgun Professional [SCAN]');
+        THEN AppHeader('GSEcho - Echo Mail Processor For Gunshot Professional [TOSS]')
+        ELSE AppHeader('GSEcho - Echo Mail Processor For Gunshot Professional [SCAN]');
      IF NOT(LoadInDataFiles) THEN Halt;
      CASE SystemInfo.SwapMethod OF
      1:   SwapMethod := USE_EMS or USE_XMS;
@@ -317,7 +317,7 @@ VAR  FFile                     : File;
      BytesRead                 : Word;
      LinksInfo                 : _Links_Record;
 BEGIN
-     Temp := ShotgunVersion;
+     Temp := GunshotVersion;
      Delete(Temp,1,1);
      IF NOT(_IsNumeric(Temp[LENGTH(Temp)])) THEN DEC(Temp[0]);
      Loop := Pos('.',Temp);

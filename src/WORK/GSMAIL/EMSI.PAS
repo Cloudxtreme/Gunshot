@@ -12,7 +12,7 @@ UNIT Emsi;
 INTERFACE
 
 
-USES Shotgun,KeyCheck;
+USES Gunshot,KeyCheck;
 
 
 PROCEDURE LogOurEMSI;
@@ -38,7 +38,7 @@ VAR  FNetwork2 : File Of _Network_Record;
      Network2  : _Network_Record;
      Temp      : String;
 BEGIN
-     ASSIGN(FNetwork2,Shotgun_Directory+'\DATA\NETWORK.DAT');
+     ASSIGN(FNetwork2,Gunshot_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork2);
      REPEAT
        READ(FNetwork2,Network2);
@@ -99,7 +99,7 @@ LABEL            SkipOut;
      PROCEDURE MatchTheZone;
      BEGIN
           AllDone := False;
-          ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+          ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
           RESET(FNetwork);
           REPEAT
                 READ(FNetwork,Network);
@@ -113,7 +113,7 @@ LABEL            SkipOut;
      END;
 
 BEGIN
-     ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+     ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork);
      SEEK(FNetwork,CurrentAka-1);
      READ(FNetwork,Network);
@@ -129,10 +129,10 @@ BEGIN
      END
      ELSE MatchTheZone;
      {APPLY SESSION PASSWORD}
-     IF _FileExists('\SHOTGUN\DATA\PASSWORD.DAT') THEN
+     IF _FileExists('\GUNSHOT\DATA\PASSWORD.DAT') THEN
      BEGIN
           AllDone := False;
-          ASSIGN(FSessionPW,'\SHOTGUN\DATA\PASSWORD.DAT');
+          ASSIGN(FSessionPW,'\GUNSHOT\DATA\PASSWORD.DAT');
           RESET(FSessionPW);
           REPEAT
                 READ(FSessionPW,SessionPW);
@@ -172,7 +172,7 @@ BEGIN
      YourSystem.LinkCodes          := '8N1,PUA';
      YourSystem.MailerProductCode  := '010E';
      YourSystem.MailerName         := 'GSMail';
-     YourSystem.MailerVersion      := ShotgunVersion;
+     YourSystem.MailerVersion      := GunshotVersion;
      IF Pos('/Gold+',OurAppName)<>0
         THEN YourSystem.MailerSerialNumber := 'Gold+'
         ELSE YourSystem.MailerSerialNumber := 'nc';
@@ -210,13 +210,13 @@ END;
 PROCEDURE LoadAkaToMatch(InAddress: AddrType);
 VAR  AllDone : Boolean;
 BEGIN
-     ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+     ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork);
      SEEK(FNetwork,CurrentAka-1);
      READ(FNetwork,Network);
      CLOSE(FNetwork);
      AllDone := False;
-     ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+     ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork);
      REPEAT
            READ(FNetwork,Network);
@@ -245,7 +245,7 @@ VAR  OurAddStr : String;
 
      PROCEDURE AddThoseAkas;
      BEGIN
-          ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+          ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
           RESET(FNetwork);
           REPEAT
                 READ(FNetwork,Network);
@@ -324,7 +324,7 @@ VAR  OurAddStr : String;
 
      PROCEDURE AddThoseAkas;
      BEGIN
-          ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+          ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
           RESET(FNetwork);
           REPEAT
                 READ(FNetwork,Network);
@@ -493,7 +493,7 @@ BEGIN
           ELSE DoZap := False;
        IF (ConnectRate<14400) THEN DoZap := False;
        _Delay(2000);
-       bsSendString('GSMail '+ShotgunVersion+#10);
+       bsSendString('GSMail '+GunshotVersion+#10);
        IF DoEMSI THEN bsSendString(EMSI_REQ);
        IF MailerInfo.MailOnly THEN
        BEGIN

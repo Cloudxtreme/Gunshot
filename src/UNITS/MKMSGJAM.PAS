@@ -40,7 +40,7 @@ Unit MKMsgJam;       {JAM Msg Object Unit}
 
 Interface
 
-Uses MKGlobT, MKMsgAbs,BsString,Shotgun,BsAkas,
+Uses MKGlobT, MKMsgAbs,BsString,Gunshot,BsAkas,
   Dos;
 
 

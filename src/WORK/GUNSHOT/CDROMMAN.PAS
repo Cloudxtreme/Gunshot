@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,MiscStr,SBuffer,Screens,KeyInput,GotKeys,
-     ANSIMisc,ToggCD,CDS,Commands,Shotgun,FilHeadr,BsString;
+     ANSIMisc,ToggCD,CDS,Commands,Gunshot,FilHeadr,BsString;
 
 
 PROCEDURE CDRomManager;

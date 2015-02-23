@@ -5,7 +5,7 @@ UNIT DoAuto;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 TYPE Auto_Record    = RECORD
@@ -56,7 +56,7 @@ FUNCTION LoadArchivers: Boolean;
 VAR  Status : Boolean;
 BEGIN
      Status := True;
-     ASSIGN(FArcDefs,'\SHOTGUN\DATA\ARCHIVE.DAT');
+     ASSIGN(FArcDefs,'\GUNSHOT\DATA\ARCHIVE.DAT');
      {$I-}RESET(FArcDefs);{$I+}
      IF IOResult=0 THEN
      BEGIN
@@ -64,7 +64,7 @@ BEGIN
        CLOSE(FArcDefs);
      END
      ELSE Status := False;
-     IF NOT(_FileExists('\SHOTGUN\DATA\ARCUTILS.DAT')) THEN Status := False;
+     IF NOT(_FileExists('\GUNSHOT\DATA\ARCUTILS.DAT')) THEN Status := False;
      LoadArchivers := Status;
 END;
 
@@ -335,7 +335,7 @@ BEGIN
              IF (ArcExt<>'') THEN
              BEGIN
                AllDone := False;
-               ASSIGN(FArcUtils,'\SHOTGUN\DATA\ARCUTILS.DAT');
+               ASSIGN(FArcUtils,'\GUNSHOT\DATA\ARCUTILS.DAT');
                RESET(FArcUtils);
                REPEAT
                  READ(FArcUtils,ArcUtils);

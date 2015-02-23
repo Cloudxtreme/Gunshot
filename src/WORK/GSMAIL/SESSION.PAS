@@ -13,7 +13,7 @@ IMPLEMENTATION
 
 USES ApTimer,Globals,EMSI,DrawScrn,BsLog,BsMulti,ApCom,BsAkas,Crt,
      Ftsc0001,Ftsc0006,Sema,XFer,Transfer,BusyFile,Comm,ApPort,
-     Misc,Shotgun,BsKeys,BsString,BsCom,NList,UnDial,Time;
+     Misc,Gunshot,BsKeys,BsString,BsCom,NList,UnDial,Time;
 
 
 PROCEDURE DoMailSession;

@@ -2,7 +2,7 @@
   NO DPMI!
 {$ENDIF}
 {$M 60000,0,655360}
-PROGRAM ShotgunClientServer;
+PROGRAM GunshotClientServer;
 {$I DEFINES.INC}
 
 
@@ -570,10 +570,10 @@ BEGIN
                     Search_String;
                   END;
              108: BEGIN
-                    IF _FileExists(Shotgun_Directory+'\SOUND\'+Menu^[Reserve[MainLoop]].Second) THEN
+                    IF _FileExists(Gunshot_Directory+'\SOUND\'+Menu^[Reserve[MainLoop]].Second) THEN
                     BEGIN
                       bsWriteLog('Playing audio file: '+Menu^[Reserve[MainLoop]].Second,True);
-                      PlayVOCFile(Shotgun_Directory+'\SOUND\'+Menu^[Reserve[MainLoop]].Second);
+                      PlayVOCFile(Gunshot_Directory+'\SOUND\'+Menu^[Reserve[MainLoop]].Second);
                     END;
                   END;
              109: BEGIN
@@ -594,8 +594,8 @@ BEGIN
                     CreateCustomDropFile(Menu^[Reserve[MainLoop]].Second,Menu^[Reserve[MainLoop]].Third);
                   END;
              113: BEGIN
-                    IF _FileExists(Shotgun_Directory+'\FLICS\'+Menu^[Reserve[MainLoop]].Second)
-                       THEN PlayFLIFile(Shotgun_Directory+'\FLICS\'+Menu^[Reserve[MainLoop]].Second);
+                    IF _FileExists(Gunshot_Directory+'\FLICS\'+Menu^[Reserve[MainLoop]].Second)
+                       THEN PlayFLIFile(Gunshot_Directory+'\FLICS\'+Menu^[Reserve[MainLoop]].Second);
                   END;
              114: BEGIN
                     DoNodeActivity(12,'');
@@ -679,7 +679,7 @@ BEGIN
        TextMode(co80);
        ClrScr;
        WRITELN('Cannot initialize port!!!!');
-       WRITELN('Shotgun is shutting down.');
+       WRITELN('Gunshot is shutting down.');
        WRITELN;
      END;
 END.

@@ -13,7 +13,7 @@ IMPLEMENTATION
 
 USES Globals,ANSIMisc,ApTimer,AllGone,ApPort,ApCom,ApMisc,Carrier,Crt,
      GetQuote,QBack,BsMulti,ErrorLog,SBuffer,Screens,KeyInput,NList,Dos,
-     Shotgun,SaveScrn,ExtDos,Upload,ReplyFil,BsKeys,Commands,MiscMsg,
+     Gunshot,SaveScrn,ExtDos,Upload,ReplyFil,BsKeys,Commands,MiscMsg,
      MkGlobT,BsString,BsAkas,BsFile;
 
 
@@ -929,7 +929,7 @@ BEGIN
           END;
      END;
      Clear_Scan_Dir;
-     Chdir(Shotgun_Directory);
+     Chdir(Gunshot_Directory);
      Restore_Screen;
      RedrawMessage(False,True);
 END;

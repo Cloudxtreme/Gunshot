@@ -5,7 +5,7 @@ UNIT FTSC0001;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 FUNCTION  FTS0001Sender(FTS6Bypass: Boolean): Boolean;
@@ -147,9 +147,9 @@ BEGIN
        END;
      END;
      {Check Our Session Password}
-     IF _FileExists('\SHOTGUN\DATA\PASSWORD.DAT') THEN
+     IF _FileExists('\GUNSHOT\DATA\PASSWORD.DAT') THEN
      BEGIN
-          ASSIGN(FSessionPW,'\SHOTGUN\DATA\PASSWORD.DAT');
+          ASSIGN(FSessionPW,'\GUNSHOT\DATA\PASSWORD.DAT');
           RESET(FSessionPW);
           REPEAT
                 READ(FSessionPW,SessionPW);
@@ -195,7 +195,7 @@ VAR  AllDone   : Boolean;
      PROCEDURE MatchTheZone;
      BEGIN
           AllDone := False;
-          ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+          ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
           RESET(FNetwork);
           REPEAT
                 READ(FNetwork,Network);
@@ -210,7 +210,7 @@ VAR  AllDone   : Boolean;
 
 BEGIN
      {OUR NETWORK ADDRESS}
-     ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+     ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork);
      SEEK(FNetwork,CurrentAka-1);
      READ(FNetwork,Network);
@@ -224,10 +224,10 @@ BEGIN
      ELSE MatchTheZone;
      {APPLY SESSION PASSWORD}
      YourSystem.SessionPassword := '';
-     IF _FileExists('\SHOTGUN\DATA\PASSWORD.DAT') THEN
+     IF _FileExists('\GUNSHOT\DATA\PASSWORD.DAT') THEN
      BEGIN
           AllDone := False;
-          ASSIGN(FSessionPW,'\SHOTGUN\DATA\PASSWORD.DAT');
+          ASSIGN(FSessionPW,'\GUNSHOT\DATA\PASSWORD.DAT');
           RESET(FSessionPW);
           REPEAT
                 READ(FSessionPW,SessionPW);
@@ -516,7 +516,7 @@ BEGIN
           JumpIn:
           IF (FilesToSend<>0) THEN
           BEGIN
-               ASSIGN(FListFile,Shotgun_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
+               ASSIGN(FListFile,Gunshot_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
                RESET(FListFile);
                REPEAT
                      READ(FListFile,ListFile);

@@ -25,7 +25,7 @@ IMPLEMENTATION
 
 USES FastW1,Globals,SaveScrn,NList,NetMail,Sema,BsAkas,BsFile,
      Crt,BsMulti,Time,Editor,MsgEdit,BsExec,BsTime,BsKeys,Misc,
-     Version,Shotgun,DrawScrn,Keys,BsString,Dos,BsVideo,KeyCheck;
+     Version,Gunshot,DrawScrn,Keys,BsString,Dos,BsVideo,KeyCheck;
 
 
 FUNCTION is_quote(in_string: string): boolean;
@@ -439,7 +439,7 @@ BEGIN
                                _ShowCursor;
                                PutEnviro('PROMPT=Enter EXIT to return to GSEdit!!$_$p$g');
                                DoExec(GetEnv('COMSPEC'),' /C '+GetEnv('COMSPEC'),SwapMethod,MailerInfo.Outpkts);
-                               ChDir(Shotgun_Directory);
+                               ChDir(Gunshot_Directory);
                                _HideCursor;
                                Restore_Screen3;
                                GotoXY(OldX,OldY);
@@ -669,7 +669,7 @@ BEGIN
      ELSE SpellFile := Temp;
      FName := _NoPath(SpellFile);
      FPath := _GetFilePath(SpellFile);
-     IF FPath='' THEN FPath := Shotgun_Directory+'\';
+     IF FPath='' THEN FPath := Gunshot_Directory+'\';
      Dec(FPath[0]);
      Work := Pos('%1',SpellComm);
      IF (Work<>0) THEN
@@ -693,7 +693,7 @@ BEGIN
                ClrScr;
                ChDir(FPath);
                DoExec(FName,SpellComm,SwapMethod,MailerInfo.Outpkts);
-               ChDir(Shotgun_Directory);
+               ChDir(Gunshot_Directory);
           END;
           Restore_Screen;
           GotoXY(OldX,OldY);
@@ -763,7 +763,7 @@ BEGIN
      BEGIN
        IF ChangeCurrentAKA THEN
        BEGIN
-         ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+         ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
          RESET(FNetwork);
          SEEK(FNetwork,CurrentAka-1);
          READ(FNetwork,Network);

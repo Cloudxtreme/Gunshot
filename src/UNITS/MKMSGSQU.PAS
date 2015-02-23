@@ -18,7 +18,7 @@ Interface
 
 
 
-Uses MKGlobT, MKMsgAbs,Shotgun;
+Uses MKGlobT, MKMsgAbs,Gunshot;
 
 
 

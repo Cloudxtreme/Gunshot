@@ -63,9 +63,9 @@ VAR  TFile : Text;
      Temp  : String;
 BEGIN
      PutString(bsBBSPort,#13#10#13#10);
-     IF _FileExists(Shotgun_Directory+'\GSMAIL\TOOSLOW.TXT') THEN
+     IF _FileExists(Gunshot_Directory+'\GSMAIL\TOOSLOW.TXT') THEN
      BEGIN
-       ASSIGN(TFile,Shotgun_Directory+'\GSMAIL\TOOSLOW.TXT');
+       ASSIGN(TFile,Gunshot_Directory+'\GSMAIL\TOOSLOW.TXT');
        RESET(TFile);
        REPEAT
          READLN(TFile,Temp);

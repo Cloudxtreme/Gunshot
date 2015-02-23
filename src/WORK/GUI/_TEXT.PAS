@@ -5,7 +5,7 @@ UNIT _Text;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 FUNCTION  GetStringWidth(VarNumber: Byte): Word;

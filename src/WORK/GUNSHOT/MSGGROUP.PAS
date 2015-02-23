@@ -13,7 +13,7 @@ FUNCTION  GotAccessToSomeMsgAreas(TheSub: Word): Boolean;
 IMPLEMENTATION
 
 
-USES Globals,MsgHeadr,Shotgun,MiscStr,GotKeys;
+USES Globals,MsgHeadr,Gunshot,MiscStr,GotKeys;
 
 
 PROCEDURE NextMessageGroup;

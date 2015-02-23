@@ -14,7 +14,7 @@ IMPLEMENTATION
 
 
 USES Globals,BsString,Gr2_Bp,_Win,_Text,BHandler,_Icons,LoadMse,
-     _FSelect,Fx2_Bp,IconMisc,PalBoxes,BsGraph,LoadIcon,Shotgun,
+     _FSelect,Fx2_Bp,IconMisc,PalBoxes,BsGraph,LoadIcon,Gunshot,
      BsFile;
 
 

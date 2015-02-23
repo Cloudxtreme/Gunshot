@@ -5,7 +5,7 @@ UNIT Globals;
 INTERFACE
 
 
-USES Gx2_Bp,Tx2_Bp,ApPort,ApTimer,Shotgun,MkFFile;
+USES Gx2_Bp,Tx2_Bp,ApPort,ApTimer,Gunshot,MkFFile;
 
 
 CONST PolySize    = 24000;
@@ -173,7 +173,7 @@ VAR  BBSPort              : PortRecPtr;
      ModeSelected         : Word;
      SESSION_Directory    : String[40];
      RESOURCES            : String[40];
-     SGT_Directory        : String[40];
+     GST_Directory        : String[40];
      GIP_Directory        : String[40];
      InBuffer             : Word;
      MsgEditorKludge      : Boolean;

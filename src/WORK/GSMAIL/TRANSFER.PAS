@@ -5,7 +5,7 @@ UNIT Transfer;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE ClearFileQueue;
@@ -63,7 +63,7 @@ LABEL               GotIt,SorryBud1,SorryBud2;
      BEGIN
        IF (FilesToSend<>0) THEN
        BEGIN
-         FFile.OpenFile(Shotgun_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode),SetFileMode);
+         FFile.OpenFile(Gunshot_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode),SetFileMode);
          REPEAT
            FFile.BlkRead(ListFile,SizeOf(ListFile),BytesRead);
            IF (BytesRead<>0) THEN
@@ -85,7 +85,7 @@ LABEL               GotIt,SorryBud1,SorryBud2;
      BEGIN
        ListFile.FName := FName;
        ListFile.IsFreq := IsFreq;
-       ASSIGN(FListFile,Shotgun_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
+       ASSIGN(FListFile,Gunshot_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
        {$I-}RESET(FListFile);{$I+}
        IF IOResult=0 THEN SEEK(FListFile,FileSize(FListFile))
                      ELSE REWRITE(FListFile);
@@ -122,7 +122,7 @@ BEGIN
      END;
      FilesToSend    := 0;
      BytesToSend    := 0;
-     _EraseFile(Shotgun_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
+     _EraseFile(Gunshot_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
      CurrentFileNum := 0;
      {====================================================}
      { DO INBOUND FILE REQUESTS                           }
@@ -413,15 +413,15 @@ BEGIN
      {Sort PKTs To The Front}
      IF (FilesToSend<>0) THEN
      BEGIN
-       _EraseFile(Shotgun_Directory+'\INTRNODE\TMP$$$$.'+_String(SimNode));
+       _EraseFile(Gunshot_Directory+'\INTRNODE\TMP$$$$.'+_String(SimNode));
 
-       ASSIGN(FListFile,Shotgun_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
-       RENAME(FListFile,Shotgun_Directory+'\INTRNODE\TMP$$$$.'+_String(SimNode));
+       ASSIGN(FListFile,Gunshot_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
+       RENAME(FListFile,Gunshot_Directory+'\INTRNODE\TMP$$$$.'+_String(SimNode));
 
-       ASSIGN(FListFile,Shotgun_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
+       ASSIGN(FListFile,Gunshot_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
        REWRITE(FListFile);
        {Do PKTs}
-       ASSIGN(FListFile2,Shotgun_Directory+'\INTRNODE\TMP$$$$.'+_String(SimNode));
+       ASSIGN(FListFile2,Gunshot_Directory+'\INTRNODE\TMP$$$$.'+_String(SimNode));
        RESET(FListFile2);
        REPEAT
          READ(FListFile2,ListFile);
@@ -491,7 +491,7 @@ BEGIN
                          {Set Date If An Event Poll}
                          IF MailQueue^[Loop].IsEvent THEN
                          BEGIN
-                              ASSIGN(FPollEvent,Shotgun_Directory+'\DATA\EVENTSP.'+_String(SimNode));
+                              ASSIGN(FPollEvent,Gunshot_Directory+'\DATA\EVENTSP.'+_String(SimNode));
                               RESET(FPollEvent);
                               SEEK(FPollEvent,MailQueue^[Loop].EventNum-1);
                               READ(FPollEvent,PollEvent);
@@ -565,7 +565,7 @@ BEGIN
                          {Set Date If An Event Poll}
                          IF MailQueue^[Loop].IsEvent THEN
                          BEGIN
-                              ASSIGN(FPollEvent,Shotgun_Directory+'\DATA\EVENTSP.'+_String(SimNode));
+                              ASSIGN(FPollEvent,Gunshot_Directory+'\DATA\EVENTSP.'+_String(SimNode));
                               RESET(FPollEvent);
                               SEEK(FPollEvent,MailQueue^[Loop].EventNum-1);
                               READ(FPollEvent,PollEvent);

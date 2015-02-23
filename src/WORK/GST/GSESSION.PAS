@@ -974,7 +974,7 @@ VAR  TFile : Text;
 BEGIN
      _HideCursor;
      WriteStringAnsi(#$0C);
-     ASSIGN(TFile,'SGTINST.$$$');
+     ASSIGN(TFile,'GSTINST.$$$');
      RESET(TFile);
      REPEAT
            READLN(TFile,Temp);
@@ -1072,7 +1072,7 @@ BEGIN
                                          _EraseFile('YAPP_E.EXE');
                                          _RenameFile('YAPP16.EXE','YAPP_E.EXE');
                                     END;
-                                    IF _FileExists('SGTINST.$$$') THEN ShowInstallIns;
+                                    IF _FileExists('GSTINST.$$$') THEN ShowInstallIns;
                                     IsFirst := True;
                                END
                                ELSE Temp := Temp+Temp2;
@@ -1214,7 +1214,7 @@ BEGIN
                                SvY := WhereY;
                                Window(1,1,80,25);
                                ClrScr;
-                               PutEnviro('PROMPT=Enter EXIT to return to the SGT Services Manager!!$_$p$g');
+                               PutEnviro('PROMPT=Enter EXIT to return to the GST Services Manager!!$_$p$g');
                                DoExec(GetEnv('COMSPEC'),' /C '+GetEnv('COMSPEC'),USE_ALL,BaseDir);
                                ChDir(BaseDir);
                                Window(1,1,80,24);

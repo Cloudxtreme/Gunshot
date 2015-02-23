@@ -5,7 +5,7 @@ UNIT BsAkas;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 VAR _LastMsgId : Longint;

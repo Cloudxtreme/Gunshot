@@ -11,7 +11,7 @@ PROCEDURE RescanQueue;
 IMPLEMENTATION
 
 
-USES DrawScrn,Globals,Shotgun,Misc,FastW1,Saver,BsAkas,BsString,BsFile,BsVideo;
+USES DrawScrn,Globals,Gunshot,Misc,FastW1,Saver,BsAkas,BsString,BsFile,BsVideo;
 
 
 PROCEDURE RescanQueue;
@@ -32,11 +32,11 @@ VAR  Loop         : Word;
      VAR  Loop2 : Word;
      BEGIN
        KillSaver;
-       FOR Loop2 := QueueWindowTop TO (Window2-1) DO FastWrite(_Replicate(' ',22),Loop2,2,ShotgunColours.GSMailNormalText);
+       FOR Loop2 := QueueWindowTop TO (Window2-1) DO FastWrite(_Replicate(' ',22),Loop2,2,GunshotColours.GSMailNormalText);
      END;
 
 BEGIN
-     TheQueueFile := Shotgun_Directory+'\INTRNODE\QUEUETMP.'+_String(SimNode);
+     TheQueueFile := Gunshot_Directory+'\INTRNODE\QUEUETMP.'+_String(SimNode);
      _EraseFile(TheQueueFile);
      IF (NumberOfQueues<>0) THEN
      BEGIN

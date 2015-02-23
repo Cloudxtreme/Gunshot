@@ -34,7 +34,7 @@ BEGIN
      IF IsExternal THEN DrawWindow(20,TopLine,67,TopLine+4,'BUSY EVENT - EXTERNAL PROCESS',True)
                    ELSE DrawWindow(20,TopLine,67,TopLine+4,'BUSY EVENT',True);
      InvertedBox(22,TopLine+1,65,TopLine+3);
-     FastWrite('Press ESC to force an end to this event.',TopLine+2,24,ShotgunColours.GSMailWindowText);
+     FastWrite('Press ESC to force an end to this event.',TopLine+2,24,GunshotColours.GSMailWindowText);
      AllDone := False;
      REPEAT
            IF KeyPressed THEN
@@ -59,8 +59,8 @@ BEGIN
                    THEN AllDone := True
                    ELSE TimeSlice;
            END;
-           FastWrite(_PadRight(_DayOfWeek+' '+_GetPrettyDate,27),Window2+5,23,ShotgunColours.GSMailTimeDateData);
-           FastWrite(_PadRight(_GetPrettyTime,8),Window2+5,9,ShotgunColours.GSMailTimeDateData);
+           FastWrite(_PadRight(_DayOfWeek+' '+_GetPrettyDate,27),Window2+5,23,GunshotColours.GSMailTimeDateData);
+           FastWrite(_PadRight(_GetPrettyTime,8),Window2+5,9,GunshotColours.GSMailTimeDateData);
            _Delay(1000);
      UNTIL AllDone;
      RestoreScreen(1);
@@ -86,9 +86,9 @@ BEGIN
                BEGIN
                     IF ((MailQueue^[Loop].MailType=1) AND (MailQueue^[Loop].MsgStat<>Sent)) THEN
                     BEGIN
-                         IF _FileExists(Shotgun_Directory+'\DATA\EVENTSP.'+_String(SimNode)) THEN
+                         IF _FileExists(Gunshot_Directory+'\DATA\EVENTSP.'+_String(SimNode)) THEN
                          BEGIN
-                              ASSIGN(FPollEvent,Shotgun_Directory+'\DATA\EVENTSP.'+_String(SimNode));
+                              ASSIGN(FPollEvent,Gunshot_Directory+'\DATA\EVENTSP.'+_String(SimNode));
                               RESET(FPollEvent);
                               SEEK(FPollEvent,MailQueue^[Loop].EventNum-1);
                               READ(FPollEvent,PollEvent);
@@ -119,10 +119,10 @@ BEGIN
      {Get Rid Of Old Events}
      UnpackPollEvents;
      {Check ErrorLevel Exits}
-     IF _FileExists(Shotgun_Directory+'\DATA\EVENTSE.'+_String(SimNode)) THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\EVENTSE.'+_String(SimNode)) THEN
      BEGIN
           Counter := 0;
-          ASSIGN(FExitEvent,Shotgun_Directory+'\DATA\EVENTSE.'+_String(SimNode));
+          ASSIGN(FExitEvent,Gunshot_Directory+'\DATA\EVENTSE.'+_String(SimNode));
           RESET(FExitEvent);
           REPEAT
                 INC(Counter);
@@ -157,9 +157,9 @@ BEGIN
           KillSaver;
           StallThisNode(True);
      END;
-     IF _FileExists(Shotgun_Directory+'\DATA\EVENTSB.'+_String(SimNode)) THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\EVENTSB.'+_String(SimNode)) THEN
      BEGIN
-          ASSIGN(FDropEvent,Shotgun_Directory+'\DATA\EVENTSB.'+_String(SimNode));
+          ASSIGN(FDropEvent,Gunshot_Directory+'\DATA\EVENTSB.'+_String(SimNode));
           RESET(FDropEvent);
           REPEAT
                 READ(FDropEvent,DropEvent);
@@ -180,10 +180,10 @@ BEGIN
           CLOSE(FDropEvent);
      END;
      {Check Poll Calls Event}
-     IF _FileExists(Shotgun_Directory+'\DATA\EVENTSP.'+_String(SimNode)) THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\EVENTSP.'+_String(SimNode)) THEN
      BEGIN
           Counter := 0;
-          ASSIGN(FPollEvent,Shotgun_Directory+'\DATA\EVENTSP.'+_String(SimNode));
+          ASSIGN(FPollEvent,Gunshot_Directory+'\DATA\EVENTSP.'+_String(SimNode));
           RESET(FPollEvent);
           REPEAT
                 INC(Counter);
@@ -208,10 +208,10 @@ BEGIN
           CLOSE(FPollEvent);
      END;
      {Check Send Calls Event}
-     IF _FileExists(Shotgun_Directory+'\DATA\EVENTSS.'+_String(SimNode)) THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\EVENTSS.'+_String(SimNode)) THEN
      BEGIN
           Counter := 0;
-          ASSIGN(FSendEvent,Shotgun_Directory+'\DATA\EVENTSS.'+_String(SimNode));
+          ASSIGN(FSendEvent,Gunshot_Directory+'\DATA\EVENTSS.'+_String(SimNode));
           RESET(FSendEvent);
           REPEAT
                 INC(Counter);
@@ -235,9 +235,9 @@ BEGIN
      {Check Mail Only Events}
      MailerInfo.MailOnly := False;
      IF MailOnly THEN MailerInfo.MailOnly := True;
-     IF _FileExists(Shotgun_Directory+'\DATA\EVENTSM.'+_String(SimNode)) THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\EVENTSM.'+_String(SimNode)) THEN
      BEGIN
-          ASSIGN(FMailEvent,Shotgun_Directory+'\DATA\EVENTSM.'+_String(SimNode));
+          ASSIGN(FMailEvent,Gunshot_Directory+'\DATA\EVENTSM.'+_String(SimNode));
           RESET(FMailEvent);
           REPEAT
                 READ(FMailEvent,MailEvent);
@@ -257,9 +257,9 @@ BEGIN
      {Check No File Requests Events}
      MailerInfo.AllowFreqs := True;
      IF NOT(FreqsOk) THEN MailerInfo.AllowFreqs := False;
-     IF _FileExists(Shotgun_Directory+'\DATA\EVENTSF.'+_String(SimNode)) THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\EVENTSF.'+_String(SimNode)) THEN
      BEGIN
-          ASSIGN(FFreqEvent,Shotgun_Directory+'\DATA\EVENTSF.'+_String(SimNode));
+          ASSIGN(FFreqEvent,Gunshot_Directory+'\DATA\EVENTSF.'+_String(SimNode));
           RESET(FFreqEvent);
           REPEAT
                 READ(FFreqEvent,FreqEvent);
@@ -294,9 +294,9 @@ BEGIN
      {======================================================================}
      { DO EVENTS FOR TODAY FIRST                                            }
      {======================================================================}
-     IF _FileExists(Shotgun_Directory+'\DATA\EVENTSM.'+_String(SimNode)) THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\EVENTSM.'+_String(SimNode)) THEN
      BEGIN
-          ASSIGN(FMailEvent,Shotgun_Directory+'\DATA\EVENTSM.'+_String(SimNode));
+          ASSIGN(FMailEvent,Gunshot_Directory+'\DATA\EVENTSM.'+_String(SimNode));
           RESET(FMailEvent);
           REPEAT
                 READ(FMailEvent,MailEvent);
@@ -328,9 +328,9 @@ BEGIN
      {======================================================================}
      { DO EVENTS FOR TOMORROW                                               }
      {======================================================================}
-     IF _FileExists(Shotgun_Directory+'\DATA\EVENTSM.'+_String(SimNode)) THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\EVENTSM.'+_String(SimNode)) THEN
      BEGIN
-          ASSIGN(FMailEvent,Shotgun_Directory+'\DATA\EVENTSM.'+_String(SimNode));
+          ASSIGN(FMailEvent,Gunshot_Directory+'\DATA\EVENTSM.'+_String(SimNode));
           RESET(FMailEvent);
           REPEAT
                 READ(FMailEvent,MailEvent);

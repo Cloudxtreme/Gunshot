@@ -3,7 +3,7 @@
 PROGRAM GIPDecompiler;
 
 
-USES Dos,ApMisc,Crt,FastW1,BsComp,BsVideo,Version,Shotgun,BsString,BsKeys,BsFile;
+USES Dos,ApMisc,Crt,FastW1,BsComp,BsVideo,Version,Gunshot,BsString,BsKeys,BsFile;
 
 
 TYPE BigBuffer       = Array[1..8192] Of Byte;
@@ -14,7 +14,7 @@ VAR  SAVESCRNScr     : SAVESCRNAScreen;
      Buffer          : ^BigBuffer;
      GIPHeader       : _GIPHeader;
      GIPFileHeader   : _GIPFileHeader;
-     ShotgunDir      : String[40];
+     GunshotDir      : String[40];
      SOUNDDir        : String[40];
      ICONDir         : String[40];
      FONTDir         : String[40];
@@ -160,34 +160,34 @@ END;
 
 
 BEGIN
-     ShotgunDir  := ParamStr(1);
+     GunshotDir  := ParamStr(1);
      OutDir      := ParamStr(2);
      InFile      := ParamStr(3);
-     IF ShotgunDir[LENGTH(ShotgunDir)]='\' THEN Delete(ShotgunDir,LENGTH(ShotgunDir),1);
+     IF GunshotDir[LENGTH(GunshotDir)]='\' THEN Delete(GunshotDir,LENGTH(GunshotDir),1);
      IF OutDir[LENGTH(OutDir)]='\' THEN Delete(OutDir,LENGTH(OutDir),1);
-     IF ((ShotgunDir='') OR (OutDir='') OR NOT(_FileExists(InFile))) THEN
+     IF ((GunshotDir='') OR (OutDir='') OR NOT(_FileExists(InFile))) THEN
      BEGIN
-          AppHeader('GIP Decompiler For Shotgun Professional');
+          AppHeader('GIP Decompiler For Gunshot Professional');
           WRITELN('   Syntax:   UNPAKGIP.EXE <basedir> <langdir> <gipfile>');
           WRITELN('');
-          WRITELN('   <basedir>   Main Shotgun or Gui directory. ie: C:\SHOTGUN');
-          WRITELN('   <langdir>   Full path of destination SG file. ie: C:\SHOTGUN\ENGLISH\SG\');
-          WRITELN('   <gipfile>   Full path/file name of GIP file. ie: C:\SHOTGUN\TEST.GIP');
+          WRITELN('   <basedir>   Main Gunshot or Gui directory. ie: C:\GUNSHOT');
+          WRITELN('   <langdir>   Full path of destination SG file. ie: C:\GUNSHOT\ENGLISH\SG\');
+          WRITELN('   <gipfile>   Full path/file name of GIP file. ie: C:\GUNSHOT\TEST.GIP');
           WRITELN('');
           HALT;
      END;
 
      SaveTheScreen;
-     DrawWindow(15,10,65,14,'GIP Decompiler '+ShotgunVersion);
+     DrawWindow(15,10,65,14,'GIP Decompiler '+GunshotVersion);
      InvertedBox(17,11,63,13);
-     SOUNDDir    := ShotgunDir+'\SOUND\';
-     FONTDir     := ShotgunDir+'\FONTS\';
-     ICONDir     := ShotgunDir+'\ICONS\';
-     JPEGDir     := ShotgunDir+'\IMAGES\';
-     WorkDir     := ShotgunDir+'\!1\';
+     SOUNDDir    := GunshotDir+'\SOUND\';
+     FONTDir     := GunshotDir+'\FONTS\';
+     ICONDir     := GunshotDir+'\ICONS\';
+     JPEGDir     := GunshotDir+'\IMAGES\';
+     WorkDir     := GunshotDir+'\!1\';
      _CreatePath(WorkDir);
      _CreatePath(OutDir);
-     ChDir(ShotgunDir);
+     ChDir(GunshotDir);
      New(Buffer);
      FastWrite('     Decompiling:                  ',12,25,31);
      FastWrite(_PadRight(_NoPath(InFile),12),12,44,27);
@@ -224,12 +224,12 @@ BEGIN
            ELSE IF Ext='FNT' THEN OutFile := FONTDir+GIPFileHeader.FName
            ELSE IF Ext='ICO' THEN OutFile := ICONDir+GIPFileHeader.FName
            ELSE IF Ext='MSE' THEN OutFile := ICONDir+GIPFileHeader.FName
-           ELSE IF Ext='TXT' THEN OutFile := ShotgunDir+'\'+GIPFileHeader.FName;
+           ELSE IF Ext='TXT' THEN OutFile := GunshotDir+'\'+GIPFileHeader.FName;
            IF (OutFile<>'') THEN DecompressFile(WorkDir+'COMPRESS.TMP',OutFile);
            _EraseFile(WorkDir+'COMPRESS.TMP');
      UNTIL EOF(FFile);
      CLOSE(FFile);
-     ChDir(ShotgunDir);
+     ChDir(GunshotDir);
      Dec(WorkDir[0]);
      _NukeDir(WorkDir,False);
      Dispose(Buffer);

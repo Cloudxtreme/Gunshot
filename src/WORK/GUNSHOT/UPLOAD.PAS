@@ -103,7 +103,7 @@ BEGIN
           Get_Enter;
      END;
      private_ul_pass:
-     Chdir(Shotgun_Directory);
+     Chdir(Gunshot_Directory);
      CheckForCarrier;
 END;
 
@@ -190,7 +190,7 @@ BEGIN
           Get_Enter;
      END;
      pass:
-     Chdir(Shotgun_Directory);
+     Chdir(Gunshot_Directory);
      clear_hold_dir;
      CheckForCarrier;
 END;

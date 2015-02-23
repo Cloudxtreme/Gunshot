@@ -3,7 +3,7 @@ PROGRAM GipTosser;
 {$M 32000,0,655360}
 
 
-USES Crt,Dos,BsMulti,FastW1,BsVideo,Version,Shotgun,ApMisc,BsString,BsFile,BsTime,BsCrc;
+USES Crt,Dos,BsMulti,FastW1,BsVideo,Version,Gunshot,ApMisc,BsString,BsFile,BsTime,BsCrc;
 
 
 VAR  FunkyFile     : File;
@@ -77,7 +77,7 @@ BEGIN
      ASSIGN(TFile,TheLogFile);
      {$I-}APPEND(TFile);{$I+}
      IF (IOResult<>0) THEN REWRITE(TFile);
-     WRITELN(TFile,'GIP '+ShotgunVersion+' starting up: '+_GetPrettyTime+
+     WRITELN(TFile,'GIP '+GunshotVersion+' starting up: '+_GetPrettyTime+
              ', '+_GetPrettyDate+'  mem: '+_String(Trunc(MemAvail/1024))+'kb');
      WRITELN(TFile,'-------------------------------------------------------------------------------');
      CLOSE(TFile);
@@ -159,7 +159,7 @@ END;
 
 BEGIN
      FileMode := 66;
-     AppHeader('GIP - GIP Graphic File Tosser For Shotgun Professional');
+     AppHeader('GIP - GIP Graphic File Tosser For Gunshot Professional');
      BigFatTemp := _UpperCase(ParamStr(1));
      IF _Mid(BigFatTemp,1,2)='-N' THEN
      BEGIN

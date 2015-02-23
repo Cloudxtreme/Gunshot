@@ -5,7 +5,7 @@ UNIT UnDial;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 PROCEDURE AddUndialable(InAddress: AddrType);
@@ -26,10 +26,10 @@ VAR  Undialable  : _Undialable_Systems;
      FUndialable : File Of _Undialable_Systems;
      Locate      : Longint;
 BEGIN
-     IF _FileExists(Shotgun_Directory+'\DATA\UNDIAL.DAT') THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\UNDIAL.DAT') THEN
      BEGIN
        Locate := 0;
-       ASSIGN(FUndialable,Shotgun_Directory+'\DATA\UNDIAL.DAT');
+       ASSIGN(FUndialable,Gunshot_Directory+'\DATA\UNDIAL.DAT');
        RESET(FUndialable);
        REPEAT
          READ(FUndialable,Undialable);
@@ -46,7 +46,7 @@ BEGIN
        CLOSE(FUndialable);
        Undialable.Net_Address := InAddress;
        Undialable.Retries := 1;
-       ASSIGN(FUndialable,Shotgun_Directory+'\DATA\UNDIAL.DAT');
+       ASSIGN(FUndialable,Gunshot_Directory+'\DATA\UNDIAL.DAT');
        RESET(FUndialable);
        SEEK(FUndialable,FileSize(FUndialable));
        WRITE(FUndialable,Undialable);
@@ -56,7 +56,7 @@ BEGIN
      BEGIN
        Undialable.Net_Address := InAddress;
        Undialable.Retries := 1;
-       ASSIGN(FUndialable,Shotgun_Directory+'\DATA\UNDIAL.DAT');
+       ASSIGN(FUndialable,Gunshot_Directory+'\DATA\UNDIAL.DAT');
        REWRITE(FUndialable);
        WRITE(FUndialable,Undialable);
        CLOSE(FUndialable);
@@ -68,9 +68,9 @@ FUNCTION CanDialThisOne(InAddress: AddrType): Boolean;
 VAR  Undialable  : _Undialable_Systems;
      FUndialable : File Of _Undialable_Systems;
 BEGIN
-     IF _FileExists(Shotgun_Directory+'\DATA\UNDIAL.DAT') THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\UNDIAL.DAT') THEN
      BEGIN
-       ASSIGN(FUndialable,Shotgun_Directory+'\DATA\UNDIAL.DAT');
+       ASSIGN(FUndialable,Gunshot_Directory+'\DATA\UNDIAL.DAT');
        RESET(FUndialable);
        REPEAT
          READ(FUndialable,Undialable);
@@ -126,8 +126,8 @@ LABEL              OverAgain,Skip1,Skip2;
                IF (TheOne<=NumItems) THEN
                BEGIN
                     TTemp := PickList^[TheOne].Text;
-                    IF TheOne=Current THEN FastWrite(TTemp,LLoop,3,ShotgunColours.GSMailMenuSelected)
-                                      ELSE FastWrite(TTemp,LLoop,3,ShotgunColours.GSMailWindowText);
+                    IF TheOne=Current THEN FastWrite(TTemp,LLoop,3,GunshotColours.GSMailMenuSelected)
+                                      ELSE FastWrite(TTemp,LLoop,3,GunshotColours.GSMailWindowText);
                END;
                INC(TheOne);
           END;
@@ -140,9 +140,9 @@ BEGIN
      OverAgain:
      FillChar(PickList^,SizeOf(PickList^),0);
      NumItems := 0;
-     IF _FileExists(Shotgun_Directory+'\DATA\UNDIAL.DAT') THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\UNDIAL.DAT') THEN
      BEGIN
-       ASSIGN(FUndialable,Shotgun_Directory+'\DATA\UNDIAL.DAT');
+       ASSIGN(FUndialable,Gunshot_Directory+'\DATA\UNDIAL.DAT');
        RESET(FUndialable);
        REPEAT
          READ(FUndialable,Undialable);
@@ -169,9 +169,9 @@ BEGIN
           YYPos := 2;
           DrawWindow(2,2,78,24,'Undialable Systems',True);
      END;
-     FastWrite(_PadRight('  [   ]',80),Window2+7,1,ShotgunColours.GSMailWindowText);
-     FastWrite('DEL',Window2+7,4,ShotgunColours.GSMailWindowHighlight);
-     FastWrite('Delete Entry',Window2+7,9,ShotgunColours.GSMailWindowText);
+     FastWrite(_PadRight('  [   ]',80),Window2+7,1,GunshotColours.GSMailWindowText);
+     FastWrite('DEL',Window2+7,4,GunshotColours.GSMailWindowHighlight);
+     FastWrite('Delete Entry',Window2+7,9,GunshotColours.GSMailWindowText);
      _HideCursor;
      Top     := 1;
      Current := 1;
@@ -188,7 +188,7 @@ BEGIN
                      83:  BEGIN {Delete}
                             IF ((NumItems>0) AND (Current<>0)) THEN
                             BEGIN
-                              _EraseFileRecord(Shotgun_Directory+'\DATA\UNDIAL.DAT',
+                              _EraseFileRecord(Gunshot_Directory+'\DATA\UNDIAL.DAT',
                                                SizeOf(_Undialable_Systems),Current);
                               RestoreScreen(1);
                               GOTO OverAgain;
@@ -268,12 +268,12 @@ VAR  Undialable   : _Undialable_Systems;
      FUndialable  : File Of _Undialable_Systems;
      FUndialable2 : File Of _Undialable_Systems;
 BEGIN
-     IF _FileExists(Shotgun_Directory+'\DATA\UNDIAL.DAT') THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\UNDIAL.DAT') THEN
      BEGIN
-       ASSIGN(FUndialable,Shotgun_Directory+'\DATA\UNDIAL.DAT');
-       RENAME(FUndialable,Shotgun_Directory+'\DATA\UNDIAL.BAK');
-       ASSIGN(FUndialable2,Shotgun_Directory+'\DATA\UNDIAL.BAK');
-       ASSIGN(FUndialable,Shotgun_Directory+'\DATA\UNDIAL.DAT');
+       ASSIGN(FUndialable,Gunshot_Directory+'\DATA\UNDIAL.DAT');
+       RENAME(FUndialable,Gunshot_Directory+'\DATA\UNDIAL.BAK');
+       ASSIGN(FUndialable2,Gunshot_Directory+'\DATA\UNDIAL.BAK');
+       ASSIGN(FUndialable,Gunshot_Directory+'\DATA\UNDIAL.DAT');
        REWRITE(FUndialable);
        RESET(FUndialable2);
        REPEAT
@@ -284,8 +284,8 @@ BEGIN
        CLOSE(FUndialable);
        CLOSE(FUndialable2);
        ERASE(FUndialable2);
-       IF _FileSize(Shotgun_Directory+'\DATA\UNDIAL.DAT')=0
-          THEN _EraseFile(Shotgun_Directory+'\DATA\UNDIAL.DAT');
+       IF _FileSize(Gunshot_Directory+'\DATA\UNDIAL.DAT')=0
+          THEN _EraseFile(Gunshot_Directory+'\DATA\UNDIAL.DAT');
      END;
 END;
 

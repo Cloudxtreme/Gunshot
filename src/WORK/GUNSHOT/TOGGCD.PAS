@@ -11,7 +11,7 @@ PROCEDURE ToggleCDRom(CDNumber: Word; OnOff: Boolean);
 IMPLEMENTATION
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE ToggleCDRom(CDNumber: Word; OnOff: Boolean);

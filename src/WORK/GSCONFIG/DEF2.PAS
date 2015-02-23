@@ -455,67 +455,67 @@ BEGIN
                CLOSE(FHiddenDial);
           END;
      END
-     ELSE IF FileName='SGSCHEME.DAT' THEN
+     ELSE IF FileName='GSSCHEME.DAT' THEN
      BEGIN
-          IF NOT(_FileExists(BaseDirectory+'\DATA\SGSCHEME.DAT')) THEN
+          IF NOT(_FileExists(BaseDirectory+'\DATA\GSSCHEME.DAT')) THEN
           BEGIN
-               ASSIGN(FShotgunColours,BaseDirectory+'\DATA\SGSCHEME.DAT');
-               REWRITE(FShotgunColours);
-               FillChar(ShotgunColours,SizeOf(ShotgunColours),0);
+               ASSIGN(FGunshotColours,BaseDirectory+'\DATA\GSSCHEME.DAT');
+               REWRITE(FGunshotColours);
+               FillChar(GunshotColours,SizeOf(GunshotColours),0);
 
-               ShotgunColours.GSMailNormalText        := 7;
-               ShotgunColours.GSMailErrorText         := 12;
-               ShotgunColours.GSMailToggles           := 14;
-               ShotgunColours.GSMailToggleBrackets    := 8;
-               ShotgunColours.GSMailFrame             := 1;
-               ShotgunColours.GSMailFrameLabels       := 9;
-               ShotgunColours.GSMailInfo              := 7;
-               ShotgunColours.GSMailInfoHighlight     := 15;
-               ShotgunColours.GSMailTimeDateLabels    := 2;
-               ShotgunColours.GSMailTimeDateData      := 10;
-               ShotgunColours.GSMailStatusText        := 27;
-               ShotgunColours.GSMailStatusHighlight   := 31;
-               ShotgunColours.GSMailWindowText        := 27;
-               ShotgunColours.GSMailWindowHighlight   := 31;
-               ShotgunColours.GSMailWindowFrameHigh   := 25;
-               ShotgunColours.GSMailWindowFrameLow    := 16;
-               ShotgunColours.GSMailWindowFrameStyle  := 1;
-               ShotgunColours.GSMailWindowShadow      := 8;
-               ShotgunColours.GSMailWindowTitle       := 31;
-               ShotgunColours.GSMailMenuSelected      := 48;
-               ShotgunColours.GSMailDataEntry         := 31;
-               ShotgunColours.GSMailDataEntryBack     := 1;
-               ShotgunColours.GSMailProgressBar       := 9;
-               ShotgunColours.GSMailProgressBarBack   := 1;
-               ShotgunColours.GSMailProgressChar      := 'Û';
-               ShotgunColours.GSMailNewMailLight      := 10;
+               GunshotColours.GSMailNormalText        := 7;
+               GunshotColours.GSMailErrorText         := 12;
+               GunshotColours.GSMailToggles           := 14;
+               GunshotColours.GSMailToggleBrackets    := 8;
+               GunshotColours.GSMailFrame             := 1;
+               GunshotColours.GSMailFrameLabels       := 9;
+               GunshotColours.GSMailInfo              := 7;
+               GunshotColours.GSMailInfoHighlight     := 15;
+               GunshotColours.GSMailTimeDateLabels    := 2;
+               GunshotColours.GSMailTimeDateData      := 10;
+               GunshotColours.GSMailStatusText        := 27;
+               GunshotColours.GSMailStatusHighlight   := 31;
+               GunshotColours.GSMailWindowText        := 27;
+               GunshotColours.GSMailWindowHighlight   := 31;
+               GunshotColours.GSMailWindowFrameHigh   := 25;
+               GunshotColours.GSMailWindowFrameLow    := 16;
+               GunshotColours.GSMailWindowFrameStyle  := 1;
+               GunshotColours.GSMailWindowShadow      := 8;
+               GunshotColours.GSMailWindowTitle       := 31;
+               GunshotColours.GSMailMenuSelected      := 48;
+               GunshotColours.GSMailDataEntry         := 31;
+               GunshotColours.GSMailDataEntryBack     := 1;
+               GunshotColours.GSMailProgressBar       := 9;
+               GunshotColours.GSMailProgressBarBack   := 1;
+               GunshotColours.GSMailProgressChar      := 'Û';
+               GunshotColours.GSMailNewMailLight      := 10;
 
-               ShotgunColours.GSEditMsgText           := 7;
-               ShotgunColours.GSEditMsgQuote          := 2;
-               ShotgunColours.GSEditMsgKludge         := 8;
-               ShotgunColours.GSEditFrame             := 1;
-               ShotgunColours.GSEditStatusText        := 27;
-               ShotgunColours.GSEditStatusHighlight   := 31;
-               ShotgunColours.GSEditStatusBrackets    := 23;
-               ShotgunColours.GSEditInfo              := 3;
-               ShotgunColours.GSEditInfoData          := 11;
-               ShotgunColours.GSEditInfoHighlight     := 14;
-               ShotgunColours.GSEditWindowText        := 27;
-               ShotgunColours.GSEditWindowHighlight   := 31;
-               ShotgunColours.GSEditWindowFrameHigh   := 25;
-               ShotgunColours.GSEditWindowFrameLow    := 16;
-               ShotgunColours.GSEditWindowFrameStyle  := 1;
-               ShotgunColours.GSEditWindowShadow      := 8;
-               ShotgunColours.GSEditWindowTitle       := 31;
-               ShotgunColours.GSEditDataEntry         := 31;
-               ShotgunColours.GSEditDataEntryBack     := 1;
-               ShotgunColours.GSEditMenuSelected      := 48;
-               ShotgunColours.GSEditProgressBar       := 9;
-               ShotgunColours.GSEditProgressBarBack   := 1;
-               ShotgunColours.GSEditProgressChar      := 'Û';
+               GunshotColours.GSEditMsgText           := 7;
+               GunshotColours.GSEditMsgQuote          := 2;
+               GunshotColours.GSEditMsgKludge         := 8;
+               GunshotColours.GSEditFrame             := 1;
+               GunshotColours.GSEditStatusText        := 27;
+               GunshotColours.GSEditStatusHighlight   := 31;
+               GunshotColours.GSEditStatusBrackets    := 23;
+               GunshotColours.GSEditInfo              := 3;
+               GunshotColours.GSEditInfoData          := 11;
+               GunshotColours.GSEditInfoHighlight     := 14;
+               GunshotColours.GSEditWindowText        := 27;
+               GunshotColours.GSEditWindowHighlight   := 31;
+               GunshotColours.GSEditWindowFrameHigh   := 25;
+               GunshotColours.GSEditWindowFrameLow    := 16;
+               GunshotColours.GSEditWindowFrameStyle  := 1;
+               GunshotColours.GSEditWindowShadow      := 8;
+               GunshotColours.GSEditWindowTitle       := 31;
+               GunshotColours.GSEditDataEntry         := 31;
+               GunshotColours.GSEditDataEntryBack     := 1;
+               GunshotColours.GSEditMenuSelected      := 48;
+               GunshotColours.GSEditProgressBar       := 9;
+               GunshotColours.GSEditProgressBarBack   := 1;
+               GunshotColours.GSEditProgressChar      := 'Û';
 
-               WRITE(FShotgunColours,ShotgunColours);
-               CLOSE(FShotgunColours);
+               WRITE(FGunshotColours,GunshotColours);
+               CLOSE(FGunshotColours);
           END;
      END
      ELSE IF FileName='MAILER.DAT' THEN
@@ -552,7 +552,7 @@ BEGIN
                MailerInfo.EnableYooHoo  := True;
                MailerInfo.RetryDelay    := 30;
                MailerInfo.AnswerOnRing  := 1;
-               MailerInfo.BBSSoftware   := 'Shotgun '+ShotgunVersion;
+               MailerInfo.BBSSoftware   := 'Gunshot '+GunshotVersion;
                MailerInfo.SecondsToBBS  := 15;
                _CreatePath(NoDrive(BaseDirectory)+'\GSMAIL');
                _CreatePath(NoDrive(BaseDirectory)+'\GSMAIL\NODELIST');
@@ -604,7 +604,7 @@ BEGIN
                     MailerInfo.EnableYooHoo  := True;
                     MailerInfo.RetryDelay    := 30;
                     MailerInfo.AnswerOnRing  := 1;
-                    MailerInfo.BBSSoftware   := 'Shotgun '+ShotgunVersion;
+                    MailerInfo.BBSSoftware   := 'Gunshot '+GunshotVersion;
                     MailerInfo.SecondsToBBS  := 15;
                     _CreatePath(NoDrive(BaseDirectory)+'\GSMAIL');
                     _CreatePath(NoDrive(BaseDirectory)+'\GSMAIL\NODELIST');

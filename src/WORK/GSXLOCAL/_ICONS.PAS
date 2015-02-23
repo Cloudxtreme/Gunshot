@@ -5,7 +5,7 @@ UNIT _Icons;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE AddAnimatedControl  (Raw: _Raw_File);

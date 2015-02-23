@@ -12,7 +12,7 @@ FUNCTION  WhatSize   (FileN: String): Word;
 IMPLEMENTATION
 
 
-USES Globals,BsFile,Shotgun;
+USES Globals,BsFile,Gunshot;
 
 
 FUNCTION WhatSize(FileN: String): Word;

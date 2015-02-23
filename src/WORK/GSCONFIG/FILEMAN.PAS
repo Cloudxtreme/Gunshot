@@ -18,7 +18,7 @@ IMPLEMENTATION
 
 
 USES CnfgVars,DOS,IntrFace,FilePick,BsString,BsFile,Dispatch,BsEditor,
-     Import,Defaults,CRT,BsMouse,DosShell,BsExec,Shotgun;
+     Import,Defaults,CRT,BsMouse,DosShell,BsExec,Gunshot;
 
 
 FUNCTION RemoveFileIdDiz(FName: String): Byte;

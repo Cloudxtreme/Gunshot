@@ -396,7 +396,7 @@ BEGIN
            FileDefs.class       := 0;
            FileDefs.free        := 0;
            FileDefs.dled        := 0;
-           FileDefs.uploader    := 'Shotgun CD Rom Importer';
+           FileDefs.uploader    := 'Gunshot CD Rom Importer';
            FileDefs.added_date  := proper_date;
            ASSIGN(FFileDefs,DestDir+_String(AreaCount)+'.FIL');
            ASSIGN(FFileDesc,DestDir+_String(AreaCount)+'.TXT');

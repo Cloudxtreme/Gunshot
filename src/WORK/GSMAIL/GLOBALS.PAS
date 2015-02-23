@@ -5,7 +5,7 @@ UNIT Globals;
 INTERFACE
 
 
-USES Dos,ApTimer,ApAbsFax,ApPort,ApAbsPcl,Shotgun,MkFFile;
+USES Dos,ApTimer,ApAbsFax,ApPort,ApAbsPcl,Gunshot,MkFFile;
 
 
 CONST YetToGo            = 1;
@@ -292,12 +292,12 @@ VAR   ListFile           : FileListing;
       ExtCodes           : _ExtCodesM_Record;
       Mailer2Info        : _Mailer2_Record;
       FaxCodes           : _FaxCodes_Record;
-      ShotgunColours     : _Shotgun_Colours;
+      GunshotColours     : _Gunshot_Colours;
       MailHistory        : _Mail_History;
       FunctionKeys       : _Function_Keys;
       FFunctionKeys      : File Of _Function_Keys;
       FMailHistory       : File Of _Mail_History;
-      FShotgunColours    : File Of _Shotgun_Colours;
+      FGunshotColours    : File Of _Gunshot_Colours;
       FFaxCodes          : File Of _FaxCodes_Record;
       FMailer2Info       : File Of _Mailer2_Record;
       FExtCodes          : File Of _ExtCodesM_Record;
@@ -317,7 +317,7 @@ VAR   ListFile           : FileListing;
       FSessionPW         : File Of _SessionPW_Record;
       FErrLevel          : File Of _ErrLevel_Record;
       FMailerInfo        : File Of _Mailer_Record;
-      Shotgun_Directory  : String[80];
+      Gunshot_Directory  : String[80];
       ExitBaud           : String;
       BufferPointer      : Word;
       SimNode            : Word;

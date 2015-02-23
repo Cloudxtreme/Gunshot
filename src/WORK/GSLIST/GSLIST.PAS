@@ -2,7 +2,7 @@
 {$I DEFINES.INC}
 
 
-USES Dos,Crt,FastW1,Shotgun,MkFFile,FMode,BsFile,BsExec,BsString,BsVideo,BsTime;
+USES Dos,Crt,FastW1,Gunshot,MkFFile,FMode,BsFile,BsExec,BsString,BsVideo,BsTime;
 
 
 TYPE FileDescriptions2 = Array[1..18] Of _FileDescriptions;
@@ -142,7 +142,7 @@ END;
 
 PROCEDURE StartUp;
 BEGIN
-     AppHeader('GSList - Filelist Generator For Shotgun Professional');
+     AppHeader('GSList - Filelist Generator For Gunshot Professional');
      GetCommandLine;
      BaseDirectory := _UpperCase(_GetFilePath(ParamStr(0)));
      Dec(BaseDirectory[0]);

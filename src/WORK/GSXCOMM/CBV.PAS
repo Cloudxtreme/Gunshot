@@ -13,7 +13,7 @@ IMPLEMENTATION
 
 USES ApTimer,BsLog,Globals,Time,Screens,KeyInput,Crt,ErrorLog,
      UserFile,SaveScrn,Comm,BsMulti,ApPort,ApCom,AllGone,Yapp,
-     Gfx,Shotgun;
+     Gfx,Gunshot;
 
 
 PROCEDURE CallBackVerifier;
@@ -341,13 +341,13 @@ BEGIN
 
            {SEND OUR INITIAL SYSTEM PACKS}
            SendSystemFile(LANG_Directory+'\COLOURS.VGA');
-           SendSystemFile(Shotgun_Directory+'\ICONS\BPRESS.MSE');
-           SendSystemFile(Shotgun_Directory+'\ICONS\BUSY.MSE');
-           SendSystemFile(Shotgun_Directory+'\ICONS\DEFAULT.MSE');
-           SendSystemFile(Shotgun_Directory+'\ICONS\INSERT.MSE');
-           SendSystemFile(Shotgun_Directory+'\ICONS\MSGDRAG.MSE');
-           SendSystemFile(Shotgun_Directory+'\ICONS\FILEDRAG.MSE');
-           SendSystemFile(Shotgun_Directory+'\ICONS\WINMOVE.MSE');
+           SendSystemFile(Gunshot_Directory+'\ICONS\BPRESS.MSE');
+           SendSystemFile(Gunshot_Directory+'\ICONS\BUSY.MSE');
+           SendSystemFile(Gunshot_Directory+'\ICONS\DEFAULT.MSE');
+           SendSystemFile(Gunshot_Directory+'\ICONS\INSERT.MSE');
+           SendSystemFile(Gunshot_Directory+'\ICONS\MSGDRAG.MSE');
+           SendSystemFile(Gunshot_Directory+'\ICONS\FILEDRAG.MSE');
+           SendSystemFile(Gunshot_Directory+'\ICONS\WINMOVE.MSE');
            IF ((Colours.InternalImage>0) AND (Colours.InternalImage<6)) THEN
            BEGIN
                 PutStringTimeout(BBSPort,#255#119+Chr(Colours.InternalImage)+#13,YappDelay);

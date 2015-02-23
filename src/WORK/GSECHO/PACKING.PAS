@@ -11,7 +11,7 @@ PROCEDURE PackOutbound;
 IMPLEMENTATION
 
 
-USES Dos,BsTime,Globals,FMode,Shotgun,Common,KeyCheck,
+USES Dos,BsTime,Globals,FMode,Gunshot,Common,KeyCheck,
      BsFile,BsCrc,BsString,BsAkas,BsLog,BsExec,BsFido;
 
 

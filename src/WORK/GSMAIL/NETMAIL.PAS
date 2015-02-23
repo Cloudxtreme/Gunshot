@@ -5,7 +5,7 @@ UNIT NetMail;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE IndexAreas;
@@ -28,9 +28,9 @@ USES Dos,Transfer,DrawScrn,BsLog,Misc,Version,BsAkas,BsFile,BsString;
 
 FUNCTION GetSessionPassword(WorkAddr: AddrType): String;
 BEGIN
-     IF _FileExists('\SHOTGUN\DATA\PASSWORD.DAT') THEN
+     IF _FileExists('\GUNSHOT\DATA\PASSWORD.DAT') THEN
      BEGIN
-          ASSIGN(FSessionPW,'\SHOTGUN\DATA\PASSWORD.DAT');
+          ASSIGN(FSessionPW,'\GUNSHOT\DATA\PASSWORD.DAT');
           RESET(FSessionPW);
           REPEAT
                 READ(FSessionPW,SessionPW);
@@ -58,9 +58,9 @@ LABEL             SkipIt;
 BEGIN
      GoingTo := InAddress;
      DidIt   := False;
-     IF _FileExists(Shotgun_Directory+'\DATA\ROUTE.DAT') THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\ROUTE.DAT') THEN
      BEGIN
-          ASSIGN(FCallRouting,Shotgun_Directory+'\DATA\ROUTE.DAT');
+          ASSIGN(FCallRouting,Gunshot_Directory+'\DATA\ROUTE.DAT');
           RESET(FCallRouting);
           REPEAT
                 READ(FCallRouting,CallRouting);
@@ -353,7 +353,7 @@ BEGIN
      BEGIN
           IF FastBaseHdr.Dest.Zone=0 THEN
           BEGIN
-               ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+               ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
                RESET(FNetwork);
                REPEAT
                      READ(FNetwork,Network);
@@ -442,7 +442,7 @@ VAR  Node         : Word;
      Day          : Word;
      DayOfWeek    : Word;
 BEGIN
-     Temp := ShotgunVersion;
+     Temp := GunshotVersion;
      Delete(Temp,1,1);
      IF NOT(Temp[LENGTH(Temp)] IN ['0'..'9']) THEN DEC(Temp[0]);
      Loop := Pos('.',Temp);

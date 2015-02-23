@@ -646,7 +646,7 @@ BEGIN
      TextColor_BS(15);
      TextBackGround_BS(Colour.DeskTopColour);
      GotoXY(1,1);
-     WRITE(_PadBoth('SHOTGUN PROFESSIONAL '+ShotgunVersion+' - Configuration Module',80));
+     WRITE(_PadBoth('GUNSHOT PROFESSIONAL '+GunshotVersion+' - Configuration Module',80));
      GotoXY(1,1);
 {$IFDEF MSDOS}
      Move(MEM[SegB800:0],SavedScreen,160*25);

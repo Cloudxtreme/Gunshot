@@ -17,7 +17,7 @@ Unit MKMsgAbs;       {Abstract Msg Object}
 
 Interface
 
-Uses MKGlobT,Shotgun,
+Uses MKGlobT,Gunshot,
   Dos;
 
 

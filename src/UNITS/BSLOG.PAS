@@ -26,7 +26,7 @@ BEGIN
      bsLogApplication := Application;
      bsLogNodeNumber  := NodeNumber;
      bsRunningMode    := RunMode;
-     _CreatePath('\SHOTGUN\LOGS');
+     _CreatePath('\GUNSHOT\LOGS');
 END;
 
 
@@ -51,7 +51,7 @@ VAR  FFile : File;
 BEGIN
      IF NOT(bsLogFileStarted) THEN
      BEGIN
-       ASSIGN(FFile,'\SHOTGUN\LOGS\SHOTGUN.'+_String(bsLogNodeNumber));
+       ASSIGN(FFile,'\GUNSHOT\LOGS\GUNSHOT.'+_String(bsLogNodeNumber));
        {$I-}RESET(FFile,1);{$I+}
        IF IOResult=0 THEN
        BEGIN
@@ -68,7 +68,7 @@ BEGIN
      END
      ELSE
      BEGIN
-       ASSIGN(FFile,'\SHOTGUN\LOGS\SHOTGUN.'+_String(bsLogNodeNumber));
+       ASSIGN(FFile,'\GUNSHOT\LOGS\GUNSHOT.'+_String(bsLogNodeNumber));
        {$I-}RESET(FFile,1);{$I+}
        IF IOResult=0 THEN SEEK(FFile,FileSize(FFile))
                      ELSE REWRITE(FFile,1);

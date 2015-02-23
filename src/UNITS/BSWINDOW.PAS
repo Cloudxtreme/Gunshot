@@ -123,7 +123,7 @@ BEGIN
               END;
             END;
           END;
-     4:   BEGIN {Shotgun Professional}
+     4:   BEGIN {Gunshot Professional}
             FOR Loop := y1 TO y2 DO
             BEGIN
               IF Loop=y1 THEN

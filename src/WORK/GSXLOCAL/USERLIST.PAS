@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,BsLog,KeyInput,SBuffer,Screens,_Pick,
-     _Mouse,Gr2_Bp,Shotgun,BsString,BsFile;
+     _Mouse,Gr2_Bp,Gunshot,BsString,BsFile;
 
 
 PROCEDURE ShowUserList;

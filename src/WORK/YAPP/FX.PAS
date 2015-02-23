@@ -61,7 +61,7 @@ BEGIN
      END
      ELSE
      BEGIN
-          ASSIGN(FFileQueue,SGT_Directory+'\FQUEUE.TMP');
+          ASSIGN(FFileQueue,GST_Directory+'\FQUEUE.TMP');
           RESET(FFileQueue);
           SEEK(FFileQueue,CurrentFileNum-1);
           READ(FFileQueue,FileQueue);
@@ -97,7 +97,7 @@ VAR  TextSaveScreen  : Array[1..4000] Of Byte;
      FTextSaveScreen : File;
 BEGIN
      Move(MEM[SegB800:0],TextSaveScreen,4000);
-     ASSIGN(FTextSaveScreen,SGT_Directory+'\XFER$$$$.SCR');
+     ASSIGN(FTextSaveScreen,GST_Directory+'\XFER$$$$.SCR');
      REWRITE(FTextSaveScreen,1);
      BLOCKWRITE(FTextSaveScreen,TextSaveScreen,4000);
      CLOSE(FTextSaveScreen);
@@ -107,7 +107,7 @@ PROCEDURE LoadTextScreen;
 VAR  TextSaveScreen  : Array[1..4000] Of Byte;
      FTextSaveScreen : File;
 BEGIN
-     ASSIGN(FTextSaveScreen,SGT_Directory+'\XFER$$$$.SCR');
+     ASSIGN(FTextSaveScreen,GST_Directory+'\XFER$$$$.SCR');
      {$I-}RESET(FTextSaveScreen,1);{$I+}
      IF IOResult=0 THEN
      BEGIN
@@ -310,7 +310,7 @@ BEGIN
      TransferFiles;
      PutStringTimeout(BBSPort,'OO'+#13,YappDelay);
      IF IsGfx THEN DoTransmitHandShake;
-     _EraseFile(SGT_Directory+'\FQUEUE.TMP');
+     _EraseFile(GST_Directory+'\FQUEUE.TMP');
 END;
 
 

@@ -132,7 +132,7 @@ BEGIN
      CLOSE(door_file);
 
      {DORINFOx.DEF}
-     Temp := Shotgun_Directory+'\DROPFILE';
+     Temp := Gunshot_Directory+'\DROPFILE';
      _CreatePath(Temp);
      FOR TheScoop := 0 TO 2 DO
      BEGIN

@@ -35,8 +35,8 @@ BEGIN
      IF SaverActive THEN
      BEGIN
           RestoreScreen(93);
-          FastWrite(_PadRight(_DayOfWeek+' '+_GetPrettyDate,27),Window2+5,23,ShotgunColours.GSMailTimeDateData);
-          FastWrite(_PadRight(_GetPrettyTime,8),Window2+5,9,ShotgunColours.GSMailTimeDateData);
+          FastWrite(_PadRight(_DayOfWeek+' '+_GetPrettyDate,27),Window2+5,23,GunshotColours.GSMailTimeDateData);
+          FastWrite(_PadRight(_GetPrettyTime,8),Window2+5,9,GunshotColours.GSMailTimeDateData);
           GotoXYAbs(SaverCurXY);
           IF NOT(DialWindowActive) THEN _ShowCursor;
           NewTimerSecs(SaverTimer,Mailer2Info.BlankerTimeout);

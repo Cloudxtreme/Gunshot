@@ -15,7 +15,7 @@ IMPLEMENTATION
 
 
 USES Gx2_Bp,Gx2_BpVC,Gr2_Bp,Tx2_Bp,Globals,BsGraph,_Icons,GfxProto,_Bezier,
-     _Win,_Mouse,_Token,_Text,_Buffers,_Fields,_Extern,_Images,Shotgun,
+     _Win,_Mouse,_Token,_Text,_Buffers,_Fields,_Extern,_Images,Gunshot,
      BsComp,BsFile;
 
 

@@ -15,11 +15,11 @@ BEGIN
      FileSpec := ParamStr(1);
      IF ((FileSpec='') OR (NOT(_FileExists(FileSpec)))) THEN
      BEGIN
-          AppHeader('RIPView - RIP File Viewer For Shotgun Professional');
+          AppHeader('RIPView - RIP File Viewer For Gunshot Professional');
           WriteLn('No file spec specified.');
           Halt
      END;
-     New(RIP,Init(True,'\SHOTGUN\BIN\GFXPACK'));
+     New(RIP,Init(True,'\GUNSHOT\BIN\GFXPACK'));
      FindFirst(FileSpec,Anyfile-Directory-VolumeID,DirInfo);
      WHILE DosError = 0 DO
      BEGIN

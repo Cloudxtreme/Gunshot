@@ -24,7 +24,7 @@ IMPLEMENTATION
 
 
 USES IntrFace,BsMouse,BsString,BsFile,Crt,Defaults,CnfgVars,Hatch,
-     FileMan,Import,Dos,Dispatch,FastW1,Valid,Shotgun,BsAkas;
+     FileMan,Import,Dos,Dispatch,FastW1,Valid,Gunshot,BsAkas;
 
 
 PROCEDURE GlobalFileChange(Number: Longint);
@@ -1201,7 +1201,7 @@ BEGIN
           IF IOResult=0 THEN
           BEGIN
                WRITELN(ExportFile,';                          ');
-               WRITELN(ExportFile,';  Shotgun Directory Export');
+               WRITELN(ExportFile,';  Gunshot Directory Export');
                WRITELN(ExportFile,';                          ');
                CheckFile('FA000000.DAT');
                ASSIGN(FFileArea,BaseDirectory+'\DATA\FA000000.DAT');

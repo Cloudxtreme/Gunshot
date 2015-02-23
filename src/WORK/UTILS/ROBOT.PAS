@@ -7,7 +7,7 @@ PROGRAM Robot;
 
 
 USES MKMsgAbs,MKOpen,MKGlobT,MKDos,Dos,Crt,BsAkas,
-     MKString,BsVideo,Version,Shotgun,BsString;
+     MKString,BsVideo,Version,Gunshot,BsString;
 
 
 VAR  Sender      : String;
@@ -73,7 +73,7 @@ END;
 
 
 BEGIN
-     AppHeader('Robot - Netmail Robot For Shotgun Professional');
+     AppHeader('Robot - Netmail Robot For Gunshot Professional');
      IF ParamStr(1)='' THEN Halt;
      ASSIGN(F,ParamStr(1));
      {$I-}
@@ -122,7 +122,7 @@ BEGIN
                                Msg^.SetLocal    (True);
                                Msg^.SetKillSent (True);
                                Msg^.DoStringLn(GetMsgId(OrigAddr));
-                               Msg^.DoStringLn(CHR(1)+'PID: SGRobot '+ShotgunVersion);
+                               Msg^.DoStringLn(CHR(1)+'PID: GSRobot '+GunshotVersion);
 
                                ASSIGN(F2,MessageText);
                                {$I-}
@@ -139,7 +139,7 @@ BEGIN
                                     CLOSE(F2);
                                END;
                                Msg^.DoStringLn('');
-                               Msg^.DoStringLn('---Created by SGRobot '+ShotgunVersion);
+                               Msg^.DoStringLn('---Created by GSRobot '+GunshotVersion);
                                IF Msg^.WriteMsg=0 THEN;
                                IF CloseMsgArea(Msg) THEN;
                           END;

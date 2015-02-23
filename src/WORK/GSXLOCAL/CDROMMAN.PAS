@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,MiscStr,SBuffer,Screens,KeyInput,CDS,FilHeadr,GotKeys,
-     TagArea,ToggCD,Gr2_Bp,_Pick,_Mouse,Commands,Shotgun,BsString,
+     TagArea,ToggCD,Gr2_Bp,_Pick,_Mouse,Commands,Gunshot,BsString,
      BsFile;
 
 

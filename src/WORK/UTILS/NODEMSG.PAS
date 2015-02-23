@@ -7,7 +7,7 @@ PROGRAM NodeMsg;
 
 {$I DEFINES.INC}
 
-USES Dos,BsVideo,Shotgun,BsString,BsFile;
+USES Dos,BsVideo,Gunshot,BsString,BsFile;
 
 
 VAR  TheNode   : Word;
@@ -74,8 +74,8 @@ BEGIN
      {$I+}
      IF IOResult=0 THEN;
      CLOSE(TFile);
-     _CreatePath('\SHOTGUN\INTRNODE');
-     ASSIGN(FNode,'\SHOTGUN\INTRNODE\NODE'+_String(TheNode)+'.$$$');
+     _CreatePath('\GUNSHOT\INTRNODE');
+     ASSIGN(FNode,'\GUNSHOT\INTRNODE\NODE'+_String(TheNode)+'.$$$');
      {$I-}RESET(FNode);{$I+}
      IF (IOResult<>0) THEN REWRITE(FNode);
      WRITE(FNode,Node);

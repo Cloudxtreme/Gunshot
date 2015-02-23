@@ -13,7 +13,7 @@ IMPLEMENTATION
 
 
 USES Globals,MkOpen,MkMsgAbs,MkString,MkDos,MkGlobT,
-     MiscMsg,Shotgun,FMode,BsFile,BsString,BsAkas;
+     MiscMsg,Gunshot,FMode,BsFile,BsString,BsAkas;
 
 
 {==========================================================================}

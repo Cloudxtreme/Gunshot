@@ -11,7 +11,7 @@ PROCEDURE CheckCIDInfo;
 IMPLEMENTATION
 
 
-USES Globals,Shotgun,BsString,BsLog,AllGone,Screens,UserFile;
+USES Globals,Gunshot,BsString,BsLog,AllGone,Screens,UserFile;
 
 
 FUNCTION NoCanDo(UName,UNumber: String): Boolean;

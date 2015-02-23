@@ -145,7 +145,7 @@ BEGIN
                END;
           END;
           Clear_Scan_Dir;
-          Chdir(Shotgun_Directory);
+          Chdir(Gunshot_Directory);
      END
      ELSE
      BEGIN

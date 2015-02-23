@@ -15,7 +15,7 @@ IMPLEMENTATION
 
 
 USES Transfer,DrawScrn,BsLog,FastW1,Queue,SysSound,Emsi,
-     Shotgun,Dos,Globals,NetMail,Misc,Crt,BsAkas,Version,
+     Gunshot,Dos,Globals,NetMail,Misc,Crt,BsAkas,Version,
      BsFile,BsString,BsVideo,KeyCheck,SaveScrn,DoProg;
 
 
@@ -24,7 +24,7 @@ BEGIN
      ClearOutOutpkts;
      StatusWindow('Scanning message base');
      bsWriteLog('Scanning message base',False);
-     FastWrite('   ',Window2+5,55,ShotgunColours.GSMailNewMailLight);
+     FastWrite('   ',Window2+5,55,GunshotColours.GSMailNewMailLight);
      RescanBase;
 END;
 
@@ -48,10 +48,10 @@ BEGIN
      IF _FileExists(MailerInfo.Semaphores+'FAX.'+_String(SimNode)) THEN ThereAreFaxes := True;
      IF ThereAreFaxes THEN
      BEGIN
-          FastWrite('Fax',Window2+5,51,128+ShotgunColours.GSMailNewMailLight);
+          FastWrite('Fax',Window2+5,51,128+GunshotColours.GSMailNewMailLight);
           DoSound(2);
      END
-     ELSE FastWrite('   ',Window2+5,51,ShotgunColours.GSMailNewMailLight);
+     ELSE FastWrite('   ',Window2+5,51,GunshotColours.GSMailNewMailLight);
 END;
 
 
@@ -207,7 +207,7 @@ BEGIN
      BEGIN
        SaveScreen(1);
        DrawWindow(45,Window1-4,78,Window1,'OUTBOUND MAIL SCAN',True);
-       FastWrite('같같같같같같같같같같같같같같같',Window1-2,47,ShotgunColours.GSMailProgressBarBack);
+       FastWrite('같같같같같같같같같같같같같같같',Window1-2,47,GunshotColours.GSMailProgressBarBack);
        FOR Loop := 1 TO NumMsgs DO
        BEGIN
          GetTheMessage(Loop);
@@ -361,7 +361,7 @@ BEGIN
        RestoreScreen(1);
        IF ThereAreMsgs THEN
        BEGIN
-         FastWrite('New',Window2+5,55,128+ShotgunColours.GSMailNewMailLight);
+         FastWrite('New',Window2+5,55,128+GunshotColours.GSMailNewMailLight);
          DoSound(1);
        END;
      END;

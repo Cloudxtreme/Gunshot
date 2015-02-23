@@ -23,7 +23,7 @@ BEGIN
      ClrScr;
      _ShowCursor;
      _HighBackGrounds(False);
-     PutEnviro('PROMPT=Enter EXIT to return to Shotgun Professional!!$_$p$g');
+     PutEnviro('PROMPT=Enter EXIT to return to Gunshot Professional!!$_$p$g');
      DoExec(GetEnv('COMSPEC'),' /C '+GetEnv('COMSPEC'),USE_ALL,WorkDir);
      ChDir(BaseDirectory);
      _HighBackGrounds(True);

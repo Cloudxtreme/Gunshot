@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,Screens,BsLog,Toggle,ANSIMisc,KeyInput,MiscStr,TagArea,
-     Shotgun,GotKeys,MiscMsg,JamGet,ReadNew,MsgHeadr,ChangeMA,MkGlobT,
+     Gunshot,GotKeys,MiscMsg,JamGet,ReadNew,MsgHeadr,ChangeMA,MkGlobT,
      MkOpen,MkMsgAbs,BsString;
 
 

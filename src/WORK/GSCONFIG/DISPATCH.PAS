@@ -13,7 +13,7 @@ PROCEDURE MouseSpeed;
 IMPLEMENTATION
 
 
-USES Dos,CnfgVars,Defaults,BsMouse,Crt,BsAkas,IntrFace,Misc,Shotgun,
+USES Dos,CnfgVars,Defaults,BsMouse,Crt,BsAkas,IntrFace,Misc,Gunshot,
      BsFile,FMode,MkFFile,BsString,BsKeys,BsVideo;
 
 

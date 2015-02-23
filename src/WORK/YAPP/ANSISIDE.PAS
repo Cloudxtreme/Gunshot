@@ -347,10 +347,10 @@ BEGIN
                 END;
            129: BEGIN {UPDATE YAPP}
                   Delete(Temp,1,1);
-                  _EraseFile(SGT_Directory+'\'+Temp);
+                  _EraseFile(GST_Directory+'\'+Temp);
                   ChangeMouse(BusyMouse);
                   IsGfx := True;
-                  ReceiveFiles(SGT_Directory);
+                  ReceiveFiles(GST_Directory);
                   ChangeMouse(DefaultMouse);
                 END;
            130: BEGIN {DO THE UPDATE NOW}

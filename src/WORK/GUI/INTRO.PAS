@@ -15,7 +15,7 @@ IMPLEMENTATION
 
 USES Gx2_Bp,Gr2_Bp,Globals,_Win,BHandler,_Icons,_Text,_Images,BsString,
      Dos,BsGraph,ErrorOut,Tx2_Bp,DefPal,Gx2_BpVC,Fx2_Bp,Crt,Version,
-     Shotgun;
+     Gunshot;
 
 
 PROCEDURE DoAbout;
@@ -80,7 +80,7 @@ VAR  Temp         : String;
      Display      : GXDCONFIG;
 BEGIN
      NButtons := 0;
-     DrawWindow(30,80,595,340,'ABOUT SHOTGUN GUI EDITOR',AboutWindow);
+     DrawWindow(30,80,595,340,'ABOUT GUNSHOT GUI EDITOR',AboutWindow);
      SystemButton(495,285,580,325,1,False,True);
      InvertedBox(494,284,581,326);
      SystemIcon(505,290,65);
@@ -94,7 +94,7 @@ BEGIN
      GrDrawLine(44,120,276,120);
      GrDrawLine(44,120,44,273);
      InvertedBox(43,119,277,274);
-     OutTextXY(80,300,0,255,1,ShotgunCopyright);
+     OutTextXY(80,300,0,255,1,GunshotCopyright);
      InvertedBox(285,120,580,275);
      gxGetDisplayConfig(Display);
 
@@ -152,7 +152,7 @@ BEGIN
      YSens := 10;
      WallPaper := '';
      GrowingWindows := True;
-     ASSIGN(FFile,Shotgun_Dir+'\GUI.INI');
+     ASSIGN(FFile,Gunshot_Dir+'\GUI.INI');
      {$I-}RESET(FFile);{$I+}
      IF IoResult=0 THEN
      BEGIN
@@ -276,7 +276,7 @@ BEGIN
      GrDrawLine(149,YWindow+2,149,GraphMaxY-1);
      OutTextXY(7,GraphMaxY-40,15,255,2,' MEM:');
      OutTextXY(7,GraphMaxY-24,15,255,2,'DISK:');
-     OutTextXY(160,3,15,1,2,'Shotgun GUI Graphics Editor/16 - '+ShotgunVersion);
+     OutTextXY(160,3,15,1,2,'Gunshot GUI Graphics Editor/16 - '+GunshotVersion);
      LoadGraphicLib('LOGO____.$$$',475,GraphMaxY-42,639,GraphMaxY-2);
      GrSetMouseMode(gxGRAPHICS);
      Error := GrInitMouse;

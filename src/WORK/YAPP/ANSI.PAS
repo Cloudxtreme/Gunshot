@@ -115,7 +115,7 @@ BEGIN
                                     Window(1,1,80,25);
                                     ClrScr;
                                     Exec(GetEnv('COMSPEC'),' /C '+GetEnv('COMSPEC'));
-                                    ChDir(SGT_Directory);
+                                    ChDir(GST_Directory);
                                     Window(1,1,80,24);
                                     LoadTextScreen;
                                     GotoXY(SvX,SvY);

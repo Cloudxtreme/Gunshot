@@ -11,7 +11,7 @@ PROCEDURE DoMessageOrder;
 IMPLEMENTATION
 
 
-USES IntrFace,BsMouse,BsString,Crt,Defaults,CnfgVars,Dos,Dispatch,FastW1,Valid,Shotgun,BsFile,BsVideo;
+USES IntrFace,BsMouse,BsString,Crt,Defaults,CnfgVars,Dos,Dispatch,FastW1,Valid,Gunshot,BsFile,BsVideo;
 
 
 PROCEDURE DoMessageOrder;

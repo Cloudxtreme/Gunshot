@@ -5,7 +5,7 @@ UNIT Globals;
 INTERFACE
 
 
-USES MkMsgAbs,ApTimer,Shotgun,MkFFile;
+USES MkMsgAbs,ApTimer,Gunshot,MkFFile;
 
 
 TYPE Squish_Last_Read  = Array[1..10000] Of Longint;

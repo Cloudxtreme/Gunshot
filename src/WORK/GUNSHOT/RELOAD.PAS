@@ -28,7 +28,7 @@ END;
 
 PROCEDURE ReloadUser;
 BEGIN
-     Chdir(Shotgun_Directory);
+     Chdir(Gunshot_Directory);
      ASSIGN(FUserRecord,NODE_Directory+'\USERS.BBS');
      RESET(FUserRecord);
      READ(FUserRecord,UserRecord);

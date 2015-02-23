@@ -5,7 +5,7 @@ UNIT CNFGVARS;
 INTERFACE
 
 
-USES Shotgun,Version,MkFFile;
+USES Gunshot,Version,MkFFile;
 
 
 TYPE FFF = RECORD
@@ -125,7 +125,7 @@ VAR  O                  : Rec;
      ExtCodes           : _ExtCodesM_Record;
      CallerId           : _CallerId_Record;
      FaxCodes           : _FaxCodes_Record;
-     ShotgunColours     : _Shotgun_Colours;
+     GunshotColours     : _Gunshot_Colours;
      NodeListSG         : _PrivateNode_Sg;
      NodeListSG2        : _PrivateNode_Sg;
      FunctionKeys       : _Function_Keys;
@@ -140,7 +140,7 @@ VAR  O                  : Rec;
      FFunctionKeys      : File Of _Function_Keys;
      FNodeListSG        : File Of _PrivateNode_Sg;
      FNodeListSG2       : File Of _PrivateNode_Sg;
-     FShotgunColours    : File Of _Shotgun_Colours;
+     FGunshotColours    : File Of _Gunshot_Colours;
      FFaxCodes          : File Of _FaxCodes_Record;
      FCallerId          : File Of _CallerId_Record;
      FExtCodes          : File Of _ExtCodesM_Record;

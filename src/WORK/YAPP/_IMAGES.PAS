@@ -230,7 +230,7 @@ VAR  Error    : Integer;
      dipal    : Array[0..767] Of Byte;
 BEGIN
      gxSetDitherMatrix(gxNODITHER);
-     Error := gxOpenLib(gxGXL,SGT_Directory+'\YAPP.GXL',GraphLib,Nil,0);
+     Error := gxOpenLib(gxGXL,GST_Directory+'\YAPP.GXL',GraphLib,Nil,0);
      IF (Error<>GxSuccess) THEN Exit;
      {Get the image header}
      Error := imgLibGetHeader(GraphLib,FName,0,imghdr,@dipal[0]);

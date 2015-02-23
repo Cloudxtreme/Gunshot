@@ -11,7 +11,7 @@ PROCEDURE SortTheFileArea(AreaDosName: String; Method: Byte);
 IMPLEMENTATION
 
 
-USES Shotgun,BsFile,BsString;
+USES Gunshot,BsFile,BsString;
 
 
 PROCEDURE SortTheFileArea(AreaDosName: String; Method: Byte);

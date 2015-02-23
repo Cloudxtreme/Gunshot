@@ -104,20 +104,20 @@ BEGIN
      END;
      GetParams;
      YWindow     := 429;
-     Shotgun_Dir := _GetFilePath(ParamStr(0));
-     Dec(Shotgun_Dir[0]);
-     ChDir(Shotgun_Dir);
-     ICONDir     := Shotgun_Dir+'\ICONS\';
-     FONTDir     := Shotgun_Dir+'\FONTS\';
-     SOUNDDir    := Shotgun_Dir+'\SOUND\';
-     JPEGDir     := Shotgun_Dir+'\IMAGES\';
+     Gunshot_Dir := _GetFilePath(ParamStr(0));
+     Dec(Gunshot_Dir[0]);
+     ChDir(Gunshot_Dir);
+     ICONDir     := Gunshot_Dir+'\ICONS\';
+     FONTDir     := Gunshot_Dir+'\FONTS\';
+     SOUNDDir    := Gunshot_Dir+'\SOUND\';
+     JPEGDir     := Gunshot_Dir+'\IMAGES\';
      IF (WorkDir<>'') THEN
      BEGIN
-          _CopyFile('GUI.GXL',Shotgun_Dir+'\BIN\',WorkDir);
+          _CopyFile('GUI.GXL',Gunshot_Dir+'\BIN\',WorkDir);
           GraphicsLibrary := WorkDir+'GUI.GXL';
      END
-     ELSE GraphicsLibrary := Shotgun_Dir+'\BIN\GUI.GXL';
-     IF LangDir='' THEN LangDir := Shotgun_Dir+'\SG\';
+     ELSE GraphicsLibrary := Gunshot_Dir+'\BIN\GUI.GXL';
+     IF LangDir='' THEN LangDir := Gunshot_Dir+'\SG\';
      LangDir := _Path(LangDir);
      SGDir       := LangDir;
      _CreatePath(SGDir);

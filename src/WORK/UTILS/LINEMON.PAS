@@ -1,7 +1,7 @@
 {$M 8192,0,64000}
 PROGRAM LineMonitorForDOS;
 {$I DEFINES.INC}
-USES Crt,Dos,Version,FMode,Shotgun,BsString,BsMulti,BsFile,BsKeys,BsVideo;
+USES Crt,Dos,Version,FMode,Gunshot,BsString,BsMulti,BsFile,BsKeys,BsVideo;
 
 
 VAR  Node      : _NodeFile_Record;
@@ -21,12 +21,12 @@ VAR  DirInfo   : SearchRec;
 BEGIN
      FOR Work := 1 TO 16 DO
      BEGIN
-          FindFirst('\SHOTGUN\INTRNODE\NODE'+_String(StartNode+Work-1)+'.$$$',AnyFile-Directory-VolumeID,DirInfo);
+          FindFirst('\GUNSHOT\INTRNODE\NODE'+_String(StartNode+Work-1)+'.$$$',AnyFile-Directory-VolumeID,DirInfo);
           IF DosError=0 THEN
           BEGIN
                IF (DirInfo.Time<>TheTimes[Work]) THEN
                BEGIN
-                    ASSIGN(FNode,'\SHOTGUN\INTRNODE\'+DirInfo.Name);
+                    ASSIGN(FNode,'\GUNSHOT\INTRNODE\'+DirInfo.Name);
                     {$I-}
                     RESET(FNode);
                     READ(FNode,Node);
@@ -60,9 +60,9 @@ BEGIN
      FillChar(TheTimes,SizeOf(TheTimes),255);
      IF (ParamStr(1)<>'') THEN StartNode := _Numeric(ParamStr(1))
                           ELSE StartNode := 1;
-     _CreatePath('\SHOTGUN\INTRNODE');
+     _CreatePath('\GUNSHOT\INTRNODE');
      _HideCursor;
-     AppHeader('LineMon - Line Activity Monitor For Shotgun Professional');
+     AppHeader('LineMon - Line Activity Monitor For Gunshot Professional');
      FastWrite('ÚÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄ¿',6,1,1);
      FastWrite('³    ³                           ³                                     ³       ³',7,1,1);
      FastWrite('ÃÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄ´',8,1,1);

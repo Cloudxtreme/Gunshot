@@ -16,7 +16,7 @@ IMPLEMENTATION
 
 
 USES ANSIMisc,Screens,Globals,KeyInput,ChangeFA,ListFile,ApTimer,
-     BsLog,Toggle,MiscStr,TagArea,GotKeys,Dos,CDS,Time,Shotgun,
+     BsLog,Toggle,MiscStr,TagArea,GotKeys,Dos,CDS,Time,Gunshot,
      BsString;
 
 

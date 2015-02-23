@@ -13,7 +13,7 @@ IMPLEMENTATION
 
 USES Globals,Gr2_Bp,_Win,Gx2_BpVC,_FSelect,CutOuts,_Images,_Text,BsGraph,
      Gx2_Bp,Crt,PalBoxes,BHandler,_Icons,IconMisc,BsString,_VSave,LoadIcon,
-     SaveIcon,ImgDefs,Shotgun,BsFile;
+     SaveIcon,ImgDefs,Gunshot,BsFile;
 
 
 PROCEDURE NewIconBank(FileN: String; Siz: Word);

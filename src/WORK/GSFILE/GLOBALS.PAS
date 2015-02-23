@@ -5,7 +5,7 @@ UNIT Globals;
 INTERFACE
 
 
-USES {$IFNDEF MSDOS}VideoUtils,{$ENDIF}Shotgun,ApTimer,MkFFile;
+USES {$IFNDEF MSDOS}VideoUtils,{$ENDIF}Gunshot,ApTimer,MkFFile;
 
 
 TYPE BiggerBuffer     = Array[1..64000] Of Byte;

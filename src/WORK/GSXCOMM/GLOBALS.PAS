@@ -5,7 +5,7 @@ UNIT Globals;
 INTERFACE
 
 
-USES ApPort,ApTimer,MkMsgAbs,Shotgun,MkFFile;
+USES ApPort,ApTimer,MkMsgAbs,Gunshot,MkFFile;
 
 
 CONST DontSend               = #1#2#3;
@@ -260,7 +260,7 @@ VAR  FArcDefs                : File Of _Archiver_Record;
      CurrentMessageSub       : word;
      CurrentFileArea         : word;
      CurrentFileSub          : word;
-     Shotgun_Directory       : String[40];
+     Gunshot_Directory       : String[40];
      DATA_Directory          : String[40];
      LANG_Directory          : String[40];
      MENU_Directory          : String[40];

@@ -11,7 +11,7 @@ PROCEDURE ProcessAreaFix;
 IMPLEMENTATION
 
 
-USES LogFile,Globals,BsFile,BsString,Shotgun,MsgWrite,KeyCheck,
+USES LogFile,Globals,BsFile,BsString,Gunshot,MsgWrite,KeyCheck,
      BsAkas,FMode,TicName,BsCrc,Version,Process,BsFido;
 
 
@@ -289,7 +289,7 @@ BEGIN
                  END;
                END;
                WRITELN(TFile,'Crc '+FileCrc32(FileArea.Area_Path+FileDefs.File_Name));
-               WRITELN(TFile,'Created by '+OurAppName+' '+ShotgunCopyright);
+               WRITELN(TFile,'Created by '+OurAppName+' '+GunshotCopyright);
                WRITELN(TFile,'Path '+AddressToString(NetworkInfo.Net_Address)+PathTime);
                WRITELN(TFile,'Seenby '+AddressToString(NetworkInfo.Net_Address));
                WRITELN(TFile,'Seenby '+AddressToString(LinksInfo.NetworkAddress));
@@ -359,7 +359,7 @@ VAR  Loop       : Word;
             CLOSE(TFile);
             EndMessage;
           END
-          ELSE WriteLogFile('  ! Areafix help file \SHOTGUN\HELP\GSFILE.HLP not found.');
+          ELSE WriteLogFile('  ! Areafix help file \GUNSHOT\HELP\GSFILE.HLP not found.');
      END;
 
      PROCEDURE SendStatusMsg;

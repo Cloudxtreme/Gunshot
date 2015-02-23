@@ -5,7 +5,7 @@ UNIT _Mouse;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE ChangeMouse(MMouse: _Mouse_Def);

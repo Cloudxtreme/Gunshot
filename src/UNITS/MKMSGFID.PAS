@@ -23,7 +23,7 @@ Unit MKMsgFid;       {Fido *.Msg Unit}
 
 Interface
 
-Uses MKGlobT,MKMsgAbs,MKFFile,Shotgun,BsString,BsAkas,
+Uses MKGlobT,MKMsgAbs,MKFFile,Gunshot,BsString,BsAkas,
   Dos;
 
 

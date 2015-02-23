@@ -5,7 +5,7 @@ UNIT _Fields;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE SystemField        (Raw: _Raw_File);

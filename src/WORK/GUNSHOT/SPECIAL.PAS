@@ -227,7 +227,7 @@ BEGIN
                     ELSE R := 'Calendar Date Expiry';
                     END;
                END
-               ELSE IF _Pos2('VERSION',work_string,SS)=SS THEN R := ShotgunVersion
+               ELSE IF _Pos2('VERSION',work_string,SS)=SS THEN R := GunshotVersion
                ELSE IF _Pos2('BINBANK',work_string,SS)=SS THEN STR(UserRecord.ByteBankBalance,R)
                ELSE IF _Pos2('BREMAIN',work_string,SS)=SS THEN STR(UserRecord.DLBytesRemaining,R)
                ELSE IF _Pos2('BUPLOAD',work_string,SS)=SS THEN STR(UserRecord.uploads,R)

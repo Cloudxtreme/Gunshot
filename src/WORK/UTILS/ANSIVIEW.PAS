@@ -13,7 +13,7 @@ BEGIN
      FileSpec := ParamStr(1);
      IF ((FileSpec='') OR (NOT(_FileExists(FileSpec)))) THEN
      BEGIN
-          AppHeader('ANSIView - ANSI File Viewer For Shotgun Professional');
+          AppHeader('ANSIView - ANSI File Viewer For Gunshot Professional');
           WriteLn('No file spec specified.');
           Halt
      END;

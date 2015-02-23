@@ -55,7 +55,7 @@ BEGIN
                IF NOT(LocalLogon) THEN Comm_DeInit;
                DumpUser;
                ExecuteDosCommand(CommandPath+CommandLine);
-               Chdir(Shotgun_Directory);
+               Chdir(Gunshot_Directory);
                bsWriteLog('Returned from door',False);
                IF Busy=1 THEN _EraseFile(CommandPath+BusyFile);
                IF NOT(LocalLogon) THEN
@@ -65,7 +65,7 @@ BEGIN
                          DoErrorLog(14,_String(NodeInfo.ComPort));
                          ClrScr;
                          WRITELN('Cannot initialize port!!!!');
-                         WRITELN('Shotgun is shutting down.');
+                         WRITELN('Gunshot is shutting down.');
                          WRITELN;
                          Halt;
                     END;

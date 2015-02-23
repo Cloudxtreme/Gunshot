@@ -5,7 +5,7 @@ UNIT BsPkt;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 TYPE  Type2Header        = RECORD

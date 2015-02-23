@@ -105,7 +105,7 @@ BEGIN
      Restore_Screen2;
      GotoXY(OldX,OldY);
      DisplayGraphicsFile('ADJUST_E',True,False,True,True,False);
-     Chdir(Shotgun_Directory);
+     Chdir(Gunshot_Directory);
      _DELAY(1500);
      REPEAT
            IF KeyPressed THEN c := ReadKey;
@@ -132,9 +132,9 @@ BEGIN
      FORE(7);
      WINDOW(1,1,80,25);
      ClrScr;
-     PutEnviro('PROMPT=Enter EXIT to return to Shotgun Professional!!$_$p$g');
+     PutEnviro('PROMPT=Enter EXIT to return to Gunshot Professional!!$_$p$g');
      ExecuteDosCommand(GetEnv('COMSPEC'));
-     Chdir(Shotgun_Directory);
+     Chdir(Gunshot_Directory);
      Restore_Screen2;
      WINDOW(1,1,80,24);
      GotoXY(OldX,OldY);

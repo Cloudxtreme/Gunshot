@@ -3,7 +3,7 @@
 PROGRAM GraphicsCompiler;
 
 
-USES Dos,ApMisc,BsFrames,BsComp,BsKeys,Crt,Shotgun,Version,BsString,BsFile,BsCrc,BsVideo,MkFFile,FMode;
+USES Dos,ApMisc,BsFrames,BsComp,BsKeys,Crt,Gunshot,Version,BsString,BsFile,BsCrc,BsVideo,MkFFile,FMode;
 
 
 TYPE BigBuffer = Array[1..8192] Of Byte;
@@ -39,7 +39,7 @@ VAR  SAVESCRNScr   : SAVESCRNAScreen;
      FIcon162      : File Of _Icon16x16;
      FMouseDef     : File Of _Mouse_Def;
      FMouseDef2    : File Of _Mouse_Def;
-     ShotgunDir    : String[40];
+     GunshotDir    : String[40];
      SGDir         : String[40];
      SGXDir        : String[40];
      FileSpec      : String[12];
@@ -177,7 +177,7 @@ END;
 
 BEGIN
      FileMode    := SetFileMode;
-     ShotgunDir  := ParamStr(1);
+     GunshotDir  := ParamStr(1);
      SGDir       := ParamStr(2);
      IF _UpperCase(ParamStr(3))='SKIP'
         THEN SkipEx := True
@@ -185,36 +185,36 @@ BEGIN
      FileSpec    := _NoPath(SGDir);
      SGDir       := _GetFilePath(SGDir);
      GetSGXDir;
-     IF ShotgunDir[LENGTH(ShotgunDir)]='\' THEN Dec(ShotgunDir[0]);
+     IF GunshotDir[LENGTH(GunshotDir)]='\' THEN Dec(GunshotDir[0]);
      IF SGDir[LENGTH(SGDir)]='\' THEN Dec(SGDir[0]);
-     IF ((ShotgunDir='') OR (SGDir='') OR (SGXDir='')) THEN
+     IF ((GunshotDir='') OR (SGDir='') OR (SGXDir='')) THEN
      BEGIN
           TextColor(7);
           TextBackground(0);
           ClrScr;
-          TextColor(11); WRITELN('SHOTGUN PROFESSIONAL '+ShotgunVersion);
+          TextColor(11); WRITELN('GUNSHOT PROFESSIONAL '+GunshotVersion);
           TextColor(9);  WRITELN('YAPP Resource Compiler');
-          TextColor(1);  WRITELN(ShotgunCopyright);
+          TextColor(1);  WRITELN(GunshotCopyright);
           TextColor(10); WRITELN('');
           WRITELN('   Syntax:   GCOMPILE.EXE <basedir> <langspec> <SKIP>');
           TextColor(7);  WRITELN('');
-          WRITELN('   <basedir>   Main Shotgun directory. ie: C:\SHOTGUN');
-          WRITELN('   <langspec>  Full file spec of the *.SG files. ie: C:\SHOTGUN\ENGLISH\SG\*.SG');
+          WRITELN('   <basedir>   Main Gunshot directory. ie: C:\GUNSHOT');
+          WRITELN('   <langspec>  Full file spec of the *.SG files. ie: C:\GUNSHOT\ENGLISH\SG\*.SG');
           WRITELN('   <SKIP>      The optional SKIP paramater will inhibit compilation of some');
           WRITELN('               resource such as FLIs and VOCs.');
           WRITELN('');
           HALT;
      END;
      SaveTheScreen;
-     DrawWindow(15,10,65,14,'YAPP Resource Compiler '+ShotgunVersion);
+     DrawWindow(15,10,65,14,'YAPP Resource Compiler '+GunshotVersion);
      InvertedBox(17,11,63,13);
-     ResourceDir := ShotgunDir+'\RESOURCE';
-     LocalDir    := ShotgunDir+'\RESLOCAL';
-     SOUNDDir    := ShotgunDir+'\SOUND\';
-     FONTDir     := ShotgunDir+'\FONTS\';
-     ICONDir     := ShotgunDir+'\ICONS\';
-     JPEGDir     := ShotgunDir+'\IMAGES\';
-     FLICSDir    := ShotgunDir+'\FLICS\';
+     ResourceDir := GunshotDir+'\RESOURCE';
+     LocalDir    := GunshotDir+'\RESLOCAL';
+     SOUNDDir    := GunshotDir+'\SOUND\';
+     FONTDir     := GunshotDir+'\FONTS\';
+     ICONDir     := GunshotDir+'\ICONS\';
+     JPEGDir     := GunshotDir+'\IMAGES\';
+     FLICSDir    := GunshotDir+'\FLICS\';
      _CreatePath(ResourceDir);
      _CreatePath(LocalDir);
      _CreatePath(SGDir);
@@ -980,7 +980,7 @@ BEGIN
                FindNext(DirInfo);
           END;
      END;
-     ChDir(ShotgunDir);
+     ChDir(GunshotDir);
      Dispose(CBuffer);
      Dispose(Buffer);
      Dispose(FNames);

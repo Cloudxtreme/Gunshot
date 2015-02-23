@@ -31,7 +31,7 @@ BEGIN
      GrDrawRect(200,150,440,250,GrFill+GrOutline);
      RaisedBox(201,151,439,249);
      RaisedBox(202,152,438,248);
-     OutTextXY(255,164,0,255,1,'SGT Services Manager');
+     OutTextXY(255,164,0,255,1,'GST Services Manager');
      OutTextXY(210,184,0,255,5,'Copyright (C) 1994-1996 GUNN Data Systems');
      SystemIcon(235,205,101);
      SystemIcon(265,205,102);
@@ -55,8 +55,8 @@ BEGIN
      GrDrawRect(0,0,GraphMaxX,20,GrFill); GrDrawRect(0,GraphMaxY-20,GraphMaxX,GraphMaxY,GrFill);
      GrSetColor(9);  GrDrawLine(0,0,GraphMaxX,0);   GrDrawLine(0,GraphMaxY-20,GraphMaxX,GraphMaxY-20);
      GrSetColor(33); GrDrawLine(0,20,GraphMaxX,20); GrDrawLine(0,GraphMaxY,GraphMaxX,GraphMaxY);
-     OutTextXY(185,3,15,1,2,'SGT Services Manager - '+ShotgunVersion);
-     OutTextXY(70,GraphMaxY-17,15,1,2,ShotgunCopyright);
+     OutTextXY(185,3,15,1,2,'GST Services Manager - '+GunshotVersion);
+     OutTextXY(70,GraphMaxY-17,15,1,2,GunshotCopyright);
      OutTextXY(425,GraphMaxY-52,35,255,1,'GUNN Data Systems Support System');
      OutTextXY(455,GraphMaxY-38,35,255,5,'(306)652-0288 [33.6k V34+/VFC]');
      OutTextXY(590,GraphMaxY-16,7,255,5,_String(MemAvail));

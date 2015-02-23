@@ -180,7 +180,7 @@ BEGIN
                        bsWriteLog(ModemResult,False);
                        RemoveARQ(ModemResult);
                        FoundYes := False;
-                       ASSIGN(FErrLevel,Shotgun_Directory+'\DATA\ERRLEVEL.'+_String(SimNode));
+                       ASSIGN(FErrLevel,Gunshot_Directory+'\DATA\ERRLEVEL.'+_String(SimNode));
                        RESET(FErrLevel);
                        REPEAT
                          READ(FErrLevel,ErrLevel);
@@ -235,8 +235,8 @@ BEGIN
                                bsWriteLog('Rejecting human caller at speed '+_String(ErrLevel.ConnectSpeed),False);
                                PutString(bsBBSPort,_String(ErrLevel.ConnectSpeed)+
                                          ' BPS connections are not supported on this system.'+#$0A#$0D);
-                               StatusWindow('Displaying \SHOTGUN\GSMAIL\TOOSLOW.TXT');
-                               bsWriteLog('Displaying \SHOTGUN\GSMAIL\TOOSLOW.TXT',False);
+                               StatusWindow('Displaying \GUNSHOT\GSMAIL\TOOSLOW.TXT');
+                               bsWriteLog('Displaying \GUNSHOT\GSMAIL\TOOSLOW.TXT',False);
                                SendTooSlowBanner;
                                DrainOutBuffer(bsBBSPort,Secs2Tics(60));
                                UpdateBBS2(False);

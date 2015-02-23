@@ -17,7 +17,7 @@ PROCEDURE DoFindUser;
 IMPLEMENTATION
 
 
-USES IntrFace,BsMouse,BsString,BsFile,Crt,Defaults,CnfgVars,Shotgun;
+USES IntrFace,BsMouse,BsString,BsFile,Crt,Defaults,CnfgVars,Gunshot;
 
 
 PROCEDURE EditSubsciption;

@@ -12,7 +12,7 @@ PROCEDURE JamBase_GetMessageHeader(Number: Longint);
 IMPLEMENTATION
 
 
-USES Globals,MkOpen,MkGlobT,MkMsgAbs,MiscMsg,MkString,Shotgun,FMode,
+USES Globals,MkOpen,MkGlobT,MkMsgAbs,MiscMsg,MkString,Gunshot,FMode,
      BsString,BsAkas;
 
 

@@ -5,7 +5,7 @@ UNIT BsFido;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 {FIDO *.MSG MESSAGE WRITING}

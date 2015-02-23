@@ -13,7 +13,7 @@ FUNCTION GetCBVEnabled: Byte;
 IMPLEMENTATION
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 FUNCTION GetCBVEnd: Longint;

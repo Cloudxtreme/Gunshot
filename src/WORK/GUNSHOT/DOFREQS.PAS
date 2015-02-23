@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,Time,KeyInput,Screens,AnsiMisc,Toggle,
-     GotKeys,DLEst,Shotgun,BsFile,BsString,BsTime;
+     GotKeys,DLEst,Gunshot,BsFile,BsString,BsTime;
 
 
 FUNCTION BytesInQueue: Longint;
@@ -55,14 +55,14 @@ VAR  FRequestFile2 : File Of _RequestFile;
      Loop3         : Word;
 LABEL                AddTheFile,SkipTheMark;
 BEGIN
-     IF _FileExists(Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS') THEN
+     IF _FileExists(Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS') THEN
      BEGIN
        {First, Lets Weed Out The Old Ones}
        Now := _ProperDateNoTime;
-       ASSIGN(FRequestFile,Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
-       RENAME(FRequestFile,Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.OLD');
-       ASSIGN(FRequestFile,Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
-       ASSIGN(FRequestFile2,Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.OLD');
+       ASSIGN(FRequestFile,Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
+       RENAME(FRequestFile,Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.OLD');
+       ASSIGN(FRequestFile,Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
+       ASSIGN(FRequestFile2,Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.OLD');
        REWRITE(FRequestFile);
        RESET(FRequestFile2);
        REPEAT
@@ -73,9 +73,9 @@ BEGIN
        CLOSE(FRequestFile2);
        ERASE(FRequestFile2);
        CLOSE(FRequestFile);
-       IF _FileSize(Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS')=0 THEN
+       IF _FileSize(Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS')=0 THEN
        BEGIN
-         _EraseFile(Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
+         _EraseFile(Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
          Exit;
        END;
        DisplayGraphicsFile('FREQCHK',False,False,True,True,False);
@@ -87,10 +87,10 @@ BEGIN
          {Do The Search}
          FORE(Colours.SpinCursor);
          StartToggle(0);
-         ASSIGN(FRequestFile,Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
-         RENAME(FRequestFile,Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.OLD');
-         ASSIGN(FRequestFile2,Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.OLD');
-         ASSIGN(FRequestFile,Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
+         ASSIGN(FRequestFile,Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
+         RENAME(FRequestFile,Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.OLD');
+         ASSIGN(FRequestFile2,Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.OLD');
+         ASSIGN(FRequestFile,Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
          REWRITE(FRequestFile);
          RESET(FRequestFile2);
          REPEAT
@@ -173,8 +173,8 @@ BEGIN
          CLOSE(FRequestFile2);
          ERASE(FRequestFile2);
          CLOSE(FRequestFile);
-         IF _FileSize(Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS')=0 THEN
-            _EraseFile(Shotgun_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
+         IF _FileSize(Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS')=0 THEN
+            _EraseFile(Gunshot_Directory+'\FREQ\'+_String(UserRecord.User_Number)+'.BBS');
          EndToggle;
          SendCrLf(2);
          {Show The Results}

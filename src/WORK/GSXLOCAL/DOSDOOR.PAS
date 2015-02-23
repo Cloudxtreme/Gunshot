@@ -49,7 +49,7 @@ BEGIN
                Save_Screen;
                DumpUser;
                ExecuteDosCommand(CommandPath+CommandLine);
-               Chdir(Shotgun_Directory);
+               Chdir(Gunshot_Directory);
                bsWriteLog('Returned from door',False);
                IF Busy=1 THEN _EraseFile(CommandPath+BusyFile);
                Load_Screen;
@@ -93,7 +93,7 @@ BEGIN
                Save_Screen;
                DumpUser;
                ExecuteDosCommand(CommandPath+CommandLine);
-               Chdir(Shotgun_Directory);
+               Chdir(Gunshot_Directory);
                bsWriteLog('Returned from door',False);
                IF Busy=1 THEN _EraseFile(CommandPath+BusyFile);
                Load_Screen;

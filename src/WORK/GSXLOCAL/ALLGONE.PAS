@@ -72,7 +72,7 @@ VAR  c             : char;
 BEGIN
      IF doing_logoff THEN Exit;
      doing_logoff := true;
-     _EraseFile(Shotgun_Directory+'\DROPFILE\DORINFO'+NodeString+'.DEF');
+     _EraseFile(Gunshot_Directory+'\DROPFILE\DORINFO'+NodeString+'.DEF');
      LastUserOnline.TimeOff := _GetPrettyDate+' - '+_GetPrettyTime;
      IF (UserRecord.Name<>'') THEN
      BEGIN
@@ -155,7 +155,7 @@ BEGIN
      TextColor(11);
      TextBackground(1);
      GotoXY(1,1); ClrEol;
-     GotoXY(1,1); WRITE('  Shotgun Professional End Run');
+     GotoXY(1,1); WRITE('  Gunshot Professional End Run');
      TextColor(15);
      TextBackground(0);
      GotoXY(1,3);

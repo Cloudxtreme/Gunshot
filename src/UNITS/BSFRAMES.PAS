@@ -157,7 +157,7 @@ BEGIN
               FastWrite(Temp,Loop,x1,dtColours^.DeskTopBorder);
             END;
           END;
-     4:   BEGIN {Shotgun Professional}
+     4:   BEGIN {Gunshot Professional}
             FOR Loop := y1 TO y2 DO
             BEGIN
               IF Loop=y1 THEN

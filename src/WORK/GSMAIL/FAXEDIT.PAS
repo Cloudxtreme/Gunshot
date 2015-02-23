@@ -11,7 +11,7 @@ PROCEDURE FaxEditor;
 IMPLEMENTATION
 
 
-USES Dos,Globals,FastW1,SaveScrn,Shotgun,DrawScrn,
+USES Dos,Globals,FastW1,SaveScrn,Gunshot,DrawScrn,
      BsExec,BsMulti,Crt,BsString,BsKeys,BsFile,BsVideo;
 
 
@@ -56,19 +56,19 @@ LABEL                Skip1,Skip2;
                BEGIN
                     READ(FPickList,PickList);
                     INC(TheOne);
-                    IF TheOne=Current THEN FastWrite(PickList.Text,LLoop,3,ShotgunColours.GSMailMenuSelected)
-                                      ELSE FastWrite(PickList.Text,LLoop,3,ShotgunColours.GSMailWindowText);
+                    IF TheOne=Current THEN FastWrite(PickList.Text,LLoop,3,GunshotColours.GSMailMenuSelected)
+                                      ELSE FastWrite(PickList.Text,LLoop,3,GunshotColours.GSMailWindowText);
                END;
           END;
      END;
 
      PROCEDURE DrawHelpBar;
      BEGIN
-          FastWrite(_PadRight('  [     ]           [   ]',80),Window2+7,1,ShotgunColours.GSMailStatusText);
-          FastWrite('SPACE',Window2+7,4,ShotgunColours.GSMailStatusHighlight);
-          FastWrite('F10',Window2+7,22,ShotgunColours.GSMailStatusHighlight);
-          FastWrite('View Fax',Window2+7,11,ShotgunColours.GSMailStatusText);
-          FastWrite('Print Fax',Window2+7,27,ShotgunColours.GSMailStatusText);
+          FastWrite(_PadRight('  [     ]           [   ]',80),Window2+7,1,GunshotColours.GSMailStatusText);
+          FastWrite('SPACE',Window2+7,4,GunshotColours.GSMailStatusHighlight);
+          FastWrite('F10',Window2+7,22,GunshotColours.GSMailStatusHighlight);
+          FastWrite('View Fax',Window2+7,11,GunshotColours.GSMailStatusText);
+          FastWrite('Print Fax',Window2+7,27,GunshotColours.GSMailStatusText);
      END;
 
 BEGIN
@@ -119,13 +119,13 @@ BEGIN
      BEGIN
           OnScreen := NumItems;
           YYPos := Trunc((25-NumItems)/2);
-          DrawWindow(2,YYPos,78,YYPos+NumItems+1,'Shotgun Professional - Fax Base',True);
+          DrawWindow(2,YYPos,78,YYPos+NumItems+1,'Gunshot Professional - Fax Base',True);
      END
      ELSE
      BEGIN
           OnScreen := 21;
           YYPos := 2;
-          DrawWindow(2,2,78,24,'Shotgun Professional - Fax Base',True);
+          DrawWindow(2,2,78,24,'Gunshot Professional - Fax Base',True);
      END;
      Top     := 1;
      Current := 1;
@@ -147,9 +147,9 @@ BEGIN
                                SaveScreen(3);
                                _ShowCursor;
                                SetOrigVideoMode;
-                               DoExec(Shotgun_Directory+'\BIN\GSFAXP.EXE',_String(ConfigSetup.Printer)+
+                               DoExec(Gunshot_Directory+'\BIN\GSFAXP.EXE',_String(ConfigSetup.Printer)+
                                       ' '+_String(ConfigSetup.PrinterModel)+' '+Temp,SwapMethod,
-                                       Shotgun_Directory+'\NODE'+_String(SimNode));
+                                       Gunshot_Directory+'\NODE'+_String(SimNode));
                                SetOurVideoMode;
                                _HideCursor;
                                RestoreScreen(3);
@@ -226,8 +226,8 @@ BEGIN
                                _ShowCursor;
                                SetOrigVideoMode;
                                WHILE KeyPressed DO Crap := ReadKey;
-                               DoExec(Shotgun_Directory+'\BIN\GSFAXV.EXE',Temp,
-                                      SwapMethod,Shotgun_Directory+'\NODE'+_String(SimNode));
+                               DoExec(Gunshot_Directory+'\BIN\GSFAXV.EXE',Temp,
+                                      SwapMethod,Gunshot_Directory+'\NODE'+_String(SimNode));
                                SetOurVideoMode;
                                _HideCursor;
                                RestoreScreen(3);

@@ -27,13 +27,13 @@ BEGIN
      BEGIN
        Progress[0] := Chr(ToCopy);
        DisabledBar[0] := Chr(Maximum-ToCopy);
-       FastWrite(Progress,y1,x1,ShotgunColours.GSMailProgressBar);
-       FastWrite(DisabledBar,y1,x1+ToCopy,ShotgunColours.GSMailProgressBarBack);
+       FastWrite(Progress,y1,x1,GunshotColours.GSMailProgressBar);
+       FastWrite(DisabledBar,y1,x1+ToCopy,GunshotColours.GSMailProgressBarBack);
        IF ShowPercent THEN
        BEGIN
          Percent := Round((Current*100)/Total);
          Temp := _PadRight(_String(Percent)+'%',4);
-         FastWrite(Temp,y1,x1+Maximum+1,ShotgunColours.GSMailWindowHighlight);
+         FastWrite(Temp,y1,x1+Maximum+1,GunshotColours.GSMailWindowHighlight);
        END;
        LastStat := ToCopy;
      END;

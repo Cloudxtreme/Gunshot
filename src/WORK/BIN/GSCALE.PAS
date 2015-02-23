@@ -44,7 +44,7 @@ BEGIN
      BEGIN
           ClrScr;
           TEXTCOLOR(10);
-          WRITELN('This program is a component of the Shotgun Professional package.');
+          WRITELN('This program is a component of the Gunshot Professional package.');
           WRITELN('You do not directly execute this program manually yourself.');
           TEXTCOLOR(7);
           WRITELN;

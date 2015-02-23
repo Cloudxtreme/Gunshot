@@ -68,10 +68,10 @@ VAR  Door_Id : Text;
 BEGIN
      ASSIGN(Door_Id,HOLD_Directory+'\DOOR.ID');
      REWRITE(Door_Id);
-     WRITELN(Door_Id,'DOOR = Shotgun');
-     WRITELN(Door_Id,'VERSION = '+ShotgunVersion);
-     WRITELN(Door_Id,'SYSTEM = Shotgun Professional');
-     WRITELN(Door_Id,'CONTROLNAME = SHOTGUN');
+     WRITELN(Door_Id,'DOOR = Gunshot');
+     WRITELN(Door_Id,'VERSION = '+GunshotVersion);
+     WRITELN(Door_Id,'SYSTEM = Gunshot Professional');
+     WRITELN(Door_Id,'CONTROLNAME = GUNSHOT');
      WRITELN(Door_Id,'CONTROLTYPE = ADD');
      WRITELN(Door_Id,'CONTROLTYPE = DROP');
      CLOSE(Door_Id);
@@ -414,7 +414,7 @@ BEGIN
                CommandLine := ArcDefs.ArcPath+ArcUtils.MoveArc+' '+system_info.QWKPacketName+Temp+' *.*';
                ChDir(HOLD_Directory);
                RUN_PROGRAM(CommandLine);
-               ChDir(Shotgun_Directory);
+               ChDir(Gunshot_Directory);
                dl_file(HOLD_Directory+'\'+system_info.QWKPacketName+Temp);
                IF NOT(AbortedProtocol) THEN
                BEGIN

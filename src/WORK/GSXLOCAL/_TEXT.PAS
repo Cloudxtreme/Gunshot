@@ -5,7 +5,7 @@ UNIT _Text;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE DrawChar           (x,y,f: Word; C: Char);

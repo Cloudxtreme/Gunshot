@@ -13,7 +13,7 @@ PROCEDURE DoCommandString    (Screen: String; Index: Word);
 IMPLEMENTATION
 
 
-USES Globals,ANSIMisc,Shotgun;
+USES Globals,ANSIMisc,Gunshot;
 
 
 FUNCTION GetCommandKeyPress(Screen: String; Index: Word): Char;

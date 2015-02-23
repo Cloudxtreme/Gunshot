@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES Globals,BsLog,UserFile,MFireUp,ToggMsg,BsString,BsTime,
-     JamStore,Time,Dos,Archiver,Execute,Shotgun,BsFile;
+     JamStore,Time,Dos,Archiver,Execute,Gunshot,BsFile;
 
 
 FUNCTION RTSpace(InString: String): String;
@@ -117,7 +117,7 @@ BEGIN
                      END;
                 END;
                 CLOSE(FMsgText);
-                IF _UpperCase(FastBaseHdr.MsgTo)='SHOTGUN' THEN
+                IF _UpperCase(FastBaseHdr.MsgTo)='GUNSHOT' THEN
                 BEGIN
                      IF GotIt THEN
                      BEGIN
@@ -248,7 +248,7 @@ BEGIN
                IF IsOk=0 THEN TossQWK;
           END;
      END;
-     ChDir(Shotgun_Directory);
+     ChDir(Gunshot_Directory);
 END;
 
 

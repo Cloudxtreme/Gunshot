@@ -5,7 +5,7 @@ UNIT _Icons;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE AddAnimatedControl  (Raw: _Raw_File);
@@ -257,7 +257,7 @@ VAR  LoopX   : Word;
      GLib    : GxLib;
 BEGIN
      IF ((Num<1) OR (Num>100)) THEN Exit;
-     gxOpenLib(gxGXL,SGT_Directory+'\YAPP.GXL',GLib,Nil,0);
+     gxOpenLib(gxGXL,GST_Directory+'\YAPP.GXL',GLib,Nil,0);
      gxLibBuffer(GLib,_String(Num)+'.ICO',0,900,@Icon30);
      gxCloseLib(GLib);
      gxDisplayVirtual(x,y,x+29,y+29,0,IconHdr,0,0);

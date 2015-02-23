@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES ApTimer,BsLog,Globals,Time,Screens,KeyInput,ANSIMisc,Crt,ErrorLog,
-     UserFile,SaveScrn,Comm,BsMulti,ApPort,ApCom,AllGone,Shotgun,BsString;
+     UserFile,SaveScrn,Comm,BsMulti,ApPort,ApCom,AllGone,Gunshot,BsString;
 
 
 PROCEDURE CallBackVerifier;

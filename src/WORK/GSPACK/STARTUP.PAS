@@ -19,7 +19,7 @@ VAR  Temp : String;
      Code : Integer;
      Loop : Word;
 BEGIN
-     AppHeader('GSPack - Message Base Packer For Shotgun Professional');
+     AppHeader('GSPack - Message Base Packer For Gunshot Professional');
      BaseDirectory := _UpperCase(_GetFilePath(ParamStr(0)));
      IF BaseDirectory[LENGTH(BaseDirectory)]='\' THEN Delete(BaseDirectory,LENGTH(BaseDirectory),1);
      ChDir(BaseDirectory);

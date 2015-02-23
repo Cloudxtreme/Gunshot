@@ -5,7 +5,7 @@ UNIT NList;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 FUNCTION  GetNodeInfo      (InAddress: AddrType): String;

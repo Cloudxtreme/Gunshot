@@ -12,7 +12,7 @@ IMPLEMENTATION
 
 
 USES BsFile,Crt,BsVideo,Globals,BsString,MkOpen,
-     BsLog,BsPkt,KeyCheck,Common,Shotgun,Pkt,_EchoTag;
+     BsLog,BsPkt,KeyCheck,Common,Gunshot,Pkt,_EchoTag;
 
 
 PROCEDURE DoScan;

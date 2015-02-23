@@ -6,9 +6,9 @@ INTERFACE
 
 
 {$IFDEF DPMI}
-USES Gx2_Bp,ApPort,ApTimer,ApAbsPcl,Shotgun;
+USES Gx2_Bp,ApPort,ApTimer,ApAbsPcl,Gunshot;
 {$ELSE}
-USES Gx_Tp,ApPort,ApTimer,ApAbsPcl,Shotgun;
+USES Gx_Tp,ApPort,ApTimer,ApAbsPcl,Gunshot;
 {$ENDIF}
 
 

@@ -392,7 +392,7 @@ BEGIN
           DoErrorLog(104,'');
           Halt;
      END;
-     ASSIGN(FMouse,Shotgun_Directory+'\ICONS\DEFAULT.MSE');
+     ASSIGN(FMouse,Gunshot_Directory+'\ICONS\DEFAULT.MSE');
      {$I-}
      RESET(FMouse);
      {$I+}
@@ -401,7 +401,7 @@ BEGIN
           READ(FMouse,DefaultMouse);
           CLOSE(FMouse);
      END;
-     ASSIGN(FMouse,Shotgun_Directory+'\ICONS\BUSY.MSE');
+     ASSIGN(FMouse,Gunshot_Directory+'\ICONS\BUSY.MSE');
      {$I-}
      RESET(FMouse);
      {$I+}
@@ -410,7 +410,7 @@ BEGIN
           READ(FMouse,BusyMouse);
           CLOSE(FMouse);
      END;
-     ASSIGN(FMouse,Shotgun_Directory+'\ICONS\INSERT.MSE');
+     ASSIGN(FMouse,Gunshot_Directory+'\ICONS\INSERT.MSE');
      {$I-}
      RESET(FMouse);
      {$I+}
@@ -419,7 +419,7 @@ BEGIN
           READ(FMouse,InsertMouse);
           CLOSE(FMouse);
      END;
-     ASSIGN(FMouse,Shotgun_Directory+'\ICONS\BPRESS.MSE');
+     ASSIGN(FMouse,Gunshot_Directory+'\ICONS\BPRESS.MSE');
      {$I-}
      RESET(FMouse);
      {$I+}
@@ -428,7 +428,7 @@ BEGIN
           READ(FMouse,BPressMouse);
           CLOSE(FMouse);
      END;
-     ASSIGN(FMouse,Shotgun_Directory+'\ICONS\MSGDRAG.MSE');
+     ASSIGN(FMouse,Gunshot_Directory+'\ICONS\MSGDRAG.MSE');
      {$I-}
      RESET(FMouse);
      {$I+}
@@ -437,7 +437,7 @@ BEGIN
           READ(FMouse,MsgDragMouse);
           CLOSE(FMouse);
      END;
-     ASSIGN(FMouse,Shotgun_Directory+'\ICONS\FILEDRAG.MSE');
+     ASSIGN(FMouse,Gunshot_Directory+'\ICONS\FILEDRAG.MSE');
      {$I-}
      RESET(FMouse);
      {$I+}
@@ -446,7 +446,7 @@ BEGIN
           READ(FMouse,FileDragMouse);
           CLOSE(FMouse);
      END;
-     ASSIGN(FMouse,Shotgun_Directory+'\ICONS\WINMOVE.MSE');
+     ASSIGN(FMouse,Gunshot_Directory+'\ICONS\WINMOVE.MSE');
      {$I-}
      RESET(FMouse);
      {$I+}
@@ -553,7 +553,7 @@ BEGIN
      TextMode(co80);
      TEXTCOLOR(7);
      ClrScr;
-     WRITELN('CRITICAL ERROR!!! Shotgun can only handle 255 lines!');
+     WRITELN('CRITICAL ERROR!!! Gunshot can only handle 255 lines!');
      WRITELN;
      Halt;
 END;
@@ -565,7 +565,7 @@ BEGIN
      TextMode(co80);
      ClrScr;
      TEXTCOLOR(10);
-     WRITELN('This program is a component of the Shotgun Professional package.');
+     WRITELN('This program is a component of the Gunshot Professional package.');
      WRITELN('You do not directly execute this program manually yourself.');
      TEXTCOLOR(7);
      WRITELN;
@@ -659,9 +659,9 @@ BEGIN
      full_day              := full_day*60;
      user_pages            := 0;
      time_for_downloads    := 0;
-     DATA_Directory        := Shotgun_Directory+'\DATA';
-     INTR_Directory        := Shotgun_Directory+'\INTRNODE';
-     BIN_Directory         := Shotgun_Directory+'\BIN';
+     DATA_Directory        := Gunshot_Directory+'\DATA';
+     INTR_Directory        := Gunshot_Directory+'\INTRNODE';
+     BIN_Directory         := Gunshot_Directory+'\BIN';
      GraphicsLibrary       := BIN_Directory+'\GUI.GXL';
      LastFont              := '$%@$#^!%sf@$';
      ASSIGN(FSystemInfo,DATA_Directory+'\SYSTEM.DAT');
@@ -681,20 +681,20 @@ BEGIN
      END;
      IF System_Info.NodeDrive='' THEN
      BEGIN
-          NODE_Directory := Shotgun_Directory+'\NODE'+NodeString;
+          NODE_Directory := Gunshot_Directory+'\NODE'+NodeString;
      END
      ELSE
      BEGIN
-          Temp := Shotgun_Directory;
+          Temp := Gunshot_Directory;
           Delete(Temp,1,1);
           NODE_Directory := System_Info.NodeDrive+Temp+'\NODE'+NodeString;
      END;
-     SIG_Directory  := Shotgun_Directory+'\ANSISIGS';
+     SIG_Directory  := Gunshot_Directory+'\ANSISIGS';
      HOLD_Directory := NODE_Directory+'\HOLDFILE';
      SCAN_Directory := NODE_Directory+'\SCAN_DIR';
      GIP_Directory  := NODE_Directory+'\GIP';
      CD_Directory   := NODE_Directory+'\CD_TEMP';
-     RESOURCES      := Shotgun_Directory+'\RESLOCAL\';
+     RESOURCES      := Gunshot_Directory+'\RESLOCAL\';
 
      _CreatePath(NODE_Directory);
      _CreatePath(HOLD_Directory);
@@ -703,8 +703,8 @@ BEGIN
      _CreatePath(BIN_Directory);
      _CreatePath(GIP_Directory);
      _CreatePath(CD_Directory);
-     _CreatePath(Shotgun_Directory+'\MSGTAGS');
-     _CreatePath(Shotgun_Directory+'\FILETAGS');
+     _CreatePath(Gunshot_Directory+'\MSGTAGS');
+     _CreatePath(Gunshot_Directory+'\FILETAGS');
 END;
 
 
@@ -819,12 +819,12 @@ BEGIN
      NodeNumber   := 1;
      STR(NodeNumber,NodeString);
      Temp := _UpperCase(_GetFilePath(ParamStr(0)));
-     Shotgun_Directory := Temp[1]+':\SHOTGUN';
-     ChDir(shotgun_directory);
+     Gunshot_Directory := Temp[1]+':\GUNSHOT';
+     ChDir(gunshot_directory);
      get_params;
-     _CreatePath(shotgun_directory+'\NODE'+NodeString);
+     _CreatePath(gunshot_directory+'\NODE'+NodeString);
      IF (NodeNumber>255) THEN CantDoIt(NodeNumber);
-     CheckRegistered(shotgun_directory+'\NODE'+NodeString,'Shotgun');
+     CheckRegistered(gunshot_directory+'\NODE'+NodeString,'Gunshot');
      bsSetLog(OurAppName,'',NodeNumber);
      defines;
      read_system_data;
@@ -857,7 +857,7 @@ BEGIN
      CLOSE(TFile);
      Work := _Numeric(Temp);
 
-     ASSIGN(FLangDir,Shotgun_Directory+'\DATA\LANGUAGE.DAT');
+     ASSIGN(FLangDir,Gunshot_Directory+'\DATA\LANGUAGE.DAT');
      RESET(FLangDir);
      {$I-}
      SEEK(FLangDir,Work-1);
@@ -909,8 +909,8 @@ BEGIN
      4:   LoadGraphicLib('PLANET__.$$$',1+XShift,1+YShift,639+XShift,YWindow+YShift);
      END;
      ShowTheMouse;
-     IF _FileExists(Shotgun_Directory+'\FLICS\BACKGRND.FLI')
-        THEN PlayFLIFile(Shotgun_Directory+'\FLICS\BACKGRND.FLI');
+     IF _FileExists(Gunshot_Directory+'\FLICS\BACKGRND.FLI')
+        THEN PlayFLIFile(Gunshot_Directory+'\FLICS\BACKGRND.FLI');
      DisplayGraphicFile('BACKGRND',False,True,True);
      HideTheMouse;
      SaveBackDrop;
@@ -1088,7 +1088,7 @@ BEGIN
           DumpUser;
           make_door_files(0,1);
           ExecuteDosCommand('PRELOG.BAT '+NodeString+' 0 0');
-          Chdir(Shotgun_Directory);
+          Chdir(Gunshot_Directory);
           ReloadUser;
      END;
 END;

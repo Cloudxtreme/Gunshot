@@ -5,7 +5,7 @@ UNIT _Text;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE DrawText           (x,y,f,b: Word; InString: String);

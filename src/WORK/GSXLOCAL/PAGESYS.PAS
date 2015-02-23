@@ -21,11 +21,11 @@ VAR  GoodTime : Boolean;
      PROCEDURE PlaySpeaker;
      VAR  Loop : Word;
      BEGIN
-          IF ((NodeInfo^.UseBlaster) AND (_FileExists(Shotgun_Directory+'\SOUND\PAGE.VOC'))) THEN
+          IF ((NodeInfo^.UseBlaster) AND (_FileExists(Gunshot_Directory+'\SOUND\PAGE.VOC'))) THEN
           BEGIN
                Save_Mouse;
                ExecuteDOSCommand(Bin_Directory+'\PLAYVOC.EXE '+
-                                 Shotgun_Directory+'\SOUND\PAGE.VOC $$BB$$SS$$');
+                                 Gunshot_Directory+'\SOUND\PAGE.VOC $$BB$$SS$$');
                Load_Mouse;
           END
           ELSE

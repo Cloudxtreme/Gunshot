@@ -5,7 +5,7 @@ UNIT BusyFile;
 INTERFACE
 
 
-USES Shotgun;
+USES Gunshot;
 
 
 VAR LastBusyFiles : Array[1..100] Of String[12];

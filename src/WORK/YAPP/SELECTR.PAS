@@ -17,7 +17,7 @@ USES Dos,_Text,Globals,Gx2_Bp,Gr2_Bp,_Win,_Icons,BsGraph,_Buffers,
 
 FUNCTION FileInfoIsDir(Num: Word): Boolean;
 BEGIN
-     ASSIGN(FFileInfo,SGT_Directory+'\FSEL$$$$.$$$');
+     ASSIGN(FFileInfo,GST_Directory+'\FSEL$$$$.$$$');
      RESET(FFileInfo);
      SEEK(FFileInfo,Num-1);
      READ(FFileInfo,FileInfo);
@@ -56,7 +56,7 @@ PROCEDURE LoadInFiles;
 VAR  DirInfo : SearchRec;
 BEGIN
      NFiles := 0;
-     ASSIGN(FFileInfo,SGT_Directory+'\FSEL$$$$.$$$');
+     ASSIGN(FFileInfo,GST_Directory+'\FSEL$$$$.$$$');
      REWRITE(FFileInfo);
      FindFirst(SCurrentPath+'*.*',Anyfile-VolumeID-Hidden,DirInfo);
      WHILE DosError=0 DO
@@ -387,7 +387,7 @@ TYPE File__Queue = RECORD
 VAR  File_Queue  : File__Queue;
      FFile_Queue : File Of File__Queue;
 BEGIN
-     ASSIGN(FFile_Queue,SGT_Directory+'\FQUEUE.TMP');
+     ASSIGN(FFile_Queue,GST_Directory+'\FQUEUE.TMP');
      RESET(FFile_Queue);
      SEEK(FFile_Queue,NNum-1);
      READ(FFile_Queue,File_Queue);
@@ -425,7 +425,7 @@ VAR  File_Queue  : File__Queue;
      Loop        : Word;
 LABEL              SkipIt;
 BEGIN
-     ASSIGN(FFileInfo,SGT_Directory+'\FSEL$$$$.$$$');
+     ASSIGN(FFileInfo,GST_Directory+'\FSEL$$$$.$$$');
      RESET(FFileInfo);
      SEEK(FFileInfo,FNum-1);
      READ(FFileInfo,FileInfo);
@@ -439,7 +439,7 @@ BEGIN
                     IF FileInfo.FName=_NoPath(FileQueue(Loop)) THEN GOTO SkipIt;
                END;
           END;
-          ASSIGN(FFile_Queue,SGT_Directory+'\FQUEUE.TMP');
+          ASSIGN(FFile_Queue,GST_Directory+'\FQUEUE.TMP');
           IF (FilesInQueue<>0) THEN
           BEGIN
                RESET(FFile_Queue);
@@ -468,14 +468,14 @@ BEGIN
      IF FilesInQueue=1 THEN
      BEGIN
           FilesInQueue := 0;
-          _EraseFile(SGT_Directory+'\FQUEUE.TMP');
+          _EraseFile(GST_Directory+'\FQUEUE.TMP');
      END
      ELSE
      BEGIN
-          _EraseFile(SGT_Directory+'\FQUEUE.BAK');
-          _RenameFile(SGT_Directory+'\FQUEUE.TMP',SGT_Directory+'\FQUEUE.BAK');
-          ASSIGN(FFile_Queue2,SGT_Directory+'\FQUEUE.BAK');
-          ASSIGN(FFile_Queue,SGT_Directory+'\FQUEUE.TMP');
+          _EraseFile(GST_Directory+'\FQUEUE.BAK');
+          _RenameFile(GST_Directory+'\FQUEUE.TMP',GST_Directory+'\FQUEUE.BAK');
+          ASSIGN(FFile_Queue2,GST_Directory+'\FQUEUE.BAK');
+          ASSIGN(FFile_Queue,GST_Directory+'\FQUEUE.TMP');
           REWRITE(FFile_Queue);
           RESET(FFile_Queue2);
           FOR Loop := 1 TO FilesInQueue DO
@@ -660,7 +660,7 @@ BEGIN
                 END;
            END;
      UNTIL AllDone;
-     ChDir(SGT_Directory);
+     ChDir(GST_Directory);
      GrDisplayMouse(GrHide);
      Put(0,0,False,True);
      GrDisplayMouse(GrShow);
@@ -668,7 +668,7 @@ BEGIN
      BEGIN
           IF FilesInQueue=0 THEN TheStatus := False;
      END;
-     _EraseFile(SGT_Directory+'\FSEL$$$$.$$$');
+     _EraseFile(GST_Directory+'\FSEL$$$$.$$$');
      DoFileQueue := TheStatus;
 END;
 

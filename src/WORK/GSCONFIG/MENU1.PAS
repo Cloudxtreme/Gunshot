@@ -17,12 +17,12 @@ USES IntrFace,BsMouse,Crt,Defaults,CnfgVars,Valid,Version,BsString,KeyCheck;
 
 PROCEDURE DoAbout;
 BEGIN
-     DrawWindow(15,4,65,21,'ABOUT SHOTGUN',True);
+     DrawWindow(15,4,65,21,'ABOUT GUNSHOT',True);
      AddButton(56,19,' QUIT ',True,1,16);
      DrawButtons;
      _HideMouse;
      TextBackGround_BS(Colour.WindowBackGround);
-     TextColor_BS(15); GotoXY(16,6);  WRITE('           SHOTGUN PROFESSIONAL '+ShotgunVersion);
+     TextColor_BS(15); GotoXY(16,6);  WRITE('           GUNSHOT PROFESSIONAL '+GunshotVersion);
      TextColor_BS(11); GotoXY(16,8);  WRITE('   Copyright (C) 1994,1997 GUNN Data Systems');
      TextColor_BS(9);  GotoXY(16,9);  WRITE('              All Rights Reserved');
      TextColor_BS(14); GotoXY(16,11); WRITE('                 REGISTERED TO:');

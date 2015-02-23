@@ -5,7 +5,7 @@ UNIT _Win;
 INTERFACE
 
 
-USES Globals,Shotgun;
+USES Globals,Gunshot;
 
 
 PROCEDURE DrawTheWindow    (Raw: _Raw_File);

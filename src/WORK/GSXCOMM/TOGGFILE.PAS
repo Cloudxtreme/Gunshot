@@ -22,7 +22,7 @@ BEGIN
      BEGIN
           IsFileTagged(SearchFile);
           Tagged := OnOff;
-          ASSIGN(FFile,Shotgun_Directory+'\FILETAGS\'+_String(UserRecord.User_Number)+'.BBS');
+          ASSIGN(FFile,Gunshot_Directory+'\FILETAGS\'+_String(UserRecord.User_Number)+'.BBS');
           RESET(FFile,1);
           SEEK(FFile,SearchFile-1);
           BLOCKWRITE(FFile,Tagged,1);

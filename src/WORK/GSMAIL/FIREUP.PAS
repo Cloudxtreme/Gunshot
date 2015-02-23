@@ -71,9 +71,9 @@ BEGIN
      DataChanged := True;
      New(MailQueue);
 
-     Shotgun_Directory := _UpperCase(_GetFilePath(ParamStr(0)));
-     IF Shotgun_Directory[Length(Shotgun_Directory)]='\' THEN DEC(Shotgun_Directory[0]);
-     ChDir(Shotgun_Directory);
+     Gunshot_Directory := _UpperCase(_GetFilePath(ParamStr(0)));
+     IF Gunshot_Directory[Length(Gunshot_Directory)]='\' THEN DEC(Gunshot_Directory[0]);
+     ChDir(Gunshot_Directory);
 
      get_params;
      LoadVars;
@@ -100,9 +100,9 @@ BEGIN
      END;
 
      FillChar(LastUserOnline,SizeOf(LastUserOnline),0);
-     IF _FileExists(Shotgun_Directory+'\DATA\LAST'+_String(SimNode)+'.DAT') THEN
+     IF _FileExists(Gunshot_Directory+'\DATA\LAST'+_String(SimNode)+'.DAT') THEN
      BEGIN
-          ASSIGN(FLastUserOnline,Shotgun_Directory+'\DATA\LAST'+_String(SimNode)+'.DAT');
+          ASSIGN(FLastUserOnline,Gunshot_Directory+'\DATA\LAST'+_String(SimNode)+'.DAT');
           RESET(FLastUserOnline);
           READ(FLastUserOnline,LastUserOnline);
           CLOSE(FLastUserOnline);
@@ -137,16 +137,16 @@ BEGIN
      END;
      bsOnHook(NodeInfo.OnHook);
      DrawTheScreen;
-     FastWrite('#'+_String(SimNode),1,8,ShotgunColours.GSMailStatusHighlight);
-     ASSIGN(FNetwork,Shotgun_Directory+'\DATA\NETWORK.DAT');
+     FastWrite('#'+_String(SimNode),1,8,GunshotColours.GSMailStatusHighlight);
+     ASSIGN(FNetwork,Gunshot_Directory+'\DATA\NETWORK.DAT');
      RESET(FNetwork);
      SEEK(FNetwork,CurrentAka-1);
      READ(FNetwork,Network);
      CLOSE(FNetwork);
-     FastWrite(AddressToString(NetWork.Net_Address),2,8,ShotgunColours.GSMailStatusHighlight);
-     FastWrite(LastUserOnline.Name,1,34,ShotgunColours.GSMailStatusHighlight);
-     FastWrite(LastUserOnline.TimeOn,2,34,ShotgunColours.GSMailStatusHighlight);
-     FastWrite(LastUserOnline.TimeOff,3,34,ShotgunColours.GSMailStatusHighlight);
+     FastWrite(AddressToString(NetWork.Net_Address),2,8,GunshotColours.GSMailStatusHighlight);
+     FastWrite(LastUserOnline.Name,1,34,GunshotColours.GSMailStatusHighlight);
+     FastWrite(LastUserOnline.TimeOn,2,34,GunshotColours.GSMailStatusHighlight);
+     FastWrite(LastUserOnline.TimeOff,3,34,GunshotColours.GSMailStatusHighlight);
      LastCalls;
      SystemInformation(True);
      {Operating System}
@@ -171,7 +171,7 @@ BEGIN
      END;
      IF MailerInfo.Inbound[2]=':'
         THEN DriveLtr := Ord(UpCase(MailerInfo.Inbound[1]))-64
-        ELSE DriveLtr := Ord(UpCase(Shotgun_Directory[1]))-64;
+        ELSE DriveLtr := Ord(UpCase(Gunshot_Directory[1]))-64;
      IF (DiskFree(DriveLtr)<5120000) THEN
      BEGIN
        StatusWindow('!WARNING!! Less than 5mb free on inbound drive!');
@@ -196,14 +196,14 @@ END;
 PROCEDURE ShutDown;
 VAR  DirInfo : SearchRec;
 BEGIN
-     FindFirst(Shotgun_Directory+'\TEMP\SGM'+_String(SimNode)+'.*',AnyFile-Directory-VolumeID,DirInfo);
+     FindFirst(Gunshot_Directory+'\TEMP\GSM'+_String(SimNode)+'.*',AnyFile-Directory-VolumeID,DirInfo);
      WHILE DosError=0 DO
      BEGIN
-          _EraseFile(Shotgun_Directory+'\TEMP\'+DirInfo.Name);
+          _EraseFile(Gunshot_Directory+'\TEMP\'+DirInfo.Name);
           FindNext(DirInfo);
      END;
-     _EraseFile(Shotgun_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
-     _EraseFile(Shotgun_Directory+'\INTRNODE\QUEUETMP.'+_String(SimNode));
+     _EraseFile(Gunshot_Directory+'\INTRNODE\TMPSEND.'+_String(SimNode));
+     _EraseFile(Gunshot_Directory+'\INTRNODE\QUEUETMP.'+_String(SimNode));
      _Delay(1000);
      bsClosePort(True);
      SetOrigVideoMode;
@@ -216,62 +216,62 @@ END;
 
 PROCEDURE LoadVars;
 BEGIN
-     ASSIGN(FConfigSetup,Shotgun_Directory+'\DATA\GSCONFIG.DAT');
+     ASSIGN(FConfigSetup,Gunshot_Directory+'\DATA\GSCONFIG.DAT');
      RESET(FConfigSetup);
      READ(FConfigSetup,ConfigSetup);
      CLOSE(FConfigSetup);
 
-     ASSIGN(FHiddenDial,Shotgun_Directory+'\DATA\HIDDEN.DAT');
+     ASSIGN(FHiddenDial,Gunshot_Directory+'\DATA\HIDDEN.DAT');
      RESET(FHiddenDial);
      READ(FHiddenDial,HiddenDial);
      CLOSE(FHiddenDial);
 
-     ASSIGN(FSystemInfo,Shotgun_Directory+'\DATA\SYSTEM.DAT');
+     ASSIGN(FSystemInfo,Gunshot_Directory+'\DATA\SYSTEM.DAT');
      RESET(FSystemInfo);
      READ(FSystemInfo,SystemInfo);
      CLOSE(FSystemInfo);
 
-     ASSIGN(FNodeInfo,Shotgun_Directory+'\DATA\NODES.DAT');
+     ASSIGN(FNodeInfo,Gunshot_Directory+'\DATA\NODES.DAT');
      RESET(FNodeInfo);
      SEEK(FNodeInfo,SimNode-1);
      READ(FNodeInfo,NodeInfo);
      CLOSE(FNodeInfo);
 
-     ASSIGN(FExtCodes,Shotgun_Directory+'\DATA\EXTCODES.'+_String(SimNode));
+     ASSIGN(FExtCodes,Gunshot_Directory+'\DATA\EXTCODES.'+_String(SimNode));
      RESET(FExtCodes);
      READ(FExtCodes,ExtCodes);
      CLOSE(FExtCodes);
 
-     ASSIGN(FFaxCodes,Shotgun_Directory+'\DATA\FAXCODES.'+_String(SimNode));
+     ASSIGN(FFaxCodes,Gunshot_Directory+'\DATA\FAXCODES.'+_String(SimNode));
      RESET(FFaxCodes);
      READ(FFaxCodes,FaxCodes);
      CLOSE(FFaxCodes);
 
-     ASSIGN(FShotgunColours,Shotgun_Directory+'\DATA\SGSCHEME.DAT');
-     RESET(FShotgunColours);
-     READ(FShotgunColours,ShotgunColours);
-     CLOSE(FShotgunColours);
-     FillChar(Progress,SizeOf(Progress),ShotgunColours.GSMailProgressChar);
+     ASSIGN(FGunshotColours,Gunshot_Directory+'\DATA\GSSCHEME.DAT');
+     RESET(FGunshotColours);
+     READ(FGunshotColours,GunshotColours);
+     CLOSE(FGunshotColours);
+     FillChar(Progress,SizeOf(Progress),GunshotColours.GSMailProgressChar);
      Progress[0] := #40;
 
-     ASSIGN(FFunctionKeys,Shotgun_Directory+'\DATA\FKEYS.DAT');
+     ASSIGN(FFunctionKeys,Gunshot_Directory+'\DATA\FKEYS.DAT');
      RESET(FFunctionKeys);
      READ(FFunctionKeys,FunctionKeys);
      CLOSE(FFunctionKeys);
 
-     ASSIGN(FMailerInfo,Shotgun_Directory+'\DATA\MAILER.DAT');
+     ASSIGN(FMailerInfo,Gunshot_Directory+'\DATA\MAILER.DAT');
      RESET(FMailerInfo);
      SEEK(FMailerInfo,SimNode-1);
      READ(FMailerInfo,MailerInfo);
      CLOSE(FMailerInfo);
 
-     ASSIGN(FMailer2Info,Shotgun_Directory+'\DATA\MAILER2.DAT');
+     ASSIGN(FMailer2Info,Gunshot_Directory+'\DATA\MAILER2.DAT');
      RESET(FMailer2Info);
      SEEK(FMailer2Info,SimNode-1);
      READ(FMailer2Info,Mailer2Info);
      CLOSE(FMailer2Info);
 
-     ASSIGN(FExternalApps,Shotgun_Directory+'\DATA\EXTERNAL.DAT');
+     ASSIGN(FExternalApps,Gunshot_Directory+'\DATA\EXTERNAL.DAT');
      RESET(FExternalApps);
      READ(FExternalApps,ExternalApps);
      CLOSE(FExternalApps);
@@ -298,9 +298,9 @@ BEGIN
      _CreatePath(MailerInfo.Inbound);
      _CreatePath(MailerInfo.Outbound);
      _CreatePath(MailerInfo.Nodelist);
-     _CreatePath(Shotgun_Directory+'\LOGS');
-     _CreatePath(Shotgun_Directory+'\TEMP');
-     _CreatePath(Shotgun_Directory+'\NODE'+_String(SimNode));
+     _CreatePath(Gunshot_Directory+'\LOGS');
+     _CreatePath(Gunshot_Directory+'\TEMP');
+     _CreatePath(Gunshot_Directory+'\NODE'+_String(SimNode));
 
      FNodeIndx.Init(FBuffSize);
      FNodeList.Init(FBuffSize);
