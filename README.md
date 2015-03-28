@@ -1,6 +1,13 @@
 Gunshot PRO
 ===========
 
+NOTE: I don't actively develop this project.  It was more a case of "can I get it to compile for Windows?" than anything
+else -- I don't actually plan on running a BBS using Gunshot, so I don't have much incentive to finishing things up.
+I'm leaving the project up here in the event that someone else wants to run a Windows version of Shotgun, and this helps
+get them pointed in the right direction.
+
+<hr />
+
 32bit port of Shotgun BBS Professional version 2 alpha 10.<br />  
 Shotgun BBS Professional is Copyright Brent Shellenberg<br />
 Gunshot PRO is being ported by Rick Parrish<br />
@@ -26,13 +33,10 @@ TODO List
 =========
 
 <ul>
-  <li>IFDEF out anything that doesn't compile and make a placeholder that does a "WriteLn('REEPORT UNIT FUNCTION'); Halt;" (then you can grep the executables for REEPORT to see which REEPORTs actually need to be implemented)</li>
   <li>IFDEF out any ASM code blocks and handle the same as noncompiling code</li>
   <li>Implement any REEPORTs that appear in compiled executables</li>
   <li>Handle any REETODOs that need handling</li>
-  <li>VP needed FindFirst to pass AnyFile instead of 0 -- is this an issue with FPC?</li>
   <li>Ensure all calls to FindFirst have a matching FindClose (memory leaks if FindClose is not called)</li>
-  <li>Rename executables mentioned in code (ie SGECHO to GSECHO in a string in a code file)</li>
   <li>/ instead of \ for paths in Linux</li>
   <li>"Registers" usage</li>
   <li>"Port[]" usage</li>
@@ -40,8 +44,6 @@ TODO List
   <li>FASTW1.PAS</li>
   <li>BSMOUSE.PAS</li>
   <li>MKFILE.PAS (add routines from EleBBS)</li>
-  <li>SHOTGUN -> GUNSHOT renames</li>
-  <li>SG -> GS renames</li>
   <li>QWK mail packer menu not displaying correctly</li>
   <li>Not quitting after local login</li>
 </ul>
@@ -51,6 +53,10 @@ Completed List
 
 <ul>
   <li>Make it all compile (or as much as possible) with BP</li>
+  <li>IFDEF out anything that doesn't compile and make a placeholder that does a "WriteLn('REEPORT UNIT FUNCTION'); Halt;" (then you can grep the executables for REEPORT to see which REEPORTs actually need to be implemented)</li>
+  <li>Rename executables mentioned in code (ie SGECHO to GSECHO in a string in a code file)</li>
+  <li>SG -> GS renames</li>
+  <li>SHOTGUN -> GUNSHOT renames</li>
 </ul>
 
 <hr />
@@ -60,7 +66,7 @@ Compiling
 
 Windows: Install the 32bit version of FreePascal (the 64bit version may work, but is untested at this time).  Execute src\build-win32.cmd<br />
 NOTE: You'll likely need to adjust some paths in the .cmd file first<br />
-<br />
+<!--<br />
 Linux: Install FreePascal (the 64bit version may work, but is untested at this time).  Execute src\build-linux.sh<br />
 NOTE: You'll likely need to adjust some paths in the .sh file first<br />
-NOTE: On my test server, Ubuntu 13.10, I installed this: fp-compiler fp-units-fcl fp-units-gfx libc6-dev<br />
+NOTE: On my test server, Ubuntu 13.10, I installed this: fp-compiler fp-units-fcl fp-units-gfx libc6-dev<br />-->
